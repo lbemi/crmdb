@@ -4,3 +4,12 @@ app:
   port: 8080
   app_name: lbemi-app
   app_url: http://localhost
+log:
+  level: info
+  root_dir: ./logs
+  file_name: app.log
+  format: json
+  show_line: true
+  max_backup: 500
+  max_age: 10
+  compress: true
