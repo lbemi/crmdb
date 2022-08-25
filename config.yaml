@@ -6,9 +6,10 @@ app:
   app_url: http://localhost
 log:
   level: info
-  root_dir: ./logs
+  root_dir: .
+  is_file: false
   file_name: app.log
-  format: json
+  format:
   show_line: true
   max_backup: 500
   max_age: 10

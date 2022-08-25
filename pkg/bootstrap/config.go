@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultConfigFile = "../config.yaml"
+	defaultConfigFile = "E:/lbemi/config.yaml"
 )
 
 func InitializeConfig() *viper.Viper {

@@ -10,4 +10,5 @@ type Log struct {
 	MaxSize   int    `yaml:"max_size"`
 	MaxAge    int    `yaml:"max_age"`
 	Compress  bool   `yaml:"compress"`
+	IsFile    bool   `yaml:"is_file"`
 }
