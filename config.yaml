@@ -1,0 +1,6 @@
+app:
+  env: local
+  addr: 127.0.0.1
+  port: 8080
+  app_name: lbemi-app
+  app_url: http://localhost
