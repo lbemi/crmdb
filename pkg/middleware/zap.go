@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lbemi/lbemi/pkg/global"
 	"go.uber.org/zap"
 	"net"
 	"net/http"
@@ -12,14 +13,15 @@ import (
 	"time"
 )
 
-func GinLogger(logger *zap.Logger) gin.HandlerFunc {
+func GinLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
 		query := c.Request.URL.RawQuery
 		c.Next()
 		cost := time.Since(start)
-		logger.Info(path,
+		//str := strings(path + string(zap.Int("status", c.Writer.Status()))
+		global.App.Log.Info(path,
 			zap.Int("status", c.Writer.Status()),
 			zap.String("method", c.Request.Method),
 			zap.String("path", path),
@@ -31,7 +33,7 @@ func GinLogger(logger *zap.Logger) gin.HandlerFunc {
 		)
 	}
 }
-func GinRecovery(logger *zap.Logger, stack bool) gin.HandlerFunc {
+func GinRecovery(stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -48,7 +50,7 @@ func GinRecovery(logger *zap.Logger, stack bool) gin.HandlerFunc {
 
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
-					logger.Error(c.Request.URL.Path,
+					global.App.Log.Error(c.Request.URL.Path,
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)
@@ -59,13 +61,13 @@ func GinRecovery(logger *zap.Logger, stack bool) gin.HandlerFunc {
 				}
 
 				if stack {
-					logger.Error("[Recovery from panic]",
+					global.App.Log.Error("[Recovery from panic]",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 						zap.String("stack", string(debug.Stack())),
 					)
 				} else {
-					logger.Error("[Recovery from panic]",
+					global.App.Log.Error("[Recovery from panic]",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)
