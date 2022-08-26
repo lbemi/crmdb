@@ -23,7 +23,7 @@ func InitializeLog() *zap.Logger {
 	}
 	SetLogLevel()
 	if global.App.Config.Log.ShowLine {
-		options = append(options, zap.AddCaller())
+		options = append(options, zap.AddCaller(), zap.AddCallerSkip(0))
 	}
 	core := getZapCore()
 	return zap.New(core).WithOptions(options...)
@@ -58,15 +58,14 @@ func SetLogLevel() {
 	}
 }
 func getLogWriter() zapcore.WriteSyncer {
+
 	file := &lumberjack.Logger{
-		Filename: global.App.Config.Log.RootDir + "/" + global.App.Config.FileName,
-		//Filename:   "./app.log",
+		Filename:   global.App.Config.Log.RootDir + "/" + global.App.Config.FileName,
 		MaxAge:     global.App.Config.MaxAge,
 		MaxSize:    global.App.Config.MaxSize,
 		MaxBackups: global.App.Config.MaxBackup,
 		Compress:   global.App.Config.Compress,
 	}
-	//zapcore.AddSync(os.Stdout)
 	return zapcore.AddSync(file)
 }
 

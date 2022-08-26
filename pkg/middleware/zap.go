@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/global"
 	"go.uber.org/zap"
@@ -20,25 +21,18 @@ func GinLogger() gin.HandlerFunc {
 		query := c.Request.URL.RawQuery
 		c.Next()
 		cost := time.Since(start)
-		//str := strings(path + string(zap.Int("status", c.Writer.Status()))
-		global.App.Log.Info(path,
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			zap.Duration("cost", cost),
-		)
+		str := fmt.Sprintf(" %v    status: %v, method: %v , query: %v, "+
+			"IP: %v, Remote-IP: %v, USER-AGENT: %v, errors: %v, cost: %v ",
+			path, c.Writer.Status(), c.Request.Method, query,
+			c.ClientIP(), c.RemoteIP(), c.Request.UserAgent(), c.Errors.ByType(gin.ErrorTypePrivate).String(),
+			cost)
+		global.App.Log.Info(str)
 	}
 }
 func GinRecovery(stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				// Check for a broken connection, as it is not really a
-				// condition that warrants a panic stack trace.
 				var brokenPipe bool
 				if ne, ok := err.(*net.OpError); ok {
 					if se, ok := ne.Err.(*os.SyscallError); ok {
@@ -47,7 +41,6 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 						}
 					}
 				}
-
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
 					global.App.Log.Error(c.Request.URL.Path,
@@ -61,16 +54,11 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 
 				if stack {
-					global.App.Log.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())),
-					)
+					errStr := fmt.Sprintf("[Recovery from panic]  error: %v \n %v ", err, string(debug.Stack()))
+					global.App.Log.Error(errStr)
 				} else {
-					global.App.Log.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-					)
+					errStr := fmt.Sprintf("[Recovery from panic]  error: %v ", err)
+					global.App.Log.Error(errStr)
 				}
 				c.AbortWithStatus(http.StatusInternalServerError)
 			}

@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	defaultConfigFile = "E:/lbemi/config.yaml"
+	defaultConfigFile = "../../config.yaml"
 )
 
 func InitializeConfig() *viper.Viper {
 	config := defaultConfigFile
-	if configEnv := os.Getenv("VIPER_CONFIG"); configEnv != "" {
+	if configEnv := os.Getenv("CONFIG"); configEnv != "" {
 		config = configEnv
 	}
 	v := viper.New()

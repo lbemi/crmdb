@@ -1,14 +1,14 @@
 package configs
 
 type Log struct {
-	Level     string `yaml:"level"`
-	RootDir   string `yaml:"root_dir"`
-	FileName  string `yaml:"file_name"`
-	Format    string `yaml:"format"`
-	ShowLine  bool   `yaml:"show_line"`
-	MaxBackup int    `yaml:"max_backup"`
-	MaxSize   int    `yaml:"max_size"`
-	MaxAge    int    `yaml:"max_age"`
-	Compress  bool   `yaml:"compress"`
-	IsFile    bool   `yaml:"is_file"`
+	Level     string `mapstructure:"level"`
+	RootDir   string `mapstructure:"root_dir"`
+	FileName  string `mapstructure:"file_name"`
+	Format    string `mapstructure:"format"`
+	ShowLine  bool   `mapstructure:"show_line"`
+	MaxBackup int    `mapstructure:"max_backup"`
+	MaxSize   int    `mapstructure:"max_size"`
+	MaxAge    int    `mapstructure:"max_age" `
+	Compress  bool   `mapstructure:"compress"`
+	IsFile    bool   `mapstructure:"is_file"`
 }

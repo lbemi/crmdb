@@ -6,11 +6,12 @@ app:
   app_url: http://localhost
 log:
   level: info
-  root_dir: .
-  is_file: false
+  root_dir: ./log
+  is_file: false        #是否写入文件
   file_name: app.log
-  format:
-  show_line: true
-  max_backup: 500
-  max_age: 10
-  compress: true
+  format:          # 格式化： json
+  show_line: true      # 是否显示打印行
+  max_backup: 10       # 最大备份文件个数
+  max_size: 10          # 最大备份文件大小(M)
+  max_age: 10           # 文件最大保留天数
+  compress: true        # 是否压缩文件

@@ -13,11 +13,18 @@ func Run() {
 	global.App.Log.Info("log init success!")
 	global.App.Log.Info("监听端口：" + global.App.Config.App.Port)
 	r := gin.New()
-	r.Use(middleware.GinLogger(), middleware.GinRecovery(true))
+	r.Use(middleware.GinLogger(), middleware.GinRecovery(false))
 	r.GET("/ping", func(c *gin.Context) {
+		//c.JSON(200, gin.H{
+		//	"message": "pong",
+		//})
+		panic("asdasds")
+	})
+	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "pong",
+			"status": "health",
 		})
+		global.App.Log.Info("health*****asdaksjdlaksjdklfs")
 	})
 	r.Run(":" + global.App.Config.App.Port)
 
