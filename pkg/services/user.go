@@ -7,10 +7,16 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/util"
+	"strconv"
 )
 
-//type userService struct {
-//}
+func Login(params form.UserLoginForm) (user *sys.User, err error) {
+	err = global.App.DB.Where("user_name = ?", params.UserName).First(&user).Error
+	if err != nil || !util.BcryptMakeCheck([]byte(params.Password), user.Password) {
+		err = errors.New("用户不存在或密码错误")
+	}
+	return
+}
 
 func Register(params form.RegisterUserForm) (err error, user sys.User) {
 	rs := global.App.DB.Where("user_name = ?", params.UserName).First(&sys.User{})
@@ -32,10 +38,11 @@ func Register(params form.RegisterUserForm) (err error, user sys.User) {
 	return nil, user
 }
 
-func Login(params form.UserLoginForm) (user *sys.User, err error) {
-	err = global.App.DB.Where("user_name = ?", params.UserName).First(&user).Error
-	if err != nil || !util.BcryptMakeCheck([]byte(params.Password), user.Password) {
-		err = errors.New("用户不存在或密码错误")
+func GetUserInfo(id string) (err error, user sys.User) {
+	intId, err := strconv.Atoi(id)
+	err = global.App.DB.First(&user, intId).Error
+	if err != nil {
+		err = errors.New("数据不存在")
 	}
 	return
 }

@@ -21,6 +21,7 @@ func setupRouter() *gin.Engine {
 	routes.DefaultRoutes(defaultRouter)
 
 	apiGroup := router.Group("/api", middleware.Test())
+	apiGroup.Use(middleware.JWTAuth())
 	routes.SetApiGroupRoutes(apiGroup)
 
 	return router

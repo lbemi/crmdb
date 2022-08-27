@@ -30,3 +30,6 @@ database:
   enable_file_log_write: true
   log_filename: sql.log
   is_initialize: false  # 是否初始化数据库表
+jwt:
+  key: 3Bde3BGEbYqtqyEUzW3ry8jKFcaPH17fRmTmqE7MDr05Lwj95uruRKrrkb44TJ4s
+  ttl: 30 #过期时间 :天

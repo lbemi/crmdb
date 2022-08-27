@@ -4,16 +4,21 @@ Content-Type: application/json
 
 {
   "user_name": "admin",
-  "password": "admina",
+  "password": "admin",
   "mobile": "13338120030"
 }
+###
+GET http://127.0.0.1:8080/api/user/ping
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q
+
 
 ####
 POST  http://127.0.0.1:8080/register
 Content-Type: application/json
 
 {
-  "user_name": "admin",
+  "user_name": "test",
   "password": "admin",
   "mobile": "13338120030",
   "email": "81576870@qq.com"

@@ -14,7 +14,7 @@ type Response struct {
 func Success(c *gin.Context, code int, message interface{}, data interface{}) {
 	c.JSON(http.StatusOK, Response{
 		code,
-		nil,
+		data,
 		message,
 	})
 }

@@ -3,6 +3,7 @@ package sys
 import (
 	"github.com/lbemi/lbemi/pkg/model/basemodel"
 	"gorm.io/gorm"
+	"strconv"
 	"time"
 )
 
@@ -34,4 +35,7 @@ func (m *User) BeforeCreate(*gorm.DB) error {
 func (m *User) BeforeUpdate(*gorm.DB) error {
 	m.UpdatedAt = time.Now()
 	return nil
+}
+func (u User) GetUid() string {
+	return strconv.Itoa(int(u.ID))
 }
