@@ -1,0 +1,285 @@
+
+2022/08/26 16:13:30 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[14.623ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 16:13:30 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[54.555ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 16:13:30 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:63
+[28.127ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'menu' AND table_type = 'BASE TABLE'
+
+2022/08/26 16:13:30 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:63
+[129.570ms] [rows:0] CREATE TABLE `menu` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`status` tinyint(1) NOT NULL,`memo` varchar(64),`parent_id` bigint unsigned NOT NULL,`url` varchar(72),`name` varchar(32) NOT NULL,`sequence` bigint NOT NULL,`menu_type` tinyint(1) NOT NULL,`code` varchar(32) NOT NULL,`icon` varchar(32),`operate_type` varchar(32) NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 16:13:30 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[14.363ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 16:13:30 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[28.191ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 16:13:30 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:63
+[31.077ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'user' AND table_type = 'BASE TABLE'
+
+2022/08/26 16:13:30 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:63
+[87.530ms] [rows:0] CREATE TABLE `user` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`memo` varchar(64),`user_name` varchar(32) NOT NULL,`real_name` varchar(32),`password` char(32) NOT NULL,`email` varchar(64),`phone` char(20),`status` tinyint(1) NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 16:13:30 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[14.685ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 16:13:30 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[30.491ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 16:13:30 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:63
+[26.551ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'role' AND table_type = 'BASE TABLE'
+
+2022/08/26 16:13:30 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:63
+[69.067ms] [rows:0] CREATE TABLE `role` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`memo` varchar(64),`name` varchar(32) NOT NULL,`sequence` bigint NOT NULL,`parent_id` bigint unsigned NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 16:13:30 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[13.009ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 16:13:30 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[27.309ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 16:13:30 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:63
+[26.049ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'role_menu' AND table_type = 'BASE TABLE'
+
+2022/08/26 16:13:31 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:63 SLOW SQL >= 200ms
+[284.013ms] [rows:0] CREATE TABLE `role_menu` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`role_id` bigint unsigned NOT NULL,`menu_id` bigint unsigned NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 16:13:31 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[13.204ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 16:13:31 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[29.633ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 16:13:31 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:63
+[29.299ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'user_role' AND table_type = 'BASE TABLE'
+
+2022/08/26 16:13:31 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:63
+[59.877ms] [rows:0] CREATE TABLE `user_role` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`admins_id` bigint unsigned NOT NULL,`role_id` bigint unsigned NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 16:29:47 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[13.189ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 16:29:47 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[25.715ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 16:29:47 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[29.331ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'menu' AND table_type = 'BASE TABLE'
+
+2022/08/26 16:29:47 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[90.224ms] [rows:0] CREATE TABLE `menu` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`status` tinyint(1) NOT NULL,`memo` varchar(64),`parent_id` bigint unsigned NOT NULL,`url` varchar(72),`name` varchar(32) NOT NULL,`sequence` bigint NOT NULL,`menu_type` tinyint(1) NOT NULL,`code` varchar(32) NOT NULL,`icon` varchar(32),`operate_type` varchar(32) NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 16:29:47 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[13.310ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 16:29:47 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[24.000ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 16:29:47 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[26.478ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'user' AND table_type = 'BASE TABLE'
+
+2022/08/26 16:29:47 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[66.481ms] [rows:0] CREATE TABLE `user` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`memo` varchar(64),`user_name` varchar(32) NOT NULL,`real_name` varchar(32),`password` char(32) NOT NULL,`email` varchar(64),`phone` char(20),`status` tinyint(1) NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 16:29:47 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[13.434ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 16:29:47 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[27.282ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 16:29:47 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[28.620ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'role' AND table_type = 'BASE TABLE'
+
+2022/08/26 16:29:48 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[111.353ms] [rows:0] CREATE TABLE `role` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`memo` varchar(64),`name` varchar(32) NOT NULL,`sequence` bigint NOT NULL,`parent_id` bigint unsigned NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 16:29:48 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[14.275ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 16:29:48 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[31.233ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 16:29:48 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[27.868ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'role_menu' AND table_type = 'BASE TABLE'
+
+2022/08/26 16:29:48 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[77.804ms] [rows:0] CREATE TABLE `role_menu` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`role_id` bigint unsigned NOT NULL,`menu_id` bigint unsigned NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 16:29:48 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[13.730ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 16:29:48 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[27.991ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 16:29:48 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[28.471ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'user_role' AND table_type = 'BASE TABLE'
+
+2022/08/26 16:29:48 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[86.352ms] [rows:0] CREATE TABLE `user_role` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`user_id` bigint unsigned NOT NULL,`role_id` bigint unsigned NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 17:20:08 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[15.607ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 17:20:08 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[39.292ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 17:20:08 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[30.833ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'menu' AND table_type = 'BASE TABLE'
+
+2022/08/26 17:20:08 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[64.626ms] [rows:0] CREATE TABLE `menu` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`status` tinyint(1) NOT NULL,`memo` varchar(64),`parent_id` bigint unsigned NOT NULL,`url` varchar(72),`name` varchar(32) NOT NULL,`sequence` bigint NOT NULL,`menu_type` tinyint(1) NOT NULL,`code` varchar(32) NOT NULL,`icon` varchar(32),`operate_type` varchar(32) NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 17:20:08 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[14.852ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 17:20:09 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253 SLOW SQL >= 200ms
+[241.730ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 17:20:09 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[29.331ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'user' AND table_type = 'BASE TABLE'
+
+2022/08/26 17:20:09 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[74.518ms] [rows:0] CREATE TABLE `user` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`memo` varchar(64),`user_name` varchar(32) NOT NULL,`real_name` varchar(32),`password` char(32) NOT NULL,`email` varchar(64),`phone` char(20),`status` tinyint(1) NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 17:20:09 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[15.198ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 17:20:09 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[29.764ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 17:20:09 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[30.108ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'role' AND table_type = 'BASE TABLE'
+
+2022/08/26 17:20:09 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[63.277ms] [rows:0] CREATE TABLE `role` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`memo` varchar(64),`name` varchar(32) NOT NULL,`sequence` bigint NOT NULL,`parent_id` bigint unsigned NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 17:20:09 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[14.156ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 17:20:09 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[115.482ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 17:20:09 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[40.816ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'role_menu' AND table_type = 'BASE TABLE'
+
+2022/08/26 17:20:09 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[61.191ms] [rows:0] CREATE TABLE `role_menu` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`role_id` bigint unsigned NOT NULL,`menu_id` bigint unsigned NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 17:20:09 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[14.555ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 17:20:09 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[52.005ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 17:20:09 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[28.615ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'user_role' AND table_type = 'BASE TABLE'
+
+2022/08/26 17:20:09 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:69
+[159.204ms] [rows:0] CREATE TABLE `user_role` (`id` bigint unsigned AUTO_INCREMENT,`created_at` datetime NOT NULL,`updated_at` datetime NOT NULL,`created_by` bigint unsigned NOT NULL DEFAULT 0,`updated_by` bigint unsigned NOT NULL DEFAULT 0,`user_id` bigint unsigned NOT NULL,`role_id` bigint unsigned NOT NULL,PRIMARY KEY (`id`))
+
+2022/08/26 18:05:10 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[16.192ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 18:05:10 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[37.360ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 18:05:10 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:68
+[37.084ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'menu' AND table_type = 'BASE TABLE'
+
+2022/08/26 18:05:10 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[16.103ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 18:05:10 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[36.690ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 18:05:10 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[18.710ms] [rows:-] SELECT * FROM `menu` LIMIT 1
+
+2022/08/26 18:05:10 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[38.027ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'pixiu' AND table_name = 'menu' ORDER BY ORDINAL_POSITION
+
+2022/08/26 18:05:10 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[17.477ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 18:05:10 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[36.451ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 18:05:11 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:68
+[35.335ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'user' AND table_type = 'BASE TABLE'
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[16.971ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[36.118ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[18.631ms] [rows:-] SELECT * FROM `user` LIMIT 1
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[37.683ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'pixiu' AND table_name = 'user' ORDER BY ORDINAL_POSITION
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[17.749ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[36.460ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 18:05:11 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:68
+[34.606ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'role' AND table_type = 'BASE TABLE'
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[17.203ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[35.556ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[18.036ms] [rows:-] SELECT * FROM `role` LIMIT 1
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[37.997ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'pixiu' AND table_name = 'role' ORDER BY ORDINAL_POSITION
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[17.132ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[35.115ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 18:05:11 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:68
+[35.302ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'role_menu' AND table_type = 'BASE TABLE'
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[16.428ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[35.083ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[17.995ms] [rows:-] SELECT * FROM `role_menu` LIMIT 1
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[38.439ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'pixiu' AND table_name = 'role_menu' ORDER BY ORDINAL_POSITION
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[16.105ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[38.806ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 18:05:11 /Users/lei/tmp/lbemi/pkg/bootstrap/db.go:68
+[36.685ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'pixiu' AND table_name = 'user_role' AND table_type = 'BASE TABLE'
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[16.304ms] [rows:-] SELECT DATABASE()
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[36.557ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'pixiu%' ORDER BY SCHEMA_NAME='pixiu' DESC,SCHEMA_NAME limit 1
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[18.168ms] [rows:-] SELECT * FROM `user_role` LIMIT 1
+
+2022/08/26 18:05:11 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[37.322ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'pixiu' AND table_name = 'user_role' ORDER BY ORDINAL_POSITION

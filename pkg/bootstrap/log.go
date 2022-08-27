@@ -90,6 +90,10 @@ func getZapCore() zapcore.Core {
 		file := zapcore.NewCore(encoder, getLogWriter(), level)
 		allCore = append(allCore, file)
 	}
+	//if global.App.Config.Database.EnableFileLogWrite {
+	//	gorm := zapcore.NewCore(encoder, getGormLogWriter(), level)
+	//	allCore = append(allCore, gorm)
+	//}
 	core := zapcore.NewTee(allCore...)
 	return core
 }
