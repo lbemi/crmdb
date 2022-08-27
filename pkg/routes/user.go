@@ -8,4 +8,5 @@ import (
 func DefaultRoutes(router *gin.RouterGroup) {
 	router.POST("/login", app.Login)
 	router.GET("/logout", app.Logout)
+	router.POST("/register", app.Register)
 }

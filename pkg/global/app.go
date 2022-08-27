@@ -1,7 +1,7 @@
 package global
 
 import (
-	"github.com/lbemi/lbemi/configs"
+	"github.com/lbemi/lbemi/pkg/model/configs"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"gorm.io/gorm"

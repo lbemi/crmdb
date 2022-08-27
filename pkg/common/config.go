@@ -2,7 +2,7 @@ package common
 
 import (
 	"github.com/fsnotify/fsnotify"
-	"github.com/lbemi/lbemi/configs"
+	"github.com/lbemi/lbemi/pkg/model/configs"
 	"github.com/spf13/viper"
 )
 

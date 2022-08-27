@@ -2,8 +2,8 @@ package core
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/configs"
 	"github.com/lbemi/lbemi/pkg/common"
+	"github.com/lbemi/lbemi/pkg/model/configs"
 )
 
 type CoreV1 interface {

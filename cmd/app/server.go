@@ -30,7 +30,7 @@ func Run() {
 	global.App.Log = bootstrap.InitializeLog()
 	global.App.Log.Info("log init success!")
 	global.App.Log.Info("监听端口：" + global.App.Config.App.Port)
-	bootstrap.InitializeDB()
+	global.App.DB = bootstrap.InitializeDB()
 	bootstrap.InitializeValidator()
 	defer func() {
 		if global.App.DB != nil {

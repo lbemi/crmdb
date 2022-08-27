@@ -4,6 +4,17 @@ Content-Type: application/json
 
 {
   "user_name": "admin",
-  "password": "123",
+  "password": "admina",
   "mobile": "13338120030"
+}
+
+####
+POST  http://127.0.0.1:8080/register
+Content-Type: application/json
+
+{
+  "user_name": "admin",
+  "password": "admin",
+  "mobile": "13338120030",
+  "email": "81576870@qq.com"
 }

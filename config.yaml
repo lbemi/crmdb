@@ -29,4 +29,4 @@ database:
   log_mode: info
   enable_file_log_write: true
   log_filename: sql.log
-  is_initialize: true  # 是否初始化数据库表
+  is_initialize: false  # 是否初始化数据库表
