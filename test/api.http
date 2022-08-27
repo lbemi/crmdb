@@ -1,2 +1,9 @@
-// health 健康检查
-GET http://127.0.0.1:8080/health
+### Send POST request with json body
+POST http://127.0.0.1:8080/login
+Content-Type: application/json
+
+{
+  "user_name": "admin",
+  "password": "123",
+  "mobile": "13338120030"
+}

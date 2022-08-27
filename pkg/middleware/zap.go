@@ -14,6 +14,16 @@ import (
 	"time"
 )
 
+func Test() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//start := time.Now()
+		//path := c.Request.URL.Path
+		//query := c.Request.URL.RawQuery
+		global.App.Log.Info("test---middleware")
+		c.Next()
+
+	}
+}
 func GinLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
