@@ -34,10 +34,13 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "登录"
+                ],
                 "summary": "用户登录",
                 "parameters": [
                     {
-                        "description": "请示参数data",
+                        "description": "Form表单",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -56,7 +59,19 @@ const docTemplate = `{
                     "2005": {
                         "description": "请求错误",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/util.TokenOutPut"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
@@ -109,6 +124,14 @@ const docTemplate = `{
                 },
                 "data": {},
                 "message": {}
+            }
+        },
+        "util.TokenOutPut": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
             }
         }
     }

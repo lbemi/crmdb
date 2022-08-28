@@ -55,30 +55,30 @@ func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err erro
 }
 
 //ParseToken 解析token
-func ParseToken(tokenStr string) (*CustomClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+func ParseToken(tokenStr string) (token *jwt.Token, claims *CustomClaims, err error) {
+	token, err = jwt.ParseWithClaims(tokenStr, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(global.App.Config.Jwt.Key), nil
 	})
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				return nil, TokenMalformed
+				return token, nil, TokenMalformed
 			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				return nil, TokenExpired
+				return token, nil, TokenExpired
 			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
-				return nil, TokenNotValidYet
+				return token, nil, TokenNotValidYet
 			} else {
-				return nil, TokenInvalid
+				return token, nil, TokenInvalid
 			}
 		}
 	}
 	if token != nil {
 		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-			return claims, nil
+			return token, claims, nil
 		}
-		return nil, TokenInvalid
+		return token, nil, TokenInvalid
 	} else {
-		return nil, TokenInvalid
+		return token, nil, TokenInvalid
 	}
 }
 
@@ -99,4 +99,22 @@ func RefreshToken(tokenStr string, user JwtUser) (tokenOut TokenOutPut, err erro
 		return CreateToken(AppGuardName, user)
 	}
 	return tokenOut, TokenInvalid
+}
+
+func getBlackListKey(tokenStr string) string {
+	return "jwt_black_list:" + MD5([]byte(tokenStr))
+}
+
+func JoinBlackList(token *jwt.Token) (err error) {
+	nowUnix := time.Now().Unix()
+	timer := time.Duration(token.Claims.(*CustomClaims).ExpiresAt-nowUnix) * time.Second
+	err = global.App.Redis.SetNX(getBlackListKey(token.Raw), nowUnix, timer).Err()
+	return
+}
+func IsInBlacklist(tokenStr string) bool {
+	joinUnixStr, err := global.App.Redis.Get(getBlackListKey(tokenStr)).Result()
+	if err != nil || joinUnixStr == "" {
+		return false
+	}
+	return true
 }

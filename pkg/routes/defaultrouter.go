@@ -10,7 +10,7 @@ import (
 
 func DefaultRoutes(router *gin.RouterGroup) {
 	router.POST("/login", app.Login)
-	router.GET("/logout", app.Logout)
+
 	router.GET("/captcha", app.GetCaptcha)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/global"
@@ -15,13 +16,15 @@ func JWTAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		claims, err := util.ParseToken(tokenStr)
-		if err != nil {
+		token, claims, err := util.ParseToken(tokenStr)
+		if err != nil || util.IsInBlacklist(tokenStr) {
 			global.App.Log.Error(err.Error())
 			response.Fail(c, 2004, err.Error())
 			c.Abort()
 			return
 		}
 		c.Set("id", claims.Id)
+		fmt.Println("++++++++++++", token)
+		c.Set("token", token)
 	}
 }

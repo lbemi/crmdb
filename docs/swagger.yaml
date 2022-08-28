@@ -30,6 +30,11 @@ definitions:
       data: {}
       message: {}
     type: object
+  util.TokenOutPut:
+    properties:
+      token:
+        type: string
+    type: object
 host: 127.0.0.1:8080
 info:
   contact:
@@ -50,7 +55,7 @@ paths:
       - application/json
       description: 用户登录
       parameters:
-      - description: 请示参数data
+      - description: Form表单
         in: body
         name: data
         required: true
@@ -70,6 +75,13 @@ paths:
         "2005":
           description: 请求错误
           schema:
-            $ref: '#/definitions/response.Response'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/util.TokenOutPut'
+              type: object
       summary: 用户登录
+      tags:
+      - 登录
 swagger: "2.0"

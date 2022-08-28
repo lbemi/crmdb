@@ -2,22 +2,24 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services"
 	"github.com/lbemi/lbemi/pkg/util"
 	"net/http"
+	"time"
 )
 
 // @Summary 用户登录
 // @Description 用户登录
+// @Tags 登录
 // @Accept json
 // @Produce  json
-// @Param data body form.UserLoginForm true "请示参数data"
-// @Success 200 {object} response.Response
-//"请求成功"
-// @Failure 2005 {object} response.Response "请求错误"
+// @Param data body form.UserLoginForm true "Form表单"
+// @Success 200 {object} response.Response{}  "请求成功"
+// @Failure 2005 {object} response.Response{data=util.TokenOutPut} "请求错误"
 // @Failure 500 {object} response.Response "内部错误"
 // @Router /login [post]
 func Login(c *gin.Context) {
@@ -28,10 +30,10 @@ func Login(c *gin.Context) {
 		return
 	}
 	//校验验证码
-	if !store.Verify(userForm.CaptchaId, userForm.Captcha, true) {
-		response.Fail(c, 2005, "验证码错误")
-		return
-	}
+	//if !store.Verify(userForm.CaptchaId, userForm.Captcha, true) {
+	//	response.Fail(c, 2005, "验证码错误")
+	//	return
+	//}
 
 	user, err := services.Login(userForm)
 	if err != nil {
@@ -43,10 +45,17 @@ func Login(c *gin.Context) {
 		response.Fail(c, 2002, err.Error())
 		return
 	}
+	global.App.Redis.Set("key", tokenStr.Token, time.Duration(time.Hour*30))
 	response.Success(c, http.StatusOK, "登录成功", tokenStr)
 }
+
 func Logout(c *gin.Context) {
-	c.String(http.StatusOK, "Logout")
+	err := util.JoinBlackList(c.Keys["token"].(*jwt.Token))
+	if err != nil {
+		response.Fail(c, 2005, err.Error())
+		return
+	}
+	response.Success(c, 200, "登出", nil)
 }
 
 func GetUserInfoById(c *gin.Context) {
