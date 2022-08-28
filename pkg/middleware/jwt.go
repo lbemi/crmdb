@@ -1,12 +1,10 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/global"
-	"github.com/lbemi/lbemi/pkg/services"
+	"github.com/lbemi/lbemi/pkg/util"
 )
 
 func JWTAuth() gin.HandlerFunc {
@@ -17,18 +15,13 @@ func JWTAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		fmt.Println(tokenStr)
-		token, err := jwt.ParseWithClaims(tokenStr, &services.CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte(global.App.Config.Jwt.Key), nil
-		})
+		claims, err := util.ParseToken(tokenStr)
 		if err != nil {
 			global.App.Log.Error(err.Error())
-			response.Fail(c, 2004, "解析token失败")
+			response.Fail(c, 2004, err.Error())
 			c.Abort()
 			return
 		}
-		claims := token.Claims.(*services.CustomClaims)
-		c.Set("token", token)
 		c.Set("id", claims.Id)
 	}
 }

@@ -5,4 +5,5 @@ type Config struct {
 	Log      `mapstructure:"log"`
 	Database `mapstructure:"database"`
 	Jwt      `mapstructure:"jwt"`
+	Redis    `mapstructure:"redis"`
 }

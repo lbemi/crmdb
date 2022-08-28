@@ -1,25 +1,35 @@
-### Send POST request with json body
+### 登录
 POST http://127.0.0.1:8080/login
 Content-Type: application/json
 
 {
   "user_name": "admin",
   "password": "admin",
-  "mobile": "13338120030"
+  "mobile": "13338120030",
+  "captcha": "94828",
+  "captcha_id": "FSDo9BUs4SRVekqoNFNg"
 }
-###
-GET http://127.0.0.1:8080/api/user/ping
-Content-Type: application/json
+### 获取验证码
+GET http://127.0.0.1:8080/captcha
+
+#### 注册
+POST  http://127.0.0.1:8080/api/v1beat/user/register
+Content-Type: multipart/form-data
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q
 
-
-####
-POST  http://127.0.0.1:8080/register
-Content-Type: application/json
-
 {
-  "user_name": "test",
+  "user_name": "hsha",
   "password": "admin",
   "mobile": "13338120030",
   "email": "81576870@qq.com"
 }
+
+###
+GET http://127.0.0.1:8080/api/v1beat/user/ping
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q
+
+###
+GET http://127.0.0.1:8080/api/v1beat/user/info
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q

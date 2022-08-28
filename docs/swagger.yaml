@@ -1,0 +1,75 @@
+basePath: /
+definitions:
+  form.UserLoginForm:
+    properties:
+      captcha:
+        maxLength: 5
+        minLength: 5
+        type: string
+      captcha_id:
+        type: string
+      mobile:
+        type: string
+      password:
+        maxLength: 20
+        minLength: 5
+        type: string
+      user_name:
+        description: 用户名
+        type: string
+    required:
+    - captcha
+    - captcha_id
+    - password
+    - user_name
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message: {}
+    type: object
+host: 127.0.0.1:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server Petstore server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: PIXIU API 文档
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录
+      parameters:
+      - description: 请示参数data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/form.UserLoginForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 请求成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "2005":
+          description: 请求错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 用户登录
+swagger: "2.0"

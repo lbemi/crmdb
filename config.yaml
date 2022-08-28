@@ -33,3 +33,8 @@ database:
 jwt:
   key: 3Bde3BGEbYqtqyEUzW3ry8jKFcaPH17fRmTmqE7MDr05Lwj95uruRKrrkb44TJ4s
   ttl: 30 #过期时间 :天
+
+Redis:
+  addr: 42.192.54.11
+  port: 6399
+  password: admin_1234

@@ -16,23 +16,28 @@ import (
 
 func setupRouter() *gin.Engine {
 	router := gin.New()
-	router.Use(middleware.GinLogger(), middleware.GinRecovery(true))
+	router.Use(middleware.GinLogger(),
+		middleware.GinRecovery(true),
+		middleware.Core())
 	defaultRouter := router.Group("/")
 	routes.DefaultRoutes(defaultRouter)
 
-	apiGroup := router.Group("/api", middleware.Test())
+	apiGroup := router.Group("/api/v1beat", middleware.Test())
 	apiGroup.Use(middleware.JWTAuth())
 	routes.SetApiGroupRoutes(apiGroup)
 
 	return router
 }
+
 func Run() {
 	bootstrap.InitializeConfig()
 	global.App.Log = bootstrap.InitializeLog()
 	global.App.Log.Info("log init success!")
 	global.App.Log.Info("监听端口：" + global.App.Config.App.Port)
 	global.App.DB = bootstrap.InitializeDB()
+	global.App.Redis = bootstrap.InitializeRedis()
 	bootstrap.InitializeValidator()
+
 	defer func() {
 		if global.App.DB != nil {
 			db, _ := global.App.DB.DB()

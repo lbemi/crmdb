@@ -16,7 +16,7 @@ func Register(c *gin.Context) {
 		response.Fail(c, 202, util.GetErrorMsg(registerForm, err))
 		return
 	}
-	if err, _ := services.Register(registerForm); err != nil {
+	if err, _ := services.Register(c, registerForm); err != nil {
 		response.Fail(c, 201, err.Error())
 		return
 	} else {
