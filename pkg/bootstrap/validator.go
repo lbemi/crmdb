@@ -11,6 +11,7 @@ import (
 func InitializeValidator() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		_ = v.RegisterValidation("mobile", util.ValidateMobile)
+		_ = v.RegisterValidation("email", util.ValidateEmail)
 		v.RegisterTagNameFunc(func(field reflect.StructField) string {
 			name := strings.SplitN(field.Tag.Get("json"), ",", 2)[0]
 			if name == "-" {

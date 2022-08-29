@@ -18,14 +18,14 @@ GET http://127.0.0.1:8080/captcha
 
 ### 注册
 POST  http://127.0.0.1:8080/api/v1beat/user/register
-Content-Type: multipart/form-data
+Content-Type: application/json
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q
 
 {
-  "user_name": "hsha",
+  "user_name": "admin2",
   "password": "admin",
   "mobile": "13338120030",
-  "email": "81576870@qq.com"
+  "email": "admin@admin.com"
 }
 
 ###

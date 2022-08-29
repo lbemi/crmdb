@@ -34,3 +34,12 @@ func ValidateMobile(fl validator.FieldLevel) bool {
 	}
 	return false
 }
+
+func ValidateEmail(fl validator.FieldLevel) bool {
+	email := fl.Field().String()
+	ok, _ := regexp.MatchString(`^(\w+([-.][A-Za-z0-9]+)*){3,18}@\w+([-.][A-Za-z0-9]+)*\.\w+([-.][A-Za-z0-9]+)*$`, email)
+	if ok {
+		return true
+	}
+	return false
+}
