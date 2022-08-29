@@ -3,7 +3,7 @@ POST http://127.0.0.1:8080/login
 Content-Type: application/json
 
 {
-  "user_name": "admin",
+  "user_name": "test",
   "password": "admin",
   "mobile": "13338120030",
   "captcha": "14722",
@@ -11,6 +11,7 @@ Content-Type: application/json
 }
 ### 登出
 GET http://127.0.0.1:8080/api/v1beat/user/logout
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q
 
 ### 获取验证码
 GET http://127.0.0.1:8080/captcha

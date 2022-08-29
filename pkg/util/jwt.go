@@ -114,7 +114,9 @@ func JoinBlackList(token *jwt.Token) (err error) {
 func IsInBlacklist(tokenStr string) bool {
 	joinUnixStr, err := global.App.Redis.Get(getBlackListKey(tokenStr)).Result()
 	if err != nil || joinUnixStr == "" {
+
 		return false
 	}
+
 	return true
 }
