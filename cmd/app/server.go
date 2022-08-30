@@ -23,7 +23,7 @@ func setupRouter() *gin.Engine {
 	routes.DefaultRoutes(defaultRouter)
 
 	apiGroup := router.Group("/api/v1beat", middleware.Test())
-	apiGroup.Use(middleware.JWTAuth())
+	apiGroup.Use(middleware.JWTAuth(), middleware.CasbinMiddleware())
 	routes.SetApiGroupRoutes(apiGroup)
 
 	return router

@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"fmt"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
@@ -9,6 +10,7 @@ import (
 )
 
 func InitCasbinEnforcer() *casbin.Enforcer {
+	fmt.Println("///////////")
 	rbacRules :=
 		`
 [request_definition]
@@ -21,13 +23,30 @@ p = sub, obj, act
 e = some(where (p.eft == allow))
 
 [matchers]
-m = r.sub == p.sub && keyMatch(r.obj, p.obj) && regexMatch(r.act, p.act)
+m = r.sub == p.sub && keyMatch2(r.obj, p.obj) && regexMatch(r.act, p.act)
 `
-	m, _ := model.NewModelFromString(rbacRules)
-	adapter, _ := gormadapter.NewAdapterByDBWithCustomTable(global.App.DB, &cas.CasbinModel{})
-
-	enforcer, _ := casbin.NewEnforcer(m, adapter)
-	_ = enforcer.LoadPolicy()
-	enforcer.SavePolicy()
+	m, err := model.NewModelFromString(rbacRules)
+	if err != nil {
+		global.App.Log.Error(err.Error())
+		return nil
+	}
+	adapter, err := gormadapter.NewAdapterByDBWithCustomTable(global.App.DB, &cas.CasbinModel{})
+	if err != nil {
+		global.App.Log.Error(err.Error())
+		return nil
+	}
+	enforcer, err := casbin.NewEnforcer(m, adapter)
+	if err != nil {
+		global.App.Log.Error(err.Error())
+		return nil
+	}
+	fmt.Println("******************")
+	err = enforcer.LoadPolicy()
+	if err != nil {
+		global.App.Log.Error(err.Error())
+		return nil
+	}
+	//enforcer.SavePolicy()
+	fmt.Println("初始化。。。。Casbin")
 	return enforcer
 }

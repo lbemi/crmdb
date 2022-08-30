@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/global"
+	"github.com/lbemi/lbemi/pkg/model/sys"
 )
 
 func CasbinMiddleware() gin.HandlerFunc {
@@ -16,14 +17,23 @@ func CasbinMiddleware() gin.HandlerFunc {
 			response.Fail(c, response.InvalidToken)
 			return
 		}
-		fmt.Println("********", uid)
-		if uid == 1 {
-			c.Next()
+		role := sys.Role{}
+		err := role.GetRoleByUId(uid.(string))
+		if err != nil {
+			global.App.Log.Error(err.Error())
+			response.Fail(c, response.StatusInternalServerError)
+			c.Abort()
 			return
 		}
+		//if uid == "1" {
+		//	c.Next()
+		//	return
+		//}
 		p := c.Request.URL.Path
 		m := c.Request.Method
-		ok, err := global.App.Enforcer.Enforce(uid, p, m)
+		fmt.Printf("------------url: %v, method: %v, Role: %v \n", p, m, role.Name)
+		//ok, err := global.App.Enforcer.Enforce(role.Name, p, m)
+		ok, err := global.App.Enforcer.Enforce("admin", "/api/v1beat/user/info", "GET")
 		if err != nil {
 			global.App.Log.Fatal(err.Error())
 			response.Fail(c, response.StatusInternalServerError)

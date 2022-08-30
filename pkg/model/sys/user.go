@@ -24,15 +24,15 @@ func (User) TableName() string {
 }
 
 // BeforeCreate 添加前
-func (m *User) BeforeCreate(*gorm.DB) error {
-	m.CreatedAt = time.Now()
-	m.UpdatedAt = time.Now()
+func (u *User) BeforeCreate(*gorm.DB) error {
+	u.CreatedAt = time.Now()
+	u.UpdatedAt = time.Now()
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (m *User) BeforeUpdate(*gorm.DB) error {
-	m.UpdatedAt = time.Now()
+func (u *User) BeforeUpdate(*gorm.DB) error {
+	u.UpdatedAt = time.Now()
 	return nil
 }
 func (u User) GetUid() string {

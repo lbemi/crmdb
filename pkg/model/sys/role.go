@@ -1,6 +1,7 @@
 package sys
 
 import (
+	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/model/basemodel"
 	"time"
 
@@ -22,14 +23,21 @@ func (Role) TableName() string {
 }
 
 // BeforeCreate 添加前
-func (m *Role) BeforeCreate(scope *gorm.DB) error {
-	m.CreatedAt = time.Now()
-	m.UpdatedAt = time.Now()
+func (r *Role) BeforeCreate(scope *gorm.DB) error {
+	r.CreatedAt = time.Now()
+	r.UpdatedAt = time.Now()
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (m *Role) BeforeUpdate(scope *gorm.DB) error {
-	m.UpdatedAt = time.Now()
+func (r *Role) BeforeUpdate(scope *gorm.DB) error {
+	r.UpdatedAt = time.Now()
 	return nil
+}
+
+func (r *Role) GetRoleByUId(uid string) (err error) {
+	if err = global.App.DB.Where("id = ?", uid).First(r).Error; err != nil {
+		return
+	}
+	return
 }
