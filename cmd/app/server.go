@@ -37,6 +37,7 @@ func Run() {
 	global.App.DB = bootstrap.InitializeDB()
 	global.App.Redis = bootstrap.InitializeRedis()
 	bootstrap.InitializeValidator()
+	global.App.Enforcer = bootstrap.InitCasbinEnforcer()
 
 	defer func() {
 		if global.App.DB != nil {

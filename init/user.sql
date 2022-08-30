@@ -107,12 +107,12 @@ INSERT INTO `p_menu_btn` VALUES ('20018', '16', '添加', 'add');
 -- ----------------------------
 DROP TABLE IF EXISTS `p_role`;
 CREATE TABLE `p_role` (
-                          `id` int(11) NOT NULL AUTO_INCREMENT,
-                          `role_name` varchar(32) NOT NULL COMMENT '角色名称',
-                          `remark` varchar(32) DEFAULT NULL COMMENT '描述',
-                          `create_time` bigint(20) NOT NULL COMMENT '创建时间',
-                          `status` int(2) NOT NULL COMMENT '状态（1-启用 2-禁用）',
-                          PRIMARY KEY (`id`)
+`id` int(11) NOT NULL AUTO_INCREMENT,
+`role_name` varchar(32) NOT NULL COMMENT '角色名称',
+`remark` varchar(32) DEFAULT NULL COMMENT '描述',
+`create_time` bigint(20) NOT NULL COMMENT '创建时间',
+`status` int(2) NOT NULL COMMENT '状态（1-启用 2-禁用）',
+PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -127,11 +127,11 @@ INSERT INTO `p_role` VALUES ('10', '渠道管理员', '渠道管理员', '157302
 -- ----------------------------
 DROP TABLE IF EXISTS `p_role_menu_btn`;
 CREATE TABLE `p_role_menu_btn` (
-                                   `id` int(11) NOT NULL AUTO_INCREMENT,
-                                   `role_id` int(11) NOT NULL,
-                                   `type` int(255) DEFAULT NULL COMMENT '类型（1-menu 2-button）',
-                                   `ref_id` int(11) DEFAULT NULL COMMENT '关联id（1-menuid 2-btnid）',
-                                   PRIMARY KEY (`id`)
+`id` int(11) NOT NULL AUTO_INCREMENT,
+`role_id` int(11) NOT NULL,
+`type` int(255) DEFAULT NULL COMMENT '类型（1-menu 2-button）',
+`ref_id` int(11) DEFAULT NULL COMMENT '关联id（1-menuid 2-btnid）',
+PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=38531 DEFAULT CHARSET=utf8;
 
 -- ----------------------------

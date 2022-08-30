@@ -1,6 +1,7 @@
 package global
 
 import (
+	"github.com/casbin/casbin/v2"
 	"github.com/go-redis/redis"
 	"github.com/lbemi/lbemi/pkg/model/configs"
 	"github.com/spf13/viper"
@@ -14,6 +15,7 @@ type Application struct {
 	Log         *zap.Logger
 	DB          *gorm.DB
 	Redis       *redis.Client
+	Enforcer    *casbin.Enforcer
 }
 
 var App = new(Application)

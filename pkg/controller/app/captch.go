@@ -21,12 +21,12 @@ func GetCaptcha(c *gin.Context) {
 	id, b64s, err := cp.Generate()
 	if err != nil {
 		global.App.Log.Error("生成验证码错误", zap.Error(err))
-		response.Fail(c, 500, "生成验证码错误")
+		response.Fail(c, response.StatusInternalServerError)
 		return
 	}
 	var cap CaptchaInfo
 	cap.CaptchaID = id
 	cap.PicPath = b64s
 	c.Set("captcha_id", id)
-	response.Success(c, 200, "获取验证码成功", cap)
+	response.Success(c, response.StatusOK, cap)
 }

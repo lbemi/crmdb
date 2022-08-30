@@ -22,8 +22,8 @@ Content-Type: application/json
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q
 
 {
-  "user_name": "admin2",
-  "password": "admin",
+  "user_name": "alen",
+  "password": "123456",
   "mobile": "13338120030",
   "email": "admin@admin.com"
 }
