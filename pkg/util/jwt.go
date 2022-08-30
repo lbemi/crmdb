@@ -48,7 +48,7 @@ func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err erro
 	tokenStr, err := token.SignedString([]byte(global.App.Config.Jwt.Key))
 	if err != nil {
 		global.App.Log.Error(err.Error())
-		err = errors.New("生成token失败")
+
 	}
 	tokenOut.Token = tokenStr
 	return

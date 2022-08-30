@@ -12,13 +12,13 @@ func JWTAuth() gin.HandlerFunc {
 		tokenStr := c.Request.Header.Get("Authorization")
 		fmt.Println("Authorization", tokenStr)
 		if tokenStr == "" {
-			response.Fail(c, 2003, "登录过期")
+			response.Fail(c, response.ErrCodeNotLogin)
 			c.Abort()
 			return
 		}
 		token, claims, err := util.ParseToken(tokenStr)
 		if err != nil || util.IsInBlacklist(tokenStr) {
-			response.Fail(c, 2004, "token已失效")
+			response.Fail(c, response.InvalidToken)
 			c.Abort()
 			return
 		}

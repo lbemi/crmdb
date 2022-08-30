@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/lbemi/lbemi/pkg/common/response"
@@ -8,7 +9,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services"
 	"github.com/lbemi/lbemi/pkg/util"
-	"net/http"
 	"time"
 )
 
@@ -27,7 +27,8 @@ func Login(c *gin.Context) {
 	userForm := form.UserLoginForm{}
 	if err := c.ShouldBind(&userForm); err != nil {
 		global.App.Log.Error(err.Error())
-		response.Fail(c, 201, util.GetErrorMsg(userForm, err))
+		util.GetErrorMsg(userForm, err)
+		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
 	//校验验证码
@@ -37,41 +38,59 @@ func Login(c *gin.Context) {
 	//}
 
 	user, err := services.Login(userForm)
+	fmt.Println("*****0", user)
+	if user.ID == 0 {
+		response.Fail(c, response.ErrCodeUserNotExist)
+		return
+	}
+	if user.Status != 1 {
+		response.Fail(c, response.ErrCodeUserForbidden)
+		return
+	}
+	if ok := util.BcryptMakeCheck([]byte(userForm.Password), user.Password); !ok {
+		response.Fail(c, response.ErrCodeUserOrPasswdWrong)
+		return
+	}
 	if err != nil {
-		response.Fail(c, 2001, err.Error())
+		global.App.Log.Error(err.Error())
+		response.Fail(c, response.ErrCodeUserOrPasswdWrong)
 		return
 	}
 	tokenStr, err := util.CreateToken(util.AppGuardName, user)
 	if err != nil {
-		response.Fail(c, 2002, err.Error())
+		global.App.Log.Error(err.Error())
+		response.Fail(c, response.StatusInternalServerError)
 		return
 	}
 	global.App.Redis.Set("key", tokenStr.Token, time.Duration(time.Hour*30))
-	response.Success(c, http.StatusOK, "登录成功", tokenStr)
+	response.Success(c, response.StatusOK, tokenStr)
 }
 
 func Logout(c *gin.Context) {
 	err := util.JoinBlackList(c.Keys["token"].(*jwt.Token))
 	if err != nil {
-		response.Fail(c, 2005, err.Error())
+		global.App.Log.Error(err.Error())
+		response.Fail(c, response.StatusInternalServerError)
 		return
 	}
-	response.Success(c, 200, "登出", nil)
+	response.Success(c, 200, nil)
 }
 
 func GetUserInfoById(c *gin.Context) {
 	err, user := services.GetUserInfoById(c.Keys["id"].(string))
 	if err != nil {
-		response.Fail(c, 2003, err.Error())
+		global.App.Log.Error(err.Error())
+		response.Fail(c, response.ErrCodeNotFount)
 		return
 	}
-	response.Success(c, 200, "", user)
+	response.Success(c, response.StatusOK, user)
 }
 func GetUserInfos(c *gin.Context) {
 	err, user := services.GetUserInfos(c.Keys["id"].(string))
 	if err != nil {
-		response.Fail(c, 2003, err.Error())
+		global.App.Log.Error(err.Error())
+		response.Fail(c, response.ErrCodeNotFount)
 		return
 	}
-	response.Success(c, 200, "", user)
+	response.Success(c, response.StatusOK, user)
 }

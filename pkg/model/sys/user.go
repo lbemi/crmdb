@@ -10,7 +10,6 @@ import (
 // User 用户表
 type User struct {
 	basemodel.Model
-	Memo     string `gorm:"column:memo;size:64;" json:"memo" form:"memo"`                                                   //备注
 	UserName string `gorm:"column:user_name;size:32;unique_index:uk_user_name;not null;" json:"user_name" form:"user_name"` // 用户名
 	RealName string `gorm:"column:real_name;size:32;" json:"real_name" form:"real_name"`                                    // 真实姓名
 	Password string `gorm:"column:password;type:char(128);not null;" json:"-" form:"password"`                              // 密码(sha1(md5(明文))加密)
