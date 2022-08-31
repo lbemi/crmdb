@@ -35,9 +35,9 @@ func Run() {
 	global.App.Log.Info("log init success!")
 	global.App.Log.Info("监听端口：" + global.App.Config.App.Port)
 	global.App.DB = bootstrap.InitializeDB()
+	global.App.Enforcer = bootstrap.InitCasbinEnforcer()
 	global.App.Redis = bootstrap.InitializeRedis()
 	bootstrap.InitializeValidator()
-	global.App.Enforcer = bootstrap.InitCasbinEnforcer()
 
 	defer func() {
 		if global.App.DB != nil {

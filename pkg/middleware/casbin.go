@@ -31,9 +31,9 @@ func CasbinMiddleware() gin.HandlerFunc {
 		//}
 		p := c.Request.URL.Path
 		m := c.Request.Method
-		fmt.Printf("------------url: %v, method: %v, Role: %v \n", p, m, role.Name)
+		fmt.Printf("------------url: %v, method: %v, UID: %v,  Role: %v \n", p, m, uid, role.Name)
 		//ok, err := global.App.Enforcer.Enforce(role.Name, p, m)
-		ok, err := global.App.Enforcer.Enforce("admin", "/api/v1beat/user/info", "GET")
+		ok, err := global.App.Enforcer.Enforce(uid, p, m)
 		if err != nil {
 			global.App.Log.Fatal(err.Error())
 			response.Fail(c, response.StatusInternalServerError)
