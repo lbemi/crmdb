@@ -34,9 +34,9 @@ func GetQueryToUintE(c *gin.Context, key string) (uint, error) {
 	if err != nil {
 		return 0, err
 	}
-	intNum,_ := strconv.Atoi(str)
-	strconv.FormatUint(intNum, 10)
-	return , nil
+	intNum, _ := strconv.ParseUint(str, 10, 32)
+
+	return intNum, nil
 }
 
 // QueryToUint

@@ -18,4 +18,6 @@ func main() {
 	fmt.Println(new(models.Book).
 		Builder(101, "hahahh").
 		SetPrice(20).Build())
+
+	fmt.Println(models.NewHttpClient(models.WithTimeOut(10), models.WithMaxIdle(22)))
 }
