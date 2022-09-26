@@ -1,0 +1,132 @@
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[17.519ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[34.599ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:49 /Users/lei/tmp/lbemi/server/pkg/bootstrap/db.go:69
+[35.472ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'lbemi' AND table_name = 'menus' AND table_type = 'BASE TABLE'
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[14.882ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[35.630ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[16.248ms] [rows:-] SELECT * FROM `menus` LIMIT 1
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[38.793ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'lbemi' AND table_name = 'menus' ORDER BY ORDINAL_POSITION
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[15.476ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[35.057ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:49 /Users/lei/tmp/lbemi/server/pkg/bootstrap/db.go:69
+[33.827ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'lbemi' AND table_name = 'users' AND table_type = 'BASE TABLE'
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[18.042ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[34.959ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[18.257ms] [rows:-] SELECT * FROM `users` LIMIT 1
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[38.133ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'lbemi' AND table_name = 'users' ORDER BY ORDINAL_POSITION
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[19.941ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[44.501ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:49 /Users/lei/tmp/lbemi/server/pkg/bootstrap/db.go:69
+[35.863ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'lbemi' AND table_name = 'roles' AND table_type = 'BASE TABLE'
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[16.048ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[36.102ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[17.268ms] [rows:-] SELECT * FROM `roles` LIMIT 1
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[36.616ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'lbemi' AND table_name = 'roles' ORDER BY ORDINAL_POSITION
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[19.227ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[34.484ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:49 /Users/lei/tmp/lbemi/server/pkg/bootstrap/db.go:69
+[43.606ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'lbemi' AND table_name = 'role_menus' AND table_type = 'BASE TABLE'
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[22.256ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[56.799ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[18.310ms] [rows:-] SELECT * FROM `role_menus` LIMIT 1
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[38.259ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'lbemi' AND table_name = 'role_menus' ORDER BY ORDINAL_POSITION
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[17.180ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:49 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[37.002ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:50 /Users/lei/tmp/lbemi/server/pkg/bootstrap/db.go:69
+[35.702ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'lbemi' AND table_name = 'user_roles' AND table_type = 'BASE TABLE'
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[55.182ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[41.288ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[20.531ms] [rows:-] SELECT * FROM `user_roles` LIMIT 1
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[37.494ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'lbemi' AND table_name = 'user_roles' ORDER BY ORDINAL_POSITION
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[40.375ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[41.564ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/github.com/casbin/gorm-adapter/v3@v3.10.0/adapter.go:392
+[46.714ms] [rows:-] SELECT count(*) FROM information_schema.tables WHERE table_schema = 'lbemi' AND table_name = 'casbin_rule' AND table_type = 'BASE TABLE'
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:250
+[15.911ms] [rows:-] SELECT DATABASE()
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:253
+[49.816ms] [rows:1] SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'lbemi%' ORDER BY SCHEMA_NAME='lbemi' DESC,SCHEMA_NAME limit 1
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:163
+[18.343ms] [rows:-] SELECT * FROM `casbin_rule` LIMIT 1
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/gorm.io/driver/mysql@v1.3.6/migrator.go:181
+[44.875ms] [rows:-] SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale FROM information_schema.columns WHERE table_schema = 'lbemi' AND table_name = 'casbin_rule' ORDER BY ORDINAL_POSITION
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/github.com/casbin/gorm-adapter/v3@v3.10.0/adapter.go:445
+[28.547ms] [rows:0] SELECT * FROM `casbin_rule` ORDER BY ID
+
+2022/09/26 16:48:50 /Users/lei/go/pkg/mod/github.com/casbin/gorm-adapter/v3@v3.10.0/adapter.go:445
+[17.193ms] [rows:0] SELECT * FROM `casbin_rule` ORDER BY ID
