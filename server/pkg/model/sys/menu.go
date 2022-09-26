@@ -1,15 +1,18 @@
 package sys
 
 import (
-	"github.com/lbemi/lbemi/pkg/model/basemodel"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
+
+	"github.com/lbemi/lbemi/pkg/model/basemodel"
+	"github.com/lbemi/lbemi/pkg/util"
 )
 
 // Menu 菜单
 type Menu struct {
 	basemodel.Model
-	Status   int8   `gorm:"column:status;type:tinyint(1);not null;comment:状态(1:启用 2:不启用)" json:"status" form:"status"`                               // 状态(1:启用 2:不启用)
+	Status   int8   `gorm:"column:status;type:tinyint(1);not null;default:1;comment:状态(1:启用 2:不启用)" json:"status" form:"status"`                     // 状态(1:启用 2:不启用)
 	Memo     string `gorm:"column:memo;size:128;comment:备注" json:"memo" form:"memo"`                                                                 // 备注
 	ParentID int64  `gorm:"column:parent_id;not null;comment:父级ID" json:"parent_id" form:"parent_id"`                                                // 父级ID
 	URL      string `gorm:"column:url;size:128;comment:菜单URL" json:"url,omitempty" form:"url"`                                                       // 菜单URL
@@ -28,6 +31,7 @@ func (m *Menu) TableName() string {
 
 // BeforeCreate 添加前
 func (m *Menu) BeforeCreate(*gorm.DB) error {
+	m.ID = util.GetSnowID()
 	m.CreatedAt = time.Now()
 	m.UpdatedAt = time.Now()
 	return nil

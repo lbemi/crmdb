@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/lbemi/lbemi/pkg/model/basemodel"
+	"github.com/lbemi/lbemi/pkg/util"
 )
 
 // RoleMenu 角色-菜单
@@ -23,6 +24,7 @@ func (r *RoleMenu) TableName() string {
 
 // BeforeCreate 添加前
 func (r *RoleMenu) BeforeCreate(*gorm.DB) error {
+	r.ID = util.GetSnowID()
 	r.CreatedAt = time.Now()
 	r.UpdatedAt = time.Now()
 	return nil

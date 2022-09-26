@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/lbemi/lbemi/pkg/model/basemodel"
+	"github.com/lbemi/lbemi/pkg/util"
 )
 
 type UserRole struct {
@@ -22,6 +23,7 @@ func (u *UserRole) TableName() string {
 
 // BeforeCreate 添加前
 func (u *UserRole) BeforeCreate(*gorm.DB) error {
+	u.ID = util.GetSnowID()
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
 	return nil

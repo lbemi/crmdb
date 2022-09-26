@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/lbemi/lbemi/pkg/model/basemodel"
+	"github.com/lbemi/lbemi/pkg/util"
 )
 
 // User 用户表
@@ -17,7 +18,7 @@ type User struct {
 	Password string `gorm:"column:password;type:char(128);not null;" json:"-" form:"password"`                              // 密码(sha1(md5(明文))加密)
 	Email    string `gorm:"column:email;size:64;" json:"email" form:"email"`                                                // 邮箱
 	Mobile   string `gorm:"column:mobile;type:char(20);" json:"mobile" form:"mobile"`                                       // 手机号
-	Status   uint8  `gorm:"column:status;type:tinyint(1);not null;" json:"status" form:"status"`                            // 状态(1:正常 2:未激活 3:暂停使用)
+	Status   uint8  `gorm:"column:status;default:1;type:tinyint(1);not null;" json:"status" form:"status"`                  // 状态(1:正常 2:未激活 3:暂停使用)
 }
 
 // TableName 自定义表名
@@ -27,6 +28,7 @@ func (u *User) TableName() string {
 
 // BeforeCreate 添加前
 func (u *User) BeforeCreate(*gorm.DB) error {
+	u.ID = util.GetSnowID()
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
 	return nil
