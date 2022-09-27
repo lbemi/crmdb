@@ -5,7 +5,8 @@ const (
 	StatusOK                  = 200
 	StatusInternalServerError = 500
 
-	ErrCodeSuccess = 2005
+	ErrCodeSuccess   = 2005
+	ErrOperateFailed = 2006 // 操作失败
 
 	ErrCodeUserExist  = 2001 //数据库错误码
 	ErrCodeServerBusy = 2002
@@ -30,8 +31,10 @@ const (
 // GetMessage 根据错误码返回错误信息
 func GetMessage(code int) (message string) {
 	switch code {
+	case ErrOperateFailed:
+		message = "操作失败"
 	case ErrCodeGenCaptchaFail:
-		message = ""
+		message = "验证码生成失败"
 	case ErrCodeRegisterFail:
 		message = "注册失败"
 	case ErrCodeNotFount:

@@ -40,6 +40,6 @@ func (u *User) BeforeUpdate(*gorm.DB) error {
 	return nil
 }
 
-func (u User) GetUid() string {
+func (u User) GetSnowID() string {
 	return strconv.Itoa(int(u.ID))
 }

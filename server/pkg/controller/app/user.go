@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +13,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/util"
 )
 
-//Login 用户登录
+// Login 用户登录
 // @Summary 用户登录
 // @Description 用户登录
 // @Tags 登录
@@ -29,8 +28,7 @@ func Login(c *gin.Context) {
 	userForm := form.UserLoginForm{}
 	if err := c.ShouldBind(&userForm); err != nil {
 		global.App.Log.Error(err.Error())
-		util.GetErrorMsg(userForm, err)
-		response.Fail(c, response.ErrCodeParameter)
+		response.FailWithMessage(c, response.ErrCodeParameter, util.GetErrorMsg(userForm, err))
 		return
 	}
 	//校验验证码
@@ -40,7 +38,6 @@ func Login(c *gin.Context) {
 	//}
 
 	user, err := services.Login(userForm)
-	fmt.Println("*****0", user)
 	if user.ID == 0 {
 		response.Fail(c, response.ErrCodeUserNotExist)
 		return
@@ -88,12 +85,25 @@ func GetUserInfoById(c *gin.Context) {
 	response.Success(c, response.StatusOK, user)
 }
 
-func GetUserInfos(c *gin.Context) {
-	err, user := services.GetUserInfos(c.Keys["id"].(string))
+func GetUserList(c *gin.Context) {
+	err, user := services.GetUserList()
 	if err != nil {
 		global.App.Log.Error(err.Error())
 		response.Fail(c, response.ErrCodeNotFount)
 		return
 	}
 	response.Success(c, response.StatusOK, user)
+}
+
+func DeleteUserByUserId(c *gin.Context) {
+
+	id := util.GetQueryToUint64(c, "id")
+
+	err := services.DeleteUserByUserId(id)
+	if err != nil {
+		global.App.Log.Error(err.Error())
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+	response.Success(c, response.StatusOK, nil)
 }

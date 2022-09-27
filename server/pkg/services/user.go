@@ -48,10 +48,14 @@ func GetUserInfoById(id string) (err error, user sys.User) {
 	return
 }
 
-func GetUserInfos(id string) (err error, user []sys.User) {
+func GetUserList() (err error, user []sys.User) {
 	err = global.App.DB.Find(&user).Error
 	if err != nil {
 		return
 	}
 	return
+}
+
+func DeleteUserByUserId(id uint64) error {
+	return global.App.DB.Where("id = ?", id).Delete(&sys.User{}).Error
 }

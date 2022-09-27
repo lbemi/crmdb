@@ -1,14 +1,16 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/pkg/controller/app"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/lbemi/lbemi/pkg/controller/app"
 )
 
 func SetApiGroupRoutes(router *gin.RouterGroup) {
 	router.GET("/ping", func(c *gin.Context) {
-		c.String(http.StatusOK, "asdsadasdas")
+		c.String(http.StatusOK, "health")
 	})
 	router.GET("/test", func(c *gin.Context) {
 		c.String(http.StatusOK, "test")

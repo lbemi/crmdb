@@ -15,7 +15,6 @@ log:
   max_size: 10          # 最大备份文件大小(M)
   max_age: 10           # 文件最大保留天数
   compress: true        # 是否压缩文件
-
 database:
   driver: mysql
   host: 42.192.54.11
@@ -27,7 +26,7 @@ database:
   max_idle_conns: 10
   max_open_conns: 100
   log_mode: info
-  enable_file_log_write: true
+  enable_file_log_write: false
   log_filename: sql.log
   is_initialize: true  # 是否初始化数据库表
 jwt:

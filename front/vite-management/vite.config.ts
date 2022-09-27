@@ -4,7 +4,7 @@ import { resolve } from 'path';
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-
+import WindiCSS from 'vite-plugin-windicss'
 
 const pathResolve = (dir: string): any => {
 	return resolve(__dirname, '.', dir);
@@ -25,6 +25,7 @@ export default defineConfig({
     Components({
       resolvers: [ElementPlusResolver()],
     }),
+    WindiCSS(),
   ],
   resolve: { alias },
 })

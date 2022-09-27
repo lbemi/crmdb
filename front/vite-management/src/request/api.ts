@@ -1,7 +1,7 @@
 import request from './request'
 
 interface AdminLoginData {
-  user_name: string
+  name: string
   password: string
 }
 interface Response {
@@ -11,7 +11,7 @@ interface Response {
 }
 
 //登录
-export const adminLoginApi = (data:AdminLoginData):Promise<Response>=> request.post('/login',data)
+export const adminLoginApi = (data:AdminLoginData):Promise<Response>=> request.post('/users/login',data)
 
 export const getUserLeftMenusApi = ():Promise<Response> => request.get('/users/menus')
 

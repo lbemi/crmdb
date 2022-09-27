@@ -21,7 +21,15 @@ func Success(c *gin.Context, code int, data interface{}) {
 func Fail(c *gin.Context, code int) {
 	c.JSON(http.StatusOK, Response{
 		code,
-		"",
+		nil,
 		GetMessage(code),
+	})
+}
+
+func FailWithMessage(c *gin.Context, code int, message string) {
+	c.JSON(http.StatusOK, Response{
+		code,
+		nil,
+		message,
 	})
 }

@@ -1,7 +1,8 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import { App } from 'vue'
-import store from '../store';
-
+import pinia from '@/store/index'
+import {useStore} from '@/store/usestore';
+const store = useStore(pinia)
 const routes: RouteRecordRaw[] = [
   {
     path: '/login',
@@ -19,7 +20,7 @@ const router = createRouter({
 })
 
 const genRouters = () => {
-  const menus = store.state.menus
+  const menus = store.$state.menus
   for (let key in menus) {
     const newRoute: RouteRecordRaw = {
       path: menus[key].url,
@@ -35,7 +36,7 @@ const genRouters = () => {
           {
             path: menus[key].url + menus[key].children[i].url,
             name: menus[key].children[i].name,
-            component: () => import(vueUrl),
+            component: () => import(`../views${menus[key].url}${menus[key].children[i].url}.vue`),
           }
         )
       }
@@ -65,14 +66,14 @@ const genRouters = () => {
 router.beforeEach((to, from, next) => {
   // const store = useStore()
   const token = sessionStorage.getItem("token")
-  if (token && store.state.menus.length === 0) {
+  if (token && store.menus.length === 0) {
     // 异步请求,then是异步完成后操作
-    store.dispatch('getLeftMenusApi').then(() => {
+    store.getLeftMenusApi().then(() => {
       // const newRoutes:RouteRecordRaw[] = []
       genRouters()
       next(to)
     })
-  } else if (token && store.state.menus.length !== 0 && from.path === '/login' && to.path === '/home') {
+  } else if (token && store.menus.length !== 0 && from.path === '/login' && to.path === '/home') {
     genRouters()
     next("/dashboard")
   } else if (!token && to.path !== '/login') { //token不存在,跳转到登录页面

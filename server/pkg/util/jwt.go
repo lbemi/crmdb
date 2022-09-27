@@ -3,13 +3,15 @@ package util
 import (
 	"errors"
 	"fmt"
-	"github.com/golang-jwt/jwt"
-	"github.com/lbemi/lbemi/pkg/global"
 	"time"
+
+	"github.com/golang-jwt/jwt"
+
+	"github.com/lbemi/lbemi/pkg/global"
 )
 
 type JwtUser interface {
-	GetUid() string
+	GetSnowID() string
 }
 
 type CustomClaims struct {
@@ -21,8 +23,8 @@ const (
 )
 
 var (
-	TokenExpired     = errors.New("Token已过期")
-	TokenNotValidYet = errors.New("Token未生效")
+	TokenExpired     = errors.New("token已过期")
+	TokenNotValidYet = errors.New("token未生效")
 	TokenMalformed   = errors.New("无效token")
 	TokenInvalid     = errors.New("非法的Token")
 )
@@ -31,14 +33,14 @@ type TokenOutPut struct {
 	Token string `json:"token"`
 }
 
-//CreateToken 生成token
+// CreateToken 生成token
 func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err error) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		CustomClaims{
 			StandardClaims: jwt.StandardClaims{
 				ExpiresAt: time.Now().Unix() + 60*60*24*global.App.Config.Jwt.TTL,
-				Id:        user.GetUid(),
+				Id:        user.GetSnowID(),
 				Issuer:    guardName,
 				NotBefore: time.Now().Unix(),
 			},
@@ -54,7 +56,7 @@ func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err erro
 	return
 }
 
-//ParseToken 解析token
+// ParseToken 解析token
 func ParseToken(tokenStr string) (token *jwt.Token, claims *CustomClaims, err error) {
 	token, err = jwt.ParseWithClaims(tokenStr, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(global.App.Config.Jwt.Key), nil
@@ -82,7 +84,7 @@ func ParseToken(tokenStr string) (token *jwt.Token, claims *CustomClaims, err er
 	}
 }
 
-//RefreshToken 刷新token
+// RefreshToken 刷新token
 func RefreshToken(tokenStr string, user JwtUser) (tokenOut TokenOutPut, err error) {
 	jwt.TimeFunc = func() time.Time {
 		return time.Unix(0, 0)
@@ -111,6 +113,7 @@ func JoinBlackList(token *jwt.Token) (err error) {
 	err = global.App.Redis.SetNX(getBlackListKey(token.Raw), nowUnix, timer).Err()
 	return
 }
+
 func IsInBlacklist(tokenStr string) bool {
 	joinUnixStr, err := global.App.Redis.Get(getBlackListKey(tokenStr)).Result()
 	if err != nil || joinUnixStr == "" {

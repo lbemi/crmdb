@@ -13,13 +13,13 @@ func Register(c *gin.Context) {
 	var registerForm form.RegisterUserForm
 	if err := c.ShouldBind(&registerForm); err != nil {
 		global.App.Log.Error(err.Error())
-		util.GetErrorMsg(registerForm, err)
-		response.Fail(c, response.ErrCodeParameter)
+		response.FailWithMessage(c, response.ErrCodeParameter, util.GetErrorMsg(registerForm, err))
 		return
 	}
+
 	if err, _ := services.Register(c, registerForm); err != nil {
 		global.App.Log.Error(err.Error())
-		response.Fail(c, response.ErrCodeRegisterFail)
+		response.FailWithMessage(c, response.ErrCodeRegisterFail, err.Error())
 		return
 	} else {
 		response.Success(c, response.StatusOK, nil)

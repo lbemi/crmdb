@@ -1,9 +1,11 @@
+@token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjY4NDM1NTYsImp0aSI6IjE1NzQzNDAzNDY2MzkyOTAzNjgiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjQyNTE1NTZ9.PS_-5i4zumgG1L7LIsCKhYgXovTKMBRp5vcR25xdPa8
+
 ### 登录
 POST http://127.0.0.1:8080/login
 Content-Type: application/json
 
 {
-  "user_name": "test",
+  "user_name": "admin",
   "password": "admin",
   "mobile": "13338120030",
   "captcha": "14722",
@@ -11,7 +13,7 @@ Content-Type: application/json
 }
 ### 登出
 GET http://127.0.0.1:8080/api/v1beat/user/logout
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q
+Authorization:  {{token}}
 
 ### 获取验证码
 GET http://127.0.0.1:8080/captcha
@@ -19,10 +21,10 @@ GET http://127.0.0.1:8080/captcha
 ### 注册
 POST  http://127.0.0.1:8080/api/v1beat/user/register
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q
+Authorization:  {{token}}
 
 {
-  "user_name": "admin",
+  "user_name": "admin2",
   "password": "admin",
   "mobile": "13338120030",
   "email": "admin@admin.com"
@@ -31,9 +33,9 @@ Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0
 ###
 GET http://127.0.0.1:8080/api/v1beat/user/ping
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q
+Authorization:  {{ token }}
 
 ###
 GET http://127.0.0.1:8080/api/v1beat/user/info
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjQxOTk4NzEsImp0aSI6IjMiLCJpc3MiOiJhcHAiLCJuYmYiOjE2NjE2MDc4NzF9.ffvuSbTOPwgIOT5ujyTP3ICfV7KjgdCLU_HYwB_lZ6Q
+Authorization:  {{ token }}

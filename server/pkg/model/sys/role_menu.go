@@ -13,8 +13,8 @@ import (
 type RoleMenu struct {
 	basemodel.Model
 
-	RoleID int64 `gorm:"column:role_id;unique_index:uk_role_menu_role_id;not null;comment:角色ID" json:"role_id"`  // 角色ID
-	MenuID int64 `gorm:"column:menu_id;unique_index:uk_role_menu_role_id;not null;comment:菜单ID" json:"menu_id'"` // 菜单ID
+	RoleID uint64 `gorm:"column:role_id;unique_index:uk_role_menu_role_id;not null;comment:角色ID" json:"role_id"`  // 角色ID
+	MenuID uint64 `gorm:"column:menu_id;unique_index:uk_role_menu_role_id;not null;comment:菜单ID" json:"menu_id'"` // 菜单ID
 }
 
 // TableName 表名
