@@ -74,3 +74,16 @@ func GetQueryToUint64(c *gin.Context, key string, defaultValues ...uint64) uint6
 	}
 	return val
 }
+
+// GetQueryToInt64 获取参数并转换成uint64
+func GetQueryToInt64(c *gin.Context, key string, defaultValues ...uint64) uint64 {
+	var defaultValue uint64
+	if len(defaultValues) > 0 {
+		defaultValue = defaultValues[0]
+	}
+	val, err := getQueryToUint64E(c, key)
+	if err != nil {
+		return defaultValue
+	}
+	return val
+}

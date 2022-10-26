@@ -38,7 +38,7 @@ func Login(c *gin.Context) {
 	//}
 
 	user, err := services.Login(userForm)
-	if user.ID == 0 {
+	if err != nil {
 		response.Fail(c, response.ErrCodeUserNotExist)
 		return
 	}
@@ -46,15 +46,12 @@ func Login(c *gin.Context) {
 		response.Fail(c, response.ErrCodeUserForbidden)
 		return
 	}
+
 	if ok := util.BcryptMakeCheck([]byte(userForm.Password), user.Password); !ok {
 		response.Fail(c, response.ErrCodeUserOrPasswdWrong)
 		return
 	}
-	if err != nil {
-		global.App.Log.Error(err.Error())
-		response.Fail(c, response.ErrCodeUserOrPasswdWrong)
-		return
-	}
+
 	tokenStr, err := util.CreateToken(util.AppGuardName, user)
 	if err != nil {
 		global.App.Log.Error(err.Error())
@@ -76,7 +73,8 @@ func Logout(c *gin.Context) {
 }
 
 func GetUserInfoById(c *gin.Context) {
-	err, user := services.GetUserInfoById(c.Keys["id"].(string))
+	id := util.GetQueryToUint64(c, "id")
+	err, user := services.GetUserInfoById(id)
 	if err != nil {
 		global.App.Log.Error(err.Error())
 		response.Fail(c, response.ErrCodeNotFount)

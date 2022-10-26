@@ -1,10 +1,8 @@
 package services
 
 import (
-	"errors"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/model/form"
@@ -21,11 +19,7 @@ func Login(params form.UserLoginForm) (user *sys.User, err error) {
 }
 
 func Register(c *gin.Context, params form.RegisterUserForm) (err error, user sys.User) {
-	rs := global.App.DB.Where("user_name = ?", params.UserName).First(&sys.User{})
-	if rs.RowsAffected != 0 {
-		err = errors.New("用户已存在")
-		return
-	}
+
 	user = sys.User{
 		UserName: params.UserName,
 		Password: util.BcryptMake([]byte(params.Password)),
@@ -39,9 +33,8 @@ func Register(c *gin.Context, params form.RegisterUserForm) (err error, user sys
 	return nil, user
 }
 
-func GetUserInfoById(id string) (err error, user sys.User) {
-	intId, err := strconv.Atoi(id)
-	err = global.App.DB.First(&user, intId).Error
+func GetUserInfoById(id uint64) (err error, user *sys.User) {
+	err = global.App.DB.First(&user, id).Error
 	if err != nil {
 		return
 	}
@@ -58,4 +51,16 @@ func GetUserList() (err error, user []sys.User) {
 
 func DeleteUserByUserId(id uint64) error {
 	return global.App.DB.Where("id = ?", id).Delete(&sys.User{}).Error
+}
+
+func CheckUserExist(userName string) bool {
+	err := global.App.DB.Where("user_name = ?", userName).First(&sys.User{}).Error
+	if err != nil {
+		return false
+	}
+
+	if err == gorm.ErrRecordNotFound {
+		return false
+	}
+	return true
 }

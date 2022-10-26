@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/common"
 	"github.com/lbemi/lbemi/pkg/model/configs"
+	"gorm.io/gorm"
 )
 
 type CoreV1 interface {
@@ -16,7 +17,7 @@ type register struct {
 	ginEngine *gin.Engine
 }
 
-func NewRegister() *register {
+func NewRegister(db *gorm.DB) *register {
 	return &register{}
 }
 
