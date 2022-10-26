@@ -1,39 +1,42 @@
 package bootstrap
 
 import (
-	"github.com/lbemi/lbemi/pkg/global"
+	logs "github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/model/configs"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"go.uber.org/zap"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"log"
 
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"time"
 )
 
-func InitializeDB() *gorm.DB {
-	switch global.App.Config.Database.Driver {
+func InitializeDB(c *configs.Config) *gorm.DB {
+	switch c.Driver {
 	case "mysql":
-		return initMysqlGorm()
+		return initMysqlGorm(c)
 	default:
-		return initMysqlGorm()
+		return initMysqlGorm(c)
 
 	}
 
 }
 
-func initMysqlGorm() *gorm.DB {
-	dbConfig := global.App.Config.Database
-	if dbConfig.Database == "" {
+func initMysqlGorm(c *configs.Config) *gorm.DB {
+	dataConfig := c.Database
+	if dataConfig.Database == "" {
 		return nil
 	}
-	dsn := dbConfig.User + ":" + dbConfig.Password + "@tcp(" + dbConfig.Host + ":" + strconv.Itoa(dbConfig.Port) + ")/" +
-		dbConfig.Database + "?charset=" + dbConfig.Charset + "&parseTime=True&loc=Local"
+
+	dsn := dataConfig.User + ":" + dataConfig.Password + "@tcp(" + dataConfig.Host + ":" + strconv.Itoa(dataConfig.Port) + ")/" +
+		dataConfig.Database + "?charset=" + dataConfig.Charset + "&parseTime=True&loc=Local"
+
 	mysqlConfig := mysql.Config{
 		DSN:                       dsn,   // DSN data source name
 		DefaultStringSize:         191,   // string 类型字段的默认长度
@@ -42,22 +45,23 @@ func initMysqlGorm() *gorm.DB {
 		DontSupportRenameColumn:   true,  // 用 `change` 重命名列，MySQL 8 之前的数据库和 MariaDB 不支持重命名列
 		SkipInitializeWithVersion: false, // 根据版本自动配置
 	}
+
 	if db, err := gorm.Open(mysql.New(mysqlConfig), &gorm.Config{
 
 		DisableForeignKeyConstraintWhenMigrating: true, //禁用自动创建外键约束
-		Logger:                                   getGormLogger(),
+		Logger:                                   getGormLogger(c),
 		//NamingStrategy: schema.NamingStrategy{
 		//	TablePrefix:   "tb_",
 		//	SingularTable: true,
 		//},
 	}); err != nil {
-		global.App.Log.Error("mysql connect failed. err:", zap.Any("err", err))
+		logs.Logger.Error("mysql connect failed. err:", zap.Any("err", err))
 		return nil
 	} else {
 		sqlDB, _ := db.DB()
-		sqlDB.SetMaxIdleConns(dbConfig.MaxIdleConns)
-		sqlDB.SetMaxOpenConns(dbConfig.MaxOpenConns)
-		if dbConfig.IsInitialize {
+		sqlDB.SetMaxIdleConns(dataConfig.MaxIdleConns)
+		sqlDB.SetMaxOpenConns(dataConfig.MaxOpenConns)
+		if dataConfig.IsInitialize {
 			migration(db)
 		}
 		return db
@@ -65,24 +69,25 @@ func initMysqlGorm() *gorm.DB {
 }
 
 func migration(db *gorm.DB) {
-	global.App.Log.Info("初始化数据库...")
+	logs.Logger.Info("初始化数据库...")
 	err := db.AutoMigrate(&sys.Menu{}, sys.User{}, sys.Role{}, sys.RoleMenu{}, sys.UserRole{})
 	if err != nil {
-		global.App.Log.Error("初始化数据库失败。。。。。", zap.Any("err", err))
+		logs.Logger.Error("初始化数据库失败。。。。。", zap.Any("err", err))
 		return
 	}
 
 }
 
-func getGormLogWriter() logger.Writer {
+func getGormLogWriter(c *configs.Config) logger.Writer {
+	logConfig := c.Log
 	var writer io.Writer
-	if global.App.Config.Database.EnableFileLogWrite {
+	if c.Database.EnableFileLogWrite {
 		writer = &lumberjack.Logger{
-			Filename:   global.App.Config.RootDir + "/" + global.App.Config.Database.LogFilename,
-			MaxSize:    global.App.Config.MaxSize,
-			MaxAge:     global.App.Config.MaxAge,
-			MaxBackups: global.App.Config.MaxBackup,
-			Compress:   global.App.Config.Compress,
+			Filename:   logConfig.RootDir + "/" + c.LogFilename,
+			MaxSize:    logConfig.MaxSize,
+			MaxAge:     logConfig.MaxAge,
+			MaxBackups: logConfig.MaxBackup,
+			Compress:   logConfig.Compress,
 		}
 	} else {
 		writer = os.Stdout
@@ -90,9 +95,9 @@ func getGormLogWriter() logger.Writer {
 	return log.New(writer, "\r\n", log.LstdFlags)
 }
 
-func getGormLogger() logger.Interface {
+func getGormLogger(c *configs.Config) logger.Interface {
 	var logMode logger.LogLevel
-	switch global.App.Config.Database.LogMode {
+	switch c.LogMode {
 	case "silent":
 		logMode = logger.Silent
 	case "error":
@@ -104,10 +109,10 @@ func getGormLogger() logger.Interface {
 	default:
 		logMode = logger.Info
 	}
-	return logger.New(getGormLogWriter(), logger.Config{
+	return logger.New(getGormLogWriter(c), logger.Config{
 		SlowThreshold:             200 * time.Millisecond,
 		LogLevel:                  logMode,
 		IgnoreRecordNotFoundError: true,
-		Colorful:                  !global.App.Config.Database.EnableFileLogWrite,
+		Colorful:                  !c.EnableFileLogWrite,
 	})
 }

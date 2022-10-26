@@ -1,6 +1,7 @@
-package app
+package sys
 
 import (
+	"github.com/lbemi/lbemi/pkg/core"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -37,7 +38,8 @@ func Login(c *gin.Context) {
 	//	return
 	//}
 
-	user, err := services.Login(userForm)
+	user, err := core.Core.User().Login(c, &userForm)
+	//user, err := services.Login(userForm)
 	if err != nil {
 		response.Fail(c, response.ErrCodeUserNotExist)
 		return

@@ -1,4 +1,4 @@
-package bootstrap
+package log
 
 import (
 	"fmt"
@@ -11,13 +11,15 @@ import (
 	"time"
 )
 
+var Logger *zap.Logger
+
 var (
 	level   zapcore.Level
 	options []zap.Option
 	allCore []zapcore.Core
 )
 
-func InitializeLog() *zap.Logger {
+func InitializeLog() {
 	if global.App.Config.IsFile {
 		createRootDir()
 	}
@@ -26,7 +28,7 @@ func InitializeLog() *zap.Logger {
 		options = append(options, zap.AddCaller(), zap.AddCallerSkip(0))
 	}
 	core := getZapCore()
-	return zap.New(core).WithOptions(options...)
+	Logger = zap.New(core).WithOptions(options...)
 }
 
 func createRootDir() {

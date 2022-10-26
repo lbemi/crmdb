@@ -1,18 +1,12 @@
 package core
 
 import (
-	"github.com/lbemi/lbemi/pkg/sys/user"
-	"gorm.io/gorm"
+	"github.com/lbemi/lbemi/cmd/app/option"
+	"github.com/lbemi/lbemi/pkg/controller"
 )
 
-type ICore interface {
-	User() user.IUSer
-}
+var Core controller.IController
 
-type Core struct {
-	db *gorm.DB
-}
-
-func (c *Core) User() user.IUSer {
-	return user.NewUser(c.db)
+func Setup(options option.Options) {
+	Core = controller.NewController(options.Factory)
 }

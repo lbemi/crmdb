@@ -2,21 +2,20 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-
-	"github.com/lbemi/lbemi/pkg/controller/app"
+	"github.com/lbemi/lbemi/api/sys"
 )
 
 func setApiUserGroupRoutes(router *gin.RouterGroup) {
 	// 用户退出登录
-	router.GET("/logout", app.Logout)
+	router.GET("/logout", sys.Logout)
 	// 注册
-	router.POST("/register", app.Register)
+	router.POST("/register", sys.Register)
 	// 根据ID获取用户信息
-	router.GET("/:id", app.GetUserInfoById)
+	router.GET("/:id", sys.GetUserInfoById)
 	// 获取用户列表
-	router.GET("", app.GetUserList)
+	router.GET("", sys.GetUserList)
 	// 删除
-	router.DELETE("/:id", app.DeleteUserByUserId)
+	router.DELETE("/:id", sys.DeleteUserByUserId)
 	// 更新
 	//router.PUT("/:id", app.updateUser)
 	//

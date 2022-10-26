@@ -2,19 +2,17 @@ package bootstrap
 
 import (
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/model/configs"
 	"os"
 
-	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
-
-	"github.com/lbemi/lbemi/pkg/global"
 )
 
 const (
 	defaultConfigFile = "../config.yaml"
 )
 
-func InitializeConfig() *viper.Viper {
+func InitializeConfig() (appConfig *configs.Config) {
 	config := defaultConfigFile
 	if configEnv := os.Getenv("CONFIG"); configEnv != "" {
 		config = configEnv
@@ -25,15 +23,17 @@ func InitializeConfig() *viper.Viper {
 	if err := v.ReadInConfig(); err != nil {
 		panic(fmt.Sprintf("read config failed. %v\n", err))
 	}
-	v.WatchConfig()
-	v.OnConfigChange(func(in fsnotify.Event) {
-		fmt.Print("config file changed:", in.Name)
-		if err := v.Unmarshal(&global.App.Config); err != nil {
-			fmt.Println(err)
-		}
-	})
-	if err := v.Unmarshal(&global.App.Config); err != nil {
-		fmt.Println(err)
+	//v.WatchConfig()
+	//v.OnConfigChange(func(in fsnotify.Event) {
+	//	fmt.Print("config file changed:", in.Name)
+	//	if err := v.Unmarshal(&global.App.Config); err != nil {
+	//		fmt.Println(err)
+	//		return
+	//	}
+	//})
+	if err := v.Unmarshal(&appConfig); err != nil {
+		panic(fmt.Sprintf("Unmarshal config failed. %v\n", err))
+		return
 	}
-	return v
+	return
 }

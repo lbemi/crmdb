@@ -1,11 +1,10 @@
 package routes
 
 import (
+	"github.com/lbemi/lbemi/api/sys"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/lbemi/lbemi/pkg/controller/app"
 )
 
 func SetApiGroupRoutes(router *gin.RouterGroup) {
@@ -19,14 +18,14 @@ func SetApiGroupRoutes(router *gin.RouterGroup) {
 	setApiUserGroupRoutes(r)
 	menu := router.Group("menu")
 	{
-		menu.GET("/allmenus", app.GetMenuList)
-		menu.GET("/list", app.GetMenuList)
-		menu.GET("/detail", app.GetMenuList)
-		menu.GET("/allmenu", app.GetMenuList)
-		menu.GET("/menubuttonlist", app.GetMenuList)
-		menu.POST("/delete", app.GetMenuList)
-		menu.POST("/update", app.GetMenuList)
-		menu.POST("/create", app.GetMenuList)
+		menu.GET("/allmenus", sys.GetMenuList)
+		menu.GET("/list", sys.GetMenuList)
+		menu.GET("/detail", sys.GetMenuList)
+		menu.GET("/allmenu", sys.GetMenuList)
+		menu.GET("/menubuttonlist", sys.GetMenuList)
+		menu.POST("/delete", sys.GetMenuList)
+		menu.POST("/update", sys.GetMenuList)
+		menu.POST("/create", sys.GetMenuList)
 	}
 
 }
