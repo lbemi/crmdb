@@ -1,17 +1,15 @@
 package sys
 
 import (
-	"github.com/lbemi/lbemi/pkg/core"
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
-	"github.com/lbemi/lbemi/pkg/global"
+	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services"
 	"github.com/lbemi/lbemi/pkg/util"
+	"time"
 )
 
 // Login 用户登录
@@ -28,7 +26,7 @@ import (
 func Login(c *gin.Context) {
 	userForm := form.UserLoginForm{}
 	if err := c.ShouldBind(&userForm); err != nil {
-		global.App.Log.Error(err.Error())
+		log.Logger.Error(err.Error())
 		response.FailWithMessage(c, response.ErrCodeParameter, util.GetErrorMsg(userForm, err))
 		return
 	}
@@ -56,18 +54,24 @@ func Login(c *gin.Context) {
 
 	tokenStr, err := util.CreateToken(util.AppGuardName, user)
 	if err != nil {
-		global.App.Log.Error(err.Error())
+		log.Logger.Error(err.Error())
 		response.Fail(c, response.StatusInternalServerError)
 		return
 	}
-	global.App.Redis.Set("key", tokenStr.Token, time.Duration(time.Hour*30))
-	response.Success(c, response.LoginSuccess, tokenStr)
+
+	if err = core.Core.Redis().Set("key", tokenStr.Token, time.Duration(time.Hour*30)); err != nil {
+		log.Logger.Error(err.Error())
+		response.Fail(c, response.StatusInternalServerError)
+		return
+	}
+
+	response.Success(c, response.StatusOK, tokenStr)
 }
 
 func Logout(c *gin.Context) {
-	err := util.JoinBlackList(c.Keys["token"].(*jwt.Token))
+	err := middleware.JoinBlackList(c.Keys["token"].(*jwt.Token))
 	if err != nil {
-		global.App.Log.Error(err.Error())
+		log.Logger.Error(err.Error())
 		response.Fail(c, response.StatusInternalServerError)
 		return
 	}
@@ -76,9 +80,9 @@ func Logout(c *gin.Context) {
 
 func GetUserInfoById(c *gin.Context) {
 	id := util.GetQueryToUint64(c, "id")
-	err, user := services.GetUserInfoById(id)
+	err, user := core.Core.User().GetUserInfoById(c, id)
 	if err != nil {
-		global.App.Log.Error(err.Error())
+		log.Logger.Error(err)
 		response.Fail(c, response.ErrCodeNotFount)
 		return
 	}
@@ -86,9 +90,9 @@ func GetUserInfoById(c *gin.Context) {
 }
 
 func GetUserList(c *gin.Context) {
-	err, user := services.GetUserList()
+	err, user := core.Core.User().GetUserList(c)
 	if err != nil {
-		global.App.Log.Error(err.Error())
+		log.Logger.Error(err)
 		response.Fail(c, response.ErrCodeNotFount)
 		return
 	}
@@ -99,9 +103,9 @@ func DeleteUserByUserId(c *gin.Context) {
 
 	id := util.GetQueryToUint64(c, "id")
 
-	err := services.DeleteUserByUserId(id)
+	err := core.Core.User().DeleteUserByUserId(c, id)
 	if err != nil {
-		global.App.Log.Error(err.Error())
+		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}

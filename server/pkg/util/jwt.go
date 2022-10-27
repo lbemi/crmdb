@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt"
 
-	"github.com/lbemi/lbemi/pkg/global"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 )
 
 type JwtUser interface {
@@ -20,6 +20,8 @@ type CustomClaims struct {
 
 const (
 	AppGuardName = "app"
+	Key          = "3Bde3BGEbYqtqyEUzW3ry8jKFcaPH17fRmTmqE7MDr05Lwj95uruRKrrkb44TJ4s"
+	TTL          = 30
 )
 
 var (
@@ -39,17 +41,17 @@ func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err erro
 		jwt.SigningMethodHS256,
 		CustomClaims{
 			StandardClaims: jwt.StandardClaims{
-				ExpiresAt: time.Now().Unix() + 60*60*24*global.App.Config.Jwt.TTL,
+				ExpiresAt: time.Now().Unix() + 60*60*24*TTL,
 				Id:        user.GetSnowID(),
 				Issuer:    guardName,
 				NotBefore: time.Now().Unix(),
 			},
 		},
 	)
-	fmt.Println([]byte(global.App.Config.Jwt.Key), "---", time.Now().Unix())
-	tokenStr, err := token.SignedString([]byte(global.App.Config.Jwt.Key))
+	fmt.Println([]byte(Key), "---", time.Now().Unix())
+	tokenStr, err := token.SignedString([]byte(Key))
 	if err != nil {
-		global.App.Log.Error(err.Error())
+		log.Logger.Error(err)
 
 	}
 	tokenOut.Token = tokenStr
@@ -59,7 +61,7 @@ func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err erro
 // ParseToken 解析token
 func ParseToken(tokenStr string) (token *jwt.Token, claims *CustomClaims, err error) {
 	token, err = jwt.ParseWithClaims(tokenStr, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(global.App.Config.Jwt.Key), nil
+		return []byte(Key), nil
 	})
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {
@@ -90,7 +92,7 @@ func RefreshToken(tokenStr string, user JwtUser) (tokenOut TokenOutPut, err erro
 		return time.Unix(0, 0)
 	}
 	token, err := jwt.ParseWithClaims(tokenStr, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(global.App.Config.Jwt.Key), nil
+		return []byte(Key), nil
 	})
 	if err != nil {
 		return
@@ -103,23 +105,23 @@ func RefreshToken(tokenStr string, user JwtUser) (tokenOut TokenOutPut, err erro
 	return tokenOut, TokenInvalid
 }
 
-func getBlackListKey(tokenStr string) string {
-	return "jwt_black_list:" + MD5([]byte(tokenStr))
-}
-
-func JoinBlackList(token *jwt.Token) (err error) {
-	nowUnix := time.Now().Unix()
-	timer := time.Duration(token.Claims.(*CustomClaims).ExpiresAt-nowUnix) * time.Second
-	err = global.App.Redis.SetNX(getBlackListKey(token.Raw), nowUnix, timer).Err()
-	return
-}
-
-func IsInBlacklist(tokenStr string) bool {
-	joinUnixStr, err := global.App.Redis.Get(getBlackListKey(tokenStr)).Result()
-	if err != nil || joinUnixStr == "" {
-
-		return false
-	}
-
-	return true
-}
+//func getBlackListKey(tokenStr string) string {
+//	return "jwt_black_list:" + MD5([]byte(tokenStr))
+//}
+//
+//func JoinBlackList(token *jwt.Token) (err error) {
+//	//nowUnix := time.Now().Unix()
+//	//timer := time.Duration(token.Claims.(*CustomClaims).ExpiresAt-nowUnix) * time.Second
+//	//return core.Core.Redis().SetNX(getBlackListKey(token.Raw), nowUnix, timer)
+//	return nil
+//}
+//
+//func IsInBlacklist(tokenStr string) bool {
+//	//joinUnixStr, err := core.Core.Redis().Get(getBlackListKey(tokenStr)).Result()
+//	//if err != nil || joinUnixStr == "" {
+//	//
+//	//	return false
+//	//}
+//
+//	return true
+//}

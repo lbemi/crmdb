@@ -2,65 +2,62 @@ package app
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/cmd/app/option"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/middleware"
-	routes2 "github.com/lbemi/lbemi/routes"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+
+	"github.com/lbemi/lbemi/cmd/app/option"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/middleware"
+	"github.com/lbemi/lbemi/routes"
+	"github.com/lbemi/lbemi/routes/sys/menu"
+	"github.com/lbemi/lbemi/routes/sys/user"
 )
 
-func setupRouter() *gin.Engine {
-	router := gin.New()
+func initRouter(router *gin.Engine) {
 	router.Use(middleware.GinLogger(),
 		middleware.GinRecovery(true),
-		middleware.Core())
-	defaultRouter := router.Group("/")
-	routes2.DefaultRoutes(defaultRouter)
+		middleware.Cross())
 
-	apiGroup := router.Group("/api/v1", middleware.Test())
+	v1 := router.Group("/api/v1", middleware.Test())
+	// 注册默认路由
+	routes.DefaultRoutes(v1)
+
 	//apiGroup.Use(middleware.JWTAuth(), middleware.CasbinMiddleware())
-	apiGroup.Use(middleware.JWTAuth())
+	v1.Use(middleware.JWTAuth())
 
-	routes2.SetApiGroupRoutes(apiGroup)
+	//注册业务路由
+	user.NewUserRouter(v1)
+	menu.NewMenuRouter(v1)
 
-	return router
 }
 
 func Run() {
-	//bootstrap.InitializeConfig()
-	//global.App.Log = log.InitializeLog()
-	//global.App.Log.Info("log init success!")
-	//global.App.Log.Info("监听端口：" + global.App.Config.App.Port)
-	//global.App.DB = bootstrap.InitializeDB()
-	//global.App.Enforcer = bootstrap.InitCasbinEnforcer()
-	//global.App.Redis = bootstrap.InitializeRedis()
-	//bootstrap.InitializeValidator()
-	//
-	//defer func() {
-	//	if global.App.DB != nil {
-	//		db, _ := global.App.DB.DB()
-	//		db.Close()
-	//	}
-	//}()
 
 	o := option.NewOptions()
-	o.Load()
 
-	r := setupRouter()
+	o.Load()
+	// 注册handler
+	core.Setup(o)
+
+	initRouter(o.GinEngine)
 	//r.Use(middleware.GinLogger(), middleware.GinRecovery(true))
+
 	srv := &http.Server{
 		Addr:    ":" + o.Config.App.Port,
-		Handler: r,
+		Handler: o.GinEngine,
 	}
+
 	go func() {
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			log.Logger.Error("listen error", zap.Any("err", err))
 		}
+		log.Logger.Info("启动成功：", zap.Any("port", o.Config.App.Port))
 	}()
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

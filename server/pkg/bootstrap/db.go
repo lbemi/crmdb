@@ -1,10 +1,9 @@
 package bootstrap
 
 import (
-	logs "github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"fmt"
 	"github.com/lbemi/lbemi/pkg/model/configs"
 	"github.com/lbemi/lbemi/pkg/model/sys"
-	"go.uber.org/zap"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -55,7 +54,8 @@ func initMysqlGorm(c *configs.Config) *gorm.DB {
 		//	SingularTable: true,
 		//},
 	}); err != nil {
-		logs.Logger.Error("mysql connect failed. err:", zap.Any("err", err))
+		//logs.Logger.Error("mysql connect failed. err:", err)
+		fmt.Println("mysql connect failed. err:", err)
 		return nil
 	} else {
 		sqlDB, _ := db.DB()
@@ -69,10 +69,11 @@ func initMysqlGorm(c *configs.Config) *gorm.DB {
 }
 
 func migration(db *gorm.DB) {
-	logs.Logger.Info("初始化数据库...")
+	fmt.Println("初始化数据库...")
 	err := db.AutoMigrate(&sys.Menu{}, sys.User{}, sys.Role{}, sys.RoleMenu{}, sys.UserRole{})
 	if err != nil {
-		logs.Logger.Error("初始化数据库失败。。。。。", zap.Any("err", err))
+		//logs.Logger.Error("初始化数据库失败。。。。。", zap.Any("err", err))
+		fmt.Println("初始化数据库失败。。。。。", err)
 		return
 	}
 

@@ -2,10 +2,9 @@ package sys
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
-	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/mojocn/base64Captcha"
-	"go.uber.org/zap"
 )
 
 var store = base64Captcha.DefaultMemStore
@@ -20,7 +19,7 @@ func GetCaptcha(c *gin.Context) {
 	cp := base64Captcha.NewCaptcha(driver, store)
 	id, b64s, err := cp.Generate()
 	if err != nil {
-		global.App.Log.Error("生成验证码错误", zap.Error(err))
+		log.Logger.Error("生成验证码错误", err)
 		response.Fail(c, response.StatusInternalServerError)
 		return
 	}

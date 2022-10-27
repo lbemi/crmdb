@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/pkg/controller"
+
 	"github.com/lbemi/lbemi/pkg/factory"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
@@ -23,12 +23,12 @@ type IUSer interface {
 }
 
 type user struct {
-	factory factory.DbFactory
+	factory factory.IDbFactory
 }
 
-func NewUser(c *controller.Controller) IUSer {
+func NewUser(f factory.IDbFactory) IUSer {
 	return &user{
-		factory: c.DbFactory,
+		factory: f,
 	}
 }
 

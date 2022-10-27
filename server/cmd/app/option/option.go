@@ -12,7 +12,7 @@ import (
 )
 
 type Options struct {
-	Factory   factory.DbFactory
+	Factory   factory.IDbFactory
 	Config    *configs.Config
 	DB        *gorm.DB
 	Redis     *redis.Client
@@ -24,13 +24,16 @@ func (o *Options) Load() {
 	// 加载配置文件
 	o.Config = bootstrap.InitializeConfig()
 	// 初始化日志
-	log.InitializeLog()
+	log.Register(&o.Config.Log)
 	// 初始化数据库
 	o.DB = bootstrap.InitializeDB(o.Config)
 	// 初始化redis
 	o.Redis = bootstrap.InitializeRedis(o.Config.Redis)
 	// 注册校验器
 	bootstrap.InitializeValidator()
+	// 初始化ginEngine
+	o.GinEngine = gin.New()
+	o.Factory = factory.NewDbFactory(o.DB)
 }
 
 func NewOptions() *Options {

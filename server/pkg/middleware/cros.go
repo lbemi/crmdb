@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//Core 跨域处理
-func Core() gin.HandlerFunc {
+// Cross 跨域处理
+func Cross() gin.HandlerFunc {
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}

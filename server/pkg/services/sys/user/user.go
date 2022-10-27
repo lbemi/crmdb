@@ -24,7 +24,7 @@ func NewUser(db *gorm.DB) IUSer {
 }
 
 func (u *user) Login(params *form.UserLoginForm) (user *sys.User, err error) {
-	err = u.DB.Where("user_name = ?", params.UserName).First(&sys.User{}).Error
+	err = u.DB.Where("user_name = ?", params.UserName).First(&user).Error
 	if err != nil {
 		return
 	}

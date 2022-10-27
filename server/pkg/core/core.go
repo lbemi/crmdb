@@ -7,6 +7,6 @@ import (
 
 var Core controller.IController
 
-func Setup(options option.Options) {
-	Core = controller.NewController(options.Factory)
+func Setup(options *option.Options) {
+	Core = controller.NewController(options.Factory, options.Redis)
 }

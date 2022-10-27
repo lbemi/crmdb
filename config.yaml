@@ -7,7 +7,7 @@ app:
 log:
   level: info
   root_dir: ./log
-  is_file: false        #是否写入文件
+  is_file: true        #是否写入文件
   file_name: app.log
   format:          # 格式化： json
   show_line: true      # 是否显示打印行
@@ -26,9 +26,9 @@ database:
   max_idle_conns: 10
   max_open_conns: 100
   log_mode: info
-  enable_file_log_write: false
+  enable_file_log_write: true
   log_filename: sql.log
-  is_initialize: true  # 是否初始化数据库表
+  is_initialize: false  # 是否初始化数据库表
 jwt:
   key: 3Bde3BGEbYqtqyEUzW3ry8jKFcaPH17fRmTmqE7MDr05Lwj95uruRKrrkb44TJ4s
   ttl: 30 #过期时间 :天
