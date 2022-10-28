@@ -2,22 +2,22 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/api/sys"
+	sys2 "github.com/lbemi/lbemi/app/api/sys"
 )
 
 func NewUserRouter(router *gin.RouterGroup) {
 	u := router.Group("/user")
 	{
 		// 用户退出登录
-		u.GET("/logout", sys.Logout)
+		u.GET("/logout", sys2.Logout)
 		// 注册
-		u.POST("/register", sys.Register)
+		u.POST("/register", sys2.Register)
 		// 根据ID获取用户信息
-		u.GET("/:id", sys.GetUserInfoById)
+		u.GET("/:id", sys2.GetUserInfoById)
 		// 获取用户列表
-		u.GET("", sys.GetUserList)
+		u.GET("", sys2.GetUserList)
 		// 删除
-		u.DELETE("/:id", sys.DeleteUserByUserId)
+		u.DELETE("/:id", sys2.DeleteUserByUserId)
 		// 更新
 		//u.PUT("/:id", app.updateUser)
 		//

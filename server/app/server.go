@@ -2,6 +2,10 @@ package app
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/app/option"
+	"github.com/lbemi/lbemi/app/routes"
+	"github.com/lbemi/lbemi/app/routes/sys/menu"
+	"github.com/lbemi/lbemi/app/routes/sys/user"
 	"net/http"
 	"os"
 	"os/signal"
@@ -10,13 +14,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"github.com/lbemi/lbemi/cmd/app/option"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
-	"github.com/lbemi/lbemi/routes"
-	"github.com/lbemi/lbemi/routes/sys/menu"
-	"github.com/lbemi/lbemi/routes/sys/user"
 )
 
 func initRouter(router *gin.Engine) {
