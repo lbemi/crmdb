@@ -9,6 +9,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/util"
+	"strconv"
 	"time"
 )
 
@@ -68,6 +69,29 @@ func Login(c *gin.Context) {
 	response.Success(c, response.StatusOK, tokenStr)
 }
 
+func Register(c *gin.Context) {
+	var registerForm form.RegisterUserForm
+	if err := c.ShouldBind(&registerForm); err != nil {
+		log.Logger.Error(err)
+		response.FailWithMessage(c, response.ErrCodeParameter, util.GetErrorMsg(registerForm, err))
+		return
+	}
+
+	if core.Core.User().CheckUserExist(c, registerForm.UserName) {
+		response.Fail(c, response.ErrCodeUserExist)
+		return
+	}
+
+	if err := core.Core.User().Register(c, &registerForm); err != nil {
+		log.Logger.Error(err)
+		response.FailWithMessage(c, response.ErrCodeRegisterFail, err.Error())
+		return
+	}
+
+	response.Success(c, response.StatusOK, nil)
+
+}
+
 func Logout(c *gin.Context) {
 	err := middleware.JoinBlackList(c.Keys["token"].(*jwt.Token))
 	if err != nil {
@@ -90,7 +114,20 @@ func GetUserInfoById(c *gin.Context) {
 }
 
 func GetUserList(c *gin.Context) {
-	err, user := core.Core.User().GetUserList(c)
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	limitStr := c.DefaultQuery("limit", "0")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	user, err := core.Core.User().GetUserList(c, page, limit)
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrCodeNotFount)
@@ -109,5 +146,105 @@ func DeleteUserByUserId(c *gin.Context) {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
+	response.Success(c, response.StatusOK, nil)
+}
+
+func UpdateUser(c *gin.Context) {
+	var (
+		err  error
+		user form.UpdateUserFrom
+	)
+	if err = c.ShouldBindJSON(&user); err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	userID := util.GetQueryToUint64(c, "id")
+
+	if err = core.Core.User().Update(c, userID, &user); err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+	response.Success(c, response.StatusOK, nil)
+}
+
+func GetUserRoles(c *gin.Context) {
+
+	uid := util.GetQueryToUint(c, "id")
+
+	result, err := core.Core.User().GetRoleIDByUser(c, uid)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	response.Success(c, response.StatusOK, result)
+}
+
+func SetUserRoles(c *gin.Context) {
+	var roles form.Roles
+
+	err := c.ShouldBindJSON(&roles)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	uid := util.GetQueryToUint(c, "id")
+
+	_, err = core.Core.User().GetUserInfoById(c, uid)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	err = core.Core.User().SetUserRoles(c, uid, roles.RoleIds)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+	response.Success(c, response.StatusOK, nil)
+}
+func GetButtonsByCurrentUser(c *gin.Context) {
+	uidStr, exist := c.Get("userId")
+	if !exist {
+		response.Fail(c, response.ErrCodeNotLogin)
+		return
+	}
+	uid := uidStr.(uint64)
+
+	res, err := core.Core.User().GetButtonsByUserID(c, uid)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	response.Success(c, response.StatusOK, res)
+}
+
+func GetLeftMenusByCurrentUser(c *gin.Context) {
+	uidStr, exist := c.Get("userId")
+	if !exist {
+		response.Fail(c, response.ErrCodeNotLogin)
+		return
+	}
+	uid := uidStr.(uint64)
+	res, err := core.Core.User().GetLeftMenusByUserID(c, uid)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	response.Success(c, response.StatusOK, res)
+}
+func UpdateUserStatus(c *gin.Context) {
+
+	userId := util.GetQueryToUint64(c, "id")
+	status := util.GetQueryToUint64(c, "status")
+
+	if err := core.Core.User().UpdateStatus(c, userId, status); err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
 	response.Success(c, response.StatusOK, nil)
 }

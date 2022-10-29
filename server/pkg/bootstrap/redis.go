@@ -3,10 +3,10 @@ package bootstrap
 import (
 	"fmt"
 	redis "github.com/go-redis/redis"
-	"github.com/lbemi/lbemi/pkg/model/configs"
+	"github.com/lbemi/lbemi/pkg/model/config"
 )
 
-func InitializeRedis(config configs.Redis) *redis.Client {
+func InitializeRedis(config config.Redis) *redis.Client {
 	addr := fmt.Sprintf("%s:%d", config.Addr, config.Port)
 	redisCli := redis.NewClient(&redis.Options{
 		Addr:     addr,

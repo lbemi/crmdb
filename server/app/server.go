@@ -2,10 +2,7 @@ package app
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/app/option"
-	"github.com/lbemi/lbemi/app/routes"
-	"github.com/lbemi/lbemi/app/routes/sys/menu"
-	"github.com/lbemi/lbemi/app/routes/sys/user"
+	"github.com/lbemi/lbemi/app/routes/sys"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,28 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
+	"github.com/lbemi/lbemi/app/option"
+	"github.com/lbemi/lbemi/app/routes"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
 )
-
-func initRouter(router *gin.Engine) {
-	router.Use(middleware.GinLogger(),
-		middleware.GinRecovery(true),
-		middleware.Cross())
-
-	v1 := router.Group("/api/v1", middleware.Test())
-	// 注册默认路由
-	routes.DefaultRoutes(v1)
-
-	//apiGroup.Use(middleware.JWTAuth(), middleware.CasbinMiddleware())
-	v1.Use(middleware.JWTAuth())
-
-	//注册业务路由
-	user.NewUserRouter(v1)
-	menu.NewMenuRouter(v1)
-
-}
 
 func Run() {
 
@@ -69,4 +50,22 @@ func Run() {
 		log.Logger.Error("Shutdown Server.", zap.Any("error", err))
 	}
 	log.Logger.Info(" Server exiting....")
+}
+
+func initRouter(router *gin.Engine) {
+	router.Use(middleware.GinLogger(),
+		middleware.GinRecovery(true),
+		middleware.Cross())
+
+	v1 := router.Group("/api/v1")
+	// 注册默认路由
+	routes.DefaultRoutes(v1)
+	//, middleware.CasbinMiddleware()
+	v1.Use(middleware.JWTAuth(), middleware.CasbinMiddleware())
+
+	//注册业务路由
+	sys.NewUserRouter(v1)
+	sys.NewMenuRouter(v1)
+	sys.NewRoleRouter(v1)
+
 }

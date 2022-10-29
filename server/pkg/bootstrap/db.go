@@ -2,7 +2,8 @@ package bootstrap
 
 import (
 	"fmt"
-	"github.com/lbemi/lbemi/pkg/model/configs"
+	"github.com/lbemi/lbemi/pkg/model/config"
+	"github.com/lbemi/lbemi/pkg/model/rules"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"gorm.io/driver/mysql"
@@ -16,7 +17,7 @@ import (
 	"time"
 )
 
-func InitializeDB(c *configs.Config) *gorm.DB {
+func InitializeDB(c *config.Config) *gorm.DB {
 	switch c.Driver {
 	case "mysql":
 		return initMysqlGorm(c)
@@ -27,7 +28,7 @@ func InitializeDB(c *configs.Config) *gorm.DB {
 
 }
 
-func initMysqlGorm(c *configs.Config) *gorm.DB {
+func initMysqlGorm(c *config.Config) *gorm.DB {
 	dataConfig := c.Database
 	if dataConfig.Database == "" {
 		return nil
@@ -70,16 +71,15 @@ func initMysqlGorm(c *configs.Config) *gorm.DB {
 
 func migration(db *gorm.DB) {
 	fmt.Println("初始化数据库...")
-	err := db.AutoMigrate(&sys.Menu{}, sys.User{}, sys.Role{}, sys.RoleMenu{}, sys.UserRole{})
+	err := db.AutoMigrate(&sys.Menu{}, sys.User{}, sys.Role{}, sys.RoleMenu{}, sys.UserRole{}, rules.Rule{})
 	if err != nil {
-		//logs.Logger.Error("初始化数据库失败。。。。。", zap.Any("err", err))
 		fmt.Println("初始化数据库失败。。。。。", err)
 		return
 	}
 
 }
 
-func getGormLogWriter(c *configs.Config) logger.Writer {
+func getGormLogWriter(c *config.Config) logger.Writer {
 	logConfig := c.Log
 	var writer io.Writer
 	if c.Database.EnableFileLogWrite {
@@ -96,7 +96,7 @@ func getGormLogWriter(c *configs.Config) logger.Writer {
 	return log.New(writer, "\r\n", log.LstdFlags)
 }
 
-func getGormLogger(c *configs.Config) logger.Interface {
+func getGormLogger(c *config.Config) logger.Interface {
 	var logMode logger.LogLevel
 	switch c.LogMode {
 	case "silent":

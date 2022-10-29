@@ -6,14 +6,14 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/lbemi/lbemi/pkg/bootstrap"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/factory"
-	"github.com/lbemi/lbemi/pkg/model/configs"
+	"github.com/lbemi/lbemi/pkg/model/config"
+	"github.com/lbemi/lbemi/pkg/services"
 	"gorm.io/gorm"
 )
 
 type Options struct {
-	Factory   factory.IDbFactory
-	Config    *configs.Config
+	Factory   services.IDbFactory
+	Config    *config.Config
 	DB        *gorm.DB
 	Redis     *redis.Client
 	Enforcer  *casbin.Enforcer
@@ -33,7 +33,10 @@ func (o *Options) Load() {
 	bootstrap.InitializeValidator()
 	// 初始化ginEngine
 	o.GinEngine = gin.New()
-	o.Factory = factory.NewDbFactory(o.DB)
+	// 初始化casbin enforcer
+	o.Enforcer = bootstrap.InitPolicyEnforcer(o.DB)
+	// 初始化dbFactory
+	o.Factory = services.NewDbFactory(o.DB, o.Enforcer)
 }
 
 func NewOptions() *Options {

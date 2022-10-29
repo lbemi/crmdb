@@ -2,11 +2,11 @@ package common
 
 import (
 	"github.com/fsnotify/fsnotify"
-	"github.com/lbemi/lbemi/pkg/model/configs"
+	"github.com/lbemi/lbemi/pkg/model/config"
 	"github.com/spf13/viper"
 )
 
-func InitConfig(configPath string) (conf *configs.Config, err error) {
+func InitConfig(configPath string) (conf *config.Config, err error) {
 	viper.SetConfigType("yaml")
 	viper.SetConfigFile(configPath)
 	err = viper.ReadInConfig()

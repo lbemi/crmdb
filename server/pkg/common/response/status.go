@@ -11,6 +11,7 @@ const (
 	ErrCodeUserExist  = 2001 //数据库错误码
 	ErrCodeServerBusy = 2002
 	ErrCodeNotFount   = 2003
+	ErrCodeFount      = 2004
 
 	ErrCodeParameter         = 1001
 	ErrCodeNotLogin          = 1002 //用户未登录
@@ -39,6 +40,8 @@ func GetMessage(code int) (message string) {
 		message = "注册失败"
 	case ErrCodeNotFount:
 		message = "数据不存在"
+	case ErrCodeFount:
+		message = "数据已存在"
 	case StatusInternalServerError:
 		message = "服务器内部错误"
 	case ErrCodeSuccess:

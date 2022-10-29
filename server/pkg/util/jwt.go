@@ -2,7 +2,6 @@ package util
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -48,7 +47,6 @@ func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err erro
 			},
 		},
 	)
-	fmt.Println([]byte(Key), "---", time.Now().Unix())
 	tokenStr, err := token.SignedString([]byte(Key))
 	if err != nil {
 		log.Logger.Error(err)

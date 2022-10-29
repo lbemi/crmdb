@@ -2,7 +2,7 @@ package log
 
 import (
 	"fmt"
-	"github.com/lbemi/lbemi/pkg/model/configs"
+	"github.com/lbemi/lbemi/pkg/model/config"
 	"os"
 	"path/filepath"
 )
@@ -32,7 +32,7 @@ var (
 	Logger LoggerInterface
 )
 
-func Register(config *configs.Log) {
+func Register(config *config.Log) {
 	//logType, logDir, logLevel string
 	// 支持 INFO, WARN 和 ERROR，默认为 INFO
 	if config.IsFile {
@@ -50,7 +50,7 @@ func Register(config *configs.Log) {
 	})
 }
 
-func createRootDir(config *configs.Log) {
+func createRootDir(config *config.Log) {
 	if ok, _ := pathExists(config.RootDir); !ok {
 		err := os.Mkdir(config.RootDir, os.ModePerm)
 		if err != nil {

@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"fmt"
-	"github.com/lbemi/lbemi/pkg/model/configs"
+	"github.com/lbemi/lbemi/pkg/model/config"
 	"os"
 
 	"github.com/spf13/viper"
@@ -12,7 +12,7 @@ const (
 	defaultConfigFile = "../config.yaml"
 )
 
-func InitializeConfig() (appConfig *configs.Config) {
+func InitializeConfig() (appConfig *config.Config) {
 	config := defaultConfigFile
 	if configEnv := os.Getenv("CONFIG"); configEnv != "" {
 		config = configEnv
