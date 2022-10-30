@@ -7,11 +7,11 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import WindiCSS from 'vite-plugin-windicss'
 
 const pathResolve = (dir: string): any => {
-	return resolve(__dirname, '.', dir);
+  return resolve(__dirname, '.', dir);
 };
 
 const alias: Record<string, string> = {
-	'@': pathResolve('src/'),
+  '@': pathResolve('src/'),
 };
 
 
@@ -20,10 +20,16 @@ export default defineConfig({
   plugins: [
     vue(),
     AutoImport({
-      resolvers: [ElementPlusResolver()],
+      resolvers: [
+        ElementPlusResolver(),
+       
+      ],
     }),
     Components({
-      resolvers: [ElementPlusResolver()],
+      resolvers: [
+        ElementPlusResolver(),
+        ],
+
     }),
     WindiCSS(),
   ],

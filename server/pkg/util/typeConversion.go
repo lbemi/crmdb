@@ -1,11 +1,15 @@
 package util
 
-import "strconv"
+import (
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"strconv"
+)
 
 // ParseInt64 将字符串转换为 int64
-func ParseInt64(s string) (int64, error) {
-	if len(s) == 0 {
-		return 0, nil
+func ParseInt64(s string) uint64 {
+	res, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		log.Logger.Error(err)
 	}
-	return strconv.ParseInt(s, 10, 64)
+	return res
 }

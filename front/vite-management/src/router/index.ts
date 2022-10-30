@@ -31,12 +31,12 @@ const genRouters = () => {
     }
     if (menus[key].children != null) {
       for (let i = 0; i < menus[key].children.length; i++) {
-        let vueUrl = `../views${menus[key].url}${menus[key].children[i].url}.vue`
+        let vueUrl = `../views${menus[key].url}${menus[key].children[i].url}`
         newRoute.children?.push(
           {
             path: menus[key].url + menus[key].children[i].url,
             name: menus[key].children[i].name,
-            component: () => import(`../views${menus[key].url}${menus[key].children[i].url}.vue`),
+            component: () => import(`${vueUrl}.vue`),
           }
         )
       }
@@ -57,7 +57,6 @@ const genRouters = () => {
           component: () => import('../views/dashboard/dashboard.vue'),
         },
       ]
-
     },
   )
 }

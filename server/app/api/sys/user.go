@@ -205,12 +205,13 @@ func SetUserRoles(c *gin.Context) {
 	response.Success(c, response.StatusOK, nil)
 }
 func GetButtonsByCurrentUser(c *gin.Context) {
-	uidStr, exist := c.Get("userId")
+	uidStr, exist := c.Get("id")
 	if !exist {
 		response.Fail(c, response.ErrCodeNotLogin)
 		return
 	}
-	uid := uidStr.(uint64)
+	u := uidStr.(string)
+	uid := util.ParseInt64(u)
 
 	res, err := core.Core.User().GetButtonsByUserID(c, uid)
 	if err != nil {
@@ -222,12 +223,14 @@ func GetButtonsByCurrentUser(c *gin.Context) {
 }
 
 func GetLeftMenusByCurrentUser(c *gin.Context) {
-	uidStr, exist := c.Get("userId")
+	uidStr, exist := c.Get("id")
 	if !exist {
 		response.Fail(c, response.ErrCodeNotLogin)
 		return
 	}
-	uid := uidStr.(uint64)
+	u := uidStr.(string)
+	uid := util.ParseInt64(u)
+
 	res, err := core.Core.User().GetLeftMenusByUserID(c, uid)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)

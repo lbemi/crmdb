@@ -149,15 +149,20 @@ func (u *user) SetUserRoles(c context.Context, userID uint64, roleIDS []uint64) 
 }
 
 // GetButtonsByUserID 获取菜单按钮
-func (u *user) GetButtonsByUserID(c context.Context, userID uint64) (res *[]string, err error) {
+func (u *user) GetButtonsByUserID(c context.Context, userID uint64) (*[]string, error) {
 	menus, err := u.factory.User().GetButtonsByUserID(userID)
 	if err != nil {
 		log.Logger.Error(err)
 	}
+
+	var res []string
 	for _, v := range *menus {
-		*res = append(*res, v.Code)
+		if v.Code != "" {
+			res = append(res, v.Code)
+		}
 	}
-	return
+
+	return &res, nil
 }
 
 // GetLeftMenusByUserID 根据用户ID获取左侧菜单

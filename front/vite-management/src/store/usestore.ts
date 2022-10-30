@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
-import { getUserLeftMenusApi } from '../request/api'
+import { getUserLeftMenusApi, getUserPermissionApi } from '../request/api'
 
-type MenuObj ={
+type MenuObj = {
   id: number,
   name: string,
   url: string,
@@ -9,27 +9,28 @@ type MenuObj ={
 }
 
 interface State {
-  menus: MenuObj[]
+  menus: MenuObj[],
+  permissions: Array<string>
 }
 
-export const useStore = defineStore('main',{
-  state: ():State=>{
+export const useStore = defineStore('main', {
+  state: (): State => {
     return {
-      menus: []
+      menus: [],
+      permissions: []
     }
   },
   actions: {
-    getLeftMenusApi() {
-      return new Promise((reslove, reject) => {
-        getUserLeftMenusApi().then(res => {
-          if (res.code === 200) {
-            this.menus = res.data
-            reslove(res.data)
-          } else {
-            reject(res)
-          }
-        })
+    async getLeftMenusApi() {
+      await getUserLeftMenusApi().then(res => {
+        this.menus = res.data
+      })
+    },
+    async getUserPermissions() {
+      await getUserPermissionApi().then(res => {
+        this.permissions = res.data
       })
     }
   },
+  persist: true
 })
