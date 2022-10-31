@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
-	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/lbemi"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/util"
 	"strconv"
@@ -18,13 +18,13 @@ func AddRole(c *gin.Context) {
 		return
 	}
 
-	exist := core.Core.Role().CheckRoleIsExist(c, role.Name)
+	exist := lbemi.CoreV1.Role().CheckRoleIsExist(c, role.Name)
 	if exist {
 		response.Fail(c, response.ErrCodeFount)
 		return
 	}
 
-	if _, err := core.Core.Role().Create(c, &role); err != nil {
+	if _, err := lbemi.CoreV1.Role().Create(c, &role); err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
@@ -42,14 +42,14 @@ func UpdateRole(c *gin.Context) {
 
 	roleID := util.GetQueryToUint64(c, "id")
 
-	_, err := core.Core.Role().Get(c, roleID)
+	_, err := lbemi.CoreV1.Role().Get(c, roleID)
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
 
-	if err = core.Core.Role().Update(c, &role, roleID); err != nil {
+	if err = lbemi.CoreV1.Role().Update(c, &role, roleID); err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
@@ -61,14 +61,14 @@ func DeleteRole(c *gin.Context) {
 
 	rid := util.GetQueryToUint64(c, "id")
 
-	_, err := core.Core.Role().Get(c, rid)
+	_, err := lbemi.CoreV1.Role().Get(c, rid)
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
 
-	if err = core.Core.Role().Delete(c, rid); err != nil {
+	if err = lbemi.CoreV1.Role().Delete(c, rid); err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
@@ -79,7 +79,7 @@ func GetRole(c *gin.Context) {
 
 	rid := util.GetQueryToUint64(c, "id")
 
-	res, err := core.Core.Role().Get(c, rid)
+	res, err := lbemi.CoreV1.Role().Get(c, rid)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -104,7 +104,7 @@ func ListRoles(c *gin.Context) {
 		return
 	}
 
-	res, err := core.Core.Role().List(c, page, limit)
+	res, err := lbemi.CoreV1.Role().List(c, page, limit)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -117,13 +117,13 @@ func GetMenusByRole(c *gin.Context) {
 
 	rid := util.GetQueryToUint(c, "id")
 
-	_, err := core.Core.Role().Get(c, rid)
+	_, err := lbemi.CoreV1.Role().Get(c, rid)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
 
-	res, err := core.Core.Role().GetMenusByRoleID(c, rid)
+	res, err := lbemi.CoreV1.Role().GetMenusByRoleID(c, rid)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -136,7 +136,7 @@ func SetRoleMenus(c *gin.Context) {
 
 	rid := util.GetQueryToUint(c, "id")
 
-	_, err := core.Core.Role().Get(c, rid)
+	_, err := lbemi.CoreV1.Role().Get(c, rid)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -149,7 +149,7 @@ func SetRoleMenus(c *gin.Context) {
 		return
 	}
 
-	if err = core.Core.Role().SetRole(c, rid, menuIDs.MenuIDS); err != nil {
+	if err = lbemi.CoreV1.Role().SetRole(c, rid, menuIDs.MenuIDS); err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
@@ -163,13 +163,13 @@ func UpdateRoleStatus(c *gin.Context) {
 
 	roleID := util.GetQueryToUint64(c, "id")
 
-	_, err := core.Core.Role().Get(c, roleID)
+	_, err := lbemi.CoreV1.Role().Get(c, roleID)
 	if err != nil {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
 
-	if err = core.Core.Role().UpdateStatus(c, roleID, status); err != nil {
+	if err = lbemi.CoreV1.Role().UpdateStatus(c, roleID, status); err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}

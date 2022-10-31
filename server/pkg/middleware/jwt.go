@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/lbemi"
 	"github.com/lbemi/lbemi/pkg/util"
 	"time"
 
@@ -37,12 +37,12 @@ func getBlackListKey(tokenStr string) string {
 func JoinBlackList(token *jwt.Token) (err error) {
 	nowUnix := time.Now().Unix()
 	timer := time.Duration(token.Claims.(*util.CustomClaims).ExpiresAt-nowUnix) * time.Second
-	return core.Core.Redis().SetNX(getBlackListKey(token.Raw), nowUnix, timer)
+	return lbemi.CoreV1.Redis().SetNX(getBlackListKey(token.Raw), nowUnix, timer)
 	return nil
 }
 
 func isInBlacklist(tokenStr string) bool {
-	joinUnixStr, err := core.Core.Redis().Get(getBlackListKey(tokenStr)).Result()
+	joinUnixStr, err := lbemi.CoreV1.Redis().Get(getBlackListKey(tokenStr)).Result()
 	if err != nil || joinUnixStr == "" {
 
 		return false

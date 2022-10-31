@@ -14,7 +14,7 @@ import (
 	"github.com/lbemi/lbemi/app/option"
 	"github.com/lbemi/lbemi/app/routes"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/lbemi"
 	"github.com/lbemi/lbemi/pkg/middleware"
 )
 
@@ -24,7 +24,7 @@ func Run() {
 
 	o.Load()
 	// 注册handler
-	core.Setup(o)
+	lbemi.Setup(o)
 
 	initRouter(o.GinEngine)
 	//r.Use(middleware.GinLogger(), middleware.GinRecovery(true))

@@ -20,6 +20,7 @@ const (
 	ErrCodeUserOrPasswdWrong = 1005
 	ErrCodeRegisterFail      = 1006
 	ErrCodeGenCaptchaFail    = 1007
+	ErrCaptcha               = 100 // 验证码错误
 
 	ErrorTokenExpired = 9001
 	InvalidToken      = 9002
@@ -36,6 +37,8 @@ func GetMessage(code int) (message string) {
 		message = "操作失败"
 	case ErrCodeGenCaptchaFail:
 		message = "验证码生成失败"
+	case ErrCaptcha:
+		message = "验证码错误"
 	case ErrCodeRegisterFail:
 		message = "注册失败"
 	case ErrCodeNotFount:

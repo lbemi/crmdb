@@ -5,7 +5,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
-	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/lbemi"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/util"
@@ -33,11 +33,11 @@ func Login(c *gin.Context) {
 	}
 	//校验验证码
 	//if !store.Verify(userForm.CaptchaId, userForm.Captcha, true) {
-	//	response.Fail(c, 2005, "验证码错误")
+	//	response.Fail(c, response.ErrCaptcha)
 	//	return
 	//}
 
-	user, err := core.Core.User().Login(c, &userForm)
+	user, err := lbemi.CoreV1.User().Login(c, &userForm)
 	//user, err := services.Login(userForm)
 	if err != nil {
 		response.Fail(c, response.ErrCodeUserNotExist)
@@ -60,13 +60,16 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if err = core.Core.Redis().Set("key", tokenStr.Token, time.Duration(time.Hour*30)); err != nil {
+	if err = lbemi.CoreV1.Redis().Set("key", tokenStr.Token, time.Duration(time.Hour*30)); err != nil {
 		log.Logger.Error(err.Error())
 		response.Fail(c, response.StatusInternalServerError)
 		return
 	}
-
-	response.Success(c, response.StatusOK, tokenStr)
+	res := map[string]interface{}{
+		"token": tokenStr.Token,
+		"user":  user,
+	}
+	response.Success(c, response.StatusOK, res)
 }
 
 func Register(c *gin.Context) {
@@ -77,12 +80,12 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	if core.Core.User().CheckUserExist(c, registerForm.UserName) {
+	if lbemi.CoreV1.User().CheckUserExist(c, registerForm.UserName) {
 		response.Fail(c, response.ErrCodeUserExist)
 		return
 	}
 
-	if err := core.Core.User().Register(c, &registerForm); err != nil {
+	if err := lbemi.CoreV1.User().Register(c, &registerForm); err != nil {
 		log.Logger.Error(err)
 		response.FailWithMessage(c, response.ErrCodeRegisterFail, err.Error())
 		return
@@ -104,7 +107,7 @@ func Logout(c *gin.Context) {
 
 func GetUserInfoById(c *gin.Context) {
 	id := util.GetQueryToUint64(c, "id")
-	err, user := core.Core.User().GetUserInfoById(c, id)
+	err, user := lbemi.CoreV1.User().GetUserInfoById(c, id)
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrCodeNotFount)
@@ -127,7 +130,7 @@ func GetUserList(c *gin.Context) {
 		return
 	}
 
-	user, err := core.Core.User().GetUserList(c, page, limit)
+	user, err := lbemi.CoreV1.User().GetUserList(c, page, limit)
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrCodeNotFount)
@@ -140,7 +143,7 @@ func DeleteUserByUserId(c *gin.Context) {
 
 	id := util.GetQueryToUint64(c, "id")
 
-	err := core.Core.User().DeleteUserByUserId(c, id)
+	err := lbemi.CoreV1.User().DeleteUserByUserId(c, id)
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
@@ -160,7 +163,7 @@ func UpdateUser(c *gin.Context) {
 	}
 	userID := util.GetQueryToUint64(c, "id")
 
-	if err = core.Core.User().Update(c, userID, &user); err != nil {
+	if err = lbemi.CoreV1.User().Update(c, userID, &user); err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
@@ -171,7 +174,7 @@ func GetUserRoles(c *gin.Context) {
 
 	uid := util.GetQueryToUint(c, "id")
 
-	result, err := core.Core.User().GetRoleIDByUser(c, uid)
+	result, err := lbemi.CoreV1.User().GetRoleIDByUser(c, uid)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -191,13 +194,13 @@ func SetUserRoles(c *gin.Context) {
 
 	uid := util.GetQueryToUint(c, "id")
 
-	_, err = core.Core.User().GetUserInfoById(c, uid)
+	_, err = lbemi.CoreV1.User().GetUserInfoById(c, uid)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
 
-	err = core.Core.User().SetUserRoles(c, uid, roles.RoleIds)
+	err = lbemi.CoreV1.User().SetUserRoles(c, uid, roles.RoleIds)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -213,7 +216,7 @@ func GetButtonsByCurrentUser(c *gin.Context) {
 	u := uidStr.(string)
 	uid := util.ParseInt64(u)
 
-	res, err := core.Core.User().GetButtonsByUserID(c, uid)
+	res, err := lbemi.CoreV1.User().GetButtonsByUserID(c, uid)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -231,7 +234,7 @@ func GetLeftMenusByCurrentUser(c *gin.Context) {
 	u := uidStr.(string)
 	uid := util.ParseInt64(u)
 
-	res, err := core.Core.User().GetLeftMenusByUserID(c, uid)
+	res, err := lbemi.CoreV1.User().GetLeftMenusByUserID(c, uid)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -244,7 +247,7 @@ func UpdateUserStatus(c *gin.Context) {
 	userId := util.GetQueryToUint64(c, "id")
 	status := util.GetQueryToUint64(c, "status")
 
-	if err := core.Core.User().UpdateStatus(c, userId, status); err != nil {
+	if err := lbemi.CoreV1.User().UpdateStatus(c, userId, status); err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}

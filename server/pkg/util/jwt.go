@@ -110,12 +110,12 @@ func RefreshToken(tokenStr string, user JwtUser) (tokenOut TokenOutPut, err erro
 //func JoinBlackList(token *jwt.Token) (err error) {
 //	//nowUnix := time.Now().Unix()
 //	//timer := time.Duration(token.Claims.(*CustomClaims).ExpiresAt-nowUnix) * time.Second
-//	//return core.Core.Redis().SetNX(getBlackListKey(token.Raw), nowUnix, timer)
+//	//return lbemi.Core.Redis().SetNX(getBlackListKey(token.Raw), nowUnix, timer)
 //	return nil
 //}
 //
 //func IsInBlacklist(tokenStr string) bool {
-//	//joinUnixStr, err := core.Core.Redis().Get(getBlackListKey(tokenStr)).Result()
+//	//joinUnixStr, err := lbemi.Core.Redis().Get(getBlackListKey(tokenStr)).Result()
 //	//if err != nil || joinUnixStr == "" {
 //	//
 //	//	return false

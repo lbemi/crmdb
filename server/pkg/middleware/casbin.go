@@ -4,12 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
-	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/lbemi"
 )
 
 func CasbinMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		enforcer := core.Core.Policy().GetEnforce()
+		enforcer := lbemi.CoreV1.Policy().GetEnforce()
 		// 用户ID
 		uid, isExit := c.Get("id")
 		if !isExit {
