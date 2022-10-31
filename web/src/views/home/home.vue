@@ -1,5 +1,6 @@
 /** * Created by lei on 2022/09/24 */
 <template>
+
   <div class="common-layout">
     <el-container>
       <el-header
@@ -85,6 +86,7 @@ import { ref, reactive } from "vue";
 import { useStore } from "@/store/usestore";
 import Header from "@/component/header/index.vue";
 import Bredcrumb from "@/component/breadcrumb/index.vue";
+
 
 import {
   Menu as IconMenu,

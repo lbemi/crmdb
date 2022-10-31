@@ -1,18 +1,18 @@
 /** * Created by lei on 2022/09/24 */
 <template>
-  <el-row :gutter="10" class="h-full">
-    <el-col :lg="12" :md="12" class="bg-blue-400">
+  <el-row :gutter="0" class="h-full">
+    <el-col :lg="16" :md="12" class="bg-blue-400">
       <span class="flex h-screen justify-center items-center"
         >运维管理平台
       </span>
     </el-col>
-    <el-col :lg="12" :md="12">
+    <el-col :lg="8" :md="12">
       <div class="flex h-screen justify-center items-center">
         <el-form
-          :ref="(el:HTMLFormElement) => (login.ruleFormRef = el)"
+          :ref="(el:FormInstance) => (login.ruleFormRef = el)"
           :model="login.ruleForm"
           :rules="rules"
-          label-width="220px"
+          label-width="170px"
           class="login-content-form"
           size="large"
         >
@@ -32,7 +32,7 @@
           </el-form-item>
           <!-- 登录验证码 -->
           <el-form-item label="验证码" prop="captcha">
-            <el-row class="w100">
+            <el-row>
               <el-col :span="16">
                 <el-input
                   v-model="login.ruleForm.captcha"
@@ -65,6 +65,7 @@
 import { loginStore } from "@/store/login";
 import { reactive, ref, onMounted } from "vue";
 import { getUserCaptchaApi } from "@/request/api";
+import {FormInstance, FormRules } from "element-plus"
 
 const login = loginStore();
 const pic_path = ref("");
@@ -90,8 +91,8 @@ const validatePass = (
     callback();
   }
 };
-const rules = reactive({
-  user_name: [{ required: true, message: "请输入用户名", tigger: "blur" }],
+const rules = reactive<FormRules>({
+  user_name: [{ required: true, message: "请输入用户名", trigger: "blur" }],
   password: [{ required: true, validator: validatePass, trigger: "blur" }],
 });
 

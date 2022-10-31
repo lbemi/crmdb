@@ -1,9 +1,12 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
-import { App } from "vue";
-import pinia from "@/store/index";
+import { App, createVNode, render } from "vue";
 import { useStore } from "@/store/usestore";
 import { storeToRefs } from "pinia";
 import { MenuObj } from "@/store/usestore";
+import loadingBar from "@/component/loadingBar/index.vue"
+
+const Vnode = createVNode(loadingBar)
+render(Vnode, document.body)
 
 const routes: RouteRecordRaw[] = [
   {
@@ -18,7 +21,18 @@ const routes: RouteRecordRaw[] = [
 
 const router = createRouter({
   history: createWebHashHistory(),
+  // 记录路由页面位置
+  scrollBehavior: (to, from, savePostion) => {
+    if (savePostion) {
+      return savePostion
+    } else {
+      return {
+        top: 0
+      }
+    }
+  },
   routes,
+
 });
 
 const genRouters = (menus: MenuObj[]) => {
@@ -58,15 +72,17 @@ const genRouters = (menus: MenuObj[]) => {
   });
 };
 
+
 //前置导航守卫
 router.beforeEach((to, from, next) => {
+  Vnode.component?.exposed?.startLoading()
   const store = useStore();
   const { menus } = storeToRefs(store);
 
   const token = localStorage.getItem("token");
 
+
   if (token && menus.value.length === 0) {
-    console.log("-------", menus.value);
     // 异步请求,then是异步完成后操作
     store.getLeftMenus().then(() => {
       genRouters(menus.value);
@@ -78,8 +94,6 @@ router.beforeEach((to, from, next) => {
     from.path === "/login" &&
     to.path === "/home"
   ) {
-    console.log("????????????");
-
     // genRouters(menus.value)
     next("/dashboard");
   } else if (!token && to.path !== "/login") {
@@ -88,12 +102,18 @@ router.beforeEach((to, from, next) => {
   } else if (token && to.path === "/login") {
     //登录后禁止访问login
     next(from);
-  }  else {
-    console.log("11111111111111", menus.value, "*****", router.getRoutes);
+  } else if (router.getRoutes().length <= 1) {
+    console.log("重新生成路由表");
+    genRouters(menus.value);
+    next(to)
+  } else {
     next();
   }
 });
 
+router.afterEach((to, from) => {
+  Vnode.component?.exposed?.endLoading()
+})
 export const initRouter = (app: App<Element>) => {
   app.use(router);
 };

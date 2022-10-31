@@ -2,13 +2,13 @@ import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 import { adminLoginApi, getUserLeftMenusApi, getUserPermissionApi } from "@/request/api";
 import router from "@/router/index";
-import { ElMessage } from "element-plus";
+import { ElMessage, FormInstance } from "element-plus";
 import {LoginReq,User} from "./interface/user"
 import {useStore} from "./usestore"
 
 export const loginStore = defineStore("login", () => {
 
-  const ruleFormRef = ref();
+  const ruleFormRef = ref<FormInstance>();
   const ruleForm = reactive<LoginReq>({
     user_name: "admin",
     password: "admin",
@@ -18,8 +18,7 @@ export const loginStore = defineStore("login", () => {
 
   const userInfo = ref<User>()
   const loginFn = () => {
-    ruleFormRef.value
-      .validate()
+    ruleFormRef.value?.validate()
       .then(async () => {
         await adminLoginApi({
           ...ruleForm
