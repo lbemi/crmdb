@@ -64,9 +64,8 @@
 <script setup lang="ts">
 import { loginStore } from "@/store/login";
 import { reactive, ref, onMounted } from "vue";
-import { getUserCaptchaApi } from "@/request/api";
-import {FormInstance, FormRules } from "element-plus"
-
+import { FormInstance, FormRules } from "element-plus";
+import { userApi } from "@/request/sys/user";
 const login = loginStore();
 const pic_path = ref("");
 onMounted(() => {
@@ -74,10 +73,9 @@ onMounted(() => {
 });
 
 const onChangeCaptcha = async () => {
-  await getUserCaptchaApi().then((res) => {
-    pic_path.value = res.data.pic_path;
-    login.ruleForm.captcha_id = res.data.captcha_id;
-  });
+  let res: any = await userApi.captcha.request();
+  pic_path.value = res.data.pic_path;
+  login.ruleForm.captcha_id = res.data.captcha_id;
 };
 
 const validatePass = (
@@ -95,7 +93,6 @@ const rules = reactive<FormRules>({
   user_name: [{ required: true, message: "请输入用户名", trigger: "blur" }],
   password: [{ required: true, validator: validatePass, trigger: "blur" }],
 });
-
 </script>
 
 <style scoped lang="less">

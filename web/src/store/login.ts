@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
-import { adminLoginApi, getUserLeftMenusApi, getUserPermissionApi } from "@/request/api";
+import { userApi } from "@/request/sys/user";
 import router from "@/router/index";
 import { ElMessage, FormInstance } from "element-plus";
 import {LoginReq,User} from "./interface/user"
@@ -20,7 +20,7 @@ export const loginStore = defineStore("login", () => {
   const loginFn = () => {
     ruleFormRef.value?.validate()
       .then(async () => {
-        await adminLoginApi({
+        await userApi.login.request({
           ...ruleForm
         }).then((res) => {
           // 存储token

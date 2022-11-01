@@ -67,9 +67,9 @@
 <script setup lang="ts">
 import { reactive, toRefs, onMounted } from "vue";
 import { Delete, Edit, Search, Share, Upload } from "@element-plus/icons-vue";
-import { getUserListApi } from "@/request/api";
 import pagination from "@/component/pagination/pagination.vue";
 import { useStore} from "@/store/usestore"
+import { userApi } from "@/request/sys/user";
 const store = useStore()
 console.log("------",store.permissions);
 
@@ -84,11 +84,9 @@ onMounted(() => {
 });
 
 const getUserList = async () => {
-  const res = await getUserListApi();
-  if (res.code === 200) {
+  const res = await userApi.listUser.request();
     userList.value = res.data.users;
     total.value = res.data.total;
-  }
 };
 </script>
 

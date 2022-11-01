@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
-import { getUserLeftMenusApi, getUserPermissionApi } from "../request/api";
-
+import { userApi } from "@/request/sys/user";
 export interface MenuObj  {
   id: number;
   name: string;
@@ -17,12 +16,12 @@ export const useStore = defineStore(
     const permissions = ref<Array<string>>([]);
 
     const getLeftMenus = async () => {
-      await getUserLeftMenusApi().then((res) => {
+      await userApi.listMenus.request().then((res) => {
         menus.value = res.data;
       });
     };
     const getUserPermissions = async () => {
-      await getUserPermissionApi().then((res) => {
+      await userApi.permission.request().then((res) => {
         console.log("保存permission....",res.data);
         
         permissions.value = res.data;

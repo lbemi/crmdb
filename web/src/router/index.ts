@@ -46,7 +46,7 @@ const genRouters = (menus: MenuObj[]) => {
     };
     if (menus[key].children != null) {
       for (let i = 0; i < menus[key].children.length; i++) {
-        let vueUrl = `../views${menus[key].url}${menus[key].children[i].url}`;
+        let vueUrl = `../views${menus[key].url}${menus[key].children[i].url}${menus[key].children[i].url}`;
         newRoute.children?.push({
           path: menus[key].url + menus[key].children[i].url,
           name: menus[key].children[i].name,

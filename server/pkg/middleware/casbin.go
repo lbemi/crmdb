@@ -22,7 +22,6 @@ func CasbinMiddleware() gin.HandlerFunc {
 		//}
 		p := c.Request.URL.Path
 		m := c.Request.Method
-		log.Logger.Infof("casbin-rule: %v - %v - %v", uid, p, m)
 		ok, err := enforcer.Enforce(uid, p, m)
 		if err != nil {
 			log.Logger.Error(err)
