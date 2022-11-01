@@ -66,12 +66,9 @@
 
 <script setup lang="ts">
 import { reactive, toRefs, onMounted } from "vue";
-import { Delete, Edit, Search, Share, Upload } from "@element-plus/icons-vue";
+import { Delete, Edit } from "@element-plus/icons-vue";
 import pagination from "@/component/pagination/pagination.vue";
-import { useStore} from "@/store/usestore"
 import { userApi } from "@/request/sys/user";
-const store = useStore()
-console.log("------",store.permissions);
 
 const data = reactive({
   userList: [],

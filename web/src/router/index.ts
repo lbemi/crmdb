@@ -40,7 +40,7 @@ const genRouters = (menus: MenuObj[]) => {
     const newRoute: RouteRecordRaw = {
       path: menus[key].url,
       name: menus[key].name,
-      component: () => import("../views/home/home.vue"),
+      component: () => import("../views/layout/index.vue"),
       // redirect: menus[key].url + menus[key].children[0]?.url,
       children: [],
     };
@@ -60,7 +60,7 @@ const genRouters = (menus: MenuObj[]) => {
   router.addRoute({
     path: "/",
     name: "",
-    component: () => import("../views/home/home.vue"),
+    component: () => import("../views/layout/index.vue"),
     redirect: "/dashboard",
     children: [
       {
@@ -103,7 +103,6 @@ router.beforeEach((to, from, next) => {
     //登录后禁止访问login
     next(from);
   } else if (router.getRoutes().length <= 1) {
-    console.log("重新生成路由表");
     genRouters(menus.value);
     next(to)
   } else {

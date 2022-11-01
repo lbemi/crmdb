@@ -61,7 +61,6 @@
         <el-container>
           <el-main>
             <Bredcrumb />
-           
             <router-view></router-view>
           </el-main>
           <el-footer
