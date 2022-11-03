@@ -3,6 +3,6 @@ export interface UserForm {
 	email: string;
 	mobile: string;
 	status: number;
-  password: string;
+	password: string;
 	description: string;
 }

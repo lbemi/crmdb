@@ -63,8 +63,7 @@
     <!-- 分页区域 -->
     <pagination :total="data.total"></pagination>
   </el-card>
-  <UserDialog v-model:visble="userFormVisible" @value-change="getUserList" />
-
+  <UserDialog  v-model:visible="userAdd.dvisible" :title="userAdd.title" @value-change="getUserList" />
 </template>
 
 <script setup lang="ts">
@@ -72,16 +71,20 @@ import { reactive, toRefs, ref, onMounted } from "vue";
 import { Delete, Edit } from "@element-plus/icons-vue";
 import pagination from "@/component/pagination/pagination.vue";
 import { userApi } from "@/views/sys/api";
-import UserDialog from './componet/userDialog.vue'
+import UserDialog from "./componet/userDialog.vue";
 
-const loading = ref(false);
-const userFormVisible = ref(false)
+const loading = ref<boolean>(false);
+const dvisible = ref<boolean>(false);
 const data = reactive({
   userList: [],
   total: 0,
 });
 const { userList, total } = toRefs(data);
 
+const userAdd = reactive({
+  dvisible: false,
+  title: "添加用户"
+})
 onMounted(() => {
   loading.value = true;
   getUserList();
@@ -94,9 +97,9 @@ const getUserList = async () => {
   total.value = res.data.total;
 };
 
-const addUser =()=>{
-  userFormVisible.value = true
-}
+const addUser = () => {
+  userAdd.dvisible = true;
+};
 </script>
 
 <style scoped lang="less"></style>
