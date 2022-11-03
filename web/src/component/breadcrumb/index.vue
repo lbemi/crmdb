@@ -7,7 +7,6 @@
       >{{ item.name }}</el-breadcrumb-item
     >
   </el-breadcrumb>
-  <el-divider />
 </template>
 
 <script lang="ts" setup>
@@ -23,6 +22,8 @@ const routers = computed(() => {
 <style>
 /* 这里为了跟收起图标对其 */
 .bread {
-  margin-top: 8px;
+  margin-top: 15px;
+  margin-left: 15px;
+  margin-bottom: 15px;
 }
 </style>

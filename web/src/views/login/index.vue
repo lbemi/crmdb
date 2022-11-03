@@ -65,7 +65,7 @@
 import { loginStore } from "@/store/login";
 import { reactive, ref, onMounted } from "vue";
 import { FormInstance, FormRules } from "element-plus";
-import { userApi } from "@/request/sys/user";
+import { userApi } from "@/views/sys/api";
 const login = loginStore();
 const pic_path = ref("");
 onMounted(() => {

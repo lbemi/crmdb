@@ -6,9 +6,10 @@
       type="primary"
       :icon="Edit"
       style="margin-bottom: 10px"
+      @click="addUser"
       >添加用户</el-button
     >
-    <el-table :data="userList" border style="width: 100%">
+    <el-table :data="userList" border style="width: 100%" v-loading="loading">
       <el-table-column prop="id" label="ID" width="180" />
       <el-table-column prop="user_name" label="名称" width="180" />
       <el-table-column prop="description" label="描述" width="180" />
@@ -36,7 +37,7 @@
       <el-table-column fixed="right" label="操作" width="300">
         <template #default="scope">
           <el-button
-            v-auth="'sys:user:edit2'"
+            v-auth="'sys:user:edit'"
             type="primary"
             size="small"
             :icon="Edit"
@@ -62,14 +63,19 @@
     <!-- 分页区域 -->
     <pagination :total="data.total"></pagination>
   </el-card>
+  <UserDialog v-model:visble="userFormVisible" @value-change="getUserList" />
+
 </template>
 
 <script setup lang="ts">
-import { reactive, toRefs, onMounted } from "vue";
+import { reactive, toRefs, ref, onMounted } from "vue";
 import { Delete, Edit } from "@element-plus/icons-vue";
 import pagination from "@/component/pagination/pagination.vue";
-import { userApi } from "@/request/sys/user";
+import { userApi } from "@/views/sys/api";
+import UserDialog from './componet/userDialog.vue'
 
+const loading = ref(false);
+const userFormVisible = ref(false)
 const data = reactive({
   userList: [],
   total: 0,
@@ -77,14 +83,20 @@ const data = reactive({
 const { userList, total } = toRefs(data);
 
 onMounted(() => {
+  loading.value = true;
   getUserList();
+  loading.value = false;
 });
 
 const getUserList = async () => {
   const res = await userApi.listUser.request();
-    userList.value = res.data.users;
-    total.value = res.data.total;
+  userList.value = res.data.users;
+  total.value = res.data.total;
 };
+
+const addUser =()=>{
+  userFormVisible.value = true
+}
 </script>
 
 <style scoped lang="less"></style>
