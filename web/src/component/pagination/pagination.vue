@@ -22,11 +22,14 @@
 <script setup lang="ts">
 import { PageInfo } from "@/type/user";
 import { reactive } from "vue";
+
 defineProps({ total: Number });
+
 const page = reactive<PageInfo>({
   page: 1,
   limit: 10,
 });
+
 const emit = defineEmits(["handlePageChange"]);
 const handlePageChange = () => {
   emit("handlePageChange", page);

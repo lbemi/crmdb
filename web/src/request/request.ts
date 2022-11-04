@@ -85,8 +85,8 @@ export const request = (
   if (lowMehtod === "post" || lowMehtod === "put") {
     query.data = params;
   }else {
-    query.params = params;
-}
+        query.params = params;
+    }
   
   return service
     .request(query)

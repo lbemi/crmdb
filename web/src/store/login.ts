@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 import { userApi } from "@/views/sys/api";
 import router from "@/router/index";
-import { ElMessage, FormInstance } from "element-plus";
+import { ElMessage, ElNotification, FormInstance } from "element-plus";
 import { LoginReq, User } from "./interface/user";
 import { useStore } from "./usestore";
 
@@ -27,14 +27,10 @@ export const loginStore = defineStore(
               ...ruleForm,
             })
             .then((res) => {
-              // 存储token
-              //  store.getUserPermissions()
               localStorage.setItem("token", res.data.token);
               userInfo.value = res.data.user;
-              // store.getLeftMenusApi().then((res) => {
               router.push("/home");
-              // });
-              ElMessage.success(res.message);
+              ElMessage.success(`欢迎${userInfo.value?.user_name}!`);
               const userStore = useStore();
               userStore.getUserPermissions();
             });

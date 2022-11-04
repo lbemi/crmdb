@@ -7,4 +7,6 @@ export const userApi = {
   captcha: Api.create('/captcha', 'get'),
   permission: Api.create('/user/permissions','get'),
   addUser: Api.create('/user/register','post'),
+  chageStaus: Api.create('/user/{id}/status/{status}','put'),
+  deleteUser: Api.create('/user/{id}','delete'),
 }

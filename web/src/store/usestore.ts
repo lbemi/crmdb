@@ -22,11 +22,8 @@ export const useStore = defineStore(
     };
     const getUserPermissions = async () => {
       await userApi.permission.request().then((res) => {
-        console.log("保存permission....",res.data);
-        
         permissions.value = res.data;
       });
-      console.log("保存结果查询Permission:",permissions.value);
       
     };
     return { menus, permissions, getLeftMenus, getUserPermissions };

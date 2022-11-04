@@ -54,7 +54,7 @@
 
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="handleClose">取消</el-button>
+        <el-button @click="handleClose(userFormRef)">取消</el-button>
         <el-button type="primary" @click="btnOk(userFormRef)"> 确定 </el-button>
       </span>
     </template>
@@ -64,27 +64,30 @@
 <script setup lang="ts">
 import { UserForm } from "@/type/user";
 import { FormInstance, FormRules, ElMessage } from "element-plus";
-import { ref, reactive } from "vue";
+import { ref, reactive ,watch} from "vue";
 import { userApi } from "../../api";
 
 const userFormRef = ref<FormInstance>();
 
-defineProps<{
+const props = defineProps<{
   visible: boolean;
   // v-model:visible.isBt  //v-model传值方式
   // visibleModifiers?: {
   //   isBt:boolean
   // }
   title: string;
+  data?: UserForm;
 }>();
 
 const emits = defineEmits(["update:visible", "valueChange"]);
 
-const handleClose = () => {
+const handleClose = (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  formEl.resetFields();
   emits("update:visible", false);
 };
 
-const form = reactive<UserForm>({
+let form = reactive<UserForm>({
   user_name: "",
   email: "",
   mobile: "",
@@ -142,7 +145,7 @@ const btnOk = async (formEl: FormInstance | undefined) => {
   await formEl.validate((valid, fields) => {
     if (valid) {
       userApi.addUser.request(form).then((res) => {
-        handleClose();
+        handleClose(userFormRef.value);
         emits("valueChange");
         ElMessage.success(res.message);
       });
@@ -151,6 +154,19 @@ const btnOk = async (formEl: FormInstance | undefined) => {
     }
   });
 };
+
+watch(
+  () => props.data,
+  (newValue) => {
+  //  form = props.data;
+  console.log("****",props.data?.user_name);
+  form = {...props.data!}
+  console.log(props);
+  
+  
+  },
+  { deep: true, immediate: true },
+);
 </script>
 
 <style scoped lang="less"></style>

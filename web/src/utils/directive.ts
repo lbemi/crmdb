@@ -1,5 +1,5 @@
 import type { App } from 'vue';
-import { authDirective } from '@/common/utils/authDirective';
+import { authDirective } from '@/utils/authDirective';
 
 // 导出指令方法
 export function directive(app: App) {

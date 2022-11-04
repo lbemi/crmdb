@@ -13,3 +13,16 @@ export interface PageInfo {
   page: number
   limit: number
 }
+
+
+export interface UserInfo {
+	id: number;
+	created_at: string;
+	updated_at: string;
+	user_name: string;
+	email: string;
+	mobile: string;
+	status: number;
+	description: string;
+}
+
