@@ -111,7 +111,7 @@ const userAdd = reactive({
 const userEdit = reactive({
   visible: false,
   title: "编辑用户",
-  data: {} as UserForm
+  data: {} as UserInfo
 });
 
 onMounted(() => {
@@ -174,11 +174,8 @@ const deleteUser =(user: UserInfo) =>{
     .catch(() => {}); // 取消
 }
 
-const handleEdit =(user:UserForm)=>{
-  console.log("++++++",user);
-  
+const handleEdit =(user:UserInfo)=>{
   userEdit.data = user
-  console.log("-------",userEdit.data);
   userEdit.visible = true
 }
 

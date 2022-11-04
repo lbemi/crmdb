@@ -8,7 +8,6 @@ const service = axios.create({
   // baseURL: "http://127.0.0.1:8090/",
   timeout: 15000,
 });
-
 export interface Response {
   code: number;
   data?: any;
@@ -57,7 +56,6 @@ service.interceptors.response.use(
     return Promise.reject(e);
   }
 );
-
 export const request = (
   method: string,
   url: string,
@@ -68,14 +66,15 @@ export const request = (
   if (!url) {
     throw new Error("请求url不能为空");
   }
+  let flag = false
   // 简单判断该url是否是restful风格
   if (url.indexOf("{") != -1) {
+    flag = true
     url = templateResolve(url, params);
   }
   const query: any = {
     method,
     url,
-    ...options,
   };
   if (headers) {
     query.headers = headers;
@@ -83,11 +82,17 @@ export const request = (
   const lowMehtod = method.toLowerCase();
 
   if (lowMehtod === "post" || lowMehtod === "put") {
-    query.data = params;
-  }else {
-        query.params = params;
+    if (flag) {
+      query.data = options
+      flag = false
+    }else {
+      query.data = params;
     }
-  
+     
+  } else {
+    query.params = params;
+  }
+
   return service
     .request(query)
     .then((res) => res)
@@ -100,6 +105,7 @@ export const request = (
 };
 
 export const send = (api: Api, params: any, options: any): Promise<any> => {
+  
   return request(api.method, api.url, params, null, options);
 };
 

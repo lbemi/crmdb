@@ -40,8 +40,8 @@ func (u RegisterUserForm) GetMessages() util.ValidatorMessages {
 }
 
 type UpdateUserFrom struct {
-	UserName    string `json:"user_name" form:"user_name" binding:"required"` // 用户名
-	Mobile      string `json:"mobile" form:"mobile" binding:"mobile"`
+	UserName string `json:"user_name" form:"user_name" binding:"required"` // 用户名
+	//Mobile      string `json:"mobile" form:"mobile" binding:"mobile"`
 	Status      uint8  `json:"status" form:"status"` // 状态(1:正常 2:未激活 3:暂停使用)
 	Email       string `json:"email" form:"email" binding:"email" `
 	Description string `json:"description"`
@@ -51,7 +51,7 @@ func (u UpdateUserFrom) GetMessages() util.ValidatorMessages {
 	return util.ValidatorMessages{
 		"user_name.required": "用户名不能为空",
 		"email.email":        "email格式错误",
-		"mobile.mobile":      "手机号码格式错误",
+		//"mobile.mobile":      "手机号码格式错误",
 	}
 }
 

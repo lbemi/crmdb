@@ -17,12 +17,18 @@
         <el-input v-model="form.user_name" />
       </el-form-item>
       <el-form-item label="描述:" prop="description">
-        <el-input v-model="form.description" required="" />
+        <el-input v-model="form.description" />
       </el-form-item>
       <el-form-item label="邮箱:" prop="email" autocomplete="off">
         <el-input v-model="form.email" />
       </el-form-item>
-      <el-form-item label="密码" required prop="password" autocomplete="off">
+      <el-form-item
+        label="密码"
+        required
+        prop="password"
+        autocomplete="off"
+        v-if="!props.data"
+      >
         <el-input v-model="form.password" type="password" show-password />
       </el-form-item>
       <el-form-item
@@ -30,6 +36,7 @@
         required
         prop="confirmPassword"
         autocomplete="off"
+        v-if="!props.data"
       >
         <el-input
           v-model="form.confirmPassword"
@@ -62,9 +69,9 @@
 </template>
 
 <script setup lang="ts">
-import { UserForm } from "@/type/user";
+import { UserForm, UserInfo } from "@/type/user";
 import { FormInstance, FormRules, ElMessage } from "element-plus";
-import { ref, reactive ,watch} from "vue";
+import { ref, reactive, watch } from "vue";
 import { userApi } from "../../api";
 
 const userFormRef = ref<FormInstance>();
@@ -76,7 +83,7 @@ const props = defineProps<{
   //   isBt:boolean
   // }
   title: string;
-  data?: UserForm;
+  data?: UserInfo | undefined;
 }>();
 
 const emits = defineEmits(["update:visible", "valueChange"]);
@@ -90,7 +97,6 @@ const handleClose = (formEl: FormInstance | undefined) => {
 let form = reactive<UserForm>({
   user_name: "",
   email: "",
-  mobile: "",
   status: 1,
   password: "",
   description: "",
@@ -144,11 +150,21 @@ const btnOk = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate((valid, fields) => {
     if (valid) {
-      userApi.addUser.request(form).then((res) => {
+      if (!props.data) {
+        userApi.addUser.request(form).then((res) => {
         handleClose(userFormRef.value);
         emits("valueChange");
         ElMessage.success(res.message);
       });
+      } else {
+        userApi.updateUser.request({id: props.data.id}, form).then((res) => {
+        handleClose(userFormRef.value);
+        emits("valueChange");
+        ElMessage.success(res.message);
+      });
+        
+      }
+     
     } else {
       ElMessage.error("请正确填写");
     }
@@ -157,15 +173,12 @@ const btnOk = async (formEl: FormInstance | undefined) => {
 
 watch(
   () => props.data,
-  (newValue) => {
-  //  form = props.data;
-  console.log("****",props.data?.user_name);
-  form = {...props.data!}
-  console.log(props);
-  
-  
-  },
-  { deep: true, immediate: true },
+  () => {
+    form.user_name = props.data!.user_name;
+    form.description = props.data!.description;
+    form.email = props.data!.email;
+    form.status = props.data!.status;
+  }
 );
 </script>
 

@@ -9,4 +9,5 @@ export const userApi = {
   addUser: Api.create('/user/register','post'),
   chageStaus: Api.create('/user/{id}/status/{status}','put'),
   deleteUser: Api.create('/user/{id}','delete'),
+  updateUser: Api.create('/user/{id}', 'put')
 }
