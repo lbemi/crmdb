@@ -61,7 +61,7 @@
       </el-table-column>
     </el-table>
     <!-- 分页区域 -->
-    <pagination :total="data.total"></pagination>
+    <pagination :total="data.total" @handlePageChange="handlePageChange"></pagination>
   </el-card>
   <UserDialog  v-model:visible="userAdd.dvisible" :title="userAdd.title" @value-change="getUserList" />
 </template>
@@ -72,6 +72,8 @@ import { Delete, Edit } from "@element-plus/icons-vue";
 import pagination from "@/component/pagination/pagination.vue";
 import { userApi } from "@/views/sys/api";
 import UserDialog from "./componet/userDialog.vue";
+import {PageInfo} from '@/type/user'
+import { pa } from "element-plus/es/locale";
 
 const loading = ref<boolean>(false);
 const dvisible = ref<boolean>(false);
@@ -91,8 +93,13 @@ onMounted(() => {
   loading.value = false;
 });
 
+const query = reactive({
+  page: 1,
+  limit: 10
+})
+
 const getUserList = async () => {
-  const res = await userApi.listUser.request();
+  const res = await userApi.listUser.request(query);
   userList.value = res.data.users;
   total.value = res.data.total;
 };
@@ -100,6 +107,12 @@ const getUserList = async () => {
 const addUser = () => {
   userAdd.dvisible = true;
 };
+
+const handlePageChange  =(pageInfo: PageInfo)=>{
+  query.page = pageInfo.page
+  query.limit = pageInfo.limit
+  getUserList();
+}
 </script>
 
 <style scoped lang="less"></style>

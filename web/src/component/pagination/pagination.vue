@@ -13,25 +13,25 @@
       :page-sizes="[10, 20, 50]"
       layout="total, sizes, prev, pager, next, jumper"
       :total="total"
-      @size-change="onChange"
-      @current-change="onChange"
+      @size-change="handlePageChange"
+      @current-change="handlePageChange"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { PageInfo } from "@/type/user";
 import { reactive } from "vue";
 defineProps({ total: Number });
-const page = reactive({
+const page = reactive<PageInfo>({
   page: 1,
   limit: 10,
 });
-const emit = defineEmits(["onChange"]);
-const onChange = () => {
-  emit("onChange", page);
+const emit = defineEmits(["handlePageChange"]);
+const handlePageChange = () => {
+  emit("handlePageChange", page);
 };
-// 初始化回调,页面进入的时候需要回调一次！
-onChange();
+
 </script>
 
 <style scoped></style>

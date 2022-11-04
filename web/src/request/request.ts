@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ElMessage } from "element-plus";
 import { ResultEnum } from "./enums";
-import Api from './api';
+import Api from "./api";
 
 const service = axios.create({
   baseURL: "http://127.0.0.1:8080/api/v1",
@@ -68,9 +68,9 @@ export const request = (
   if (!url) {
     throw new Error("请求url不能为空");
   }
-    // 简单判断该url是否是restful风格
-    if (url.indexOf("{") != -1) {
-      url = templateResolve(url, params);
+  // 简单判断该url是否是restful风格
+  if (url.indexOf("{") != -1) {
+    url = templateResolve(url, params);
   }
   const query: any = {
     method,
@@ -84,7 +84,10 @@ export const request = (
 
   if (lowMehtod === "post" || lowMehtod === "put") {
     query.data = params;
-  }
+  }else {
+    query.params = params;
+}
+  
   return service
     .request(query)
     .then((res) => res)
@@ -96,23 +99,27 @@ export const request = (
     });
 };
 
-export const send=(api: Api, params: any, options: any): Promise<any> =>{
-  return request(api.method, api.url, params, null, options)
-}
+export const send = (api: Api, params: any, options: any): Promise<any> => {
+  return request(api.method, api.url, params, null, options);
+};
 
-export const  sendWithHeaders =(api: Api, params: any, headers: any): Promise<any> =>{
+export const sendWithHeaders = (
+  api: Api,
+  params: any,
+  headers: any
+): Promise<any> => {
   return request(api.method, api.url, params, headers, null);
-}
+};
 
-const  templateResolve = (template: string, param: any) => {
+const templateResolve = (template: string, param: any) => {
   return template.replace(/\{\w+\}/g, (word) => {
-      const key = word.substring(1, word.length - 1);
-      const value = param[key];
-      if (value != null || value != undefined) {
-          return value;
-      }
-      return "";
+    const key = word.substring(1, word.length - 1);
+    const value = param[key];
+    if (value != null || value != undefined) {
+      return value;
+    }
+    return "";
   });
-}
+};
 
-export default { request, send, sendWithHeaders};
+export default { request, send, sendWithHeaders };

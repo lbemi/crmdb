@@ -6,18 +6,36 @@
     :title="title"
     style="width: 400px"
   >
-  <el-form label-width="100px" :model="form" style="max-width: 260px">
-      <el-form-item label="名字:" required>
-        <el-input v-model="form.user_name"  />
+    <el-form
+      label-width="100px"
+      ref="userFormRef"
+      :rules="userFormRules"
+      :model="form"
+      style="max-width: 300px"
+    >
+      <el-form-item label="名字:" prop="user_name">
+        <el-input v-model="form.user_name" />
       </el-form-item>
-      <el-form-item label="描述:">
+      <el-form-item label="描述:" prop="description">
         <el-input v-model="form.description" required="" />
       </el-form-item>
-      <el-form-item label="邮箱:">
+      <el-form-item label="邮箱:" prop="email" autocomplete="off">
         <el-input v-model="form.email" />
       </el-form-item>
-      <el-form-item label="密码" required prop="password">
+      <el-form-item label="密码" required prop="password" autocomplete="off">
         <el-input v-model="form.password" type="password" show-password />
+      </el-form-item>
+      <el-form-item
+        label="确认密码"
+        required
+        prop="confirmPassword"
+        autocomplete="off"
+      >
+        <el-input
+          v-model="form.confirmPassword"
+          type="password"
+          show-password
+        />
       </el-form-item>
       <el-form-item label="状态:">
         <el-switch
@@ -37,7 +55,7 @@
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="handleClose">取消</el-button>
-        <el-button type="primary" @click="btnOk"> 确定 </el-button>
+        <el-button type="primary" @click="btnOk(userFormRef)"> 确定 </el-button>
       </span>
     </template>
   </el-dialog>
@@ -45,15 +63,19 @@
 
 <script setup lang="ts">
 import { UserForm } from "@/type/user";
+import { FormInstance, FormRules, ElMessage } from "element-plus";
 import { ref, reactive } from "vue";
+import { userApi } from "../../api";
+
+const userFormRef = ref<FormInstance>();
 
 defineProps<{
-  visible: boolean
+  visible: boolean;
   // v-model:visible.isBt  //v-model传值方式
   // visibleModifiers?: {
   //   isBt:boolean
   // }
-  title: string
+  title: string;
 }>();
 
 const emits = defineEmits(["update:visible", "valueChange"]);
@@ -64,16 +86,70 @@ const handleClose = () => {
 
 const form = reactive<UserForm>({
   user_name: "",
-	email: "",
-	mobile: "",
-	status: 1,
-	password: "",
-  description:""
+  email: "",
+  mobile: "",
+  status: 1,
+  password: "",
+  description: "",
+  confirmPassword: "",
+});
+const validatePass = (rule: any, value: string, callback: Function) => {
+  if (value === "") {
+    callback(new Error("请输入密码"));
+  } else {
+    if (form.confirmPassword !== "") {
+      if (!userFormRef.value) return;
+      userFormRef.value.validateField("confirmPassword", () => null);
+    }
+    callback();
+  }
+};
+const validatePass2 = (rule: any, value: string, callback: Function) => {
+  if (value === "") {
+    callback(new Error("请再次输入密码"));
+  } else if (value !== form.password) {
+    callback(new Error("两次密码不匹配"));
+  } else {
+    callback();
+  }
+};
+
+const validateEmail = (rule: any, value: string, callback: Function) => {
+  const regEmail =
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  if (value) {
+    if (regEmail.test(value)) {
+      return callback();
+    }
+    callback(new Error("请输入正确的邮箱"));
+  }
+};
+
+const userFormRules = reactive<FormRules>({
+  user_name: [{ required: true, message: "请输入名字", trigger: "blur" }],
+  password: [
+    { required: true, validator: validatePass, trigger: "blur" },
+    { min: 6, max: 12, message: "密码长度在6到12位之间", trigger: "blur" },
+  ],
+  confirmPassword: [
+    { required: true, validator: validatePass2, trigger: "blur" },
+  ],
+  email: [{ validator: validateEmail, trigger: "blur" }],
 });
 
-const btnOk = () => {
-  console.log(form);
-  
+const btnOk = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  await formEl.validate((valid, fields) => {
+    if (valid) {
+      userApi.addUser.request(form).then((res) => {
+        handleClose();
+        emits("valueChange");
+        ElMessage.success(res.message);
+      });
+    } else {
+      ElMessage.error("请正确填写");
+    }
+  });
 };
 </script>
 

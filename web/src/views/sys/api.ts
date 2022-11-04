@@ -5,5 +5,6 @@ export const userApi = {
   listMenus: Api.create('/user/menus','get'),
   listUser: Api.create('/user','get'),
   captcha: Api.create('/captcha', 'get'),
-  permission: Api.create('/user/permissions','get')
+  permission: Api.create('/user/permissions','get'),
+  addUser: Api.create('/user/register','post'),
 }

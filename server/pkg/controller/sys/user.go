@@ -50,9 +50,9 @@ func (u *user) Login(c context.Context, params *form.UserLoginForm) (user *sys.U
 func (u *user) Register(c context.Context, params *form.RegisterUserForm) (err error) {
 
 	userInfo := &sys.User{
-		UserName:    params.UserName,
-		Password:    util.BcryptMake([]byte(params.Password)),
-		Mobile:      params.Mobile,
+		UserName: params.UserName,
+		Password: util.BcryptMake([]byte(params.Password)),
+		//Mobile:      params.Mobile,
 		Email:       params.Email,
 		Description: params.Description,
 		Status:      params.Status,
