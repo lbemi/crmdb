@@ -56,10 +56,25 @@ func (m *menu) Create(c context.Context, obj *form.MenusReq) (menu *sys.Menu, er
 }
 
 func (m *menu) Update(c context.Context, menu *form.UpdateMenusReq, menuID uint64) error {
-	err := m.factory.Menu().Update(menu, menuID)
+	res, err := m.factory.Menu().Get(menuID)
 	if err != nil {
 		log.Logger.Error(err)
 		return err
+	}
+	err = m.factory.Menu().Update(menu, menuID)
+	if err != nil {
+		log.Logger.Error(err)
+		return err
+	}
+	var oldPolicy, newPolicy []string
+	oldPolicy = append(oldPolicy, res.URL)
+	newPolicy = append(newPolicy, menu.URL)
+	if res.URL != menu.URL {
+		err = m.factory.Authentication().UpdatePermissions(oldPolicy, newPolicy)
+		if err != nil {
+			log.Logger.Error(err)
+			return err
+		}
 	}
 	return nil
 }

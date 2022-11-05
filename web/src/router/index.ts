@@ -121,6 +121,8 @@ router.beforeEach((to, from, next) => {
     genRouters(menus.value);
     next(to);
   } else {
+    console.log(router.getRoutes().length,"-",routes.length);
+    
     next();
   }
 });

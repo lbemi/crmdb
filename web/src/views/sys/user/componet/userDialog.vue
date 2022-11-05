@@ -2,7 +2,7 @@
 <template>
   <el-dialog
     v-model="visible"
-    @close="handleClose"
+    @close="handleClose(userFormRef)"
     :title="title"
     style="width: 400px"
   >
@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { UserForm, UserInfo } from "@/type/user";
+import { UserForm, UserInfo } from "@/type/sys";
 import { FormInstance, FormRules, ElMessage } from "element-plus";
 import { ref, reactive, watch } from "vue";
 import { userApi } from "../../api";
@@ -152,19 +152,17 @@ const btnOk = async (formEl: FormInstance | undefined) => {
     if (valid) {
       if (!props.data) {
         userApi.addUser.request(form).then((res) => {
-        handleClose(userFormRef.value);
-        emits("valueChange");
-        ElMessage.success(res.message);
-      });
+          handleClose(userFormRef.value);
+          emits("valueChange");
+          ElMessage.success(res.message);
+        });
       } else {
-        userApi.updateUser.request({id: props.data.id}, form).then((res) => {
-        handleClose(userFormRef.value);
-        emits("valueChange");
-        ElMessage.success(res.message);
-      });
-        
+        userApi.updateUser.request({ id: props.data.id }, form).then((res) => {
+          handleClose(userFormRef.value);
+          emits("valueChange");
+          ElMessage.success(res.message);
+        });
       }
-     
     } else {
       ElMessage.error("请正确填写");
     }

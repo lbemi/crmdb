@@ -19,6 +19,7 @@ type AuthenticationInterface interface {
 	DeleteRolePermission(resource ...string) error
 	DeleteRoleWithUser(uid, roleId uint64) error
 	DeleteRolePermissionWithRole(roleId uint64, resource ...string) error
+	UpdatePermissions(oldPolicy []string, newPolicy []string) error
 }
 
 type authentication struct {
@@ -113,6 +114,14 @@ func (c *authentication) DeleteRolePermission(resource ...string) error {
 // DeleteRolePermissionWithRole 删除角色的权限
 func (c *authentication) DeleteRolePermissionWithRole(roleId uint64, resource ...string) error {
 	_, err := c.enforcer.DeletePermissionForUser(strconv.FormatUint(roleId, 10), resource...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *authentication) UpdatePermissions(oldPolicy []string, newPolicy []string) error {
+	_, err := c.enforcer.UpdatePolicy(oldPolicy, newPolicy)
 	if err != nil {
 		return err
 	}

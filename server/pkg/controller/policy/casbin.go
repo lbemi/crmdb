@@ -19,6 +19,7 @@ type PolicyInterface interface {
 	SetRolePermission(ctx context.Context, roleId uint64, menus *[]sys.Menu) (bool, error)
 	DeleteRole(ctx context.Context, roleId uint64) error
 	DeleteRolePermission(ctx context.Context, resource ...string) error
+	UpdatePermissions(ctx context.Context, oldPolicy []string, newPolicy []string) error
 }
 
 type policy struct {
@@ -69,6 +70,16 @@ func (c *policy) DeleteRole(ctx context.Context, roleId uint64) error {
 // DeleteRolePermission 删除角色权限
 func (c *policy) DeleteRolePermission(ctx context.Context, resource ...string) error {
 	err := c.factory.Authentication().DeleteRolePermission(resource...)
+	if err != nil {
+		log.Logger.Error(err)
+		return err
+	}
+	return err
+}
+
+// UpdatePermissions 更新权限
+func (c *policy) UpdatePermissions(ctx context.Context, oldPolicy []string, newPolicy []string) error {
+	err := c.factory.Authentication().UpdatePermissions(oldPolicy, newPolicy)
 	if err != nil {
 		log.Logger.Error(err)
 		return err

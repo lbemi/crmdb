@@ -16,7 +16,7 @@ type Role struct {
 	Sequence int    `gorm:"column:sequence;not null;comment:排序值" json:"sequence" form:"sequence"`                       //
 	ParentID uint64 `gorm:"column:parent_id;not null;comment:父级ID" json:"parent_id" form:"parent_id"`                   // 父级ID
 	Status   int8   `gorm:"column:status;not null;default:1;comment:状态：0 表示禁用，1 表示启用" json:"status" form:"status" `     // 0 表示禁用，1 表示启用
-	Children []Role `gorm:"-"`                                                                                          // 子角色信息
+	Children []Role `gorm:"-" json:"children"`                                                                          // 子角色信息
 }
 
 // TableName 自定义表名

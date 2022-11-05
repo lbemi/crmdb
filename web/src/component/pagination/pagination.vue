@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { PageInfo } from "@/type/user";
+import { PageInfo } from "@/type/sys";
 import { reactive } from "vue";
 
 defineProps({ total: Number });

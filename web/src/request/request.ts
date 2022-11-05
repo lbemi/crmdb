@@ -90,7 +90,9 @@ export const request = (
     }
      
   } else {
-    query.params = params;
+    if (!flag) {
+      query.params = params;
+    } 
   }
 
   return service
