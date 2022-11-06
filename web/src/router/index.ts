@@ -66,18 +66,25 @@ const genRouters = (menus: MenuObj[]) => {
       path: menus[key].url,
       name: menus[key].name,
       component: () => import("../views/layout/index.vue"),
-      // redirect: menus[key].url + menus[key].children[0]?.url,
       children: [],
     };
     if (menus[key].children != null) {
       for (let i = 0; i < menus[key].children.length; i++) {
         let vueUrl = `../views${menus[key].url}${menus[key].children[i].url}${menus[key].children[i].url}`;
+        newRoute.redirect= menus[key].url + menus[key].children[0].url,
         newRoute.children?.push({
           path: menus[key].url + menus[key].children[i].url,
           name: menus[key].children[i].name,
           component: () => import(`${vueUrl}.vue`),
         });
       }
+    } else {
+      let vueUrl = `../views${menus[key].url}${menus[key].url}`;
+        newRoute.children?.push({
+          path: menus[key].url ,
+          name: menus[key].name,
+          component: () => import(`${vueUrl}.vue`),
+        });
     }
     // 动态添加路由规则
     router.addRoute(newRoute);

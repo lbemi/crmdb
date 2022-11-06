@@ -28,7 +28,8 @@
         <el-tree-select
           ref="selectRef"
           node-key="id"
-          v-model="form.parent_id"
+          v-model.number="form.parent_id"
+          type="number"
           :data="menuList"
           :props="{ value: 'id', label: 'name' }"
           check-strictly

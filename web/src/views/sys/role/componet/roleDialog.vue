@@ -25,7 +25,8 @@
       <el-form-item label="父角色:">
         <el-select
           ref="selectRef"
-          v-model="form.parent_id"
+          v-model.number="form.parent_id"
+          type="number"
           clearable
           placeholder="请选择"
           value-key="id"

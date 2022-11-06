@@ -3,8 +3,15 @@
   <div class="common-layout">
     <el-container>
       <el-aside width="200px">
-      <el-card class="box-card" style="height: 100vh" :body-style="{ padding: '0px' }">
-        <el-image style="width: 100px; height: 70px; margin-left: 30px;" src="https://element-plus.gitee.io/images/element-plus-logo.svg"  />
+        <el-card
+          class="box-card"
+          style="height: 100vh"
+          :body-style="{ padding: '0px' }"
+        >
+          <el-image
+            style="width: 100px; height: 70px; margin-left: 30px"
+            src="https://element-plus.gitee.io/images/element-plus-logo.svg"
+          />
           <el-menu
             active-text-color="#409EFF"
             class="el-menu-vertical-demo"
@@ -13,9 +20,13 @@
             :router="true"
             style="height: 100vh"
           >
-            <el-sub-menu
+          <template v-for="menu in store.menus">
+            <el-menu-item v-if="menu.children === null" :index="menu.url">
+              <el-icon><icon-menu /></el-icon>
+              <template #title>{{menu.name}}</template>
+            </el-menu-item>
+            <el-sub-menu  v-else
               :index="menu.id + ''"
-              v-for="menu in store.menus"
               :key="menu.id"
             >
               <template #title>
@@ -24,7 +35,8 @@
                 </el-icon>
                 <span>{{ menu.name }}</span>
               </template>
-              <el-menu-item v-if="menu.children != null"
+
+              <el-menu-item
                 :index="menu.url + child.url"
                 v-for="child in menu.children"
                 :key="child.id"
@@ -34,17 +46,20 @@
                 </el-icon>
                 {{ child.name }}
               </el-menu-item>
+
             </el-sub-menu>
+          </template>
+
           </el-menu>
-      </el-card>
+        </el-card>
       </el-aside>
       <el-container>
         <el-header style="padding: 0px 5px">
           <Header />
         </el-header>
 
-        <el-main style="padding: 10px 5px;margin-top: 10px;">
-          <Bredcrumb/>
+        <el-main style="padding: 10px 5px; margin-top: 10px">
+          <Bredcrumb />
           <router-view></router-view>
         </el-main>
         <el-footer
@@ -73,9 +88,9 @@ import { Menu as IconMenu, Setting } from "@element-plus/icons-vue";
 const data = reactive({
   isCollapse: false,
 });
-const route = useRoute()
-const  routeActive=ref()
-routeActive.value = route.path
+const route = useRoute();
+const routeActive = ref();
+routeActive.value = route.path;
 const store = useStore();
 </script>
 

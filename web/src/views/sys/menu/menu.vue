@@ -108,7 +108,7 @@
             v-auth="'sys:menu:set'"
             type="primary"
             size="small"
-            :icon="Edit"
+            :icon="View"
             >查看</el-button
           >
         </template>
@@ -138,7 +138,7 @@
 
 <script setup lang="ts">
 import { reactive, toRefs, ref, onMounted, onUpdated } from "vue";
-import { Delete, Edit } from "@element-plus/icons-vue";
+import { Delete, Edit ,View} from "@element-plus/icons-vue";
 import pagination from "@/component/pagination/pagination.vue";
 import { menuApi } from "@/views/sys/api";
 import MenuDialog from "./componet/menuDialog.vue";
