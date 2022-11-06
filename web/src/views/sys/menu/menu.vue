@@ -17,7 +17,6 @@
       v-loading="loading"
       row-key="id"
     >
-   
       <el-table-column prop="id" label="菜单ID" width="180" />
       <el-table-column prop="name" label="菜单名称" width="120" />
       <el-table-column prop="menu_type" label="类型" width="80">
@@ -62,6 +61,7 @@
       <el-table-column prop="status" label="状态" width="80">
         <template #default="scope">
           <el-switch
+            v-auth="'sys:menu:status'"
             v-model="scope.row.status"
             class="ml-2"
             style="
@@ -85,7 +85,7 @@
           {{ $filters.dateFormat(scope.row.created_at) }}
         </template>
       </el-table-column>
-      
+
       <el-table-column fixed="right" label="操作" min-width="300px">
         <template #default="scope">
           <el-button
@@ -137,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, toRefs, ref, onMounted,onUpdated } from "vue";
+import { reactive, toRefs, ref, onMounted, onUpdated } from "vue";
 import { Delete, Edit } from "@element-plus/icons-vue";
 import pagination from "@/component/pagination/pagination.vue";
 import { menuApi } from "@/views/sys/api";
@@ -145,7 +145,7 @@ import MenuDialog from "./componet/menuDialog.vue";
 import { PageInfo, MenuInfo } from "@/type/sys";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "@/store/usestore";
-const user = useStore()
+const user = useStore();
 const loading = ref<boolean>(false);
 const data = reactive({
   menuList: [] as Array<MenuInfo>,
@@ -165,9 +165,7 @@ const menuEdit = reactive({
 });
 
 onMounted(() => {
-  loading.value = true;
   getMenuList();
-  loading.value = false;
 });
 
 const query = reactive<PageInfo>({
@@ -176,9 +174,11 @@ const query = reactive<PageInfo>({
 });
 
 const getMenuList = async () => {
+  loading.value = true;
   const res = await menuApi.list.request(query);
   menuList.value = res.data.menus;
   total.value = res.data.total;
+  loading.value = false;
 };
 
 const addMenu = () => {
@@ -190,7 +190,6 @@ const handlePageChange = (pageInfo: PageInfo) => {
   query.limit = pageInfo.limit;
   getMenuList();
 };
-
 
 const changeStatus = async (menu: MenuInfo) => {
   await menuApi.changeStatus
@@ -229,16 +228,15 @@ const deleteMenu = (menu: MenuInfo) => {
 };
 
 const handleEdit = (menu: MenuInfo) => {
-  menuEdit.title = `编辑 [${menu.name}] ：`
+  menuEdit.title = `编辑 [${menu.name}] ：`;
   menuEdit.data = JSON.parse(JSON.stringify(menu));
   menuEdit.visible = true;
 };
 
-onUpdated(()=>{
+onUpdated(() => {
   user.getUserPermissions();
-  user.getLeftMenus()
-})
-
+  user.getLeftMenus();
+});
 </script>
 
 <style scoped lang="less"></style>

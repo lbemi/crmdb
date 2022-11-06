@@ -27,6 +27,7 @@
       <el-form-item label="上一级:">
         <el-tree-select
           ref="selectRef"
+          node-key="id"
           v-model="form.parent_id"
           :data="menuList"
           :props="{ value: 'id', label: 'name' }"

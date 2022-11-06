@@ -2,6 +2,7 @@ package auth
 
 import (
 	"github.com/casbin/casbin/v2"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 
 	"gorm.io/gorm"
@@ -121,9 +122,11 @@ func (c *authentication) DeleteRolePermissionWithRole(roleId uint64, resource ..
 }
 
 func (c *authentication) UpdatePermissions(oldPolicy []string, newPolicy []string) error {
-	_, err := c.enforcer.UpdatePolicy(oldPolicy, newPolicy)
-	if err != nil {
-		return err
-	}
+	res := c.enforcer.GetFilteredNamedPolicy("p", 0, "/api/v1/menu/:id")
+	//_, err = c.enforcer.UpdatePolicy(oldPolicy, newPolicy)
+	//if err != nil {
+	//	return err
+	//}
+	log.Logger.Info("res---:", res)
 	return nil
 }

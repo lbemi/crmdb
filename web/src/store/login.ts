@@ -32,6 +32,7 @@ export const loginStore = defineStore(
               router.push("/home");
               ElMessage.success(`欢迎${userInfo.value?.user_name}!`);
               const userStore = useStore();
+              userStore.getLeftMenus()
               userStore.getUserPermissions();
             });
         })

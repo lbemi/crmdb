@@ -8,7 +8,7 @@
           <el-menu
             active-text-color="#409EFF"
             class="el-menu-vertical-demo"
-            default-active="2"
+            :default-active="routeActive"
             :unique-opened="true"
             :router="true"
             style="height: 100vh"
@@ -24,7 +24,7 @@
                 </el-icon>
                 <span>{{ menu.name }}</span>
               </template>
-              <el-menu-item
+              <el-menu-item v-if="menu.children != null"
                 :index="menu.url + child.url"
                 v-for="child in menu.children"
                 :key="child.id"
@@ -68,11 +68,14 @@ import { ref, reactive } from "vue";
 import { useStore } from "@/store/usestore";
 import Header from "./header/index.vue";
 import Bredcrumb from "@/component/breadcrumb/index.vue";
-
+import { useRoute } from "vue-router";
 import { Menu as IconMenu, Setting } from "@element-plus/icons-vue";
 const data = reactive({
   isCollapse: false,
 });
+const route = useRoute()
+const  routeActive=ref()
+routeActive.value = route.path
 const store = useStore();
 </script>
 

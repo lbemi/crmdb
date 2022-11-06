@@ -159,13 +159,13 @@ func (r *role) List(page, limit int) (res *form.PageRole, err error) {
 
 func (r *role) GetMenusByRoleID(roleID uint64) (*[]sys.Menu, error) {
 	var menus []sys.Menu
-	err := r.db.Table("menus").Select(" menus.id, menus.parent_id,menus.name, menus.url, menus.icon,menus.sequence,menus.code,menus.method").
+	err := r.db.Table("menus").Select(" menus.id, menus.parent_id,menus.name, menus.url, menus.icon,menus.menu_type,menus.sequence,menus.code,menus.method").
 		Joins("left join role_menus on menus.id = role_menus.menu_id", roleID).
 		Where("role_menus.role_id = ?", roleID).
+		Where("menus.menu_type != 1").
 		Order("parent_id ASC").
 		Order("sequence ASC").
 		Scan(&menus).Error
-
 	if err != nil {
 		return nil, err
 	}

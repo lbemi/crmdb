@@ -5,8 +5,10 @@ import pinia from "@/store/index";
 export function auth(value: string) {
   // console.log(store.permissions);
   const store = useStore();
-
-  return store.permissions.some((v: any) => v === value);
+  if (store.permissions) {
+    return store.permissions.some((v: any) => v === value);
+  }
+  return false
 }
 
 // // 多个权限验证，满足一个则为 true

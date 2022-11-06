@@ -102,6 +102,7 @@
     :title="setMenu.title"
     v-model:roleID="setMenu.roleID"
     v-model:menuList="setMenu.menuList"
+    v-if="setMenu.visible"
   />
 </template>
 
@@ -142,9 +143,7 @@ const roleEdit = reactive({
 });
 
 onMounted(() => {
-  loading.value = true;
   getRoleList();
-  loading.value = false;
   getMenuList();
 });
 
@@ -154,9 +153,11 @@ const query = reactive<PageInfo>({
 });
 
 const getRoleList = async () => {
+  loading.value = true;
   const res = await roleApi.list.request(query);
   roleList.value = res.data.roles;
   total.value = res.data.total;
+  loading.value = false;
 };
 
 const addRole = () => {
@@ -206,6 +207,8 @@ const deleteRole = (role: RoleInfo) => {
 const handleEdit = (role: RoleInfo) => {
   roleEdit.data = JSON.parse(JSON.stringify(role));
   roleEdit.visible = true;
+  console.log(roleEdit);
+  
 };
 
 const getMenuList = async () => {
@@ -213,6 +216,7 @@ const getMenuList = async () => {
     setMenu.menuList = res.data.menus;
   });
 };
+
 const handleSetMenu = async (role: RoleInfo) => {
   setMenu.title = `为【${role.name}】分配角色：`;
   setMenu.roleID = role.id;

@@ -25,16 +25,17 @@
       <el-form-item label="父角色:">
         <el-select
           ref="selectRef"
-          v-model ="form.parent_id"
+          v-model="form.parent_id"
           clearable
           placeholder="请选择"
           value-key="id"
         >
           <el-option
             v-for="item in roleList"
-            :key='item.id'
-            :label='item.name'
-            :value='item.id'
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+            :disabled="item.name === form.name ? true : false"
           />
         </el-select>
       </el-form-item>
@@ -43,8 +44,8 @@
           v-model="form.status"
           class="ml-2"
           style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
-          :active-value=1
-          :inactive-value=2
+          :active-value="1"
+          :inactive-value="2"
           size="large"
           inline-prompt
           active-text="启用"
@@ -72,10 +73,6 @@ const roleFormRef = ref<FormInstance>();
 
 const props = defineProps<{
   visible: boolean;
-  // v-model:visible.isBt  //v-model传值方式
-  // visibleModifiers?: {
-  //   isBt:boolean
-  // }
   title: string;
   data?: RoleInfo | undefined;
   roleList: Array<RoleInfo>;
@@ -111,7 +108,6 @@ const btnOk = async (formEl: FormInstance | undefined) => {
           ElMessage.success(res.message);
         });
       } else {
-        console.log(form);
         roleApi.update.request({ id: props.data.id }, form).then((res) => {
           handleClose(roleFormRef.value);
           emits("valueChange");
@@ -127,13 +123,12 @@ const btnOk = async (formEl: FormInstance | undefined) => {
 watch(
   () => props.data,
   () => {
+    console.log("*****",props);
     form.name = props.data!.name;
     form.memo = props.data!.memo;
     form.status = props.data!.status;
     form.sequence = props.data!.sequence;
-    // if (props.data!.parent_id != 0) {
-      form.parent_id = props.data!.parent_id
-    // }
+    form.parent_id = props.data!.parent_id;
   }
 );
 </script>

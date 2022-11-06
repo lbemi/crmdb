@@ -8,7 +8,7 @@ import loadingBar from "@/component/loadingBar/index.vue";
 const Vnode = createVNode(loadingBar);
 render(Vnode, document.body);
 
-const routes: RouteRecordRaw[] = [
+const routes: Array<RouteRecordRaw> = [
   {
     path: "/login",
     name: "login",
@@ -17,15 +17,14 @@ const routes: RouteRecordRaw[] = [
       title: "登陆",
     },
   },
-
-  {
-    path: "/404",
-    name: "notFound",
-    component: () => import("@/views/error/404.vue"),
-    meta: {
-      title: "找不到此页面",
-    },
-  },
+  // {
+  //   path: "/404",
+  //   name: "notFound",
+  //   component: () => import("@/views/error/404.vue"),
+  //   meta: {
+  //     title: "找不到此页面",
+  //   },
+  // },
   {
     path: "/401",
     name: "noPower",
@@ -34,8 +33,18 @@ const routes: RouteRecordRaw[] = [
       title: "没有权限",
     },
   },
+  // {
+  //     path: "/",
+  //     name: "",
+  //     component: () => import("../views/layout/index.vue"),
+  //     // redirect: "/dashboard",
+  // }
 ];
 
+const pathMatch = {
+  path: '/:catchAll(.*)',
+  redirect: '/404',
+};
 const router = createRouter({
   history: createWebHashHistory(),
   // 记录路由页面位置
@@ -72,6 +81,7 @@ const genRouters = (menus: MenuObj[]) => {
     }
     // 动态添加路由规则
     router.addRoute(newRoute);
+
   }
   router.addRoute({
     path: "/",
@@ -79,13 +89,23 @@ const genRouters = (menus: MenuObj[]) => {
     component: () => import("../views/layout/index.vue"),
     redirect: "/dashboard",
     children: [
+      // {
+      //   path: "dashboard",
+      //   name: "dashboard",
+      //   component: () => import("../views/dashboard/dashboard.vue"),
+      // },
       {
-        path: "dashboard",
-        name: "dashboard",
-        component: () => import("../views/dashboard/dashboard.vue"),
+        path: "/404",
+        name: "",
+        component: () => import("@/views/error/404.vue"),
+        meta: {
+          title: "找不到此页面",
+        },
       },
     ],
-  });
+  }
+  );
+  router.addRoute(pathMatch)
 };
 
 //前置导航守卫
@@ -121,8 +141,8 @@ router.beforeEach((to, from, next) => {
     genRouters(menus.value);
     next(to);
   } else {
-    console.log(router.getRoutes().length,"-",routes.length);
-    
+    console.log(router.getRoutes().length, "-", routes.length);
+
     next();
   }
 });
