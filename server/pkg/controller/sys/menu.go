@@ -66,11 +66,9 @@ func (m *menu) Update(c context.Context, menu *form.UpdateMenusReq, menuID uint6
 		log.Logger.Error(err)
 		return err
 	}
-	var oldPolicy, newPolicy []string
-	oldPolicy = append(oldPolicy, res.URL)
-	newPolicy = append(newPolicy, menu.URL)
-	if res.URL != menu.URL {
-		err = m.factory.Authentication().UpdatePermissions(oldPolicy, newPolicy)
+
+	if res.URL != menu.URL || res.Method != menu.Method {
+		err = m.factory.Authentication().UpdatePermissions(res.URL, res.Method, menu.URL, menu.Method)
 		if err != nil {
 			log.Logger.Error(err)
 			return err

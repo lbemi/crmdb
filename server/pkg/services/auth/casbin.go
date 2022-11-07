@@ -2,7 +2,7 @@ package auth
 
 import (
 	"github.com/casbin/casbin/v2"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/model/rules"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 
 	"gorm.io/gorm"
@@ -20,7 +20,8 @@ type AuthenticationInterface interface {
 	DeleteRolePermission(resource ...string) error
 	DeleteRoleWithUser(uid, roleId uint64) error
 	DeleteRolePermissionWithRole(roleId uint64, resource ...string) error
-	UpdatePermissions(oldPolicy []string, newPolicy []string) error
+	UpdatePermissions(oldPath, oldMethod, newPath, newMethod string) error
+	DeleteUser(userID uint64) error
 }
 
 type authentication struct {
@@ -121,12 +122,19 @@ func (c *authentication) DeleteRolePermissionWithRole(roleId uint64, resource ..
 	return nil
 }
 
-func (c *authentication) UpdatePermissions(oldPolicy []string, newPolicy []string) error {
-	res := c.enforcer.GetFilteredNamedPolicy("p", 0, "/api/v1/menu/:id")
-	//_, err = c.enforcer.UpdatePolicy(oldPolicy, newPolicy)
+func (c *authentication) UpdatePermissions(oldPath, oldMethod, newPath, newMethod string) error {
+	return c.db.Model(&rules.Rule{}).Where("v1 =? and v2 =?", oldPath, oldMethod).Updates(&rules.Rule{Path: newPath, Method: newMethod}).Error
+	//_, err := c.enforcer.UpdatePolicy(oldPolicy, newPolicy)
 	//if err != nil {
 	//	return err
 	//}
-	log.Logger.Info("res---:", res)
+	//return nil
+}
+
+func (c *authentication) DeleteUser(userID uint64) error {
+	_, err := c.enforcer.DeleteUser(strconv.FormatUint(userID, 10))
+	if err != nil {
+		return err
+	}
 	return nil
 }

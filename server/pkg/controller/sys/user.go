@@ -95,10 +95,17 @@ func (u *user) GetUserList(c context.Context, page, limit int) (*form.PageUser, 
 }
 
 func (u *user) DeleteUserByUserId(c context.Context, id uint64) (err error) {
-	err = u.factory.User().DeleteUserByUserId(id)
-	if err != nil {
+
+	if err = u.factory.User().DeleteUserByUserId(id); err != nil {
 		log.Logger.Error(err)
+		return
 	}
+
+	if err = u.factory.Authentication().DeleteUser(id); err != nil {
+		log.Logger.Error(err)
+		return
+	}
+
 	return
 }
 
