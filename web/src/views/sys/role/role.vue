@@ -29,6 +29,7 @@
       <el-table-column prop="status" label="状态" min-width="160px">
         <template #default="scope">
           <el-switch
+            v-auth="'sys:role:status'"
             v-model="scope.row.status"
             class="ml-2"
             style="
@@ -116,7 +117,7 @@ import { MenuInfo, PageInfo, RoleInfo } from "@/type/sys";
 import { ElMessage, ElMessageBox } from "element-plus";
 import RoleSetMenu from "./roleSetMenu.vue";
 import { useStore } from "@/store/usestore";
-const use = useStore()
+const use = useStore();
 
 const setMenu = reactive({
   visible: false,
@@ -180,7 +181,7 @@ const changeStatus = async (role: RoleInfo) => {
     })
     .then((res) => {
       getRoleList();
-      
+
       ElMessage.success(res.message);
     })
     .catch(() => {
@@ -200,7 +201,7 @@ const deleteRole = (role: RoleInfo) => {
         .request({ id: role.id })
         .then((res) => {
           getRoleList();
-          use.getUserPermissions()
+          use.getUserPermissions();
           ElMessage.success(res.message);
         })
         .catch();
