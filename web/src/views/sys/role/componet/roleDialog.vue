@@ -25,8 +25,7 @@
       <el-form-item label="父角色:">
         <el-select
           ref="selectRef"
-          v-model.number="form.parent_id"
-          type="number"
+          v-model="form.parent_id"
           clearable
           placeholder="请选择"
           value-key="id"
@@ -69,7 +68,8 @@ import { UserForm, RoleInfo, RoleFrom } from "@/type/sys";
 import { FormInstance, FormRules, ElMessage } from "element-plus";
 import { ref, reactive, watch } from "vue";
 import { roleApi } from "../../api";
-
+import { useStore } from "@/store/usestore";
+const use = useStore();
 const roleFormRef = ref<FormInstance>();
 
 const props = defineProps<{
@@ -109,10 +109,15 @@ const btnOk = async (formEl: FormInstance | undefined) => {
           ElMessage.success(res.message);
         });
       } else {
+        if (form.parent_id === "") {
+          form.parent_id = 0;
+        }
         roleApi.update.request({ id: props.data.id }, form).then((res) => {
           handleClose(roleFormRef.value);
           emits("valueChange");
           ElMessage.success(res.message);
+          use.getLeftMenus();
+          use.getUserPermissions();
         });
       }
     } else {
@@ -124,12 +129,15 @@ const btnOk = async (formEl: FormInstance | undefined) => {
 watch(
   () => props.data,
   () => {
-    console.log("*****",props);
     form.name = props.data!.name;
     form.memo = props.data!.memo;
     form.status = props.data!.status;
     form.sequence = props.data!.sequence;
-    form.parent_id = props.data!.parent_id;
+    if (props.data?.parent_id === 0) {
+      form.parent_id = "";
+    } else {
+      form.parent_id = props.data?.parent_id;
+    }
   }
 );
 </script>

@@ -127,12 +127,10 @@ router.beforeEach((to, from, next) => {
     //登录后禁止访问login
     next(from);
   } else if (token && menus.value.length !== 0 && router.getRoutes().length == routes.length) {
-    console.log("刷新路由",router.getRoutes().length, "-", routes.length);
     // 刷新后重新生成路由
     genRouters(menus.value);
     next(to);
   } else {
-    console.log(router.getRoutes().length, "-", routes.length);
     next();
   }
 });

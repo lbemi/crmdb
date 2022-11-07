@@ -201,6 +201,7 @@ const changeStatus = async (menu: MenuInfo) => {
       ElMessage.success(res.message);
       getMenuList();
       user.getUserPermissions();
+      user.getLeftMenus()
     })
     .catch(() => {
       menu.status = 1;
@@ -219,8 +220,9 @@ const deleteMenu = (menu: MenuInfo) => {
         .request({ id: menu.id })
         .then((res) => {
           getMenuList();
-          ElMessage.success(res.message);
           user.getUserPermissions();
+          user.getLeftMenus();
+          ElMessage.success(res.message);
         })
         .catch();
     })
@@ -233,10 +235,7 @@ const handleEdit = (menu: MenuInfo) => {
   menuEdit.visible = true;
 };
 
-onUpdated(() => {
-  user.getUserPermissions();
-  user.getLeftMenus();
-});
+onUpdated(() => {});
 </script>
 
 <style scoped lang="less"></style>

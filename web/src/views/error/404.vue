@@ -32,7 +32,7 @@ const onGoHome = () => {
 };
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .error {
   height: 100%;
   background-color: white;

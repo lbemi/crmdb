@@ -115,6 +115,8 @@ import RoleDialog from "./componet/roleDialog.vue";
 import { MenuInfo, PageInfo, RoleInfo } from "@/type/sys";
 import { ElMessage, ElMessageBox } from "element-plus";
 import RoleSetMenu from "./roleSetMenu.vue";
+import { useStore } from "@/store/usestore";
+const use = useStore()
 
 const setMenu = reactive({
   visible: false,
@@ -178,6 +180,7 @@ const changeStatus = async (role: RoleInfo) => {
     })
     .then((res) => {
       getRoleList();
+      
       ElMessage.success(res.message);
     })
     .catch(() => {
@@ -197,6 +200,7 @@ const deleteRole = (role: RoleInfo) => {
         .request({ id: role.id })
         .then((res) => {
           getRoleList();
+          use.getUserPermissions()
           ElMessage.success(res.message);
         })
         .catch();
@@ -207,8 +211,6 @@ const deleteRole = (role: RoleInfo) => {
 const handleEdit = (role: RoleInfo) => {
   roleEdit.data = JSON.parse(JSON.stringify(role));
   roleEdit.visible = true;
-  console.log(roleEdit);
-  
 };
 
 const getMenuList = async () => {
@@ -223,10 +225,7 @@ const handleSetMenu = async (role: RoleInfo) => {
   setMenu.defaultCheckedMenus = [];
 
   await roleApi.getRoleMenus.request({ id: role.id }).then((res) => {
-    console.log(res.data);
-
     const menuList: Array<MenuInfo> = res.data;
-
     if (menuList !== null) {
       for (let i = 0; i < menuList.length; i++) {
         if (menuList[i].children !== null) {
@@ -237,7 +236,6 @@ const handleSetMenu = async (role: RoleInfo) => {
         setMenu.defaultCheckedMenus.push(menuList[i].id);
       }
     }
-    console.log("----", setMenu.defaultCheckedMenus);
   });
   setMenu.visible = true;
 };

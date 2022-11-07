@@ -74,6 +74,7 @@ const btnOk = async () => {
       handleClose();
       emits("valueChange");
       user.getLeftMenus();
+      user.getUserPermissions()
       loading.value = false;
       ElMessage.success(res.message);
     });

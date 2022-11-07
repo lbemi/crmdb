@@ -41,7 +41,7 @@ export interface RoleFrom {
 	status: number;
 	memo: string;
 	sequence: number
-	parent_id?: number
+	parent_id?: number|string
 }
 
 
@@ -68,7 +68,7 @@ export interface MenuFrom {
 	code?: string;
 	status: number;
 	memo: string;
-	parent_id?: number;
+	parent_id?: number|string;
 	url: string;
 	name: string;
 	sequence: number;

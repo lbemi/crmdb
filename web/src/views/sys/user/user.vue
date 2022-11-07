@@ -24,6 +24,7 @@
         <template #default="scope">
           <el-switch
             v-model="scope.row.status"
+            v-auth="'sys:user:status'"
             class="ml-2"
             style="
               --el-switch-on-color: #409eff;
@@ -86,7 +87,6 @@
     :title="userEdit.title"
     v-model:data="userEdit.data"
     @value-change="getUserList"
-    v-if="userEdit.visible"
   />
   <UserSetRole
     v-model:visible="setRole.visible"

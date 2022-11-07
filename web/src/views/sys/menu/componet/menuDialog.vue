@@ -76,7 +76,7 @@
         <el-input v-model="form.icon" required="" />
       </el-form-item>
       <el-form-item
-        v-if="form.menu_type == 2 "
+        v-if="form.menu_type == 2"
         v-model="form.menu_type"
         label="Code:"
       >
@@ -111,7 +111,9 @@ import { UserForm, MenuInfo, MenuFrom } from "@/type/sys";
 import { FormInstance, FormRules, ElMessage } from "element-plus";
 import { ref, reactive, watch } from "vue";
 import { menuApi } from "../../api";
+import { useStore } from "@/store/usestore";
 
+const use = useStore();
 const methodOptions = [
   {
     value: "GET",
@@ -177,13 +179,17 @@ const btnOk = async (formEl: FormInstance | undefined) => {
           ElMessage.success(res.message);
         });
       } else {
-        console.log(form);
+        if (form.parent_id === "") {
+          form.parent_id = 0;
+        }
         menuApi.update.request({ id: props.data.id }, form).then((res) => {
           handleClose(menuFormRef.value);
           emits("valueChange");
+          use.getUserPermissions()
           ElMessage.success(res.message);
         });
       }
+      use.getLeftMenus();
     } else {
       ElMessage.error("请正确填写");
     }
@@ -198,11 +204,16 @@ watch(
     form.memo = props.data!.memo;
     form.status = props.data!.status;
     form.sequence = props.data!.sequence;
-    form.parent_id = props.data?.parent_id;
+
     form.icon = props.data?.icon;
     form.method = props.data?.method;
     form.url = props.data!.url;
     form.code = props.data?.code;
+    if (props.data?.parent_id == 0) {
+      form.parent_id = "";
+    } else {
+      form.parent_id = props.data?.parent_id;
+    }
   }
 );
 </script>
