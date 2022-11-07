@@ -17,33 +17,12 @@ const routes: Array<RouteRecordRaw> = [
       title: "登陆",
     },
   },
-  // {
-  //   path: "/404",
-  //   name: "notFound",
-  //   component: () => import("@/views/error/404.vue"),
-  //   meta: {
-  //     title: "找不到此页面",
-  //   },
-  // },
-  {
-    path: "/401",
-    name: "noPower",
-    component: () => import("@/views/error/401.vue"),
-    meta: {
-      title: "没有权限",
-    },
-  },
-  // {
-  //     path: "/",
-  //     name: "",
-  //     component: () => import("../views/layout/index.vue"),
-  //     // redirect: "/dashboard",
-  // }
+  
 ];
 
 const pathMatch = {
-  path: '/:catchAll(.*)',
-  redirect: '/404',
+  path: "/:catchAll(.*)",
+  redirect: "/404",
 };
 const router = createRouter({
   history: createWebHashHistory(),
@@ -66,29 +45,29 @@ const genRouters = (menus: MenuObj[]) => {
       path: menus[key].url,
       name: menus[key].name,
       component: () => import("../views/layout/index.vue"),
+      redirect: "/dashboard",
       children: [],
     };
     if (menus[key].children != null) {
       for (let i = 0; i < menus[key].children.length; i++) {
         let vueUrl = `../views${menus[key].url}${menus[key].children[i].url}${menus[key].children[i].url}`;
-        newRoute.redirect= menus[key].url + menus[key].children[0].url,
-        newRoute.children?.push({
-          path: menus[key].url + menus[key].children[i].url,
-          name: menus[key].children[i].name,
-          component: () => import(`${vueUrl}.vue`),
-        });
+        (newRoute.redirect = menus[key].url + menus[key].children[0].url),
+          newRoute.children?.push({
+            path: menus[key].url + menus[key].children[i].url,
+            name: menus[key].children[i].name,
+            component: () => import(`${vueUrl}.vue`),
+          });
       }
     } else {
       let vueUrl = `../views${menus[key].url}${menus[key].url}`;
-        newRoute.children?.push({
-          path: menus[key].url ,
-          name: menus[key].name,
-          component: () => import(`${vueUrl}.vue`),
-        });
+      newRoute.children?.push({
+        path: menus[key].url,
+        name: menus[key].name,
+        component: () => import(`${vueUrl}.vue`),
+      });
     }
     // 动态添加路由规则
     router.addRoute(newRoute);
-
   }
   router.addRoute({
     path: "/",
@@ -96,23 +75,25 @@ const genRouters = (menus: MenuObj[]) => {
     component: () => import("../views/layout/index.vue"),
     redirect: "/dashboard",
     children: [
-      // {
-      //   path: "dashboard",
-      //   name: "dashboard",
-      //   component: () => import("../views/dashboard/dashboard.vue"),
-      // },
       {
         path: "/404",
-        name: "",
+        name: "notFound",
         component: () => import("@/views/error/404.vue"),
         meta: {
           title: "找不到此页面",
         },
       },
+      {
+        path: "/401",
+        name: "noPower",
+        component: () => import("@/views/error/401.vue"),
+        meta: {
+          title: "没有权限",
+        },
+      },
     ],
-  }
-  );
-  router.addRoute(pathMatch)
+  });
+  router.addRoute(pathMatch);
 };
 
 //前置导航守卫
@@ -127,6 +108,8 @@ router.beforeEach((to, from, next) => {
     // 异步请求,then是异步完成后操作
     store.getLeftMenus().then(() => {
       genRouters(menus.value);
+
+
       next(to);
     });
   } else if (
@@ -143,13 +126,13 @@ router.beforeEach((to, from, next) => {
   } else if (token && to.path === "/login") {
     //登录后禁止访问login
     next(from);
-  } else if (router.getRoutes().length <= routes.length) {
+  } else if (token && menus.value.length !== 0 && router.getRoutes().length == routes.length) {
+    console.log("刷新路由",router.getRoutes().length, "-", routes.length);
     // 刷新后重新生成路由
     genRouters(menus.value);
     next(to);
   } else {
     console.log(router.getRoutes().length, "-", routes.length);
-
     next();
   }
 });

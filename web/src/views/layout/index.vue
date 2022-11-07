@@ -8,9 +8,9 @@
           style="height: 100vh"
           :body-style="{ padding: '0px' }"
         >
-          <el-image
+          <img
             style="width: 100px; height: 70px; margin-left: 30px"
-            src="https://element-plus.gitee.io/images/element-plus-logo.svg"
+            src="@/assets/image/element-plus-logo.svg"
           />
           <el-menu
             active-text-color="#409EFF"
@@ -85,6 +85,7 @@ import Header from "./header/index.vue";
 import Bredcrumb from "@/component/breadcrumb/index.vue";
 import { useRoute } from "vue-router";
 import { Menu as IconMenu, Setting } from "@element-plus/icons-vue";
+
 const data = reactive({
   isCollapse: false,
 });
