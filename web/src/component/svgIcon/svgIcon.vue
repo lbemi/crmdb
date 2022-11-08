@@ -41,11 +41,9 @@ const svgClass  = computed(()=>{
 
 <style scoped lang="less">
 .svg-icon {
-  width: 1.3em;
-  height: 1.3em;
+  width: 1em;
+  height: 1em;
   position: relative;
-  margin-right: 5px;
   // fill: currentColor;
-  vertical-align: -2px;
 }
 </style>

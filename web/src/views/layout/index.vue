@@ -2,35 +2,51 @@
 <template>
   <div class="common-layout">
     <el-container>
-      <el-aside width="200px">
-        <el-card
+      <el-aside width="160px">
+        <!-- <el-card
           class="box-card"
           style="height: 100vh"
           :body-style="{ padding: '0px' }"
+        >  -->
+        <el-menu
+          active-text-color="#409EFF"
+          class="el-menu-vertical-demo"
+          :default-active="routeActive"
+          :unique-opened="true"
+          :router="true"
+          style="height: 100%"
+          :collapse="isCollapse"
+          @open="handleOpen"
+          @close="handleClose"
         >
-          <img
-            style="width: 100px; height: 70px; margin-left: 30px"
-            src="@/assets/image/element-plus-logo.svg"
-          />
-          <el-menu
-            active-text-color="#409EFF"
-            class="el-menu-vertical-demo"
-            :default-active="routeActive"
-            :unique-opened="true"
-            :router="true"
-            style="height: 100vh"
-          >
+          <el-icon style="width: 100%">
+            <img
+              style="
+                width: 100px;
+                height: 70px;
+                margin-top: 50px;
+                margin-right: 30px;
+              "
+              src="@/assets/image/element-plus-logo.svg"
+            />
+          </el-icon>
+          <el-icon @click="isCollapse = !isCollapse">
+            <SvgIcon iconName="icon-zhankaicaidan" className="expand-icon" />
+          </el-icon>
           <template v-for="menu in store.menus">
             <el-menu-item v-if="menu.children === null" :index="menu.url">
-              <SvgIcon :iconName="menu.icon" />
-              <template #title>{{menu.name}}</template>
-            </el-menu-item>
-            <el-sub-menu  v-else
-              :index="menu.id + ''"
-              :key="menu.id"
-            >
-              <template #title>
+              <el-icon style="width: 0.5em; height: 0.5em; margin-right: 10px">
                 <SvgIcon :iconName="menu.icon" />
+              </el-icon>
+              <template #title>{{ menu.name }}</template>
+            </el-menu-item>
+            <el-sub-menu v-else :index="menu.id + ''" :key="menu.id">
+              <template #title>
+                <el-icon
+                  style="width: 0.5em; height: 0.5em; margin-right: 10px"
+                >
+                  <SvgIcon :iconName="menu.icon" />
+                </el-icon>
                 <span>{{ menu.name }}</span>
               </template>
               <el-menu-item
@@ -38,15 +54,17 @@
                 v-for="child in menu.children"
                 :key="child.id"
               >
+                <el-icon
+                  style="width: 0.5em; height: 0.5em; margin-right: 10px"
+                >
                   <SvgIcon :iconName="child.icon" />
+                </el-icon>
                 {{ child.name }}
               </el-menu-item>
-
             </el-sub-menu>
           </template>
-
-          </el-menu>
-        </el-card>
+        </el-menu>
+        <!-- </el-card> -->
       </el-aside>
       <el-container>
         <el-header style="padding: 0px 5px">
@@ -61,12 +79,11 @@
           style="
             display: flex;
             align-items: stretch;
-
             justify-content: center;
             height: 50px;
             padding: 0px 10px;
           "
-          >Wirte by Lbemi</el-footer
+          >底部</el-footer
         >
       </el-container>
     </el-container>
@@ -74,25 +91,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref } from "vue";
 import { useStore } from "@/store/usestore";
 import Header from "./header/index.vue";
 import Bredcrumb from "@/component/breadcrumb/index.vue";
 import { useRoute } from "vue-router";
 
-const data = reactive({
-  isCollapse: false,
-});
 const route = useRoute();
 const routeActive = ref();
 routeActive.value = route.path;
 const store = useStore();
+const isCollapse = ref<boolean>(false);
+const handleOpen = (key: string, keyPath: string[]) => {};
+const handleClose = (key: string, keyPath: string[]) => {};
 </script>
 
 <style scoped lang="less">
 .expand-icon {
-  position: absolute;
-  width: 100%;
+  position: relative;
+  width: 20px;
+  height: 20px;
   bottom: 0;
+  margin-top: 15px;
 }
 </style>

@@ -2,11 +2,16 @@
   <!-- header有两部分 -->
   <el-card :body-style="{ padding: '0px' }">
     <div class="header">
-      <div>
-        <span style="font-size: large">运维管理平台</span>
+      <div style="margin-left: 10px; display: flex; align-items: center">
+        <img
+          style="width: 100px; height: 70px; margin-left: 10px"
+          src="@/assets/image/element-plus-logo.svg"
+        />
+        <span style="font-size: large; margin-left: 10px">运维管理平台</span>
       </div>
-      <div style="display: flex; align-items: center;" >
-        <span style="margin-right: 10px;">
+
+      <div style="margin-right: 10px">
+        <span style="margin-right: 10px; align-items: center">
           欢迎 {{ userInfo?.user_name }}
         </span>
         <el-dropdown>
@@ -71,9 +76,6 @@ const data = reactive({
   userId: "123456789",
 });
 
-const handleMessage = () => {
-  data.showMessage = true;
-};
 const logout = () => {
   // 清除本地缓存的 token 和 account
   localStorage.clear();
@@ -91,5 +93,4 @@ const logout = () => {
   justify-content: space-between;
   align-items: center;
 }
-
 </style>
