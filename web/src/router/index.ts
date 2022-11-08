@@ -71,7 +71,7 @@ const genRouters = (menus: MenuObj[]) => {
   }
   router.addRoute({
     path: "/",
-    name: "",
+    name: "index",
     component: () => import("../views/layout/index.vue"),
     redirect: "/dashboard",
     children: [

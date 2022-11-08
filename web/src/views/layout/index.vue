@@ -22,7 +22,7 @@
           >
           <template v-for="menu in store.menus">
             <el-menu-item v-if="menu.children === null" :index="menu.url">
-              <el-icon><icon-menu /></el-icon>
+              <SvgIcon :iconName="menu.icon" />
               <template #title>{{menu.name}}</template>
             </el-menu-item>
             <el-sub-menu  v-else
@@ -30,20 +30,15 @@
               :key="menu.id"
             >
               <template #title>
-                <el-icon>
-                  <setting />
-                </el-icon>
+                <SvgIcon :iconName="menu.icon" />
                 <span>{{ menu.name }}</span>
               </template>
-
               <el-menu-item
                 :index="menu.url + child.url"
                 v-for="child in menu.children"
                 :key="child.id"
               >
-                <el-icon>
-                  <setting />
-                </el-icon>
+                  <SvgIcon :iconName="child.icon" />
                 {{ child.name }}
               </el-menu-item>
 
@@ -84,7 +79,6 @@ import { useStore } from "@/store/usestore";
 import Header from "./header/index.vue";
 import Bredcrumb from "@/component/breadcrumb/index.vue";
 import { useRoute } from "vue-router";
-import { Menu as IconMenu, Setting } from "@element-plus/icons-vue";
 
 const data = reactive({
   isCollapse: false,

@@ -7,6 +7,10 @@ import "element-plus/theme-chalk/el-message-box.css";
 import "virtual:windi.css";
 import { directive } from "@/utils/directive";
 import { dateStrFormat } from "@/utils/date";
+import '@/assets/iconfont/iconfont.js'
+import '@/assets/iconfont/iconfont.css'
+import SvgIcon from '@/component/svgIcon/svgIcon.vue'
+
 const app = createApp(App);
 //初始化存储
 app.use(pinia);
@@ -34,4 +38,6 @@ app.config.globalProperties.$filters = {
   },
 };
 
+// 加载全局icon组件
+app.component('SvgIcon',SvgIcon)
 app.mount("#app");

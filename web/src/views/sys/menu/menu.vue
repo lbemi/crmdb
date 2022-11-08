@@ -34,9 +34,9 @@
       </el-table-column>
       <el-table-column prop="memo" label="描述" width="120" />
       <el-table-column prop="url" label="URL" width="250" />
-      <el-table-column prop="code" label="Code" width="200" />
+      <el-table-column prop="code" label="Code" width="130" />
 
-      <el-table-column prop="method" label="请求方式" width="200">
+      <el-table-column prop="method" label="请求方式" width="100">
         <template #default="scope">
           <span
             v-if="scope.row.method === 'GET'"
@@ -57,7 +57,12 @@
         </template>
       </el-table-column>
 
-      <el-table-column prop="icon" label="图标" width="180"> </el-table-column>
+      <el-table-column prop="icon" label="图标" width="60"> 
+        <template #default="scope">
+          <SvgIcon :iconName="scope.row.icon" :color="'#79bbff'" />
+        </template>
+        
+      </el-table-column>
       <el-table-column prop="status" label="状态" width="80">
         <template #default="scope">
           <el-switch
@@ -79,7 +84,7 @@
           />
         </template>
       </el-table-column>
-      <el-table-column prop="sequence" label="排序" min-width="180px" />
+      <el-table-column prop="sequence" label="排序" min-width="80px" />
       <el-table-column prop="created_at" label="创建时间" min-width="240px">
         <template #default="scope">
           {{ $filters.dateFormat(scope.row.created_at) }}

@@ -1,0 +1,51 @@
+{
+  "id": "3756863",
+  "name": "系统",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "6263286",
+      "name": "用户管理",
+      "font_class": "yonghuguanli",
+      "unicode": "e659",
+      "unicode_decimal": 58969
+    },
+    {
+      "icon_id": "6263311",
+      "name": "域名白名单",
+      "font_class": "yumingbaimingdan",
+      "unicode": "e662",
+      "unicode_decimal": 58978
+    },
+    {
+      "icon_id": "6263317",
+      "name": "权限系统",
+      "font_class": "quanxianxitong",
+      "unicode": "e663",
+      "unicode_decimal": 58979
+    },
+    {
+      "icon_id": "6263335",
+      "name": "设置",
+      "font_class": "shezhi",
+      "unicode": "e667",
+      "unicode_decimal": 58983
+    },
+    {
+      "icon_id": "6518740",
+      "name": "home2",
+      "font_class": "home1",
+      "unicode": "e67a",
+      "unicode_decimal": 59002
+    },
+    {
+      "icon_id": "6692124",
+      "name": "审核系统",
+      "font_class": "shenhexitong",
+      "unicode": "e684",
+      "unicode_decimal": 59012
+    }
+  ]
+}
