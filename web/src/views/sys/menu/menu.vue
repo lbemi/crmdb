@@ -111,7 +111,7 @@
           >
           <el-button
             v-auth="'sys:menu:set'"
-            type="primary"
+            type="success"
             size="small"
             :icon="View"
             >查看</el-button
