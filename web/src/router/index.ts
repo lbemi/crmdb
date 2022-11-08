@@ -108,19 +108,9 @@ router.beforeEach((to, from, next) => {
     // 异步请求,then是异步完成后操作
     store.getLeftMenus().then(() => {
       genRouters(menus.value);
-
-
       next(to);
     });
-  } else if (
-    token &&
-    menus.value.length !== 0 &&
-    from.path === "/login" &&
-    to.path === "/home"
-  ) {
-    // genRouters(menus.value)
-    next("/dashboard");
-  } else if (!token && to.path !== "/login") {
+  } else if  (!token && to.path !== "/login") {
     //token不存在,跳转到登录页面
     next("/login");
   } else if (token && to.path === "/login") {
