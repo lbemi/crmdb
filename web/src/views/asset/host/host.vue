@@ -14,15 +14,16 @@
       stripe
       :data="hostList"
       border
-      style="width: 100%"
+      style="width: 100%;"
       v-loading="loading"
       row-key="id"
+
     >
-      <el-table-column prop="id" label="ID" min-width="40px" />
-      <el-table-column prop="ip" label="主机IP" min-width="130px" />
-      <el-table-column prop="port" label="端口" min-width="80px" />
-      <el-table-column prop="remark" label="描述" min-width="80px" />
-      <el-table-column prop="label" label="标签" min-width="40px">
+      <el-table-column header-align="center" align="center" prop="id" label="ID" min-width="40px" />
+      <el-table-column header-align="center" align="center" prop="ip" label="主机IP" min-width="130px" />
+      <el-table-column  header-align="center" align="center" prop="port" label="端口" min-width="80px" />
+      <el-table-column header-align="center" align="center" prop="remark" label="描述" min-width="80px" />
+      <el-table-column header-align="center" align="center" prop="label" label="标签" min-width="40px">
         <template #default="scope">
           <el-tooltip placement="top" effect="light">
             <template #content>
@@ -38,14 +39,14 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column prop="username" label="用户名" min-width="80px" />
-      <el-table-column prop="auth_method" label="认证方式" min-width="80px" />
-      <el-table-column prop="created_at" label="创建时间" min-width="140px">
+      <el-table-column header-align="center" align="center" prop="username" label="用户名" min-width="80px" />
+      <el-table-column header-align="center" align="center" prop="auth_method" label="认证方式" min-width="80px" />
+      <el-table-column header-align="center" align="center" prop="created_at" label="创建时间" min-width="140px">
         <template #default="scope">
           {{ $filters.dateFormat(scope.row.created_at) }}
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" min-width="60px">
+      <el-table-column header-align="center" align="center" prop="status" label="状态" min-width="60px">
         <template #default="scope">
           <el-switch
             v-auth="'sys:role:status'"
@@ -66,7 +67,7 @@
           />
         </template>
       </el-table-column>
-      <el-table-column prop="enable_ssh" label="SSH" min-width="60px">
+      <el-table-column header-align="center" align="center" prop="enable_ssh" label="SSH" min-width="60px">
         <template #default="scope">
           <el-switch
             v-auth="'sys:role:status'"
@@ -87,7 +88,7 @@
           />
         </template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作" min-width="300px">
+      <el-table-column header-align="center" align="center" fixed="right" label="操作" min-width="300px">
         <template #default="scope">
           <el-button
             v-auth="'sys:role:edit'"

@@ -2,8 +2,7 @@
 <template>
   <el-row :gutter="0" class="h-full">
     <el-col :lg="16" :md="12" class="bg-blue-400">
-      <i class="iconfont icon-kubernetes" />
-      
+  
       <span class="flex h-screen justify-center items-center"
         >运维管理平台
       </span>

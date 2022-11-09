@@ -17,6 +17,7 @@ type IController interface {
 	sys.RoleGetter
 	sys.MenuGetter
 	asset.HostGetter
+	asset.TerminalGetter
 }
 
 type Controller struct {
@@ -54,4 +55,8 @@ func (c *Controller) Menu() sys.IMenu {
 
 func (c *Controller) Host() asset.IHost {
 	return asset.NewHost(c.DbFactory)
+}
+
+func (c *Controller) Terminal() asset.ITerminal {
+	return asset.NewTerminal(c.DbFactory)
 }
