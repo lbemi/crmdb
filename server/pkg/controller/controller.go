@@ -2,6 +2,7 @@ package controller
 
 import (
 	r "github.com/go-redis/redis"
+	"github.com/lbemi/lbemi/pkg/controller/asset"
 	"github.com/lbemi/lbemi/pkg/controller/policy"
 	"github.com/lbemi/lbemi/pkg/controller/redis"
 	"github.com/lbemi/lbemi/pkg/controller/sys"
@@ -15,6 +16,7 @@ type IController interface {
 	sys.UserGetter
 	sys.RoleGetter
 	sys.MenuGetter
+	asset.HostGetter
 }
 
 type Controller struct {
@@ -29,18 +31,27 @@ func NewController(factory services.IDbFactory, redisCli *r.Client) IController 
 		RedisCli:  redisCli,
 	}
 }
+
 func (c *Controller) Redis() redis.IRedis {
 	return redis.NewRedis(c.RedisCli)
 }
+
 func (c *Controller) Policy() policy.PolicyInterface {
 	return policy.NewPolicy(c.DbFactory)
 }
+
 func (c *Controller) User() sys.IUSer {
 	return sys.NewUser(c.DbFactory)
 }
+
 func (c *Controller) Role() sys.IRole {
 	return sys.NewRole(c.DbFactory)
 }
+
 func (c *Controller) Menu() sys.IMenu {
 	return sys.NewMenu(c.DbFactory)
+}
+
+func (c *Controller) Host() asset.IHost {
+	return asset.NewHost(c.DbFactory)
 }

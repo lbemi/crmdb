@@ -32,7 +32,7 @@ const iconClassName = computed(()=>{
 
 const svgClass  = computed(()=>{
   if (props.className) {
-    return `svg-icon ${props.className}`
+    return `${props.className}`
   }
   return 'svg-icon'
 })
@@ -46,4 +46,10 @@ const svgClass  = computed(()=>{
   position: relative;
   // fill: currentColor;
 }
+.icon-1-4em {
+  width: 1.4em;
+  height: 1.4em;
+  position: relative;
+}
+
 </style>

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/app/routes/asset"
 	"github.com/lbemi/lbemi/app/routes/sys"
 	"net/http"
 	"os"
@@ -23,6 +24,7 @@ func Run() {
 	o := option.NewOptions()
 
 	o.Load()
+
 	// 注册handler
 	lbemi.Setup(o)
 
@@ -67,5 +69,6 @@ func initRouter(router *gin.Engine) {
 	sys.NewUserRouter(v1)
 	sys.NewMenuRouter(v1)
 	sys.NewRoleRouter(v1)
+	asset.NewHostRouter(v1)
 
 }
