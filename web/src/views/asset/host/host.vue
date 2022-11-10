@@ -104,7 +104,7 @@
             type="warning"
             size="small"
             :icon="Edit"
-            @click="handleSetMenu(scope.row)"
+            @click="handleTerminal(scope.row)"
             >Terminal</el-button
           >
           <el-button
@@ -149,6 +149,7 @@ import { HostInfo } from "@/type/host";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { hostApi } from "../api";
 import HostDialogVue from "./componet/hostDialog.vue";
+import router from "@/router/index";
 
 const labels = (str: string) => {
   return str.split(",");
@@ -253,6 +254,18 @@ const handleSetMenu = async (host: HostInfo) => {
 
   setMenu.visible = true;
 };
+
+const handleTerminal =(host: HostInfo) => {
+  const terminalPage = router.resolve({
+    path: '/termial',
+    query: {
+      id: host.id,
+      ip: host.ip
+    }
+  })
+  
+  window.open(terminalPage.href,"_blank")
+}
 </script>
 
 <style scoped lang="less"></style>

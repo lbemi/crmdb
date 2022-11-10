@@ -63,7 +63,7 @@ func initRouter(router *gin.Engine) {
 	// 注册默认路由
 	routes.DefaultRoutes(v1)
 	//, middleware.CasbinMiddleware()
-	v1.Use(middleware.JWTAuth(), middleware.CasbinMiddleware())
+	//v1.Use(middleware.JWTAuth(), middleware.CasbinMiddleware())
 
 	//注册业务路由
 	sys.NewUserRouter(v1)

@@ -13,5 +13,6 @@ export const hostApi = {
   update: Api.create('/host/{id}','put'),
   listHostByID: Api.create('/host/{id}','get'),
 
+  ws: Api.create('/host/{id}/ws', 'get')
 }
 

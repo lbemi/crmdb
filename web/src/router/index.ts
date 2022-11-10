@@ -17,7 +17,14 @@ const routes: Array<RouteRecordRaw> = [
       title: "登陆",
     },
   },
-  
+  {
+    path: "/termial",
+    name: "termial",
+    component: () => import("@/views/asset/host/componet/terminal.vue"),
+    meta: {
+      title: "ssh",
+    },
+  }
 ];
 
 const pathMatch = {
@@ -90,6 +97,7 @@ const genRouters = (menus: MenuObj[]) => {
         meta: {
           title: "没有权限",
         },
+        
       },
     ],
   });

@@ -2,10 +2,12 @@ package asset
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/lbemi"
 	"github.com/lbemi/lbemi/pkg/model/asset"
+	"net/http"
 	"strconv"
 )
 
@@ -154,4 +156,51 @@ func DeleteHost(c *gin.Context) {
 		return
 	}
 	response.Success(c, response.StatusOK, nil)
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+func WsShell(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 32)
+	if err != nil {
+		log.Logger.Error(err)
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	if !lbemi.CoreV1.Host().CheckHostExist(c, id) {
+		log.Logger.Error(err)
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	cols := c.DefaultQuery("cols", "150")
+	rows := c.DefaultQuery("rows", "35")
+	col, _ := strconv.Atoi(cols)
+	row, _ := strconv.Atoi(rows)
+
+	client, session, channel, err := lbemi.CoreV1.Terminal().GenerateClient(c, id, col, row)
+	if err != nil {
+		log.Logger.Error(err)
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	err = lbemi.CoreV1.Ws().GenerateConn(conn, client, session, channel)
+
+	if err != nil {
+		log.Logger.Error(err)
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
 }
