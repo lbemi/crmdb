@@ -179,8 +179,8 @@ func WsShell(c *gin.Context) {
 		return
 	}
 
-	cols := c.DefaultQuery("cols", "150")
-	rows := c.DefaultQuery("rows", "35")
+	cols := c.DefaultQuery("cols", "170")
+	rows := c.DefaultQuery("rows", "38")
 	col, _ := strconv.Atoi(cols)
 	row, _ := strconv.Atoi(rows)
 

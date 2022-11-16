@@ -7,7 +7,7 @@
       element-loading-text="拼命连接中"
       id="xterm"
       class="xterm"
-      :style="{ height: state.height }" 
+      :style="{ height: state.height }"
     />
   </el-card>
 </template>
@@ -22,11 +22,10 @@ import { ElMessage } from "element-plus";
 
 const { query } = useRoute();
 
-
 const state = reactive({
   machineId: 0,
   cmd: "",
-  height: "500px",
+  height: "600px",
   term: null as any,
   socket: null as any,
 });
@@ -36,7 +35,7 @@ const data = 2;
 const ping = 3;
 
 onMounted(() => {
-  state.height = window.innerHeight -200 + "px";
+  state.height = window.innerHeight - 200 + "px";
 });
 
 onBeforeUnmount(() => {
@@ -114,11 +113,10 @@ let url =
   `${query.id}` +
   "/ws";
 
-
 let pingInterval: any;
 function initSocket() {
-  console.log(localStorage.getItem('token'));
-  
+  console.log(localStorage.getItem("token"));
+
   state.socket = new WebSocket(url);
 
   // 监听socket连接
@@ -135,7 +133,7 @@ function initSocket() {
 
   // 监听socket错误信息
   state.socket.onerror = (e: any) => {
-    ElMessage.error('连接失败')
+    ElMessage.error("连接失败");
   };
 
   state.socket.onclose = () => {

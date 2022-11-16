@@ -60,9 +60,9 @@ func initRouter(router *gin.Engine) {
 		middleware.Cross())
 
 	v1 := router.Group("/api/v1")
-	// 注册默认路由
-	routes.DefaultRoutes(v1)
-	//,
+	// 注册不需要鉴权路由
+	routes.PassThroughRoutes(v1)
+	// 中间件
 	v1.Use(middleware.JWTAuth(), middleware.CasbinMiddleware())
 
 	//注册业务路由
@@ -70,5 +70,4 @@ func initRouter(router *gin.Engine) {
 	sys.NewMenuRouter(v1)
 	sys.NewRoleRouter(v1)
 	asset.NewHostRouter(v1)
-
 }
