@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
-	"github.com/lbemi/lbemi/pkg/lbemi"
+	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/model/asset"
 	"net/http"
 	"strconv"
@@ -29,7 +29,7 @@ func AddHost(c *gin.Context) {
 		return
 	}
 
-	if err := lbemi.CoreV1.Host().Create(c, &machine); err != nil {
+	if err := core.V1.Host().Create(c, &machine); err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -62,7 +62,7 @@ func ListHosts(c *gin.Context) {
 		return
 	}
 
-	res, err := lbemi.CoreV1.Host().List(c, page, limit)
+	res, err := core.V1.Host().List(c, page, limit)
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
@@ -90,7 +90,7 @@ func GetHostById(c *gin.Context) {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
-	res, err := lbemi.CoreV1.Host().GetByHostId(c, id)
+	res, err := core.V1.Host().GetByHostId(c, id)
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
@@ -127,13 +127,13 @@ func UpdateHost(c *gin.Context) {
 		return
 	}
 
-	if !lbemi.CoreV1.Host().CheckHostExist(c, id) {
+	if !core.V1.Host().CheckHostExist(c, id) {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
 
-	if err := lbemi.CoreV1.Host().Update(c, id, &machine); err != nil {
+	if err := core.V1.Host().Update(c, id, &machine); err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -150,7 +150,7 @@ func DeleteHost(c *gin.Context) {
 		return
 	}
 
-	if err := lbemi.CoreV1.Host().Delete(c, id); err != nil {
+	if err := core.V1.Host().Delete(c, id); err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -173,7 +173,7 @@ func WsShell(c *gin.Context) {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
-	if !lbemi.CoreV1.Host().CheckHostExist(c, id) {
+	if !core.V1.Host().CheckHostExist(c, id) {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
 		return
@@ -184,7 +184,7 @@ func WsShell(c *gin.Context) {
 	col, _ := strconv.Atoi(cols)
 	row, _ := strconv.Atoi(rows)
 
-	client, session, channel, err := lbemi.CoreV1.Terminal().GenerateClient(c, id, col, row)
+	client, session, channel, err := core.V1.Terminal().GenerateClient(c, id, col, row)
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)
@@ -196,7 +196,7 @@ func WsShell(c *gin.Context) {
 		return
 	}
 
-	err = lbemi.CoreV1.Ws().GenerateConn(conn, client, session, channel)
+	err = core.V1.Ws().GenerateConn(conn, client, session, channel)
 
 	if err != nil {
 		log.Logger.Error(err)

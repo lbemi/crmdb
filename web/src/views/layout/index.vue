@@ -2,7 +2,7 @@
 <template>
   <div class="common-layout">
     <el-container>
-      <el-aside width="160px">
+      <el-aside width="160px" >
         <!-- <el-card
           class="box-card"
           style="height: 100vh"
@@ -14,7 +14,7 @@
           :default-active="routeActive"
           :unique-opened="true"
           :router="true"
-          style="height: 100%"
+          style="height: 100vh"
           :collapse="isCollapse"
           @open="handleOpen"
           @close="handleClose"
@@ -71,20 +71,13 @@
           <Header />
         </el-header>
 
-        <el-main style="padding: 10px 5px; margin-top: 10px">
+        <el-main style="padding: 10px 5px; margin-top: 12px">
           <Bredcrumb />
           <router-view></router-view>
         </el-main>
         <el-footer
-          style="
-            display: flex;
-            align-items: stretch;
-            justify-content: center;
-            height: 50px;
-            padding: 0px 10px;
-          "
-          >底部</el-footer
-        >
+        style="text-align:center; height: 30px;"
+        >底线....</el-footer>
       </el-container>
     </el-container>
   </div>

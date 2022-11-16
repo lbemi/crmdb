@@ -48,6 +48,7 @@ onMounted(() => {
   // 优化体验
   initTerm();
   initSocket();
+
 });
 
 onUnmounted(() => {
@@ -77,6 +78,7 @@ const initTerm = () => {
   });
   //绑定dom
   data.term.open(document.getElementById("xterm")!);
+  data.term?.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m $ ')
   //终端适应父元素大小
   const fitAddon = new FitAddon();
   data.term.loadAddon(fitAddon);
@@ -88,9 +90,11 @@ const initTerm = () => {
   data.term.onData(function (key) {
     // 这里key值是输入的值，数据格式就是后端定义的 {"operation":"stdin","data":"ls"}
     let msgOrder = {
-      operation: "stdin",
+      type: 2,
       data: key,
     };
+    console.log("******",msgOrder);
+    
     //发送数据
     _data.socket?.send(JSON.stringify(msgOrder));
   });
@@ -115,9 +119,10 @@ const initSocket = () => {
     "/ws" + "?" +"&rows=" + data.term?.rows + "&cols=" + data.term?.cols;
 
   //实例化
-  data.socket = new WebSocket(url);
+  data.socket = new WebSocket(url,[localStorage.getItem('token')!]);
+  console.log(data.socket,"....")
   //关闭连接时的方法
-  socketOnClose();
+  // socketOnClose();
   //接收消息的方法
   socketOnMessage();
   //报错时的方法
@@ -128,6 +133,8 @@ const socketOnMessage = () => {
   data.socket!.onmessage = (msg) => {
     //接收到消息后将字符串转为对象，输出data内容
     let content = JSON.parse(msg.data);
+    console.log("发送消息--:",msg);
+    
     data.term!.write(content.data);
   };
 };
@@ -135,11 +142,16 @@ const socketOnMessage = () => {
 const socketOnClose = () => {
   data.socket!.onclose = () => {
     //关闭连接后打印在终端里
+    console.log("执行关闭....")
     data.socket = null;
   };
 };
 const socketOnError = () => {
-  data.socket!.onerror = () => {
+  
+  data.socket!.onerror = (e) => {
+    console.log("err: socket-->", data.socket);
+    console.log("errr---: ",e);
+    
     ElMessage.error("连接失败.");
   };
 };
@@ -148,6 +160,8 @@ const closeSocket = () => {
   if (data.socket === null) {
     return;
   }
+  console.log("执行关闭....!!!")
+
   data.socket.close();
 };
 </script>

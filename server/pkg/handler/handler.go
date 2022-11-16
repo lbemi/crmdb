@@ -1,11 +1,11 @@
-package controller
+package handler
 
 import (
 	r "github.com/go-redis/redis"
-	"github.com/lbemi/lbemi/pkg/controller/asset"
-	"github.com/lbemi/lbemi/pkg/controller/policy"
-	"github.com/lbemi/lbemi/pkg/controller/redis"
-	"github.com/lbemi/lbemi/pkg/controller/sys"
+	"github.com/lbemi/lbemi/pkg/handler/asset"
+	"github.com/lbemi/lbemi/pkg/handler/policy"
+	"github.com/lbemi/lbemi/pkg/handler/redis"
+	"github.com/lbemi/lbemi/pkg/handler/sys"
 	"github.com/lbemi/lbemi/pkg/model/config"
 	"github.com/lbemi/lbemi/pkg/services"
 )

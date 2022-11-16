@@ -40,7 +40,12 @@
         </template>
       </el-table-column>
       <el-table-column header-align="center" align="center" prop="username" label="用户名" min-width="80px" />
-      <el-table-column header-align="center" align="center" prop="auth_method" label="认证方式" min-width="80px" />
+      <el-table-column header-align="center" align="center" prop="auth_method" label="认证方式" min-width="80px" >
+        <template #default="scope">
+          <el-tag v-if="scope.row.auth_method == 1">Password</el-tag>
+          <el-tag v-else >Secret</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column header-align="center" align="center" prop="created_at" label="创建时间" min-width="140px">
         <template #default="scope">
           {{ $filters.dateFormat(scope.row.created_at) }}
@@ -256,7 +261,7 @@ const handleSetMenu = async (host: HostInfo) => {
 };
 
 const handleTerminal =(host: HostInfo) => {
-  const terminalPage = router.resolve({
+  const terminalPage = router.push({
     path: '/termial',
     query: {
       id: host.id,
@@ -264,7 +269,7 @@ const handleTerminal =(host: HostInfo) => {
     }
   })
   
-  window.open(terminalPage.href,"_blank")
+  // window.open(terminalPage.href,"_blank")
 }
 </script>
 

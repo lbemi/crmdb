@@ -14,6 +14,6 @@ func NewHostRouter(router *gin.RouterGroup) {
 		host.PUT("/:id", asset.UpdateHost)    // 根据id修改主机
 		host.DELETE("/:id", asset.DeleteHost) //根据id删除主机
 
-		host.GET("/:id/ws", asset.WsShell)
+		//host.GET("/:id/ws", asset.WsShell)
 	}
 }

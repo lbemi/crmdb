@@ -55,7 +55,6 @@ func (t *terminal) GenerateClient(ctx context.Context, hostID int64, col, row in
 			return nil
 		},
 	}
-	fmt.Println("生成SSH连接信息：", clientConfig)
 	addr = fmt.Sprintf("%s:%d", res.Ip, res.Port)
 	if client, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
 		log.Logger.Error(err)
@@ -121,6 +120,7 @@ func (t *terminal) generateRequestTerminal(ctx context.Context, client *ssh.Clie
 		log.Logger.Error(err)
 		return nil, nil, err
 	}
+
 	ok, err = channel.SendRequest("shell", true, nil)
 	if !ok || err != nil {
 		log.Logger.Error(err)

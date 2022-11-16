@@ -2,8 +2,10 @@ package asset
 
 import (
 	"bufio"
+	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/model/asset"
 	"golang.org/x/crypto/ssh"
 	"time"
 	"unicode/utf8"
@@ -20,6 +22,13 @@ func NewWs() *ws {
 	return &ws{}
 }
 
+type WsMsg struct {
+	Type int    `json:"type"`
+	Msg  string `json:"msg"`
+	Cols int    `json:"cols"`
+	Rows int    `json:"rows"`
+}
+
 type IWs interface {
 	GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.Session, channel ssh.Channel) error
 }
@@ -32,11 +41,42 @@ func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.S
 			if err != nil {
 				return
 			}
-			// 将接收到的数据通过ssh channel通道写入
-			_, err = channel.Write(p)
+			var wsmsg WsMsg
+			err = json.Unmarshal(p, &wsmsg)
 			if err != nil {
+				log.Logger.Error(err)
 				return
 			}
+			// 将接收到的数据通过ssh channel通道写入
+			//stdinPipe, err := session.StdinPipe()
+			//_, err = stdinPipe.Write(p)
+			switch wsmsg.Type {
+			case 2:
+				channel.Write([]byte(wsmsg.Msg))
+				if err != nil {
+					return
+				}
+			case 3:
+				session.SendRequest("ping", true, nil)
+				if err != nil {
+					ws.WriteMessage(1, []byte("\033[31m已经关闭连接!\033[0m"))
+					return
+				}
+			case 1:
+				req := asset.TerminalWindow{
+					Columns: uint32(wsmsg.Cols),
+					Rows:    uint32(wsmsg.Rows),
+					Width:   uint32(wsmsg.Cols * 8),
+					Height:  uint32(wsmsg.Rows * 8),
+				}
+				_, err := session.SendRequest("window-change", false, ssh.Marshal(req))
+				if err != nil {
+					ws.WriteMessage(1, []byte("\033[31m已经关闭连接!\033[0m"))
+					return
+				}
+
+			}
+
 		}
 	}()
 
@@ -56,6 +96,7 @@ func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.S
 				if err != nil {
 					log.Logger.Error(err) //TODO control + D 会一直刷新
 					ws.WriteMessage(1, []byte("\033[31m已经关闭连接!\033[0m"))
+					return
 				}
 				if size > 0 {
 					r <- x

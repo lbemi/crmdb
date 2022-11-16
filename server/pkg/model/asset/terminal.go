@@ -24,4 +24,6 @@ type PtyRequestMsg struct {
 type TerminalWindow struct {
 	Columns uint32 `json:"cols"`
 	Rows    uint32 `json:"rows"`
+	Width   uint32 `json:"width"`
+	Height  uint32 `json:"height"`
 }

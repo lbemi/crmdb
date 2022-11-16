@@ -17,14 +17,7 @@ const routes: Array<RouteRecordRaw> = [
       title: "登陆",
     },
   },
-  {
-    path: "/termial",
-    name: "termial",
-    component: () => import("@/views/asset/host/componet/terminal.vue"),
-    meta: {
-      title: "ssh",
-    },
-  }
+  
 ];
 
 const pathMatch = {
@@ -99,6 +92,14 @@ const genRouters = (menus: MenuObj[]) => {
         },
         
       },
+      {
+        path: "/termial",
+        name: "termial",
+        component: () => import("@/views/asset/host/componet/sshTerminal.vue"),
+        meta: {
+          title: "ssh",
+        },
+      }
     ],
   });
   router.addRoute(pathMatch);

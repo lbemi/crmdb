@@ -15,7 +15,7 @@ import (
 	"github.com/lbemi/lbemi/app/option"
 	"github.com/lbemi/lbemi/app/routes"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/lbemi"
+	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
 )
 
@@ -26,7 +26,7 @@ func Run() {
 	o.Load()
 
 	// 注册handler
-	lbemi.Setup(o)
+	core.Setup(o)
 
 	initRouter(o.GinEngine)
 	//r.Use(middleware.GinLogger(), middleware.GinRecovery(true))
@@ -62,8 +62,8 @@ func initRouter(router *gin.Engine) {
 	v1 := router.Group("/api/v1")
 	// 注册默认路由
 	routes.DefaultRoutes(v1)
-	//, middleware.CasbinMiddleware()
-	//v1.Use(middleware.JWTAuth(), middleware.CasbinMiddleware())
+	//,
+	v1.Use(middleware.JWTAuth(), middleware.CasbinMiddleware())
 
 	//注册业务路由
 	sys.NewUserRouter(v1)
