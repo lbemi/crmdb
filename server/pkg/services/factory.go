@@ -2,8 +2,10 @@ package services
 
 import (
 	"github.com/casbin/casbin/v2"
+	client "github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/services/asset"
 	"github.com/lbemi/lbemi/pkg/services/auth"
+	"github.com/lbemi/lbemi/pkg/services/cloud"
 	"github.com/lbemi/lbemi/pkg/services/sys"
 	"gorm.io/gorm"
 )
@@ -14,11 +16,13 @@ type IDbFactory interface {
 	Role() sys.IRole
 	Menu() sys.IMenu
 	Host() asset.IHost
+	Cluster() cloud.ICluster
 }
 
 type DbFactory struct {
 	db      *gorm.DB
 	enforce *casbin.Enforcer
+	client  *client.KubernetesClient
 }
 
 func (f *DbFactory) Authentication() auth.AuthenticationInterface {
@@ -39,6 +43,10 @@ func (f *DbFactory) Menu() sys.IMenu {
 
 func (f *DbFactory) Host() asset.IHost {
 	return asset.NewHost(f.db)
+}
+
+func (f *DbFactory) Cluster() cloud.ICluster {
+	return cloud.NewCluster(f.db)
 }
 
 func NewDbFactory(db *gorm.DB, enforcer *casbin.Enforcer) IDbFactory {

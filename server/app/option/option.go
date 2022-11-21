@@ -20,7 +20,11 @@ type Options struct {
 	GinEngine *gin.Engine
 }
 
-func (o *Options) Load() {
+func NewOptions() *Options {
+	return &Options{}
+}
+
+func (o *Options) Complete() *Options {
 	// 加载配置文件
 	o.Config = bootstrap.InitializeConfig()
 	// 初始化日志
@@ -37,8 +41,6 @@ func (o *Options) Load() {
 	o.Enforcer = bootstrap.InitPolicyEnforcer(o.DB)
 	// 初始化dbFactory
 	o.Factory = services.NewDbFactory(o.DB, o.Enforcer)
-}
 
-func NewOptions() *Options {
-	return &Options{}
+	return o
 }

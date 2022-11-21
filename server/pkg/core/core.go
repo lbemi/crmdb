@@ -5,8 +5,8 @@ import (
 	"github.com/lbemi/lbemi/pkg/handler"
 )
 
-var V1 handler.IController
+var V1 handler.Getter
 
-func Setup(options *option.Options) {
-	V1 = handler.NewController(options.Factory, options.Redis)
+func Register(options *option.Options) {
+	V1 = handler.NewHandler(options.Factory, options.Redis)
 }

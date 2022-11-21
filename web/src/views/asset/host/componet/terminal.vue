@@ -90,7 +90,7 @@ const initTerm = () => {
   data.term.onData(function (key) {
     // 这里key值是输入的值，数据格式就是后端定义的 {"operation":"stdin","data":"ls"}
     let msgOrder = {
-      type: 2,
+      operation: "stdin",
       data: key,
     };
     console.log("******",msgOrder);

@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"fmt"
 	"github.com/lbemi/lbemi/pkg/model/asset"
+	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/model/config"
 	"github.com/lbemi/lbemi/pkg/model/rules"
 	"github.com/lbemi/lbemi/pkg/model/sys"
@@ -72,7 +73,16 @@ func initMysqlGorm(c *config.Config) *gorm.DB {
 
 func migration(db *gorm.DB) {
 	fmt.Println("初始化数据库...")
-	err := db.AutoMigrate(&sys.Menu{}, sys.User{}, sys.Role{}, sys.RoleMenu{}, sys.UserRole{}, rules.Rule{}, asset.Host{})
+	err := db.AutoMigrate(
+		&sys.Menu{},
+		&sys.User{},
+		&sys.Role{},
+		&sys.RoleMenu{},
+		&sys.UserRole{},
+		&rules.Rule{},
+		&asset.Host{},
+		&cloud.Config{},
+	)
 	if err != nil {
 		fmt.Println("初始化数据库失败。。。。。", err)
 		return
