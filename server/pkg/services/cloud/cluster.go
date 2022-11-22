@@ -1,6 +1,7 @@
 package cloud
 
 import (
+	"errors"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/util"
@@ -12,7 +13,7 @@ import (
 )
 
 type ICluster interface {
-	GenerateClient(name, config string) error
+	GenerateClient(name, config string) (*Clients, error)
 
 	Create(config *cloud.Config) error
 	Delete(id *uint64) error
@@ -34,23 +35,24 @@ func NewCluster(db *gorm.DB, store *ClientStore) *cluster {
 	}
 }
 
-func (c *cluster) GenerateClient(name, config string) error {
+func (c *cluster) GenerateClient(name, config string) (*Clients, error) {
 
 	//如果已经存在或者已经初始化client则退出
 	if c.store.Get(name) != nil && c.store.Get(name).IsInit {
-		return nil
+
+		return nil, errors.New("client has invited")
 	}
 	var client Clients
 	clientConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(config))
 	if err != nil {
 		log.Logger.Error(err)
-		return err
+		return nil, err
 	}
 	//生成clientSet
 	clientSet, err := kubernetes.NewForConfig(clientConfig)
 	if err != nil {
 		log.Logger.Error(err)
-		return err
+		return nil, err
 	}
 
 	client.ClientSet = clientSet
@@ -59,21 +61,21 @@ func (c *cluster) GenerateClient(name, config string) error {
 	client.IsInit = true
 	c.store.Add(name, &client)
 
-	return nil
+	return &client, nil
 }
 
 func (c *cluster) Create(config *cloud.Config) error {
 
-	err := c.GenerateClient(config.Name, config.KubeConfig)
-	if err != nil {
-		log.Logger.Error(err)
-		return err
-	}
+	//_, err := c.GenerateClient(config.Name, config.KubeConfig)
+	//if err != nil {
+	//	log.Logger.Error(err)
+	//	return err
+	//}
 
 	sec := util.Encrypt(config.KubeConfig)
 	config.KubeConfig = sec
 
-	err = c.db.Model(&cloud.Config{}).Create(&config).Error
+	err := c.db.Model(&cloud.Config{}).Create(&config).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return err

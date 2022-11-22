@@ -17,6 +17,7 @@ type Config struct {
 	CNI         string `json:"cni" gorm:"column:cni;comment:cni网络插件"`
 	ProxyMode   string `json:"proxy_mode" gorm:"column:proxy_mode;comment:网络模式（iptables，ipvs)"`
 	Status      bool   `json:"status" gorm:"column:status;comment:集群状态"`
+	Nodes       int    `json:"nodes" gorm:"column:nodes;comment:节点数量"`
 }
 
 // TableName 表名
