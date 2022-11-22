@@ -66,6 +66,15 @@ func (c *cluster) Create(ctx context.Context, config *form.ClusterReq) error {
 	conf.Version = list.Items[0].Status.NodeInfo.KubeletVersion
 	conf.Status = true
 	conf.Nodes = len(list.Items)
+	conf.InternalIP = list.Items[0].Status.Addresses[0].Address
+	conf.CPU = 0
+	conf.Memory = 0
+
+	for _, node := range list.Items {
+		conf.CPU = conf.CPU + node.Status.Capacity.Cpu().AsApproximateFloat64()
+		conf.Memory = conf.Memory + node.Status.Capacity.Memory().AsApproximateFloat64()
+	}
+	conf.Memory = conf.Memory / 1024
 
 	conf.Name = config.Name
 	conf.KubeConfig = config.KubeConfig
