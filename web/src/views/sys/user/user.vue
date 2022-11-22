@@ -104,7 +104,7 @@ import { Delete, Edit } from "@element-plus/icons-vue";
 import pagination from "@/component/pagination/pagination.vue";
 import { userApi, roleApi } from "@/views/sys/api";
 import UserDialog from "./componet/userDialog.vue";
-import { PageInfo, UserInfo, UserForm, RoleInfo } from "@/type/sys";
+import { PageInfo, UserInfo, RoleInfo } from "@/type/sys";
 import { ElMessage, ElMessageBox } from "element-plus";
 import UserSetRole from "./userSetRole.vue";
 

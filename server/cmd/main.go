@@ -5,7 +5,7 @@ import (
 	_ "github.com/lbemi/lbemi/docs"
 )
 
-// @title PIXIU API 文档
+// @title lbemi API 文档
 // @version 1.0
 // @description This is a sample server Petstore server.
 // @termsOfService http://swagger.io/terms/

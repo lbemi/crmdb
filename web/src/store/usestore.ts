@@ -5,6 +5,7 @@ export interface MenuObj  {
   id: number;
   name: string;
   url: string;
+  icon: string;
   children: MenuObj[];
 };
 

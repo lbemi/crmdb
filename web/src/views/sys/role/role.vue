@@ -57,6 +57,23 @@
             @click="handleEdit(scope.row)"
             >编辑</el-button
           >
+
+          <el-button
+            v-auth="'sys:role:set'"
+            type="warning"
+            size="small"
+            :icon="Edit"
+            @click="handleSetMenu(scope.row)"
+            >授权</el-button
+          >
+          <el-button
+            v-auth="'sys:role:view'"
+            type="success"
+            size="small"
+            :icon="View"
+            @click="handleSetMenu(scope.row)"
+            >查看</el-button
+          >
           <el-button
             v-auth="'sys:role:del'"
             type="danger"
@@ -64,14 +81,6 @@
             :icon="Delete"
             @click="deleteRole(scope.row)"
             >删除</el-button
-          >
-          <el-button
-            v-auth="'sys:role:set'"
-            type="primary"
-            size="small"
-            :icon="Edit"
-            @click="handleSetMenu(scope.row)"
-            >分配权限</el-button
           >
         </template>
       </el-table-column>
@@ -109,7 +118,7 @@
 
 <script setup lang="ts">
 import { reactive, toRefs, ref, onMounted } from "vue";
-import { Delete, Edit } from "@element-plus/icons-vue";
+import { Delete, Edit,View } from "@element-plus/icons-vue";
 import pagination from "@/component/pagination/pagination.vue";
 import { menuApi, roleApi } from "@/views/sys/api";
 import RoleDialog from "./componet/roleDialog.vue";

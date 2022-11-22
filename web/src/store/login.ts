@@ -29,7 +29,7 @@ export const loginStore = defineStore(
             .then((res) => {
               localStorage.setItem("token", res.data.token);
               userInfo.value = res.data.user;
-              router.push("/home");
+              router.push("/dashboard");
               ElMessage.success(`欢迎${userInfo.value?.user_name}!`);
               const userStore = useStore();
               userStore.getLeftMenus()

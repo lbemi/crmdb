@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultConfigFile = "../config.yaml"
+	defaultConfigFile = "./config.yaml"
 )
 
 func InitializeConfig() (appConfig *config.Config) {
@@ -26,7 +26,7 @@ func InitializeConfig() (appConfig *config.Config) {
 	//v.WatchConfig()
 	//v.OnConfigChange(func(in fsnotify.Event) {
 	//	fmt.Print("config file changed:", in.Name)
-	//	if err := v.Unmarshal(&global.App.Config); err != nil {
+	//	if err := v.Unmarshal(&global.App.KubeConfig); err != nil {
 	//		fmt.Println(err)
 	//		return
 	//	}
