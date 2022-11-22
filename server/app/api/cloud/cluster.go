@@ -11,6 +11,7 @@ import (
 )
 
 func CreateCluster(c *gin.Context) {
+
 	//file, header, err := c.Request.FormFile("file")
 	fileHeader, err := c.FormFile("file")
 	util.GinError(c, err, response.ErrCodeParameter)
@@ -29,7 +30,7 @@ func CreateCluster(c *gin.Context) {
 
 	req.Name = c.PostForm("name")
 
-	req.Config = string(bytes)
+	req.KubeConfig = string(bytes)
 	err = core.V1.Cluster(req.Name).Create(c, &req)
 	if err != nil {
 		log.Logger.Error(err)
@@ -37,5 +38,5 @@ func CreateCluster(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, response.StatusOK, req)
+	response.Success(c, response.StatusOK, nil)
 }

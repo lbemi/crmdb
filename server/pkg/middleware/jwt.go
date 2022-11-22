@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/lbemi/lbemi/pkg/core"
@@ -14,10 +13,7 @@ import (
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenStr := c.Request.Header.Get("Authorization")
-		fmt.Println("Path:----", c.Request.URL.Path, "))))", c.Request.RequestURI)
-		if c.Request.RequestURI == "/api/v1/host/:id/ws" {
-			return
-		}
+
 		if tokenStr == "" {
 			response.Fail(c, response.ErrCodeNotLogin)
 			c.Abort()

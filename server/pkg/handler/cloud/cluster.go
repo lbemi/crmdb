@@ -2,6 +2,7 @@ package cloud
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/handler/kuberntetes"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/model/form"
@@ -21,9 +22,10 @@ type ICluster interface {
 	Get(ctx context.Context, id *uint64) (*cloud.Config, error)
 	List(ctx context.Context) (*[]cloud.Config, error)
 
-	//GetClient(name string) *cloud2.Clients
+	GenerateClient(name, config string) error
 
 	kuberntetes.DeploymentGetter
+	kuberntetes.NodeGetter
 }
 
 type cluster struct {
@@ -31,15 +33,22 @@ type cluster struct {
 	clusterName string
 }
 
+func (c *cluster) Nodes() kuberntetes.INode {
+	return kuberntetes.NewNode(c.getClient(c.clusterName).ClientSet)
+}
+
 func (c *cluster) Deployments(namespace string) kuberntetes.IDeployment {
 	return kuberntetes.NewDeployment(c.getClient(c.clusterName).ClientSet, namespace)
 }
 
 func (c *cluster) Create(ctx context.Context, config *form.ClusterReq) error {
+
+	//err := c.factory.Cluster().GenerateClient(config.Name, config.KubeConfig)
+	//if err != nil {
+	//}
 	var conf cloud.Config
 	conf.Name = config.Name
-	conf.Config = config.Config
-
+	conf.KubeConfig = config.KubeConfig
 	util.WithErrorLog(c.factory.Cluster().Create(&conf))
 	return nil
 }
@@ -69,6 +78,16 @@ func (c *cluster) List(ctx context.Context) (*[]cloud.Config, error) {
 func (c *cluster) getClient(name string) *cloud2.Clients {
 	return c.factory.Cluster().GetClient(name)
 }
+
+func (c *cluster) GenerateClient(name, config string) error {
+	err := c.factory.Cluster().GenerateClient(name, config)
+	if err != nil {
+		log.Logger.Error(err)
+		return err
+	}
+	return nil
+}
+
 func NewCluster(factory services.IDbFactory, clusterName string) *cluster {
 	return &cluster{factory: factory, clusterName: clusterName}
 }

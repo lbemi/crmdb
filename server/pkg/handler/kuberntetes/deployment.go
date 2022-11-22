@@ -39,5 +39,9 @@ func (d *deployment) Get(ctx context.Context, name string) (*v1.Deployment, erro
 }
 
 func NewDeployment(client *kubernetes.Clientset, namespace string) *deployment {
+	if client == nil {
+		log.Logger.Error("clientSet is nil ")
+		return nil
+	}
 	return &deployment{client: client, ns: namespace}
 }

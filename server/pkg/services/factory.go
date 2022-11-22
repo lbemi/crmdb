@@ -23,6 +23,7 @@ type DbFactory struct {
 	db      *gorm.DB
 	enforce *casbin.Enforcer
 	client  *client.KubernetesClient
+	store   *cloud.ClientStore
 }
 
 func (f *DbFactory) Authentication() auth.AuthenticationInterface {
@@ -46,12 +47,13 @@ func (f *DbFactory) Host() asset.IHost {
 }
 
 func (f *DbFactory) Cluster() cloud.ICluster {
-	return cloud.NewCluster(f.db)
+	return cloud.NewCluster(f.db, f.store)
 }
 
-func NewDbFactory(db *gorm.DB, enforcer *casbin.Enforcer) IDbFactory {
+func NewDbFactory(db *gorm.DB, enforcer *casbin.Enforcer, store *cloud.ClientStore) IDbFactory {
 	return &DbFactory{
 		db:      db,
 		enforce: enforcer,
+		store:   store,
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model/config"
 	"github.com/lbemi/lbemi/pkg/services"
+	"github.com/lbemi/lbemi/pkg/services/cloud"
 	"gorm.io/gorm"
 )
 
@@ -39,8 +40,14 @@ func (o *Options) Complete() *Options {
 	o.GinEngine = gin.New()
 	// 初始化casbin enforcer
 	o.Enforcer = bootstrap.InitPolicyEnforcer(o.DB)
+	// 初始化client store
+	clientStore := cloud.NewClientStore()
+
 	// 初始化dbFactory
-	o.Factory = services.NewDbFactory(o.DB, o.Enforcer)
+	o.Factory = services.NewDbFactory(o.DB, o.Enforcer, clientStore)
+
+	// 初始化已存在的kubernetes集群client
+	go bootstrap.LoadKubernetes(o.Factory)
 
 	return o
 }

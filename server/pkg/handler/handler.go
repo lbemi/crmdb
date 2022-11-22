@@ -21,58 +21,58 @@ type Getter interface {
 	asset.TerminalGetter
 	asset.WsGetter
 	cloud.ClusterGetter
-	cloud.ResourceGetter
+	//cloud.ResourceGetter
 }
 
-type Controller struct {
+type Handler struct {
 	Config    *config.Config
 	DbFactory services.IDbFactory
 	RedisCli  *r.Client
 }
 
-func (c *Controller) Resource() cloud.IResource {
-	return cloud.NewResource(c.DbFactory)
-}
+//func (c *Handler) Resource() cloud.IResource {
+//	return cloud.NewResource(c.DbFactory)
+//}
 
 func NewHandler(factory services.IDbFactory, redisCli *r.Client) Getter {
-	return &Controller{
+	return &Handler{
 		DbFactory: factory,
 		RedisCli:  redisCli,
 	}
 }
 
-func (c *Controller) Redis() redis.IRedis {
+func (c *Handler) Redis() redis.IRedis {
 	return redis.NewRedis(c.RedisCli)
 }
 
-func (c *Controller) Policy() policy.PolicyInterface {
+func (c *Handler) Policy() policy.PolicyInterface {
 	return policy.NewPolicy(c.DbFactory)
 }
 
-func (c *Controller) User() sys.IUSer {
+func (c *Handler) User() sys.IUSer {
 	return sys.NewUser(c.DbFactory)
 }
 
-func (c *Controller) Role() sys.IRole {
+func (c *Handler) Role() sys.IRole {
 	return sys.NewRole(c.DbFactory)
 }
 
-func (c *Controller) Menu() sys.IMenu {
+func (c *Handler) Menu() sys.IMenu {
 	return sys.NewMenu(c.DbFactory)
 }
 
-func (c *Controller) Host() asset.IHost {
+func (c *Handler) Host() asset.IHost {
 	return asset.NewHost(c.DbFactory)
 }
 
-func (c *Controller) Terminal() asset.ITerminal {
+func (c *Handler) Terminal() asset.ITerminal {
 	return asset.NewTerminal(c.DbFactory)
 }
 
-func (c *Controller) Ws() asset.IWs {
+func (c *Handler) Ws() asset.IWs {
 	return asset.NewWs()
 }
 
-func (c *Controller) Cluster(clusterName string) cloud.ICluster {
+func (c *Handler) Cluster(clusterName string) cloud.ICluster {
 	return cloud.NewCluster(c.DbFactory, clusterName)
 }

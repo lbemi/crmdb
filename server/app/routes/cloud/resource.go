@@ -5,9 +5,16 @@ import (
 	"github.com/lbemi/lbemi/app/api/cloud"
 )
 
+// NewResourceRoute kubernetes 资源路由
 func NewResourceRoute(group *gin.RouterGroup) {
-	resource := group.Group("/resource")
+	//deployment 资源路由
+	deployment := group.Group("/deployment")
 	{
-		resource.GET("/deployment/:namespace", cloud.GetDeploymentList)
+		deployment.GET("/:namespace", cloud.GetDeploymentList)
+	}
+	// node 资源路由
+	node := group.Group("/node")
+	{
+		node.GET("", cloud.ListNodes)
 	}
 }
