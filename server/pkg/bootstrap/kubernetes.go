@@ -13,8 +13,7 @@ func LoadKubernetes(f services.IDbFactory) {
 	}
 	for _, cluster := range *clusterList {
 		config := util.Decrypt(cluster.KubeConfig)
-		err := f.Cluster().GenerateClient(cluster.Name, config)
-		if err != nil {
+		if _, err := f.Cluster().GenerateClient(cluster.Name, config); err != nil {
 			klog.Error(err)
 		}
 	}
