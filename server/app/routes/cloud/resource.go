@@ -12,6 +12,8 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	{
 		deployment.GET("/:namespace", cloud.ListDeployments)
 		deployment.GET("/:namespace/:deploymentName", cloud.GetDeployment)
+		deployment.POST("", cloud.UpdateDeployment)
+		deployment.PUT("", cloud.UpdateDeployment)
 	}
 
 	// node 资源路由
