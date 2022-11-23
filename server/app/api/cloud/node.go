@@ -26,3 +26,25 @@ func ListNodes(c *gin.Context) {
 
 	response.Success(c, response.StatusOK, list)
 }
+
+func GetNode(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	nodeName := c.Param("nodeName")
+
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	list, err := core.V1.Cluster(clusterName).Nodes().Get(c, nodeName)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	response.Success(c, response.StatusOK, list)
+}
