@@ -24,8 +24,11 @@ const (
 
 	ErrorTokenExpired = 9001
 	InvalidToken      = 9002
-	LoginSuccess      = 2000
-	AddSuccess        = 3000
+
+	LoginSuccess = 2000
+	AddSuccess   = 3000
+
+	ClusterNoHealth = 4000
 
 	NoPermission = 5000
 )
@@ -75,6 +78,8 @@ func GetMessage(code int) (message string) {
 		message = "用户未登录"
 	case ErrorTokenExpired:
 		message = "token 失效"
+	case ClusterNoHealth:
+		message = "集群异常"
 	default:
 		message = "未知错误"
 	}

@@ -13,6 +13,11 @@ func ListNodes(c *gin.Context) {
 		return
 	}
 
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
 	list, err := core.V1.Cluster(clusterName).Nodes().List(c)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)

@@ -18,7 +18,10 @@ func ListServices(c *gin.Context) {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
-
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
 	serviceList, err := core.V1.Cluster(clusterName).Service(namespace).List(c)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)

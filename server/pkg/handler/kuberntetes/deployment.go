@@ -3,9 +3,9 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
 type DeploymentGetter interface {
@@ -18,30 +18,27 @@ type IDeployment interface {
 }
 
 type deployment struct {
-	client *kubernetes.Clientset
-	ns     string
+	cli *cloud.Clients
+	ns  string
 }
 
 func (d *deployment) List(ctx context.Context) (*v1.DeploymentList, error) {
-	list, err := d.client.AppsV1().Deployments(d.ns).List(ctx, metav1.ListOptions{})
+	list, err := d.cli.ClientSet.AppsV1().Deployments(d.ns).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
+
 	return list, err
 }
 
 func (d *deployment) Get(ctx context.Context, name string) (*v1.Deployment, error) {
-	dep, err := d.client.AppsV1().Deployments(d.ns).Get(ctx, name, metav1.GetOptions{})
+	dep, err := d.cli.ClientSet.AppsV1().Deployments(d.ns).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
 	return dep, err
 }
 
-func NewDeployment(client *kubernetes.Clientset, namespace string) *deployment {
-	if client == nil {
-		log.Logger.Error("clientSet is nil ")
-		return nil
-	}
-	return &deployment{client: client, ns: namespace}
+func NewDeployment(cli *cloud.Clients, namespace string) *deployment {
+	return &deployment{cli: cli, ns: namespace}
 }

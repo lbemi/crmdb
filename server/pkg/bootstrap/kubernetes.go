@@ -10,11 +10,27 @@ func LoadKubernetes(f services.IDbFactory) {
 	clusterList, err := f.Cluster().List()
 	if err != nil {
 		klog.Error(err)
+		return
 	}
+
 	for _, cluster := range *clusterList {
 		config := util.Decrypt(cluster.KubeConfig)
-		if _, err := f.Cluster().GenerateClient(cluster.Name, config); err != nil {
-			klog.Error(err)
+		_, _, err := f.Cluster().GenerateClient(cluster.Name, config)
+		if err != nil {
+			if cluster.Status {
+				err := f.Cluster().ChangeStatus(cluster.ID, false)
+				if err != nil {
+					klog.Error(err)
+				}
+			}
+			klog.Errorf("%s集群异常", cluster.Name)
+		} else {
+			if !cluster.Status {
+				err := f.Cluster().ChangeStatus(cluster.ID, true)
+				if err != nil {
+					klog.Error(err)
+				}
+			}
 		}
 	}
 }

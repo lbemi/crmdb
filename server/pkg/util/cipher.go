@@ -56,7 +56,6 @@ func Encrypt(text string) string {
 
 func Decrypt(secret string) string {
 	b, err := base64.StdEncoding.DecodeString(secret)
-	fmt.Println(b)
 	if err != nil {
 		fmt.Println(err)
 	}
