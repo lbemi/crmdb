@@ -23,7 +23,9 @@ type deployment struct {
 }
 
 func (d *deployment) List(ctx context.Context) (*v1.DeploymentList, error) {
-	list, err := d.cli.ClientSet.AppsV1().Deployments(d.ns).List(ctx, metav1.ListOptions{})
+	list, err := d.cli.ClientSet.AppsV1().Deployments(d.ns).List(ctx, metav1.ListOptions{
+		Limit: 2,
+	})
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -37,6 +39,14 @@ func (d *deployment) Get(ctx context.Context, name string) (*v1.Deployment, erro
 		log.Logger.Error(err)
 	}
 	return dep, err
+}
+
+func (d *deployment) Create(ctx context.Context, obj *v1.Deployment) (*v1.Deployment, error) {
+	newDeployment, err := d.cli.ClientSet.AppsV1().Deployments(d.ns).Create(ctx, obj, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	return newDeployment, err
 }
 
 func NewDeployment(cli *cloud.Clients, namespace string) *deployment {

@@ -11,12 +11,14 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	deployment := group.Group("/deployment")
 	{
 		deployment.GET("/:namespace", cloud.ListDeployments)
+		deployment.GET("/:namespace/:deploymentName", cloud.GetDeployment)
 	}
 
 	// node 资源路由
 	node := group.Group("/node")
 	{
 		node.GET("", cloud.ListNodes)
+		node.GET("/:nodeName", cloud.GetNode)
 	}
 
 	// node 资源路由
