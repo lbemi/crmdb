@@ -3,13 +3,22 @@ package cloud
 import (
 	"errors"
 	"k8s.io/client-go/informers"
+	v1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"sync"
 )
 
+//type Informers struct {
+//	PodInformer v1.PodInformer
+//	NodeInformer v1.NodeInformer
+//	NameSpaceInformer v1.NamespaceInformer
+//	v1.Interface
+//}
+
 type Clients struct {
 	ClientSet *kubernetes.Clientset
 	Factory   informers.SharedInformerFactory
+	Informers v1.Interface
 	IsInit    bool
 }
 

@@ -6,7 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/core"
 )
 
-func ListDeployments(c *gin.Context) {
+func ListServices(c *gin.Context) {
 	clusterName := c.Query("cloud")
 	if clusterName == "" {
 		response.Fail(c, response.ErrCodeParameter)
@@ -22,11 +22,11 @@ func ListDeployments(c *gin.Context) {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
-	deploymentList, err := core.V1.Cluster(clusterName).Deployments(namespace).List(c)
+	serviceList, err := core.V1.Cluster(clusterName).Service(namespace).List(c)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
 
-	response.Success(c, response.StatusOK, deploymentList)
+	response.Success(c, response.StatusOK, serviceList)
 }

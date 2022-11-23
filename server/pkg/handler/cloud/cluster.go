@@ -17,15 +17,17 @@ type ClusterGetter interface {
 
 type ICluster interface {
 	Create(ctx context.Context, config *form.ClusterReq) error
-	Delete(ctx context.Context, id *uint64) error
-	Update(ctx context.Context, id *uint64, config *cloud.Config) error
-	Get(ctx context.Context, id *uint64) (*cloud.Config, error)
+	Delete(ctx context.Context, id uint64) error
+	Update(ctx context.Context, id uint64, config *cloud.Config) error
+	Get(ctx context.Context, id uint64) (*cloud.Config, error)
 	List(ctx context.Context) (*[]cloud.Config, error)
-
-	GenerateClient(name, config string) error
+	ChangeStatus(id uint64, status bool) error
+	CheckHealth(ctx context.Context) bool
+	//GenerateClient(name, config string) (*cloud2.Clients, *cloud.Config, error)
 
 	kuberntetes.DeploymentGetter
 	kuberntetes.NodeGetter
+	kuberntetes.ServiceGetter
 }
 
 type cluster struct {
@@ -33,37 +35,41 @@ type cluster struct {
 	clusterName string
 }
 
+func (c *cluster) Service(namespace string) kuberntetes.IService {
+	return kuberntetes.NewService(c.getClient(c.clusterName).ClientSet, namespace)
+}
+
 func (c *cluster) Nodes() kuberntetes.INode {
-	return kuberntetes.NewNode(c.getClient(c.clusterName).ClientSet)
+	return kuberntetes.NewNode(c.getClient(c.clusterName))
 }
 
 func (c *cluster) Deployments(namespace string) kuberntetes.IDeployment {
-	return kuberntetes.NewDeployment(c.getClient(c.clusterName).ClientSet, namespace)
+	return kuberntetes.NewDeployment(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) Create(ctx context.Context, config *form.ClusterReq) error {
 
-	//err := c.factory.Cluster().GenerateClient(config.Name, config.KubeConfig)
-	//if err != nil {
-	//}
-	var conf cloud.Config
-	conf.Name = config.Name
-	conf.KubeConfig = config.KubeConfig
-	util.WithErrorLog(c.factory.Cluster().Create(&conf))
+	_, conf, err := c.factory.Cluster().GenerateClient(config.Name, config.KubeConfig)
+	if err != nil || conf == nil {
+		log.Logger.Error(err)
+		return err
+	}
+
+	util.WithErrorLog(c.factory.Cluster().Create(conf))
 	return nil
 }
 
-func (c *cluster) Delete(ctx context.Context, id *uint64) error {
+func (c *cluster) Delete(ctx context.Context, id uint64) error {
 	util.WithErrorLog(c.factory.Cluster().Delete(id))
 	return nil
 }
 
-func (c *cluster) Update(ctx context.Context, id *uint64, config *cloud.Config) error {
+func (c *cluster) Update(ctx context.Context, id uint64, config *cloud.Config) error {
 	util.WithErrorLog(c.factory.Cluster().Update(id, config))
 	return nil
 }
 
-func (c *cluster) Get(ctx context.Context, id *uint64) (*cloud.Config, error) {
+func (c *cluster) Get(ctx context.Context, id uint64) (*cloud.Config, error) {
 	config, err := c.factory.Cluster().Get(id)
 	util.WithErrorLog(err)
 	return config, nil
@@ -75,18 +81,35 @@ func (c *cluster) List(ctx context.Context) (*[]cloud.Config, error) {
 	return list, nil
 }
 
+func (c *cluster) CheckHealth(ctx context.Context) bool {
+	config, err := c.factory.Cluster().GetByName(c.clusterName)
+	if err != nil || config == nil {
+		return false
+	}
+
+	if !config.Status {
+		return false
+	}
+
+	return true
+}
+
+func (c *cluster) ChangeStatus(id uint64, status bool) error {
+	return c.factory.Cluster().ChangeStatus(id, status)
+}
+
 func (c *cluster) getClient(name string) *cloud2.Clients {
 	return c.factory.Cluster().GetClient(name)
 }
 
-func (c *cluster) GenerateClient(name, config string) error {
-	err := c.factory.Cluster().GenerateClient(name, config)
-	if err != nil {
-		log.Logger.Error(err)
-		return err
-	}
-	return nil
-}
+//func (c *cluster) GenerateClient(name, config string) (*cloud2.Clients, *cloud.Config, error) {
+//	clients, c, err := c.factory.Cluster().GenerateClient(name, config)
+//	if err != nil {
+//		log.Logger.Error(err)
+//		return nil, nil, err
+//	}
+//	return clients, c, nil
+//}
 
 func NewCluster(factory services.IDbFactory, clusterName string) *cluster {
 	return &cluster{factory: factory, clusterName: clusterName}

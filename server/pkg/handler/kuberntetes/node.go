@@ -3,9 +3,9 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
 type NodeGetter interface {
@@ -20,11 +20,11 @@ type INode interface {
 }
 
 type node struct {
-	clientSet *kubernetes.Clientset
+	cli *cloud.Clients
 }
 
 func (n *node) List(ctx context.Context) (*v1.NodeList, error) {
-	nodeList, err := n.clientSet.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	nodeList, err := n.cli.ClientSet.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -32,7 +32,7 @@ func (n *node) List(ctx context.Context) (*v1.NodeList, error) {
 }
 
 func (n *node) Get(ctx context.Context, name string) (*v1.Node, error) {
-	node, err := n.clientSet.CoreV1().Nodes().Get(ctx, name, metav1.GetOptions{})
+	node, err := n.cli.ClientSet.CoreV1().Nodes().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -40,7 +40,7 @@ func (n *node) Get(ctx context.Context, name string) (*v1.Node, error) {
 }
 
 func (n *node) Delete(ctx context.Context, name string) error {
-	err := n.clientSet.CoreV1().Nodes().Delete(ctx, name, metav1.DeleteOptions{})
+	err := n.cli.ClientSet.CoreV1().Nodes().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -48,13 +48,13 @@ func (n *node) Delete(ctx context.Context, name string) error {
 }
 
 func (n *node) Create(ctx context.Context, node *v1.Node) (*v1.Node, error) {
-	res, err := n.clientSet.CoreV1().Nodes().Create(ctx, node, metav1.CreateOptions{})
+	res, err := n.cli.ClientSet.CoreV1().Nodes().Create(ctx, node, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
 	return res, err
 }
 
-func NewNode(clientSet *kubernetes.Clientset) *node {
-	return &node{clientSet: clientSet}
+func NewNode(cli *cloud.Clients) *node {
+	return &node{cli: cli}
 }
