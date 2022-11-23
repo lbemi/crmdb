@@ -15,6 +15,8 @@ type DeploymentGetter interface {
 type IDeployment interface {
 	List(ctx context.Context) (*v1.DeploymentList, error)
 	Get(ctx context.Context, name string) (*v1.Deployment, error)
+	Create(ctx context.Context, obj *v1.Deployment) (*v1.Deployment, error)
+	Update(ctx context.Context, obj *v1.Deployment) (*v1.Deployment, error)
 }
 
 type deployment struct {
@@ -47,6 +49,14 @@ func (d *deployment) Create(ctx context.Context, obj *v1.Deployment) (*v1.Deploy
 		log.Logger.Error(err)
 	}
 	return newDeployment, err
+}
+
+func (d *deployment) Update(ctx context.Context, obj *v1.Deployment) (*v1.Deployment, error) {
+	updateDeployment, err := d.cli.ClientSet.AppsV1().Deployments(d.ns).Update(ctx, obj, metav1.UpdateOptions{})
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	return updateDeployment, err
 }
 
 func NewDeployment(cli *cloud.Clients, namespace string) *deployment {
