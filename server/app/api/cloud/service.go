@@ -14,10 +14,7 @@ func ListServices(c *gin.Context) {
 	}
 
 	namespace := c.Param("namespace")
-	if namespace == "" {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
+
 	if !core.V1.Cluster(clusterName).CheckHealth(c) {
 		response.Fail(c, response.ClusterNoHealth)
 		return

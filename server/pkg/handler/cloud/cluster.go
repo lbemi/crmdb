@@ -28,6 +28,7 @@ type ICluster interface {
 	kuberntetes.DeploymentGetter
 	kuberntetes.NodeGetter
 	kuberntetes.ServiceGetter
+	kuberntetes.NamespaceGetter
 }
 
 type cluster struct {
@@ -35,7 +36,14 @@ type cluster struct {
 	clusterName string
 }
 
+func (c *cluster) Namespaces() kuberntetes.INamespace {
+	return kuberntetes.NewNamespace(c.getClient(c.clusterName))
+}
+
 func (c *cluster) Service(namespace string) kuberntetes.IService {
+	if namespace == "" {
+		namespace = "default"
+	}
 	return kuberntetes.NewService(c.getClient(c.clusterName).ClientSet, namespace)
 }
 
@@ -44,6 +52,9 @@ func (c *cluster) Nodes() kuberntetes.INode {
 }
 
 func (c *cluster) Deployments(namespace string) kuberntetes.IDeployment {
+	if namespace == "" {
+		namespace = "default"
+	}
 	return kuberntetes.NewDeployment(c.getClient(c.clusterName), namespace)
 }
 

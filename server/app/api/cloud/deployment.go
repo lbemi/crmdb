@@ -30,10 +30,7 @@ func ListDeployments(c *gin.Context) {
 	}
 
 	namespace := c.Param("namespace")
-	if namespace == "" {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
+
 	if !core.V1.Cluster(clusterName).CheckHealth(c) {
 		response.Fail(c, response.ClusterNoHealth)
 		return
@@ -54,15 +51,8 @@ func GetDeployment(c *gin.Context) {
 		return
 	}
 	namespace := c.Param("namespace")
-	if namespace == "" {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
+
 	deploymentName := c.Param("deploymentName")
-	if namespace == "" {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
 
 	if !core.V1.Cluster(clusterName).CheckHealth(c) {
 		response.Fail(c, response.ClusterNoHealth)
@@ -92,24 +82,21 @@ func CreateDeployment(c *gin.Context) {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
-	namespace := deployment.Namespace
-	if namespace == "" {
-		namespace = "default"
-	}
 
 	if !core.V1.Cluster(clusterName).CheckHealth(c) {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
 
-	newDeployment, err := core.V1.Cluster(clusterName).Deployments(namespace).Create(c, deployment)
+	newDeployment, err := core.V1.Cluster(clusterName).Deployments(deployment.Namespace).Create(c, deployment)
 	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
+		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return
 	}
 
 	response.Success(c, response.StatusOK, newDeployment)
 }
+
 func UpdateDeployment(c *gin.Context) {
 	clusterName := c.Query("cloud")
 	if clusterName == "" {
@@ -124,21 +111,42 @@ func UpdateDeployment(c *gin.Context) {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
-	namespace := deployment.Namespace
-	if namespace == "" {
-		namespace = "default"
-	}
 
 	if !core.V1.Cluster(clusterName).CheckHealth(c) {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
 
-	newDeployment, err := core.V1.Cluster(clusterName).Deployments(namespace).Update(c, deployment)
+	newDeployment, err := core.V1.Cluster(clusterName).Deployments(deployment.Namespace).Update(c, deployment)
 	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
+		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return
 	}
 
 	response.Success(c, response.StatusOK, newDeployment)
+}
+
+func DeleteDeployment(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	namespace := c.Param("namespace")
+
+	deploymentName := c.Param("deploymentName")
+
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	err := core.V1.Cluster(clusterName).Deployments(namespace).Delete(c, deploymentName)
+	if err != nil {
+		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
+		return
+	}
+
+	response.Success(c, response.StatusOK, nil)
 }
