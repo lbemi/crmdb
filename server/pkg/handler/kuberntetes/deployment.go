@@ -17,6 +17,7 @@ type IDeployment interface {
 	Get(ctx context.Context, name string) (*v1.Deployment, error)
 	Create(ctx context.Context, obj *v1.Deployment) (*v1.Deployment, error)
 	Update(ctx context.Context, obj *v1.Deployment) (*v1.Deployment, error)
+	Delete(ctx context.Context, name string) error
 }
 
 type deployment struct {
@@ -57,6 +58,14 @@ func (d *deployment) Update(ctx context.Context, obj *v1.Deployment) (*v1.Deploy
 		log.Logger.Error(err)
 	}
 	return updateDeployment, err
+}
+
+func (d *deployment) Delete(ctx context.Context, name string) error {
+	err := d.cli.ClientSet.AppsV1().Deployments(d.ns).Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	return err
 }
 
 func NewDeployment(cli *cloud.Clients, namespace string) *deployment {

@@ -7,13 +7,23 @@ import (
 
 // NewResourceRoute kubernetes 资源路由
 func NewResourceRoute(group *gin.RouterGroup) {
+	//namespace 资源路由
+	namespace := group.Group("/namespace")
+	{
+		namespace.GET("", cloud.ListNamespace)
+		namespace.GET("/:name", cloud.GetNamespace)
+		namespace.POST("", cloud.CreateNamespace)
+		namespace.DELETE("/:name", cloud.DeleteNamespace)
+	}
+
 	//deployment 资源路由
 	deployment := group.Group("/deployment")
 	{
 		deployment.GET("/:namespace", cloud.ListDeployments)
 		deployment.GET("/:namespace/:deploymentName", cloud.GetDeployment)
-		deployment.POST("", cloud.UpdateDeployment)
+		deployment.POST("", cloud.CreateDeployment)
 		deployment.PUT("", cloud.UpdateDeployment)
+		deployment.DELETE("/:namespace/:deploymentName", cloud.DeleteDeployment)
 	}
 
 	// node 资源路由
