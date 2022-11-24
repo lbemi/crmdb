@@ -42,4 +42,15 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		service.PUT("", cloud.UpdateService)
 		service.DELETE("/:namespace/:serviceName", cloud.DeleteService)
 	}
+
+	// secret 资源路由
+	secret := group.Group("/secret")
+	{
+		secret.GET("/:namespace", cloud.ListSecrets)
+		secret.GET("/:namespace/:serviceName", cloud.GetSecret)
+		secret.POST("", cloud.CreateSecret)
+		secret.PUT("", cloud.UpdateSecret)
+		secret.DELETE("/:namespace/:serviceName", cloud.DeleteSecret)
+	}
+
 }
