@@ -4,10 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
-	v1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
-func ListDeployments(c *gin.Context) {
+func ListPods(c *gin.Context) {
 
 	//pageStr := c.DefaultQuery("page", "0")
 	//page, err := strconv.Atoi(pageStr)
@@ -35,16 +35,16 @@ func ListDeployments(c *gin.Context) {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
-	deploymentList, err := core.V1.Cluster(clusterName).Deployments(namespace).List(c)
+	podList, err := core.V1.Cluster(clusterName).Pods(namespace).List(c)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
 
-	response.Success(c, response.StatusOK, deploymentList)
+	response.Success(c, response.StatusOK, podList)
 }
 
-func GetDeployment(c *gin.Context) {
+func GetPod(c *gin.Context) {
 	clusterName := c.Query("cloud")
 	if clusterName == "" {
 		response.Fail(c, response.ErrCodeParameter)
@@ -52,32 +52,32 @@ func GetDeployment(c *gin.Context) {
 	}
 	namespace := c.Param("namespace")
 
-	deploymentName := c.Param("deploymentName")
+	podName := c.Param("podName")
 
 	if !core.V1.Cluster(clusterName).CheckHealth(c) {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
 
-	deployment, err := core.V1.Cluster(clusterName).Deployments(namespace).Get(c, deploymentName)
+	pod, err := core.V1.Cluster(clusterName).Pods(namespace).Get(c, podName)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
 
-	response.Success(c, response.StatusOK, deployment)
+	response.Success(c, response.StatusOK, pod)
 }
 
-func CreateDeployment(c *gin.Context) {
+func CreatePod(c *gin.Context) {
 	clusterName := c.Query("cloud")
 	if clusterName == "" {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
 
-	var deployment *v1.Deployment
+	var pod *v1.Pod
 
-	err := c.ShouldBindJSON(&deployment)
+	err := c.ShouldBindJSON(&pod)
 	if err != nil {
 		response.Fail(c, response.ErrCodeParameter)
 		return
@@ -88,26 +88,25 @@ func CreateDeployment(c *gin.Context) {
 		return
 	}
 
-	newDeployment, err := core.V1.Cluster(clusterName).Deployments(deployment.Namespace).Create(c, deployment)
+	newPod, err := core.V1.Cluster(clusterName).Pods(pod.Namespace).Create(c, pod)
 	if err != nil {
 		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return
 	}
 
-	response.Success(c, response.StatusOK, newDeployment)
+	response.Success(c, response.StatusOK, newPod)
 }
 
-func UpdateDeployment(c *gin.Context) {
-	//TODO 只能修改某些字段
+func UpdatePod(c *gin.Context) {
 	clusterName := c.Query("cloud")
 	if clusterName == "" {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
 
-	var deployment *v1.Deployment
+	var pod *v1.Pod
 
-	err := c.ShouldBindJSON(&deployment)
+	err := c.ShouldBindJSON(&pod)
 	if err != nil {
 		response.Fail(c, response.ErrCodeParameter)
 		return
@@ -118,16 +117,16 @@ func UpdateDeployment(c *gin.Context) {
 		return
 	}
 
-	newDeployment, err := core.V1.Cluster(clusterName).Deployments(deployment.Namespace).Update(c, deployment)
+	newPod, err := core.V1.Cluster(clusterName).Pods(pod.Namespace).Update(c, pod)
 	if err != nil {
 		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return
 	}
 
-	response.Success(c, response.StatusOK, newDeployment)
+	response.Success(c, response.StatusOK, newPod)
 }
 
-func DeleteDeployment(c *gin.Context) {
+func DeletePod(c *gin.Context) {
 	clusterName := c.Query("cloud")
 	if clusterName == "" {
 		response.Fail(c, response.ErrCodeParameter)
@@ -136,14 +135,14 @@ func DeleteDeployment(c *gin.Context) {
 
 	namespace := c.Param("namespace")
 
-	deploymentName := c.Param("deploymentName")
+	podName := c.Param("podName")
 
 	if !core.V1.Cluster(clusterName).CheckHealth(c) {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
 
-	err := core.V1.Cluster(clusterName).Deployments(namespace).Delete(c, deploymentName)
+	err := core.V1.Cluster(clusterName).Pods(namespace).Delete(c, podName)
 	if err != nil {
 		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return

@@ -33,11 +33,19 @@ type ICluster interface {
 	kuberntetes.ServiceGetter
 	kuberntetes.NamespaceGetter
 	kuberntetes.SecretGetter
+	kuberntetes.PodGetter
 }
 
 type cluster struct {
 	factory     services.IDbFactory
 	clusterName string
+}
+
+func (c *cluster) Pods(namespace string) kuberntetes.IPod {
+	if namespace == "" {
+		namespace = "default"
+	}
+	return kuberntetes.NewPod(c.getClient(c.clusterName), namespace)
 }
 
 // kubernetes 资源接口
