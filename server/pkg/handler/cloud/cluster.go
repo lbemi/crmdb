@@ -9,6 +9,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services"
 	cloud2 "github.com/lbemi/lbemi/pkg/services/cloud"
 	"github.com/lbemi/lbemi/pkg/util"
+	"time"
 )
 
 type ClusterGetter interface {
@@ -105,12 +106,33 @@ func (c *cluster) List(ctx context.Context) (*[]cloud.Config, error) {
 }
 
 func (c *cluster) CheckHealth(ctx context.Context) bool {
+	// 获取集群信息
 	config, err := c.factory.Cluster().GetByName(c.clusterName)
 	if err != nil || config == nil {
 		return false
 	}
-
+	// 解密
+	kf := util.Decrypt(config.KubeConfig)
 	if !config.Status {
+		// 如果集群异常，执行一次初始化，如果初始化失败，则返回false，正常则返回true
+		_, _, err := c.factory.Cluster().GenerateClient(config.Name, kf)
+		if err != nil {
+			return false
+		}
+		err = c.ChangeStatus(config.ID, true)
+		if err != nil {
+			return false
+		}
+	}
+
+	withTimeout, _ := context.WithTimeout(ctx, time.Second*3)
+	_, err = c.Nodes().List(withTimeout)
+	if err != nil {
+		err = c.ChangeStatus(config.ID, false)
+		if err != nil {
+			return false
+		}
+		c.factory.Cluster().RemoveFromStore(config.Name)
 		return false
 	}
 
