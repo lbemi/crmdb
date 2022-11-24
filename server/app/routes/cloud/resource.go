@@ -16,6 +16,15 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		namespace.DELETE("/:name", cloud.DeleteNamespace)
 	}
 
+	//pod 资源路由
+	pod := group.Group("/pod")
+	{
+		pod.GET("/:namespace", cloud.ListPods)
+		pod.GET("/:namespace/:podName", cloud.GetPod)
+		pod.POST("", cloud.CreatePod)
+		pod.PUT("", cloud.UpdatePod)
+		pod.DELETE("/:namespace/:podName", cloud.DeletePod)
+	}
 	//deployment 资源路由
 	deployment := group.Group("/deployment")
 	{
