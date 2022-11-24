@@ -17,6 +17,7 @@ type IService interface {
 	Get(ctx context.Context, name string) (*v1.Service, error)
 	Delete(ctx context.Context, name string) error
 	Create(ctx context.Context, node *v1.Service) (*v1.Service, error)
+	Update(ctx context.Context, service *v1.Service) (*v1.Service, error)
 }
 
 type service struct {
@@ -50,6 +51,14 @@ func (s *service) Delete(ctx context.Context, name string) error {
 
 func (s *service) Create(ctx context.Context, service *v1.Service) (*v1.Service, error) {
 	res, err := s.clientSet.CoreV1().Services(s.ns).Create(ctx, service, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	return res, err
+}
+
+func (s *service) Update(ctx context.Context, service *v1.Service) (*v1.Service, error) {
+	res, err := s.clientSet.CoreV1().Services(s.ns).Update(ctx, service, metav1.UpdateOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}

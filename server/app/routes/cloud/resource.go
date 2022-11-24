@@ -37,5 +37,9 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	service := group.Group("/service")
 	{
 		service.GET("/:namespace", cloud.ListServices)
+		service.GET("/:namespace/:serviceName", cloud.GetService)
+		service.POST("", cloud.CreateService)
+		service.PUT("", cloud.UpdateService)
+		service.DELETE("/:namespace/:serviceName", cloud.DeleteService)
 	}
 }
