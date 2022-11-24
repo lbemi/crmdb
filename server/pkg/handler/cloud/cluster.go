@@ -25,15 +25,27 @@ type ICluster interface {
 	CheckHealth(ctx context.Context) bool
 	//GenerateClient(name, config string) (*cloud2.Clients, *cloud.Config, error)
 
+	// 注册资源接口
+
 	kuberntetes.DeploymentGetter
 	kuberntetes.NodeGetter
 	kuberntetes.ServiceGetter
 	kuberntetes.NamespaceGetter
+	kuberntetes.SecretGetter
 }
 
 type cluster struct {
 	factory     services.IDbFactory
 	clusterName string
+}
+
+// kubernetes 资源接口
+
+func (c *cluster) Secrets(namespace string) kuberntetes.ISecret {
+	if namespace == "" {
+		namespace = "default"
+	}
+	return kuberntetes.NewSecret(c.getClient(c.clusterName).ClientSet, namespace)
 }
 
 func (c *cluster) Namespaces() kuberntetes.INamespace {
@@ -112,15 +124,6 @@ func (c *cluster) ChangeStatus(id uint64, status bool) error {
 func (c *cluster) getClient(name string) *cloud2.Clients {
 	return c.factory.Cluster().GetClient(name)
 }
-
-//func (c *cluster) GenerateClient(name, config string) (*cloud2.Clients, *cloud.Config, error) {
-//	clients, c, err := c.factory.Cluster().GenerateClient(name, config)
-//	if err != nil {
-//		log.Logger.Error(err)
-//		return nil, nil, err
-//	}
-//	return clients, c, nil
-//}
 
 func NewCluster(factory services.IDbFactory, clusterName string) *cluster {
 	return &cluster{factory: factory, clusterName: clusterName}
