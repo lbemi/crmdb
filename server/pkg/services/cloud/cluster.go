@@ -25,6 +25,8 @@ type ICluster interface {
 	List() (*[]cloud.Config, error)
 	GetClient(name string) *Clients
 	ChangeStatus(id uint64, status bool) error
+
+	RemoveFromStore(name string)
 }
 
 type cluster struct {
@@ -49,6 +51,7 @@ func (c *cluster) GenerateClient(name, config string) (*Clients, *cloud.Config, 
 	var client Clients
 	clientConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(config))
 	if err != nil {
+		c.store.Delete(name)
 		log.Logger.Error(err)
 		return nil, nil, err
 	}
@@ -56,13 +59,16 @@ func (c *cluster) GenerateClient(name, config string) (*Clients, *cloud.Config, 
 	//生成clientSet
 	clientSet, err := kubernetes.NewForConfig(clientConfig)
 	if err != nil {
+		c.store.Delete(name)
 		log.Logger.Error(err)
 		return nil, nil, err
 	}
 
 	var conf cloud.Config
-	list, err := clientSet.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+	withTimeout, _ := context.WithTimeout(context.TODO(), time.Second*3)
+	list, err := clientSet.CoreV1().Nodes().List(withTimeout, metav1.ListOptions{})
 	if err != nil {
+		c.store.Delete(name)
 		log.Logger.Error(err)
 		return nil, nil, errors.New("cluster is not health")
 	}
@@ -165,4 +171,8 @@ func (c *cluster) GetClient(name string) *Clients {
 
 func (c *cluster) ChangeStatus(id uint64, status bool) error {
 	return c.db.Model(&cloud.Config{}).Where("id = ?", id).Update("status", status).Error
+}
+
+func (c *cluster) RemoveFromStore(name string) {
+	c.store.Delete(name)
 }
