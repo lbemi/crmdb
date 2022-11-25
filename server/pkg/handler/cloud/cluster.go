@@ -30,6 +30,7 @@ type ICluster interface {
 
 	kuberntetes.DeploymentGetter
 	kuberntetes.StatefulSetGetter
+	kuberntetes.DaemonSetGetter
 	kuberntetes.NodeGetter
 	kuberntetes.ServiceGetter
 	kuberntetes.NamespaceGetter
@@ -40,6 +41,13 @@ type ICluster interface {
 type cluster struct {
 	factory     services.IDbFactory
 	clusterName string
+}
+
+func (c *cluster) DaemonSets(namespace string) kuberntetes.IDaemonSet {
+	if namespace == "" {
+		namespace = "default"
+	}
+	return kuberntetes.NewDaemonSet(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) StatefulSets(namespace string) kuberntetes.IStatefulSet {
