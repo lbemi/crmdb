@@ -36,11 +36,19 @@ type ICluster interface {
 	kuberntetes.NamespaceGetter
 	kuberntetes.SecretGetter
 	kuberntetes.PodGetter
+	kuberntetes.JobGetter
 }
 
 type cluster struct {
 	factory     services.IDbFactory
 	clusterName string
+}
+
+func (c *cluster) Jobs(namespace string) kuberntetes.IJob {
+	if namespace == "" {
+		namespace = "default"
+	}
+	return kuberntetes.NewJob(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) DaemonSets(namespace string) kuberntetes.IDaemonSet {
