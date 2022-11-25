@@ -29,6 +29,7 @@ type ICluster interface {
 	// 注册资源接口
 
 	kuberntetes.DeploymentGetter
+	kuberntetes.StatefulSetGetter
 	kuberntetes.NodeGetter
 	kuberntetes.ServiceGetter
 	kuberntetes.NamespaceGetter
@@ -39,6 +40,13 @@ type ICluster interface {
 type cluster struct {
 	factory     services.IDbFactory
 	clusterName string
+}
+
+func (c *cluster) StatefulSets(namespace string) kuberntetes.IStatefulSet {
+	if namespace == "" {
+		namespace = "default"
+	}
+	return kuberntetes.NewStatefulSet(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) Pods(namespace string) kuberntetes.IPod {
