@@ -66,6 +66,16 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		job.DELETE("/:namespace/:jobName", cloud.DeleteJob)
 	}
 
+	//cronjob 资源路由
+	cronjob := group.Group("/cronjob")
+	{
+		cronjob.GET("/:namespace", cloud.ListCronJobs)
+		cronjob.GET("/:namespace/:cronJobName", cloud.GetCronJob)
+		cronjob.POST("", cloud.CreateCronJob)
+		cronjob.PUT("", cloud.UpdateCronJob)
+		cronjob.DELETE("/:namespace/:cronJobName", cloud.DeleteCronJob)
+	}
+
 	// node 资源路由
 	node := group.Group("/node")
 	{
