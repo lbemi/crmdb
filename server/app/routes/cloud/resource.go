@@ -35,6 +35,16 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		deployment.DELETE("/:namespace/:deploymentName", cloud.DeleteDeployment)
 	}
 
+	//statefulSet 资源路由
+	statefulSet := group.Group("/statefulset")
+	{
+		statefulSet.GET("/:namespace", cloud.ListStatefulSets)
+		statefulSet.GET("/:namespace/:deploymentName", cloud.GetStatefulSet)
+		statefulSet.POST("", cloud.CreateStatefulSet)
+		statefulSet.PUT("", cloud.UpdateStatefulSet)
+		statefulSet.DELETE("/:namespace/:deploymentName", cloud.DeleteStatefulSet)
+	}
+
 	// node 资源路由
 	node := group.Group("/node")
 	{
