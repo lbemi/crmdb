@@ -38,11 +38,19 @@ type ICluster interface {
 	kuberntetes.PodGetter
 	kuberntetes.JobGetter
 	kuberntetes.CronJobGetter
+	kuberntetes.ConfigMapGetter
 }
 
 type cluster struct {
 	factory     services.IDbFactory
 	clusterName string
+}
+
+func (c *cluster) ConfigMaps(namespace string) kuberntetes.IConfigMap {
+	if namespace == "" {
+		namespace = "default"
+	}
+	return kuberntetes.NewConfigMap(c.getClient(c.clusterName).ClientSet, namespace)
 }
 
 func (c *cluster) CronJobs(namespace string) kuberntetes.ICronJob {

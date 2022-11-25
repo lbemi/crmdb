@@ -102,4 +102,14 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		secret.PUT("", cloud.UpdateSecret)
 		secret.DELETE("/:namespace/:secretName", cloud.DeleteSecret)
 	}
+
+	// configmap 资源路由
+	configMap := group.Group("/configmap")
+	{
+		configMap.GET("/:namespace", cloud.ListConfigMaps)
+		configMap.GET("/:namespace/:configMapName", cloud.GetConfigMap)
+		configMap.POST("", cloud.CreateConfigMap)
+		configMap.PUT("", cloud.UpdateConfigMap)
+		configMap.DELETE("/:namespace/:configMapName", cloud.DeleteConfigMap)
+	}
 }
