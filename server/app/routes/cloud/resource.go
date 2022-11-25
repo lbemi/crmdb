@@ -25,6 +25,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		pod.PUT("", cloud.UpdatePod)
 		pod.DELETE("/:namespace/:podName", cloud.DeletePod)
 	}
+
 	//deployment 资源路由
 	deployment := group.Group("/deployment")
 	{
@@ -39,20 +40,30 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	statefulSet := group.Group("/statefulset")
 	{
 		statefulSet.GET("/:namespace", cloud.ListStatefulSets)
-		statefulSet.GET("/:namespace/:deploymentName", cloud.GetStatefulSet)
+		statefulSet.GET("/:namespace/:statefulSetName", cloud.GetStatefulSet)
 		statefulSet.POST("", cloud.CreateStatefulSet)
 		statefulSet.PUT("", cloud.UpdateStatefulSet)
-		statefulSet.DELETE("/:namespace/:deploymentName", cloud.DeleteStatefulSet)
+		statefulSet.DELETE("/:namespace/:statefulSetName", cloud.DeleteStatefulSet)
 	}
 
 	//daemonSet 资源路由
 	daemonSet := group.Group("/daemonset")
 	{
 		daemonSet.GET("/:namespace", cloud.ListDaemonSets)
-		daemonSet.GET("/:namespace/:deploymentName", cloud.GetDaemonSet)
+		daemonSet.GET("/:namespace/:daemonSetName", cloud.GetDaemonSet)
 		daemonSet.POST("", cloud.CreateDaemonSet)
 		daemonSet.PUT("", cloud.UpdateDaemonSet)
-		daemonSet.DELETE("/:namespace/:deploymentName", cloud.DeleteDaemonSet)
+		daemonSet.DELETE("/:namespace/:daemonSetName", cloud.DeleteDaemonSet)
+	}
+
+	//job 资源路由
+	job := group.Group("/job")
+	{
+		job.GET("/:namespace", cloud.ListJobs)
+		job.GET("/:namespace/:jobName", cloud.GetJob)
+		job.POST("", cloud.CreateJob)
+		job.PUT("", cloud.UpdateJob)
+		job.DELETE("/:namespace/:jobName", cloud.DeleteJob)
 	}
 
 	// node 资源路由
@@ -76,10 +87,9 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	secret := group.Group("/secret")
 	{
 		secret.GET("/:namespace", cloud.ListSecrets)
-		secret.GET("/:namespace/:serviceName", cloud.GetSecret)
+		secret.GET("/:namespace/:secretName", cloud.GetSecret)
 		secret.POST("", cloud.CreateSecret)
 		secret.PUT("", cloud.UpdateSecret)
-		secret.DELETE("/:namespace/:serviceName", cloud.DeleteSecret)
+		secret.DELETE("/:namespace/:secretName", cloud.DeleteSecret)
 	}
-
 }
