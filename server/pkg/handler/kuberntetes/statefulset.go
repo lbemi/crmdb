@@ -26,9 +26,7 @@ type statefulSet struct {
 }
 
 func (d *statefulSet) List(ctx context.Context) (*v1.StatefulSetList, error) {
-	list, err := d.cli.ClientSet.AppsV1().StatefulSets(d.ns).List(ctx, metav1.ListOptions{
-		Limit: 2,
-	})
+	list, err := d.cli.ClientSet.AppsV1().StatefulSets(d.ns).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
