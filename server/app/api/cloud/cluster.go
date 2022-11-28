@@ -40,3 +40,27 @@ func CreateCluster(c *gin.Context) {
 
 	response.Success(c, response.StatusOK, nil)
 }
+
+func ListCluster(c *gin.Context) {
+	list, err := core.V1.Cluster("").List(c)
+	if err != nil {
+		log.Logger.Error(err)
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	response.Success(c, response.StatusOK, list)
+}
+
+func DeleteCluster(c *gin.Context) {
+	id := util.GetQueryToUint64(c, "id")
+
+	err := core.V1.Cluster("").Delete(c, id)
+	if err != nil {
+		log.Logger.Error(err)
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	response.Success(c, response.StatusOK, nil)
+}

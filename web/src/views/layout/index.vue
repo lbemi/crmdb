@@ -2,12 +2,19 @@
 <template>
   <div class="common-layout">
     <el-container>
-      <el-aside width="160px" >
+      <el-aside width="160px" calss="menu">
         <!-- <el-card
           class="box-card"
           style="height: 100vh"
           :body-style="{ padding: '0px' }"
         >  -->
+        <div>
+          <el-affix target=".el-menu" :offset="80" position="bottom">
+            <el-icon @click="isCollapse = !isCollapse">
+              <SvgIcon iconName="icon-zhankaicaidan" className="expand-icon" />
+            </el-icon>
+          </el-affix>
+        </div>
         <el-menu
           active-text-color="#409EFF"
           class="el-menu-vertical-demo"
@@ -30,9 +37,7 @@
               src="@/assets/image/element-plus-logo.svg"
             />
           </el-icon>
-          <el-icon @click="isCollapse = !isCollapse">
-            <SvgIcon iconName="icon-zhankaicaidan" className="expand-icon" />
-          </el-icon>
+
           <template v-for="menu in store.menus">
             <el-menu-item v-if="menu.children === null" :index="menu.url">
               <el-icon style="width: 0.5em; height: 0.5em; margin-right: 10px">
@@ -75,9 +80,7 @@
           <Bredcrumb />
           <router-view></router-view>
         </el-main>
-        <el-footer
-        style="text-align:center; height: 30px;"
-        >底线....</el-footer>
+        <el-footer style="text-align: center; height: 30px">底线....</el-footer>
       </el-container>
     </el-container>
   </div>

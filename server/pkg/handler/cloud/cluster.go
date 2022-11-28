@@ -140,7 +140,13 @@ func (c *cluster) Create(ctx context.Context, config *form.ClusterReq) error {
 }
 
 func (c *cluster) Delete(ctx context.Context, id uint64) error {
+	info, err := c.factory.Cluster().Get(id)
+	if err != nil {
+		return err
+	}
+	go c.factory.Cluster().RemoveFromStore(info.Name)
 	util.WithErrorLog(c.factory.Cluster().Delete(id))
+
 	return nil
 }
 
