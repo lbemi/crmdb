@@ -83,7 +83,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		node.GET("/:nodeName", cloud.GetNode)
 	}
 
-	// node 资源路由
+	// service 资源路由
 	service := group.Group("/service")
 	{
 		service.GET("/:namespace", cloud.ListServices)
@@ -91,6 +91,16 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		service.POST("", cloud.CreateService)
 		service.PUT("", cloud.UpdateService)
 		service.DELETE("/:namespace/:serviceName", cloud.DeleteService)
+	}
+
+	// ingress 资源路由
+	ingress := group.Group("/ingress")
+	{
+		ingress.GET("/:namespace", cloud.ListIngresses)
+		ingress.GET("/:namespace/:ingressName", cloud.GetIngress)
+		ingress.POST("", cloud.CreateIngress)
+		ingress.PUT("", cloud.UpdateIngress)
+		ingress.DELETE("/:namespace/:ingressName", cloud.DeleteIngress)
 	}
 
 	// secret 资源路由
