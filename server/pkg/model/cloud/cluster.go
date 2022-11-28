@@ -9,7 +9,7 @@ import (
 type Config struct {
 	basemodel.Model
 	Name        string  `json:"name" gorm:"column:name;not null;unique_index:kube_name;comment:集群名称"`
-	KubeConfig  string  `json:"kube_config" gorm:"column:kube_config;not null;comment:cloud config"`
+	KubeConfig  string  `json:"-" gorm:"column:kube_config;not null;comment:cloud config"`
 	Version     string  `json:"version" gorm:"version:name;comment:kubernetes版本"`
 	RunTime     string  `json:"runtime" gorm:"colum:runtime;comment:运行时"`
 	ServiceCidr string  `json:"service_cidr" gorm:"colum:service_cidr;comment:service cloud ip"`

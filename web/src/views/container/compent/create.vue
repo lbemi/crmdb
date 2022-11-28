@@ -1,6 +1,6 @@
 /** * Created by lei on 2022/11/16 */
 <template>
-  <el-dialog v-model="dialogVisable" :close="handleClose">
+  <el-dialog v-model="dialogVisable" :close="handleClose" style="width: 500px">
     <template #header="{ close, titleId, titleClass }">
       <div class="my-header">
         <h4 :id="titleId" :class="titleClass">{{ title }}</h4>
@@ -8,85 +8,109 @@
       </div>
     </template>
     <div class="dialog-body">
-      <el-radio-group v-model="radio1" class="ml-4">
-        <!-- <el-card class="box-card">
-        <template #header>
-          <div class="card-header">
-            <span>Card name</span>
-            <el-button class="button" text>导入现有集群</el-button>
-          </div>
-        </template>
-        <div v-for="o in 4" :key="o" class="text item">
-          {{ "List item " + o }}
-        </div>
-        
-      </el-card> -->
-        <el-radio label="1" border class="r-1">
-          <h1>asd</h1>
-          <h1>asd</h1>
-          <h1>asd</h1>
-        </el-radio>
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header">
-              <span>Card name</span>
-              <el-button class="button" text>新建集群</el-button>
+      <el-form
+        ref="ruleFormRef"
+        :model="data.cluster"
+        status-icon
+        label-width="80px"
+        class="demo-ruleForm"
+      >
+        <el-form-item label="集群名称" prop="name">
+          <el-input v-model="data.cluster.name" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="配置文件">
+          <el-upload
+            :limit="1"
+            drag
+            :auto-upload="false"
+            :on-change="handleChange"
+            multiple
+          >
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">
+              Drop file here or <em>click to upload</em>
             </div>
-          </template>
-          <div v-for="o in 4" :key="o" class="text item">
-            {{ "List item " + o }}
-          </div>
-          <el-radio label="2" size="large">Option 2</el-radio>
-        </el-card>
-      </el-radio-group>
+            <template #tip>
+              <div class="el-upload__tip">
+                kube config files with a size less than 500kb
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
+
+        <el-form-item >
+          <el-button type="primary" @click="submitForm(ruleFormRef)"
+            >Submit</el-button
+          >
+          <el-button @click="resetForm(ruleFormRef)">Reset</el-button>
+        </el-form-item>
+      </el-form>
     </div>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { reactive, ref } from "vue";
+import { UploadFilled } from "@element-plus/icons-vue";
+import { ElMessage, FormInstance, UploadFile, UploadFiles } from "element-plus";
+import { clusterForm } from "@/type/container";
+import { clusterApi } from "../api";
 
-const radio1 = ref("1");
+const ruleFormRef = ref<FormInstance>();
+
+const data = reactive({
+  cluster: {
+    name: "",
+  } as clusterForm,
+});
+
+const newFormData = new FormData();
+
+const requestConfig = {
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+};
+const handleChange = (file: UploadFile, files: UploadFiles) => {
+  newFormData.append("file", file.raw!);
+};
+
+const submitForm = (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  formEl.validate(async (valid) => {
+    if (valid) {
+      newFormData.append("name", data.cluster.name);
+      await clusterApi.create
+        .request(newFormData, requestConfig)
+        .then((res) => {
+          emits("valueChange");
+          handleClose();
+          ElMessage.success(res.message);
+        }).catch(()=>{
+            newFormData.delete("file");
+            newFormData.delete("name");
+        }); 
+    } else {
+      ElMessage.error("请正确填写!");
+      return false;
+    }
+  });
+};
+
+const resetForm = (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  formEl.resetFields();
+};
+
 const props = defineProps<{
   dialogVisable: Boolean;
   title: string;
 }>();
-const emits = defineEmits(["update:dialogVisable"]);
+const emits = defineEmits(["update:dialogVisable", "valueChange"]);
 
 const handleClose = () => {
   emits("update:dialogVisable", false);
 };
 </script>
 
-<style scoped lang="less">
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.text {
-  font-size: 14px;
-}
-
-.item {
-  margin-bottom: 18px;
-}
-
-.box-card {
-  width: 360px;
-  border-color: #409eff;
-}
-.ml-4 {
-  display: flex;
-  justify-content: space-evenly;
-}
-.r-1 {
-  display: flex;
-  height: 300px;
-  width: 360px;
-  text-align: start;
-}
-.el-radio__inner {
-  margin-top: 0px;
-}
-</style>
+<style scoped lang="less"></style>
