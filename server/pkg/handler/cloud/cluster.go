@@ -39,11 +39,19 @@ type ICluster interface {
 	kuberntetes.JobGetter
 	kuberntetes.CronJobGetter
 	kuberntetes.ConfigMapGetter
+	kuberntetes.IngressesGetter
 }
 
 type cluster struct {
 	factory     services.IDbFactory
 	clusterName string
+}
+
+func (c *cluster) Ingresses(namespace string) kuberntetes.IIngresses {
+	if namespace == "" {
+		namespace = "default"
+	}
+	return kuberntetes.NewIngress(c.getClient(c.clusterName).ClientSet, namespace)
 }
 
 func (c *cluster) ConfigMaps(namespace string) kuberntetes.IConfigMap {
