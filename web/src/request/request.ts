@@ -2,6 +2,7 @@ import axios from "axios";
 import { ElMessage } from "element-plus";
 import { ResultEnum } from "./enums";
 import Api from "./api";
+import { ref } from "vue";
 
 const service = axios.create({
   baseURL: "http://127.0.0.1:8080/api/v1",
@@ -66,12 +67,13 @@ export const request = (
   if (!url) {
     throw new Error("请求url不能为空");
   }
-  let flag = false
+  var flag = ref(false)
   // 简单判断该url是否是restful风格
   if (url.indexOf("{") != -1) {
-    flag = true
+    flag.value = true
     url = templateResolve(url, params);
   }
+
   const query: any = {
     method,
     url,
@@ -80,19 +82,22 @@ export const request = (
     query.headers = headers;
   }
   const lowMehtod = method.toLowerCase();
-
+ 
   if (lowMehtod === "post" || lowMehtod === "put") {
     if (flag) {
       query.data = options
-      flag = false
+      query.params = params
+      flag.value = false
     }else {
       query.data = params;
     }
      
   } else {
-    if (!flag) {
+    if (!flag.value) {
       query.params = params;
-    } 
+    }  else {
+      query.params = params;
+    }
   }
 
   return service
@@ -120,14 +125,16 @@ export const sendWithHeaders = (
 };
 
 const templateResolve = (template: string, param: any) => {
-  return template.replace(/\{\w+\}/g, (word) => {
+  return  template.replace(/\{\w+\}/g, (word) => {
     const key = word.substring(1, word.length - 1);
     const value = param[key];
+    delete param[key]
     if (value != null || value != undefined) {
       return value;
     }
     return "";
   });
+ 
 };
 
 export default { request, send, sendWithHeaders };

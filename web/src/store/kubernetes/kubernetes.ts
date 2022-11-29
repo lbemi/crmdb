@@ -7,7 +7,7 @@ export const kubeStore = defineStore(
   () => {
     const activeCluster = ref<clusterInfo>();
     const clusters = ref<Array<clusterInfo>>();
-
+    const namespace = ref
     return { activeCluster, clusters };
   },
   {
