@@ -2,24 +2,7 @@
 <template>
   <el-card>
     <el-container>
-      <el-aside width="150px">
-        <div>
-          <span>集群信息</span>
-          <el-select
-            v-model.number=activeCluster!.id
-            class="m-2"
-            placeholder="Select"
-            size="small"
-          >
-            <el-option
-              v-for="item in clusters"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            />
-          </el-select>
-        </div>
-        <hr />
+      <el-aside width="150px" style="height: 100%">
         <el-menu
           active-text-color="#409EFF"
           :unique-opened="true"
@@ -27,6 +10,22 @@
           @open="handleOpen"
           @close="handleClose"
         >
+          <el-select
+            v-model.number="activeCluster!.id"
+            class="m-2"
+            placeholder="Select"
+            size="small"
+            @change="flush"
+          >
+            <el-option
+              v-for="item in clusters"
+              :key="item.id"
+              :label="item.name + ' - 集群'"
+              :value="item.id"
+              style="align-items: center;"
+            />
+          </el-select>
+          <hr />
           <template v-for="menu in kubernetesRoutes">
             <el-menu-item v-if="!menu.children" :index="menu.path">
               <template #title>{{ menu.name }}</template>
@@ -46,28 +45,24 @@
           </template>
         </el-menu>
       </el-aside>
-      <router-view></router-view>
+      <router-view ></router-view>
     </el-container>
   </el-card>
 </template>
 
 <script setup lang="ts">
-import {  ref } from "vue";
+import { provide, ref ,nextTick, inject, onMounted} from "vue";
 import { RouterView, useRoute } from "vue-router";
-import {kubeStore} from "@/store/kubernetes/kubernetes"
-
+import { kubeStore } from "@/store/kubernetes/kubernetes";
 const kube = kubeStore();
 
-const route = useRoute();
-console.log("打印...", route.params);
-const activeCluster = kube.activeCluster
-const clusters = kube.clusters
-
+const activeCluster = kube.activeCluster;
+const clusters = kube.clusters;
 
 const handleOpen = (key: string, keyPath: string[]) => {};
 const handleClose = (key: string, keyPath: string[]) => {};
-const value = ref("");
 
+const flush = inject("reload")
 const kubernetesRoutes = [
   {
     id: 1,
@@ -114,6 +109,11 @@ const kubernetesRoutes = [
     ],
   },
 ];
+
+onMounted(()=>{
+    console.log("我执行了...");
+    
+})
 </script>
 
 <style scoped lang="less"></style>
