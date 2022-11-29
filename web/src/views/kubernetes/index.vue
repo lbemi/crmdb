@@ -2,7 +2,7 @@
 <template>
   <el-card>
     <el-container>
-      <el-aside width="150px" style="height: 100%">
+      <el-aside width="200px" style="height: 100%">
         <el-menu
           active-text-color="#409EFF"
           :unique-opened="true"
@@ -11,17 +11,16 @@
           @close="handleClose"
         >
           <el-select
-            v-model.number="activeCluster!.id"
+            v-model.number="activeCluster!.name"
             class="m-2"
             placeholder="Select"
-            size="small"
             @change="flush"
           >
             <el-option
               v-for="item in clusters"
-              :key="item.id"
+              :key="item.name"
               :label="item.name + ' - 集群'"
-              :value="item.id"
+              :value="item.name"
               style="align-items: center;"
             />
           </el-select>
@@ -51,9 +50,11 @@
 </template>
 
 <script setup lang="ts">
-import { provide, ref ,nextTick, inject, onMounted} from "vue";
-import { RouterView, useRoute } from "vue-router";
+import {  reactive , inject, onMounted} from "vue";
+import { RouterView } from "vue-router";
 import { kubeStore } from "@/store/kubernetes/kubernetes";
+import {namespacerApi } from "./api"
+import { Namespace } from "@/type/namespace"
 const kube = kubeStore();
 
 const activeCluster = kube.activeCluster;
@@ -110,10 +111,24 @@ const kubernetesRoutes = [
   },
 ];
 
-onMounted(()=>{
-    console.log("我执行了...");
-    
+const query = reactive({
+  cloud: "",
 })
+
+const state = reactive({
+  namespaces: <Namespace[]>[],
+})
+onMounted(()=>{
+    getNamespace()
+})
+
+const getNamespace =async ()=>{
+  query.cloud = kube.activeCluster!.name
+  const res=  await namespacerApi.list.request(query)
+state.namespaces = res.data.items
+  console.log(state.namespaces)
+}
+
 </script>
 
 <style scoped lang="less"></style>

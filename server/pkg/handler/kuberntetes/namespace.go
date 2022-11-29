@@ -25,9 +25,7 @@ type namespace struct {
 }
 
 func (n *namespace) List(ctx context.Context) (*v1.NamespaceList, error) {
-	list, err := n.cli.ClientSet.CoreV1().Namespaces().List(ctx, metav1.ListOptions{
-		Limit: 2,
-	})
+	list, err := n.cli.ClientSet.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
