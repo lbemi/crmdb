@@ -2,26 +2,21 @@
 <template>
   <div class="common-layout">
     <el-container>
-      <el-aside width="160px" calss="menu">
-        <!-- <el-card
-          class="box-card"
-          style="height: 100vh"
-          :body-style="{ padding: '0px' }"
-        >  -->
-        <div>
-          <el-affix target=".el-menu" :offset="80" position="bottom">
-            <el-icon @click="isCollapse = !isCollapse">
-              <SvgIcon iconName="icon-zhankaicaidan" className="expand-icon" />
-            </el-icon>
-          </el-affix>
-        </div>
+      <el-aside
+        style="
+          display: flex;
+          justify-content: center;
+          text-align: center;
+          flex-direction: column;
+        "
+      >
+      <el-scrollbar>
         <el-menu
           active-text-color="#409EFF"
-          class="el-menu-vertical-demo"
           :default-active="routeActive"
           :unique-opened="true"
           :router="true"
-          style="height: 100vh"
+          style="height: 100%"
           :collapse="isCollapse"
           @open="handleOpen"
           @close="handleClose"
@@ -69,7 +64,13 @@
             </el-sub-menu>
           </template>
         </el-menu>
-        <!-- </el-card> -->
+    </el-scrollbar>
+        <el-affix target=".el-menu" position="bottom">
+          <el-icon @click="isCollapse = !isCollapse">
+            <SvgIcon iconName="icon-zhankaicaidan" className="icon-1-4em" />
+          </el-icon>
+        </el-affix>
+        
       </el-aside>
       <el-container>
         <el-header style="padding: 0px 5px">
@@ -103,11 +104,8 @@ const handleClose = (key: string, keyPath: string[]) => {};
 </script>
 
 <style scoped lang="less">
-.expand-icon {
-  position: relative;
-  width: 20px;
-  height: 20px;
-  bottom: 0;
-  margin-top: 15px;
+.el-aside {
+  height: 100vh;
+  width: auto !important; /**宽度自适应 */
 }
 </style>

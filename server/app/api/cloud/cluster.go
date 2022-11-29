@@ -34,7 +34,7 @@ func CreateCluster(c *gin.Context) {
 	err = core.V1.Cluster(req.Name).Create(c, &req)
 	if err != nil {
 		log.Logger.Error(err)
-		response.Fail(c, response.ErrOperateFailed)
+		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return
 	}
 

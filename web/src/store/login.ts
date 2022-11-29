@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 import { userApi } from "@/views/sys/api";
 import router from "@/router/index";
-import { ElMessage, ElNotification, FormInstance } from "element-plus";
+import { ElMessage, FormInstance } from "element-plus";
 import { LoginReq, User } from "./interface/user";
 import { useStore } from "./usestore";
 

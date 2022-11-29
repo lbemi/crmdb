@@ -2,12 +2,18 @@
 <template>
   <el-card style="height: 100%">
     <el-button type="primary" style="margin-bottom: 10px" @click="handleCreate"
-      >创建集群</el-button
+      >导入集群</el-button
     >
 
     <el-table :data="data.clusters" style="width: 100%">
       <el-table-column fixed prop="id" label="ID" width="100" />
-      <el-table-column prop="name" label="Name" width="120" />
+      <el-table-column prop="name" label="Name" width="120">
+        <template #default="scope">
+          <el-button link type="primary" @click="handleCluser(scope.row)">{{
+            scope.row.name
+          }}</el-button>
+        </template>
+      </el-table-column>
       <el-table-column prop="status" label="状态" width="120">
         <template #default="scope">
           <div v-if="scope.row.status == true">
@@ -46,24 +52,28 @@
       <el-table-column prop="pod_cidr" label="Pod_CIDR" width="120" />
       <el-table-column prop="service_cidr" label="Service_CIDR" width="120" />
       <el-table-column prop="cpu" label="CPU" width="120" />
-      <el-table-column prop="memory" label="内存" width="160" >
-        <template #default="scope">
-            {{scope.row.memory/1024}}M
-        </template>
+      <el-table-column prop="memory" label="内存" width="160">
+        <template #default="scope"> {{ scope.row.memory / 1024 }}M </template>
       </el-table-column>
-      <el-table-column  label="操作" width="160">
+      <el-table-column label="操作" width="160">
         <template #default="scope">
           <el-button link type="primary" size="small" @click="handleClick"
             >Detail</el-button
           >
           <el-button link type="primary" size="small">Edit</el-button>
-          <el-button link type="danger" size="small" @click="handlerDelete(scope.row)">Detele</el-button>
+          <el-button
+            link
+            type="danger"
+            size="small"
+            @click="handlerDelete(scope.row)"
+            >Detele</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
   </el-card>
   <CreateCluster
-    :dialogVisable="createData.dialogVisable"
+    v-model:dialog-visable="createData.dialogVisable"
     @value-change="getCluster()"
     :title="createData.title"
   />
@@ -75,7 +85,10 @@ import CreateCluster from "./compent/create.vue";
 import { clusterApi } from "./api";
 import { clusterInfo } from "@/type/container";
 import { ElMessage, ElMessageBox } from "element-plus";
+import router from "@/router";
+import {kubeStore} from "@/store/kubernetes/kubernetes"
 
+const kube = kubeStore()
 const createData = reactive({
   dialogVisable: false,
   title: "创建集群",
@@ -102,10 +115,8 @@ const getCluster = async () => {
   data.clusters = res.data;
 };
 
-
-const handlerDelete = async (cluster:clusterInfo) =>{
-
-    ElMessageBox.confirm(
+const handlerDelete = async (cluster: clusterInfo) => {
+  ElMessageBox.confirm(
     `此操作将删除[ ${cluster.name} ]集群 . 是否继续?`,
     "提示",
     {
@@ -125,7 +136,21 @@ const handlerDelete = async (cluster:clusterInfo) =>{
         .catch();
     })
     .catch(() => {}); // 取消
-}
+};
+
+const handleCluser = (cluster: clusterInfo) => {
+  kube.activeCluster = cluster
+  kube.clusters = data.clusters
+
+  console.log(cluster);
+  router.push({
+    name: "kubernetes",
+    // params: {
+    //     currentCluster: JSON.stringify(cluster),
+    //     clusters: JSON.stringify(data.clusters),
+    // },
+  });
+};
 </script>
 
 <style scoped lang="less"></style>
