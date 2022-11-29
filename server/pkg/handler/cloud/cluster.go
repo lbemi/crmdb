@@ -69,29 +69,29 @@ func (c *cluster) CronJobs(namespace string) kuberntetes.ICronJob {
 }
 
 func (c *cluster) Jobs(namespace string) kuberntetes.IJob {
-	if namespace == "" {
-		namespace = "default"
+	if namespace == "all" {
+		namespace = ""
 	}
 	return kuberntetes.NewJob(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) DaemonSets(namespace string) kuberntetes.IDaemonSet {
-	if namespace == "" {
-		namespace = "default"
+	if namespace == "all" {
+		namespace = ""
 	}
 	return kuberntetes.NewDaemonSet(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) StatefulSets(namespace string) kuberntetes.IStatefulSet {
-	if namespace == "" {
-		namespace = "default"
+	if namespace == "all" {
+		namespace = ""
 	}
 	return kuberntetes.NewStatefulSet(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) Pods(namespace string) kuberntetes.IPod {
-	if namespace == "" {
-		namespace = "default"
+	if namespace == "all" {
+		namespace = ""
 	}
 	return kuberntetes.NewPod(c.getClient(c.clusterName), namespace)
 }
@@ -99,8 +99,8 @@ func (c *cluster) Pods(namespace string) kuberntetes.IPod {
 // kubernetes 资源接口
 
 func (c *cluster) Secrets(namespace string) kuberntetes.ISecret {
-	if namespace == "" {
-		namespace = "default"
+	if namespace == "all" {
+		namespace = ""
 	}
 	return kuberntetes.NewSecret(c.getClient(c.clusterName).ClientSet, namespace)
 }
@@ -110,8 +110,8 @@ func (c *cluster) Namespaces() kuberntetes.INamespace {
 }
 
 func (c *cluster) Service(namespace string) kuberntetes.IService {
-	if namespace == "" {
-		namespace = "default"
+	if namespace == "all" {
+		namespace = ""
 	}
 	return kuberntetes.NewService(c.getClient(c.clusterName).ClientSet, namespace)
 }
@@ -121,8 +121,8 @@ func (c *cluster) Nodes() kuberntetes.INode {
 }
 
 func (c *cluster) Deployments(namespace string) kuberntetes.IDeployment {
-	if namespace == "" {
-		namespace = "default"
+	if namespace == "all" {
+		namespace = ""
 	}
 	return kuberntetes.NewDeployment(c.getClient(c.clusterName), namespace)
 }

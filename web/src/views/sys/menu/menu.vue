@@ -9,6 +9,7 @@
       @click="addMenu"
       >添加菜单权限</el-button
     >
+    <el-scrollbar>
     <el-table
       stripe
       :data="menuList"
@@ -119,6 +120,7 @@
         </template>
       </el-table-column>
     </el-table>
+    </el-scrollbar>
     <!-- 分页区域 -->
     <pagination
       :total="data.total"

@@ -52,4 +52,9 @@ const svgClass  = computed(()=>{
   position: relative;
 }
 
+.icon-2-4em {
+  width: 2.4em;
+  height: 2.4em;
+  position: relative;
+}
 </style>

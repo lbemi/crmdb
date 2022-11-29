@@ -18,6 +18,7 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   
+  
 ];
 
 const pathMatch = {
@@ -99,7 +100,33 @@ const genRouters = (menus: MenuObj[]) => {
         meta: {
           title: "ssh",
         },
-      }
+      },
+      {
+        path: "/kubernetes",
+        name: "kubernetes",
+        component: () => import("../views/kubernetes/index.vue"),
+        meta: {
+          title: "kubernetes",
+        },
+        children: [
+            {
+                path: "/cluster",
+                name: "cluster",
+                component: () => import("../views/kubernetes/cluster/index.vue"),
+                meta: {
+                    title: "deployments",
+                  },
+            },
+            {
+                path: "/deployment",
+                name: "deployments",
+                component: () => import("../views/kubernetes/deployment/index.vue"),
+                meta: {
+                    title: "deployments",
+                  },
+            }
+        ]
+      },
     ],
   });
   router.addRoute(pathMatch);
