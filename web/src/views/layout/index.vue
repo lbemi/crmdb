@@ -79,7 +79,7 @@
 
         <el-main style="padding: 10px 5px; margin-top: 12px">
           <Bredcrumb />
-          <router-view></router-view>
+          <router-view v-if="isRouterActive"></router-view>
         </el-main>
         <el-footer style="text-align: center; height: 30px">底线....</el-footer>
       </el-container>
@@ -88,11 +88,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref,nextTick, provide } from "vue";
 import { useStore } from "@/store/usestore";
 import Header from "./header/index.vue";
 import Bredcrumb from "@/component/breadcrumb/index.vue";
 import { useRoute } from "vue-router";
+const isRouterActive= ref(true)
+const reload = ()=>{
+    isRouterActive.value = false
+    nextTick(()=>{
+        isRouterActive.value = true
+    })
+}
+provide("reload", reload)
 
 const route = useRoute();
 const routeActive = ref();
