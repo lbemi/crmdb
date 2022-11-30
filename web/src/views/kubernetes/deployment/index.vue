@@ -1,30 +1,80 @@
-/**
- * Created by lei on 2022/11/29
- */
+/** * Created by lei on 2022/11/29 */
 <template>
-  <div>
-    Deployment
-  </div>
+  <el-table
+    :data="tableData"
+    style="width: 100%"
+    :row-class-name="tableRowClassName"
+  >
+    <el-table-column prop="date" label="Date" width="180" />
+    <el-table-column prop="name" label="Name" width="180" />
+    <el-table-column prop="address" label="Address" />
+  </el-table>
 </template>
 
 <script setup lang="ts">
-  import { reactive,onMounted } from "vue";
-import { deploymentApi} from "../api"
-  
-onMounted(()=>{
-  listDeployment()
-})
+import { reactive, onMounted } from "vue";
+import { deploymentApi } from "../api";
+import { kubeStore } from "@/store/kubernetes/kubernetes";
 
-  const query = reactive({
-    namespace: "default",
-    cloud: "test2"
-  })
-  const listDeployment = async () => {
-    const res = await deploymentApi.list.request(query)
-    console.log("+++++",res);
-  } 
+const kube = kubeStore();
+onMounted(() => {
+  listDeployment();
+});
+
+const query = reactive({
+  namespace: "default",
+  cloud: kube.activeCluster?.name,
+});
+
+const listDeployment = async () => {
+  const res = await deploymentApi.list.request(query);
+  console.log("+++++", res);
+};
+
+
+interface User {
+  date: string
+  name: string
+  address: string
+}
+
+const tableRowClassName = ({
+  row,
+  rowIndex,
+}: {
+  row: User
+  rowIndex: number
+}) => {
+  if (rowIndex === 1) {
+    return 'warning-row'
+  } else if (rowIndex === 3) {
+    return 'success-row'
+  }
+  return ''
+}
+
+const tableData: User[] = [
+  {
+    date: '2016-05-03',
+    name: 'Tom',
+    address: 'No. 189, Grove St, Los Angeles',
+  },
+  {
+    date: '2016-05-02',
+    name: 'Tom',
+    address: 'No. 189, Grove St, Los Angeles',
+  },
+  {
+    date: '2016-05-04',
+    name: 'Tom',
+    address: 'No. 189, Grove St, Los Angeles',
+  },
+  {
+    date: '2016-05-01',
+    name: 'Tom',
+    address: 'No. 189, Grove St, Los Angeles',
+  },
+]
 </script>
 
-<style scoped lang="less">
-
-</style>
+<style scoped lang="less"></style>
