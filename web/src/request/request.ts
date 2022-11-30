@@ -1,8 +1,8 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig, AxiosRequestHeaders } from "axios";
 import { ElMessage } from "element-plus";
 import { ResultEnum } from "./enums";
 import Api from "./api";
-import { ref } from "vue";
+import { ErrorCodes, ref } from "vue";
 
 const service = axios.create({
   baseURL: "http://127.0.0.1:8080/api/v1",
@@ -57,7 +57,7 @@ service.interceptors.response.use(
     return Promise.reject(e);
   }
 );
-export const request = (
+export const request = async (
   method: string,
   url: string,
   params: any = null,
@@ -74,17 +74,17 @@ export const request = (
     url = templateResolve(url, params);
   }
 
-  const query: any = {
+  const query: AxiosRequestConfig = {
     method,
     url,
   };
   if (headers) {
-    query.headers = headers;
+    query.headers=headers
   }
   const lowMehtod = method.toLowerCase();
  
   if (lowMehtod === "post" || lowMehtod === "put") {
-    if (flag) {
+    if (flag.value) {
       query.data = options
       query.params = params
       flag.value = false
@@ -100,15 +100,16 @@ export const request = (
     }
   }
 
-  return service
-    .request(query)
-    .then((res) => res)
-    .catch((e) => {
-      if (e.message) {
-        ElMessage.error(e.message);
-      }
-      return Promise.reject(e);
-    });
+  try {
+        const res = await service
+            .request(query);
+        return res;
+    } catch (e: any) {
+        if (e.message) {
+            ElMessage.error(e.message);
+        }
+        return await Promise.reject(e);
+    }
 };
 
 export const send = (api: Api, params: any, options: any): Promise<any> => {

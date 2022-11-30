@@ -68,7 +68,7 @@ const newFormData = new FormData();
 
 const requestConfig = {
   headers: {
-    "Content-Type": "multipart/form-data",
+    'Content-Type': 'multipart/form-data',
   },
 };
 const handleChange = (file: UploadFile, files: UploadFiles) => {
@@ -81,7 +81,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
     if (valid) {
       newFormData.append("name", data.cluster.name);
       await clusterApi.create
-        .request(newFormData, requestConfig)
+        .requestWithHeaders(newFormData,requestConfig.headers)
         .then((res) => {
           emits("valueChange");
           handleClose();
