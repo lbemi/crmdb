@@ -1,17 +1,12 @@
-/**
- * Created by lei on 2022/09/24
- */
+/** * Created by lei on 2022/09/24 */
 <template>
-    
-    <router-view></router-view>
+  <router-view></router-view>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts"></script>
 
-</script>
-
-<style  lang="less">
-@import url('./assets/styles/rebase.less');
+<style lang="less">
+@import url("./assets/styles/rebase.less");
 
 html,
 body {

@@ -4,7 +4,7 @@
     v-model="visible"
     @close="handleClose()"
     :title="title"
-    style="width: 400px"
+    style="width: 400px;"
   >
     <el-tree
       ref="menusRef"
@@ -34,52 +34,51 @@
 </template>
 
 <script setup lang="ts">
-import { MenuInfo } from "@/type/sys";
-import { ElMessage } from "element-plus";
-import { ref, reactive, onUpdated } from "vue";
-import { roleApi, userApi } from "../api";
-import { useStore } from "@/store/usestore";
-const user = useStore();
-const menusRef = ref();
-const loading = ref<boolean>(false);
+import { MenuInfo } from '@/type/sys'
+import { ElMessage } from 'element-plus'
+import { ref, reactive, onUpdated } from 'vue'
+import { roleApi, userApi } from '../api'
+import { useStore } from '@/store/usestore'
+const user = useStore()
+const menusRef = ref()
+const loading = ref<boolean>(false)
 const props = defineProps<{
-  visible: boolean;
-  title: string;
-  roleID: number;
-  menuList: Array<MenuInfo> | undefined;
-  defaultCheckedMenus: Array<number>;
-}>();
+  visible: boolean
+  title: string
+  roleID: number
+  menuList: Array<MenuInfo> | undefined
+  defaultCheckedMenus: Array<number>
+}>()
 
 const data = reactive({
   menuForm: {
-    menu_ids: [],
-  },
-});
+    menu_ids: []
+  }
+})
 
-const emits = defineEmits(["update:visible", "valueChange"]);
+const emits = defineEmits(['update:visible', 'valueChange'])
 
 const handleClose = () => {
-  emits("update:visible", false);
-};
+  emits('update:visible', false)
+}
 
 const btnOk = async () => {
-  loading.value = true;
+  loading.value = true
   const menuIds = menusRef.value
     .getCheckedKeys()
-    .concat(menusRef.value.getHalfCheckedKeys());
-  data.menuForm.menu_ids = menuIds;
+    .concat(menusRef.value.getHalfCheckedKeys())
+  data.menuForm.menu_ids = menuIds
   roleApi.setRoleMenus
     .request({ id: props.roleID }, data.menuForm)
     .then((res) => {
-      handleClose();
-      emits("valueChange");
-      user.getLeftMenus();
+      handleClose()
+      emits('valueChange')
+      user.getLeftMenus()
       user.getUserPermissions()
-      loading.value = false;
-      ElMessage.success(res.message);
-    });
-  
-};
+      loading.value = false
+      ElMessage.success(res.message)
+    })
+}
 </script>
 
 <style scoped lang="less"></style>

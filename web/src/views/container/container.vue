@@ -20,10 +20,10 @@
             <div
               style="
                 display: inline-block;
-                background: #67c23a;
-                border-radius: 50%;
                 width: 12px;
                 height: 12px;
+                background: #67c23a;
+                border-radius: 50%;
               "
             ></div>
             <span style="margin-left: 5px; font-size: 12px; color: #67c23a"
@@ -34,10 +34,10 @@
             <div
               style="
                 display: inline-block;
-                background: #f56c6c;
-                border-radius: 50%;
                 width: 12px;
                 height: 12px;
+                background: #f56c6c;
+                border-radius: 50%;
               "
             ></div>
             <span style="margin-left: 5px; font-size: 12px; color: #f56c6c"
@@ -80,77 +80,77 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
-import CreateCluster from "./compent/create.vue";
-import { clusterApi } from "./api";
-import { clusterInfo } from "@/type/container";
-import { ElMessage, ElMessageBox } from "element-plus";
-import router from "@/router";
-import {kubeStore} from "@/store/kubernetes/kubernetes"
+import { onMounted, reactive } from 'vue'
+import CreateCluster from './compent/create.vue'
+import { clusterApi } from './api'
+import { clusterInfo } from '@/type/container'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import router from '@/router'
+import { kubeStore } from '@/store/kubernetes/kubernetes'
 
 const kube = kubeStore()
 const createData = reactive({
   dialogVisable: false,
-  title: "创建集群",
-});
+  title: '创建集群'
+})
 
 const handleClick = () => {
-  console.log("click");
-};
+  console.log('click')
+}
 
 onMounted(() => {
-  getCluster();
-});
+  getCluster()
+})
 
 const handleCreate = () => {
-  createData.dialogVisable = true;
-};
+  createData.dialogVisable = true
+}
 
 const data = reactive({
-  clusters: [] as Array<clusterInfo>,
-});
+  clusters: [] as Array<clusterInfo>
+})
 
 const getCluster = async () => {
-  const res = await clusterApi.list.request();
-  data.clusters = res.data;
-};
+  const res = await clusterApi.list.request()
+  data.clusters = res.data
+}
 
 const handlerDelete = async (cluster: clusterInfo) => {
   ElMessageBox.confirm(
     `此操作将删除[ ${cluster.name} ]集群 . 是否继续?`,
-    "提示",
+    '提示',
     {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-      draggable: true,
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      draggable: true
     }
   )
     .then(() => {
       clusterApi.delete
         .request({ id: cluster.id })
         .then((res) => {
-          getCluster();
-          ElMessage.success(res.message);
+          getCluster()
+          ElMessage.success(res.message)
         })
-        .catch();
+        .catch()
     })
-    .catch(() => {}); // 取消
-};
+    .catch() // 取消
+}
 
 const handleCluser = (cluster: clusterInfo) => {
   kube.activeCluster = cluster
   kube.clusters = data.clusters
 
-  console.log(cluster);
+  console.log(cluster)
   router.push({
-    name: "kubernetes",
+    name: 'kubernetes'
     // params: {
     //     currentCluster: JSON.stringify(cluster),
     //     clusters: JSON.stringify(data.clusters),
     // },
-  });
-};
+  })
+}
 </script>
 
 <style scoped lang="less"></style>

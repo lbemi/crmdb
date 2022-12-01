@@ -1,7 +1,7 @@
 /** * Created by lei on 2022/11/03 */
 <template>
   <el-dialog
-    v-model="visible"
+    v-model="props.visible"
     @close="handleClose(userFormRef)"
     :title="title"
     style="width: 400px"
@@ -69,115 +69,115 @@
 </template>
 
 <script setup lang="ts">
-import { UserForm, UserInfo } from "@/type/sys";
-import { FormInstance, FormRules, ElMessage } from "element-plus";
-import { ref, reactive, watch } from "vue";
-import { userApi } from "../../api";
+import { UserForm, UserInfo } from '@/type/sys'
+import { FormInstance, FormRules, ElMessage } from 'element-plus'
+import { ref, reactive, watch } from 'vue'
+import { userApi } from '../../api'
 
-const userFormRef = ref<FormInstance>();
+const userFormRef = ref<FormInstance>()
 
 const props = defineProps<{
-  visible: boolean;
+  visible: boolean
   // v-model:visible.isBt  //v-model传值方式
   // visibleModifiers?: {
   //   isBt:boolean
   // }
-  title: string;
-  data?: UserInfo | undefined;
-}>();
+  title: string
+  data?: UserInfo | undefined
+}>()
 
-const emits = defineEmits(["update:visible", "valueChange"]);
+const emits = defineEmits(['update:visible', 'valueChange'])
 
 const handleClose = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.resetFields();
-  emits("update:visible", false);
-};
+  if (!formEl) return
+  formEl.resetFields()
+  emits('update:visible', false)
+}
 
 let form = reactive<UserForm>({
-  user_name: "",
-  email: "",
+  user_name: '',
+  email: '',
   status: 1,
-  password: "",
-  description: "",
-  confirmPassword: "",
-});
-const validatePass = (rule: any, value: string, callback: Function) => {
-  if (value === "") {
-    callback(new Error("请输入密码"));
+  password: '',
+  description: '',
+  confirmPassword: ''
+})
+const validatePass = (rule: any, value: string, callback: any) => {
+  if (value === '') {
+    callback(new Error('请输入密码'))
   } else {
-    if (form.confirmPassword !== "") {
-      if (!userFormRef.value) return;
-      userFormRef.value.validateField("confirmPassword", () => null);
+    if (form.confirmPassword !== '') {
+      if (!userFormRef.value) return
+      userFormRef.value.validateField('confirmPassword', () => null)
     }
-    callback();
+    callback()
   }
-};
-const validatePass2 = (rule: any, value: string, callback: Function) => {
-  if (value === "") {
-    callback(new Error("请再次输入密码"));
+}
+const validatePass2 = (rule: any, value: string, callback: any) => {
+  if (value === '') {
+    callback(new Error('请再次输入密码'))
   } else if (value !== form.password) {
-    callback(new Error("两次密码不匹配"));
+    callback(new Error('两次密码不匹配'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
-const validateEmail = (rule: any, value: string, callback: Function) => {
+const validateEmail = (rule: any, value: string, callback: any) => {
   const regEmail =
-    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    /^(([^<>()\\[\]\\.,;:\s@"]+(\.[^<>()\\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   if (value) {
     if (regEmail.test(value)) {
-      return callback();
+      return callback()
     }
-    callback(new Error("请输入正确的邮箱"));
+    callback(new Error('请输入正确的邮箱'))
   }
-};
+}
 
 const userFormRules = reactive<FormRules>({
-  user_name: [{ required: true, message: "请输入名字", trigger: "blur" }],
+  user_name: [{ required: true, message: '请输入名字', trigger: 'blur' }],
   password: [
-    { required: true, validator: validatePass, trigger: "blur" },
-    { min: 6, max: 12, message: "密码长度在6到12位之间", trigger: "blur" },
+    { required: true, validator: validatePass, trigger: 'blur' },
+    { min: 6, max: 12, message: '密码长度在6到12位之间', trigger: 'blur' }
   ],
   confirmPassword: [
-    { required: true, validator: validatePass2, trigger: "blur" },
+    { required: true, validator: validatePass2, trigger: 'blur' }
   ],
-  email: [{ validator: validateEmail, trigger: "blur" }],
-});
+  email: [{ validator: validateEmail, trigger: 'blur' }]
+})
 
 const btnOk = async (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
+  if (!formEl) return
   await formEl.validate((valid, fields) => {
     if (valid) {
       if (!props.data) {
         userApi.addUser.request(form).then((res) => {
-          handleClose(userFormRef.value);
-          emits("valueChange");
-          ElMessage.success(res.message);
-        });
+          handleClose(userFormRef.value)
+          emits('valueChange')
+          ElMessage.success(res.message)
+        })
       } else {
         userApi.updateUser.request({ id: props.data.id }, form).then((res) => {
-          handleClose(userFormRef.value);
-          emits("valueChange");
-          ElMessage.success(res.message);
-        });
+          handleClose(userFormRef.value)
+          emits('valueChange')
+          ElMessage.success(res.message)
+        })
       }
     } else {
-      ElMessage.error("请正确填写");
+      ElMessage.error('请正确填写')
     }
-  });
-};
+  })
+}
 
 watch(
   () => props.data,
   () => {
-    form.user_name = props.data!.user_name;
-    form.description = props.data!.description;
-    form.email = props.data!.email;
-    form.status = props.data!.status;
+    form.user_name = props.data!.user_name
+    form.description = props.data!.description
+    form.email = props.data!.email
+    form.status = props.data!.status
   }
-);
+)
 </script>
 
 <style scoped lang="less"></style>

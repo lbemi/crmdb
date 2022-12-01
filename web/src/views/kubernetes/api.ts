@@ -1,4 +1,4 @@
-import Api from "@/request/api"
+import Api from '@/request/api'
 
 /*
    namespace.GET("", cloud.ListNamespace)
@@ -8,10 +8,10 @@ import Api from "@/request/api"
 */
 
 export const namespacerApi = {
-    list: Api.create('/namespace', 'get'),
-    get: Api.create('/namespace/{name}', 'get'),
-    create: Api.create("/namespace", 'post'),
-    delete: Api.create('/namespace/{name}', 'delete'),
+  list: Api.create('/namespace', 'get'),
+  get: Api.create('/namespace/{name}', 'get'),
+  create: Api.create('/namespace', 'post'),
+  delete: Api.create('/namespace/{name}', 'delete')
 }
 
 /*
@@ -22,9 +22,8 @@ export const namespacerApi = {
     deployment.DELETE("/:namespace/:deploymentName", cloud.DeleteDeployment)
 */
 export const deploymentApi = {
-    list: Api.create('/deployment/{namespace}', 'get'),
-    get: Api.create('/deployment/{namespace}/{deploymentName}', 'get'),
-    create: Api.create("/deployment", 'post'),
-    delete: Api.create('/deployment/{deploymentName}', 'delete'),
+  list: Api.create('/deployment/{namespace}', 'get'),
+  get: Api.create('/deployment/{namespace}/{deploymentName}', 'get'),
+  create: Api.create('/deployment', 'post'),
+  delete: Api.create('/deployment/{deploymentName}', 'delete')
 }
-

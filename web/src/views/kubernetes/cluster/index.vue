@@ -1,16 +1,8 @@
-/**
- * Created by lei on 2022/11/29
- */
+/** * Created by lei on 2022/11/29 */
 <template>
-  <div>
-    CusterINfo
-  </div>
+  <div>CusterINfo</div>
 </template>
 
-<script setup lang="ts">
-  
-</script>
+<script setup lang="ts"></script>
 
-<style scoped lang="less">
-
-</style>
+<style scoped lang="less"></style>

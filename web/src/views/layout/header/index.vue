@@ -2,16 +2,16 @@
   <!-- header有两部分 -->
   <el-card :body-style="{ padding: '0px' }">
     <div class="header">
-      <div style="margin-left: 10px; display: flex; align-items: center">
+      <div style="display: flex; align-items: center; margin-left: 10px">
         <img
-          style="width: 100px; height: 70px; margin-left: 10px"
+          style="margin-left: 10px; width: 100px; height: 70px"
           src="@/assets/image/element-plus-logo.svg"
         />
-        <span style="font-size: large; margin-left: 10px">运维管理平台</span>
+        <span style="margin-left: 10px; font-size: large">运维管理平台</span>
       </div>
 
       <div style="margin-right: 10px">
-        <span style="margin-right: 10px; align-items: center">
+        <span style="align-items: center; margin-right: 10px">
           欢迎 {{ userInfo?.user_name }}
         </span>
         <el-dropdown>
@@ -19,27 +19,20 @@
             <el-avatar :size="30" :src="data.circleUrl" />
           </span>
           <template #dropdown>
-            <div style="margin-left: 20px; font-size: 18px; margin-top: 15px">
+            <div style="margin-top: 15px; margin-left: 20px; font-size: 18px">
               {{ userInfo?.user_name }}
             </div>
-            <div style="margin-left: 20px; margin-top: 10px; color: #adb0bb">
+            <div style="margin-top: 10px; margin-left: 20px; color: #adb0bb">
               账号ID: {{ userInfo?.id }}
             </div>
 
             <el-dropdown-menu>
-              <el-dropdown-item divided>
-                <el-icon>
-                  <component is="UserFilled"></component>
-                </el-icon>
+              <el-dropdown-item :icon="UserFilled" divided>
                 账号信息
               </el-dropdown-item>
-              <el-dropdown-item>
-                <el-icon> <component is="HelpFilled"></component> </el-icon
-                >访问管理
-              </el-dropdown-item>
-              <el-dropdown-item divided disabled>
-                <el-icon> <component is="Shop"></component></el-icon
-                >帮助设置偏好
+              <el-dropdown-item :icon="HelpFilled"> 访问管理 </el-dropdown-item>
+              <el-dropdown-item :icon="Shop" divided disabled>
+                帮助设置偏好
                 <el-radio-group
                   v-model="data.radio"
                   size="small"
@@ -59,38 +52,39 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
-import { useRouter } from "vue-router";
-import { loginStore } from "@/store/login";
-import { storeToRefs } from "pinia";
-const login = loginStore();
-const { userInfo } = storeToRefs(login);
-const router = useRouter();
+import { reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { loginStore } from '@/store/login'
+import { storeToRefs } from 'pinia'
+import { UserFilled, HelpFilled, Shop } from '@element-plus/icons-vue'
+const login = loginStore()
+const { userInfo } = storeToRefs(login)
+const router = useRouter()
 const data = reactive({
   circleUrl:
-    "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
-  radio: "开启",
+    'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
+  radio: '开启',
   activeIndex: 1,
   showMessage: false,
-  loginUser: "admin",
-  userId: "123456789",
-});
+  loginUser: 'admin',
+  userId: '123456789'
+})
 
 const logout = () => {
   // 清除本地缓存的 token 和 account
-  localStorage.clear();
+  localStorage.clear()
   // 跳转到登陆页面
-  router.push("/login");
-};
+  router.push('/login')
+}
 </script>
 
 <style scoped>
 .header {
-  padding: 0 10px;
   display: flex;
-  width: 100%;
-  height: 70px;
   justify-content: space-between;
   align-items: center;
+  padding: 0 10px;
+  width: 100%;
+  height: 70px;
 }
 </style>

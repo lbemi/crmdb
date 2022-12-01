@@ -4,14 +4,14 @@
     v-model="visible"
     @close="handleClose(roleFormRef)"
     :title="title"
-    style="width: 400px"
+    style="width: 400px;"
   >
     <el-form
       label-width="100px"
       ref="roleFormRef"
       :rules="roleFormRules"
       :model="form"
-      style="max-width: 300px"
+      style="max-width: 300px;"
     >
       <el-form-item label="名字:" prop="name">
         <el-input v-model="form.name" />
@@ -43,7 +43,9 @@
         <el-switch
           v-model="form.status"
           class="ml-2"
-          style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
+          style="
+
+  --el-switch-on-color: #409eff; --el-switch-off-color: #ff4949;"
           :active-value="1"
           :inactive-value="2"
           size="large"
@@ -64,82 +66,82 @@
 </template>
 
 <script setup lang="ts">
-import { UserForm, RoleInfo, RoleFrom } from "@/type/sys";
-import { FormInstance, FormRules, ElMessage } from "element-plus";
-import { ref, reactive, watch } from "vue";
-import { roleApi } from "../../api";
-import { useStore } from "@/store/usestore";
-const use = useStore();
-const roleFormRef = ref<FormInstance>();
+import { UserForm, RoleInfo, RoleFrom } from '@/type/sys'
+import { FormInstance, FormRules, ElMessage } from 'element-plus'
+import { ref, reactive, watch } from 'vue'
+import { roleApi } from '../../api'
+import { useStore } from '@/store/usestore'
+const use = useStore()
+const roleFormRef = ref<FormInstance>()
 
 const props = defineProps<{
-  visible: boolean;
-  title: string;
-  data?: RoleInfo | undefined;
-  roleList: Array<RoleInfo>;
-}>();
+  visible: boolean
+  title: string
+  data?: RoleInfo | undefined
+  roleList: Array<RoleInfo>
+}>()
 
-const emits = defineEmits(["update:visible", "valueChange"]);
+const emits = defineEmits(['update:visible', 'valueChange'])
 
 const handleClose = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.resetFields();
-  emits("update:visible", false);
-};
+  if (!formEl) return
+  formEl.resetFields()
+  emits('update:visible', false)
+}
 
 let form = reactive<RoleFrom>({
-  name: "",
+  name: '',
   status: 1,
-  memo: "",
-  sequence: 1,
-});
+  memo: '',
+  sequence: 1
+})
 
 const roleFormRules = reactive<FormRules>({
-  name: [{ required: true, message: "请输入名字", trigger: "blur" }],
-});
+  name: [{ required: true, message: '请输入名字', trigger: 'blur' }]
+})
 
 const btnOk = async (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
+  if (!formEl) return
   await formEl.validate((valid, fields) => {
     if (valid) {
       if (!props.data) {
         roleApi.add.request(form).then((res) => {
-          handleClose(roleFormRef.value);
-          emits("valueChange");
-          ElMessage.success(res.message);
-        });
+          handleClose(roleFormRef.value)
+          emits('valueChange')
+          ElMessage.success(res.message)
+        })
       } else {
-        if (form.parent_id === "") {
-          form.parent_id = 0;
+        if (form.parent_id === '') {
+          form.parent_id = 0
         }
         roleApi.update.request({ id: props.data.id }, form).then((res) => {
-          handleClose(roleFormRef.value);
-          emits("valueChange");
-          ElMessage.success(res.message);
-          use.getLeftMenus();
-          use.getUserPermissions();
-        });
+          handleClose(roleFormRef.value)
+          emits('valueChange')
+          ElMessage.success(res.message)
+          use.getLeftMenus()
+          use.getUserPermissions()
+        })
       }
     } else {
-      ElMessage.error("请正确填写");
+      ElMessage.error('请正确填写')
     }
-  });
-};
+  })
+}
 
 watch(
   () => props.data,
   () => {
-    form.name = props.data!.name;
-    form.memo = props.data!.memo;
-    form.status = props.data!.status;
-    form.sequence = props.data!.sequence;
+    form.name = props.data!.name
+    form.memo = props.data!.memo
+    form.status = props.data!.status
+    form.sequence = props.data!.sequence
     if (props.data?.parent_id === 0) {
-      form.parent_id = "";
+      form.parent_id = ''
     } else {
-      form.parent_id = props.data?.parent_id;
+      form.parent_id = props.data?.parent_id
     }
   }
-);
+)
 </script>
 
 <style scoped lang="less"></style>

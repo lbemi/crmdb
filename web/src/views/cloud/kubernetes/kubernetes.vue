@@ -9,8 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import SvgIcon from '@/component/svgIcon/svgIcon.vue';
-
+import SvgIcon from '@/component/svgIcon/svgIcon.vue'
 </script>
 
 <style scoped lang="less"></style>

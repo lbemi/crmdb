@@ -5,40 +5,40 @@
 </template>
 
 <script lang="ts" setup>
-import { ref  } from "vue";
+import { ref } from 'vue'
 
-let bar = ref<HTMLElement>();
-let speed = ref<number>(1);
-let timer = ref<number>(0);
+let bar = ref<HTMLElement>()
+let speed = ref<number>(1)
+let timer = ref<number>(0)
 
 const startLoading = () => {
-  speed.value = 1;
-  let dom = bar.value as HTMLElement;
+  speed.value = 1
+  let dom = bar.value as HTMLElement
   timer.value = window.requestAnimationFrame(function fn() {
     if (speed.value < 100) {
-      speed.value += 1;
-      dom.style.width = speed.value + "%";
-      timer.value = window.requestAnimationFrame(fn);
+      speed.value += 1
+      dom.style.width = speed.value + '%'
+      timer.value = window.requestAnimationFrame(fn)
     } else {
-      speed.value = 1;
-      window.cancelAnimationFrame(timer.value);
+      speed.value = 1
+      window.cancelAnimationFrame(timer.value)
     }
-  });
-};
+  })
+}
 const endLoading = () => {
-  let dom = bar.value as HTMLElement;
+  let dom = bar.value as HTMLElement
   setTimeout(() => {
     window.requestAnimationFrame(() => {
-      speed.value = 100;
-      dom.style.width = speed.value + "%";
-    });
-  }, 100);
-};
+      speed.value = 100
+      dom.style.width = speed.value + '%'
+    })
+  }, 100)
+}
 
 defineExpose({
   startLoading,
-  endLoading,
-});
+  endLoading
+})
 </script>
 
 <style scoped lang="less">
@@ -47,10 +47,11 @@ defineExpose({
   top: 0;
   width: 100%;
   height: 2px;
+
   .bar {
-    height: inherit;
     width: 0;
-    background: rgb(48, 101, 248);
+    height: inherit;
+    background: rgb(48 101 248);
   }
 }
 </style>

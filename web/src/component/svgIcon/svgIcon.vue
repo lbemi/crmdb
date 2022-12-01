@@ -8,8 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
-
+import { computed, reactive } from 'vue'
 
 const props = defineProps({
   iconName: {
@@ -17,7 +16,7 @@ const props = defineProps({
     required: true
   },
   className: {
-    type: String,
+    type: String
     // required: true
   },
   color: {
@@ -26,35 +25,35 @@ const props = defineProps({
   }
 })
 
-const iconClassName = computed(()=>{
+const iconClassName = computed(() => {
   return `#${props.iconName}`
 })
 
-const svgClass  = computed(()=>{
+const svgClass = computed(() => {
   if (props.className) {
     return `${props.className}`
   }
   return 'svg-icon'
 })
-
 </script>
 
 <style scoped lang="less">
 .svg-icon {
+  position: relative;
   width: 1em;
   height: 1em;
-  position: relative;
   // fill: currentColor;
 }
+
 .icon-1-4em {
+  position: relative;
   width: 1.4em;
   height: 1.4em;
-  position: relative;
 }
 
 .icon-2-4em {
+  position: relative;
   width: 2.4em;
   height: 2.4em;
-  position: relative;
 }
 </style>
