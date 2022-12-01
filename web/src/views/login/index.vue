@@ -2,7 +2,6 @@
 <template>
   <el-row :gutter="0" class="h-full">
     <el-col :lg="16" :md="12" class="bg-blue-400">
-  
       <span class="flex h-screen justify-center items-center"
         >运维管理平台
       </span>
@@ -63,21 +62,21 @@
 </template>
 
 <script setup lang="ts">
-import { loginStore } from "@/store/login";
-import { reactive, ref, onMounted } from "vue";
-import { FormInstance, FormRules } from "element-plus";
-import { userApi } from "@/views/sys/api";
-const login = loginStore();
-const pic_path = ref("");
+import { loginStore } from '@/store/login'
+import { reactive, ref, onMounted } from 'vue'
+import { FormInstance, FormRules } from 'element-plus'
+import { userApi } from '@/views/sys/api'
+const login = loginStore()
+const pic_path = ref('')
 onMounted(() => {
-  onChangeCaptcha();
-});
+  onChangeCaptcha()
+})
 
 const onChangeCaptcha = async () => {
-  let res: any = await userApi.captcha.request();
-  pic_path.value = res.data.pic_path;
-  login.ruleForm.captcha_id = res.data.captcha_id;
-};
+  let res: any = await userApi.captcha.request()
+  pic_path.value = res.data.pic_path
+  login.ruleForm.captcha_id = res.data.captcha_id
+}
 
 const validatePass = (
   rule: unknown,
@@ -85,28 +84,30 @@ const validatePass = (
   callback: Function
 ): void => {
   if (!value) {
-    callback("密码不能为空!");
+    callback('密码不能为空!')
   } else {
-    callback();
+    callback()
   }
-};
+}
 const rules = reactive<FormRules>({
-  user_name: [{ required: true, message: "请输入用户名", trigger: "blur" }],
-  password: [{ required: true, validator: validatePass, trigger: "blur" }],
-});
+  user_name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, validator: validatePass, trigger: 'blur' }]
+})
 </script>
 
 <style scoped lang="less">
 .captcha-img {
   filter: brightness(61%);
 }
+
 .captcha-box {
   display: flex;
-  align-items: center;
   justify-content: flex-end;
+  align-items: center;
+
   .captcha-img {
-    width: 90%;
     margin-left: auto;
+    width: 90%;
   }
 }
 </style>

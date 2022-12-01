@@ -4,14 +4,14 @@
     v-model="visible"
     @close="handleClose(hostFormRef)"
     :title="title"
-    style="width: 400px"
+    style="width: 400px;"
   >
     <el-form
       label-width="100px"
       ref="hostFormRef"
       :rules="hsotFormRules"
       :model="form"
-      style="max-width: 300px"
+      style="max-width: 300px;"
     >
       <el-form-item label="主机IP:" prop="ip">
         <el-input v-model="form.ip" />
@@ -38,8 +38,8 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="密码:" prop="password"  v-if="form.auth_method == 1">
-        <el-input v-model="form.password" type="password"/>
+      <el-form-item label="密码:" prop="password" v-if="form.auth_method == 1">
+        <el-input v-model="form.password" type="password" />
       </el-form-item>
       <el-form-item label="密钥:" prop="secret" v-if="form.auth_method == 2">
         <el-input
@@ -81,15 +81,16 @@
           + 添加标签
         </el-button>
       </el-form-item>
-      <div style="display: flex">
+      <div style="display: flex;">
         <el-form-item label="状态:">
           <el-switch
             v-model="form.status"
             class="ml-2"
             style="
+
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-            "
+"
             :active-value="1"
             :inactive-value="2"
             size="large"
@@ -103,9 +104,10 @@
             v-model="form.enable_ssh"
             class="ml-2"
             style="
+
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-            "
+"
             :active-value="1"
             :inactive-value="2"
             size="large"
@@ -127,117 +129,117 @@
 </template>
 
 <script setup lang="ts">
-import { HostForm, HostInfo } from "@/type/host";
-import { FormInstance, FormRules, ElMessage } from "element-plus";
-import { ref, reactive, watch, nextTick } from "vue";
-import { hostApi } from "../../api";
-import { useStore } from "@/store/usestore";
-import { ElInput } from "element-plus";
+import { HostForm, HostInfo } from '@/type/host'
+import { FormInstance, FormRules, ElMessage } from 'element-plus'
+import { ref, reactive, watch, nextTick } from 'vue'
+import { hostApi } from '../../api'
+import { useStore } from '@/store/usestore'
+import { ElInput } from 'element-plus'
 
-const use = useStore();
-const hostFormRef = ref<FormInstance>();
+const use = useStore()
+const hostFormRef = ref<FormInstance>()
 
 const authOptions = [
   {
     value: 1,
-    label: "密码认证",
+    label: '密码认证'
   },
   {
     value: 2,
-    label: "密钥认证",
-  },
-];
+    label: '密钥认证'
+  }
+]
 const props = defineProps<{
-  visible: boolean;
-  title: string;
-  data?: HostInfo | undefined;
-}>();
+  visible: boolean
+  title: string
+  data?: HostInfo | undefined
+}>()
 
-const emits = defineEmits(["update:visible", "valueChange"]);
+const emits = defineEmits(['update:visible', 'valueChange'])
 
 const handleClose = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.resetFields();
-  emits("update:visible", false);
-};
+  if (!formEl) return
+  formEl.resetFields()
+  emits('update:visible', false)
+}
 
 let form = reactive<HostForm>({
-  label: "",
-  remark: "",
-  ip: "",
+  label: '',
+  remark: '',
+  ip: '',
   port: 22,
-  username: "",
+  username: '',
   auth_method: 1,
   status: 1,
-  enable_ssh: 1,
-});
+  enable_ssh: 1
+})
 
-const inputValue = ref("");
-const dynamicTags = ref<Array<string>>([]);
-const inputVisible = ref<boolean>(false);
-const InputRef = ref<InstanceType<typeof ElInput>>();
+const inputValue = ref('')
+const dynamicTags = ref<Array<string>>([])
+const inputVisible = ref<boolean>(false)
+const InputRef = ref<InstanceType<typeof ElInput>>()
 
 const handleTagClose = (tag: string) => {
-  dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1);
-};
+  dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1)
+}
 
 const showInput = () => {
-  inputVisible.value = true;
+  inputVisible.value = true
   nextTick(() => {
-    InputRef.value!.input!.focus();
-  });
-};
+    InputRef.value!.input!.focus()
+  })
+}
 
 const handleInputConfirm = () => {
   if (inputValue.value) {
-    dynamicTags.value.push(inputValue.value);
+    dynamicTags.value.push(inputValue.value)
   }
-  inputVisible.value = false;
-  inputValue.value = "";
-};
+  inputVisible.value = false
+  inputValue.value = ''
+}
 
 const hsotFormRules = reactive<FormRules>({
-  ip: [{ required: true, message: "请输入IP", trigger: "blur" }],
-});
+  ip: [{ required: true, message: '请输入IP', trigger: 'blur' }]
+})
 
 const btnOk = async (formEl: FormInstance | undefined) => {
-  form.label = dynamicTags.value.toString();
-  if (!formEl) return;
+  form.label = dynamicTags.value.toString()
+  if (!formEl) return
   await formEl.validate((valid, fields) => {
     if (valid) {
       if (!props.data) {
         hostApi.add.request(form).then((res) => {
-          handleClose(hostFormRef.value);
-          emits("valueChange");
-          ElMessage.success(res.message);
-        });
+          handleClose(hostFormRef.value)
+          emits('valueChange')
+          ElMessage.success(res.message)
+        })
       } else {
         hostApi.update.request({ id: props.data.id }, form).then((res) => {
-          handleClose(hostFormRef.value);
-          emits("valueChange");
-          ElMessage.success(res.message);
-          use.getLeftMenus();
-          use.getUserPermissions();
-        });
+          handleClose(hostFormRef.value)
+          emits('valueChange')
+          ElMessage.success(res.message)
+          use.getLeftMenus()
+          use.getUserPermissions()
+        })
       }
     } else {
-      ElMessage.error("请正确填写");
+      ElMessage.error('请正确填写')
     }
-  });
-};
+  })
+}
 
 watch(
   () => props.data,
   () => {
-    form.remark = props.data!.remark;
-    form.status = props.data!.status;
-    form.ip = props.data!.ip;
-    form.username = props.data!.username;
-    form.port = props.data!.port;
-    form.auth_method = props.data!.auth_method;
-    form.ip = props.data!.ip;
+    form.remark = props.data!.remark
+    form.status = props.data!.status
+    form.ip = props.data!.ip
+    form.username = props.data!.username
+    form.port = props.data!.port
+    form.auth_method = props.data!.auth_method
+    form.ip = props.data!.ip
   }
-);
+)
 </script>
 
 <style scoped lang="less"></style>

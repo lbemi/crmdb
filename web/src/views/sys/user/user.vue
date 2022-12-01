@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 /** * Created by lei on 2022/09/25 */
 <template>
   <el-card class="box-card">
@@ -5,11 +6,11 @@
       v-auth="'sys:user:add'"
       type="primary"
       :icon="Edit"
-      style="margin-bottom: 10px"
+      style="margin-bottom: 10px;"
       @click="addUser"
       >添加用户</el-button
     >
-    <el-table :data="userList" border style="width: 100%" v-loading="loading">
+    <el-table :data="userList" border style="width: 100%;" v-loading="loading">
       <el-table-column prop="id" label="ID" min-width="180px" />
       <el-table-column prop="user_name" label="名称" min-width="180px" />
       <el-table-column prop="description" label="描述" min-width="180px" />
@@ -27,9 +28,10 @@
             v-auth="'sys:user:status'"
             class="ml-2"
             style="
+
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-            "
+"
             :active-value="1"
             :inactive-value="2"
             size="small"
@@ -83,7 +85,7 @@
     v-if="userAdd.visible"
   />
   <UserDialog
-    v-model:visible="userEdit.visible"
+    :visible="userEdit.visible"
     :title="userEdit.title"
     v-model:data="userEdit.data"
     @value-change="getUserList"
@@ -99,133 +101,133 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, toRefs, ref, onMounted } from "vue";
-import { Delete, Edit } from "@element-plus/icons-vue";
-import pagination from "@/component/pagination/pagination.vue";
-import { userApi, roleApi } from "@/views/sys/api";
-import UserDialog from "./componet/userDialog.vue";
-import { PageInfo, UserInfo, RoleInfo } from "@/type/sys";
-import { ElMessage, ElMessageBox } from "element-plus";
-import UserSetRole from "./userSetRole.vue";
+import { reactive, toRefs, ref, onMounted } from 'vue'
+import { Delete, Edit } from '@element-plus/icons-vue'
+import pagination from '@/component/pagination/pagination.vue'
+import { userApi, roleApi } from '@/views/sys/api'
+import UserDialog from './componet/userDialog.vue'
+import { PageInfo, UserInfo, RoleInfo } from '@/type/sys'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import UserSetRole from './userSetRole.vue'
 
-const loading = ref<boolean>(false);
+const loading = ref<boolean>(false)
 const data = reactive({
   userList: [] as Array<UserInfo>,
-  total: 0,
-});
-const { userList, total } = toRefs(data);
+  total: 0
+})
+const { userList, total } = toRefs(data)
 
 const userAdd = reactive({
   visible: false,
-  title: "添加用户",
-});
+  title: '添加用户'
+})
 
 const userEdit = reactive({
   visible: false,
-  title: "编辑用户",
-  data: {} as UserInfo,
-});
+  title: '编辑用户',
+  data: {} as UserInfo
+})
 const setRole = reactive({
   visible: false,
-  title: "分配角色",
+  title: '分配角色',
   userID: 0,
   roleList: [],
-  defaultCheckedRoles: [] as Array<number>,
-});
+  defaultCheckedRoles: [] as Array<number>
+})
 onMounted(() => {
-  loading.value = true;
-  getUserList();
-  loading.value = false;
-  getRoleList();
-});
+  loading.value = true
+  getUserList()
+  loading.value = false
+  getRoleList()
+})
 
 const query = reactive<PageInfo>({
   page: 1,
-  limit: 10,
-});
+  limit: 10
+})
 
 const getUserList = async () => {
-  const res = await userApi.listUser.request(query);
-  userList.value = res.data.users;
-  total.value = res.data.total;
-};
+  const res = await userApi.listUser.request(query)
+  userList.value = res.data.users
+  total.value = res.data.total
+}
 const getRoleList = async () => {
-  const res = await roleApi.list.request();
-  setRole.roleList = res.data.roles;
-};
+  const res = await roleApi.list.request()
+  setRole.roleList = res.data.roles
+}
 const addUser = () => {
-  userAdd.visible = true;
-};
+  userAdd.visible = true
+}
 
 const handlePageChange = (pageInfo: PageInfo) => {
-  query.page = pageInfo.page;
-  query.limit = pageInfo.limit;
-  getUserList();
-};
+  query.page = pageInfo.page
+  query.limit = pageInfo.limit
+  getUserList()
+}
 
 const handleSetRole = async (user: UserInfo) => {
-  setRole.title = `为【${user.user_name}】分配角色：`;
-  setRole.userID = user.id;
-  setRole.defaultCheckedRoles = [];
+  setRole.title = `为【${user.user_name}】分配角色：`
+  setRole.userID = user.id
+  setRole.defaultCheckedRoles = []
 
   await userApi.listUserRole.request({ id: user.id }).then((res) => {
-    const roleList: Array<RoleInfo> = res.data;
+    const roleList: Array<RoleInfo> = res.data
     if (roleList !== null) {
       for (let i = 0; i < roleList.length; i++) {
         if (roleList[i].children !== null) {
           for (let j = 0; j < roleList[i].children.length; j++) {
-            setRole.defaultCheckedRoles.push(roleList[i].children[j].id);
+            setRole.defaultCheckedRoles.push(roleList[i].children[j].id)
           }
         }
-        setRole.defaultCheckedRoles.push(roleList[i].id);
+        setRole.defaultCheckedRoles.push(roleList[i].id)
       }
     }
-  });
-  setRole.visible = true;
-};
+  })
+  setRole.visible = true
+}
 const changeStatus = async (user: UserInfo) => {
   await userApi.chageStaus
     .request({
       id: user.id,
-      status: user.status,
+      status: user.status
     })
     .then((res) => {
-      getUserList();
-      ElMessage.success(res.message);
+      getUserList()
+      ElMessage.success(res.message)
     })
     .catch(() => {
-      user.status = 1;
-    });
-};
+      user.status = 1
+    })
+}
 
 const deleteUser = (user: UserInfo) => {
   ElMessageBox.confirm(
     `此操作将删除[ ${user.user_name} ]用户 . 是否继续?`,
-    "提示",
+    '提示',
     {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-      draggable: true,
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      draggable: true
     }
   )
     .then(() => {
       userApi.deleteUser
         .request({ id: user.id })
         .then((res) => {
-          getUserList();
-          ElMessage.success(res.message);
+          getUserList()
+          ElMessage.success(res.message)
         })
-        .catch();
+        .catch()
     })
-    .catch(() => {}); // 取消
-};
+    .catch() // 取消
+}
 
 const handleEdit = (user: UserInfo) => {
-  userEdit.title = `编辑【${user.user_name}】角色`;
-  userEdit.data = JSON.parse(JSON.stringify(user));
-  userEdit.visible = true;
-};
+  userEdit.title = `编辑【${user.user_name}】角色`
+  userEdit.data = JSON.parse(JSON.stringify(user))
+  userEdit.visible = true
+}
 </script>
 
 <style scoped lang="less"></style>

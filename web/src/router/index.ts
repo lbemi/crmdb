@@ -1,171 +1,173 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
-import { App, createVNode, render } from "vue";
-import { useStore } from "@/store/usestore";
-import { storeToRefs } from "pinia";
-import { MenuObj } from "@/store/usestore";
-import loadingBar from "@/component/loadingBar/index.vue";
+/* @vite-ignore */
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
+import { App, createVNode, render } from 'vue'
+import { useStore } from '@/store/usestore'
+import { storeToRefs } from 'pinia'
+import { MenuObj } from '@/store/usestore'
+import loadingBar from '@/component/loadingBar/index.vue'
 
-const Vnode = createVNode(loadingBar);
-render(Vnode, document.body);
+const Vnode = createVNode(loadingBar)
+render(Vnode, document.body)
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: "/login",
-    name: "login",
-    component: () => import("../views/login/index.vue"),
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/login/index.vue'),
     meta: {
-      title: "登陆",
-    },
-  },
-  
-  
-];
+      title: '登陆'
+    }
+  }
+]
 
 const pathMatch = {
-  path: "/:catchAll(.*)",
-  redirect: "/404",
-};
+  path: '/:catchAll(.*)',
+  redirect: '/404'
+}
 const router = createRouter({
   history: createWebHashHistory(),
   // 记录路由页面位置
   scrollBehavior: (to, from, savePostion) => {
     if (savePostion) {
-      return savePostion;
+      return savePostion
     } else {
       return {
-        top: 0,
-      };
+        top: 0
+      }
     }
   },
-  routes,
-});
+  routes
+})
 
 const genRouters = (menus: MenuObj[]) => {
-  for (let key in menus) {
+  for (const key in menus) {
     const newRoute: RouteRecordRaw = {
       path: menus[key].url,
       name: menus[key].name,
-      component: () => import("../views/layout/index.vue"),
-      redirect: "/dashboard",
-      children: [],
-    };
+      component: () => import('../views/layout/index.vue'),
+      redirect: '/dashboard',
+      children: []
+    }
     if (menus[key].children != null) {
       for (let i = 0; i < menus[key].children.length; i++) {
-        let vueUrl = `../views${menus[key].url}${menus[key].children[i].url}${menus[key].children[i].url}`;
-        (newRoute.redirect = menus[key].url + menus[key].children[0].url),
+        const vueUrl = `../views${menus[key].url}${menus[key].children[i].url}${menus[key].children[i].url}`
+        ;(newRoute.redirect = menus[key].url + menus[key].children[0].url),
           newRoute.children?.push({
             path: menus[key].url + menus[key].children[i].url,
             name: menus[key].children[i].name,
-            component: () => import(`${vueUrl}.vue`),
-          });
+            component: () => import(`${vueUrl}.vue`)
+          })
       }
     } else {
-      let vueUrl = `../views${menus[key].url}${menus[key].url}`;
+      const vueUrl = `../views${menus[key].url}${menus[key].url}`
       newRoute.children?.push({
         path: menus[key].url,
         name: menus[key].name,
-        component: () => import(`${vueUrl}.vue`),
-      });
+        component: () => import(`${vueUrl}.vue`)
+      })
     }
     // 动态添加路由规则
-    router.addRoute(newRoute);
+    router.addRoute(newRoute)
   }
   router.addRoute({
-    path: "/",
-    name: "index",
-    component: () => import("../views/layout/index.vue"),
-    redirect: "/dashboard",
+    path: '/',
+    name: 'index',
+    component: () => import('../views/layout/index.vue'),
+    redirect: '/dashboard',
     children: [
       {
-        path: "/404",
-        name: "notFound",
-        component: () => import("@/views/error/404.vue"),
+        path: '/404',
+        name: 'notFound',
+        component: () => import('@/views/error/404.vue'),
         meta: {
-          title: "找不到此页面",
-        },
+          title: '找不到此页面'
+        }
       },
       {
-        path: "/401",
-        name: "noPower",
-        component: () => import("@/views/error/401.vue"),
+        path: '/401',
+        name: 'noPower',
+        component: () => import('@/views/error/401.vue'),
         meta: {
-          title: "没有权限",
-        },
-        
+          title: '没有权限'
+        }
       },
       {
-        path: "/termial",
-        name: "termial",
-        component: () => import("@/views/asset/host/componet/sshTerminal.vue"),
+        path: '/termial',
+        name: 'termial',
+        component: () => import('@/views/asset/host/componet/sshTerminal.vue'),
         meta: {
-          title: "ssh",
-        },
+          title: 'ssh'
+        }
       },
       {
-        path: "/kubernetes",
-        name: "kubernetes",
-        component: () => import("../views/kubernetes/index.vue"),
+        path: '/kubernetes',
+        name: 'kubernetes',
+        component: () => import('../views/kubernetes/index.vue'),
         meta: {
-          title: "kubernetes",
+          title: 'kubernetes'
         },
         children: [
-            {
-                path: "/cluster",
-                name: "cluster",
-                component: () => import("../views/kubernetes/cluster/index.vue"),
-                meta: {
-                    title: "deployments",
-                  },
-            },
-            {
-                path: "/deployment",
-                name: "deployments",
-                component: () => import("../views/kubernetes/deployment/index.vue"),
-                meta: {
-                    title: "deployments",
-                  },
+          {
+            path: '/cluster',
+            name: 'cluster',
+            component: () => import('../views/kubernetes/cluster/index.vue'),
+            meta: {
+              title: 'deployments'
             }
+          },
+          {
+            path: '/deployment',
+            name: 'deployments',
+            component: () => import('../views/kubernetes/deployment/index.vue'),
+            meta: {
+              title: 'deployments'
+            }
+          }
         ]
-      },
-    ],
-  });
-  router.addRoute(pathMatch);
-};
+      }
+    ]
+  })
+  router.addRoute(pathMatch)
+}
 
 //前置导航守卫
 router.beforeEach((to, from, next) => {
-  Vnode.component?.exposed?.startLoading();
-  const store = useStore();
-  const { menus } = storeToRefs(store);
+  Vnode.component?.exposed?.startLoading()
+  const store = useStore()
+  const { menus } = storeToRefs(store)
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token')
 
   if (token && menus.value.length === 0) {
     // 异步请求,then是异步完成后操作
     store.getLeftMenus().then(() => {
-      genRouters(menus.value);
-      next(to);
-    });
-  } else if  (!token && to.path !== "/login") {
+      genRouters(menus.value)
+      next(to)
+    })
+  } else if (!token && to.path !== '/login') {
     //token不存在,跳转到登录页面
-    next("/login");
-  } else if (token && to.path === "/login") {
+    next('/login')
+  } else if (token && to.path === '/login') {
     //登录后禁止访问login
-    next(from);
-  } else if (token && menus.value.length !== 0 && router.getRoutes().length == routes.length) {
+    next(from)
+  } else if (
+    token &&
+    menus.value.length !== 0 &&
+    router.getRoutes().length == routes.length
+  ) {
     // 刷新后重新生成路由
-    genRouters(menus.value);
-    next(to);
+    genRouters(menus.value)
+    next(to)
   } else {
-    next();
+    next()
   }
-});
+})
 
-router.afterEach((to, from) => {
-  Vnode.component?.exposed?.endLoading();
-});
+router.afterEach(() => {
+  Vnode.component?.exposed?.endLoading()
+})
 export const initRouter = (app: App<Element>) => {
-  app.use(router);
-};
+  app.use(router)
+}
 
-export default router;
+export default router

@@ -1,12 +1,12 @@
-import { useStore } from "@/store/usestore";
-import pinia from "@/store/index";
+import { useStore } from '@/store/usestore'
+import pinia from '@/store/index'
 
 // 单个权限验证
 export function auth(value: string) {
   // console.log(store.permissions);
-  const store = useStore();
+  const store = useStore()
   if (store.permissions) {
-    return store.permissions.some((v: any) => v === value);
+    return store.permissions.some((v: any) => v === value)
   }
   return false
 }

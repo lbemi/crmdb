@@ -1,4 +1,4 @@
-import Api from "@/request/api"
+import Api from '@/request/api'
 /*
   host.POST("", asset.AddHost)        // 添加主机
   host.GET("", asset.ListHosts)       // 获取主机列表
@@ -7,12 +7,11 @@ import Api from "@/request/api"
 */
 
 export const hostApi = {
-  add : Api.create('/host','post'),
+  add: Api.create('/host', 'post'),
   list: Api.create('/host', 'get'),
-  delete: Api.create('/host/{id}','delete'),
-  update: Api.create('/host/{id}','put'),
-  listHostByID: Api.create('/host/{id}','get'),
+  delete: Api.create('/host/{id}', 'delete'),
+  update: Api.create('/host/{id}', 'put'),
+  listHostByID: Api.create('/host/{id}', 'get'),
 
   ws: Api.create('/host/{id}/ws', 'get')
 }
-

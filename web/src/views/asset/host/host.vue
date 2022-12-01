@@ -6,7 +6,7 @@
       v-auth="'asset:host:add'"
       type="primary"
       :icon="Edit"
-      style="margin-bottom: 10px"
+      style="margin-bottom: 10px;"
       @click="addHost"
       >添加主机</el-button
     >
@@ -17,13 +17,42 @@
       style="width: 100%;"
       v-loading="loading"
       row-key="id"
-
     >
-      <el-table-column header-align="center" align="center" prop="id" label="ID" min-width="40px" />
-      <el-table-column header-align="center" align="center" prop="ip" label="主机IP" min-width="130px" />
-      <el-table-column  header-align="center" align="center" prop="port" label="端口" min-width="80px" />
-      <el-table-column header-align="center" align="center" prop="remark" label="描述" min-width="80px" />
-      <el-table-column header-align="center" align="center" prop="label" label="标签" min-width="40px">
+      <el-table-column
+        header-align="center"
+        align="center"
+        prop="id"
+        label="ID"
+        min-width="40px"
+      />
+      <el-table-column
+        header-align="center"
+        align="center"
+        prop="ip"
+        label="主机IP"
+        min-width="130px"
+      />
+      <el-table-column
+        header-align="center"
+        align="center"
+        prop="port"
+        label="端口"
+        min-width="80px"
+      />
+      <el-table-column
+        header-align="center"
+        align="center"
+        prop="remark"
+        label="描述"
+        min-width="80px"
+      />
+      <el-table-column
+        header-align="center"
+        align="center"
+        prop="label"
+        label="标签"
+        min-width="40px"
+      >
         <template #default="scope">
           <el-tooltip placement="top" effect="light">
             <template #content>
@@ -39,28 +68,53 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column header-align="center" align="center" prop="username" label="用户名" min-width="80px" />
-      <el-table-column header-align="center" align="center" prop="auth_method" label="认证方式" min-width="80px" >
+      <el-table-column
+        header-align="center"
+        align="center"
+        prop="username"
+        label="用户名"
+        min-width="80px"
+      />
+      <el-table-column
+        header-align="center"
+        align="center"
+        prop="auth_method"
+        label="认证方式"
+        min-width="80px"
+      >
         <template #default="scope">
           <el-tag v-if="scope.row.auth_method == 1">Password</el-tag>
-          <el-tag v-else >Secret</el-tag>
+          <el-tag v-else>Secret</el-tag>
         </template>
       </el-table-column>
-      <el-table-column header-align="center" align="center" prop="created_at" label="创建时间" min-width="140px">
+      <el-table-column
+        header-align="center"
+        align="center"
+        prop="created_at"
+        label="创建时间"
+        min-width="140px"
+      >
         <template #default="scope">
           {{ $filters.dateFormat(scope.row.created_at) }}
         </template>
       </el-table-column>
-      <el-table-column header-align="center" align="center" prop="status" label="状态" min-width="60px">
+      <el-table-column
+        header-align="center"
+        align="center"
+        prop="status"
+        label="状态"
+        min-width="60px"
+      >
         <template #default="scope">
           <el-switch
             v-auth="'sys:role:status'"
             v-model="scope.row.status"
             class="ml-2"
             style="
+
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-            "
+"
             :active-value="1"
             :inactive-value="2"
             size="small"
@@ -72,16 +126,23 @@
           />
         </template>
       </el-table-column>
-      <el-table-column header-align="center" align="center" prop="enable_ssh" label="SSH" min-width="60px">
+      <el-table-column
+        header-align="center"
+        align="center"
+        prop="enable_ssh"
+        label="SSH"
+        min-width="60px"
+      >
         <template #default="scope">
           <el-switch
             v-auth="'sys:role:status'"
             v-model="scope.row.status"
             class="ml-2"
             style="
+
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-            "
+"
             :active-value="1"
             :inactive-value="2"
             size="small"
@@ -93,7 +154,13 @@
           />
         </template>
       </el-table-column>
-      <el-table-column header-align="center" align="center" fixed="right" label="操作" min-width="300px">
+      <el-table-column
+        header-align="center"
+        align="center"
+        fixed="right"
+        label="操作"
+        min-width="300px"
+      >
         <template #default="scope">
           <el-button
             v-auth="'sys:role:edit'"
@@ -145,122 +212,121 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, toRefs, ref, onMounted } from "vue";
-import { Delete, Edit, View } from "@element-plus/icons-vue";
-import pagination from "@/component/pagination/pagination.vue";
-import { menuApi, roleApi } from "@/views/sys/api";
-import { PageInfo, RoleInfo } from "@/type/sys";
-import { HostInfo } from "@/type/host";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { hostApi } from "../api";
-import HostDialogVue from "./componet/hostDialog.vue";
-import router from "@/router/index";
+import { reactive, toRefs, ref, onMounted } from 'vue'
+import { Delete, Edit, View } from '@element-plus/icons-vue'
+import pagination from '@/component/pagination/pagination.vue'
+import { menuApi, roleApi } from '@/views/sys/api'
+import { PageInfo, RoleInfo } from '@/type/sys'
+import { HostInfo } from '@/type/host'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { hostApi } from '../api'
+import HostDialogVue from './componet/hostDialog.vue'
+import router from '@/router/index'
 
 const labels = (str: string) => {
-  return str.split(",");
-};
-
+  return str.split(',')
+}
 
 const setMenu = reactive({
   visible: false,
-  title: "分配权限",
+  title: '分配权限',
   roleID: 0,
   menuList: [],
-  defaultCheckedMenus: [] as Array<number>,
-});
+  defaultCheckedMenus: [] as Array<number>
+})
 
-const loading = ref<boolean>(false);
+const loading = ref<boolean>(false)
 const data = reactive({
   hostList: [] as Array<HostInfo>,
-  total: 0,
-});
-const { hostList, total } = toRefs(data);
+  total: 0
+})
+const { hostList, total } = toRefs(data)
 
 const hostAdd = reactive({
   visible: false,
-  title: "添加主机",
-});
+  title: '添加主机'
+})
 
 const roleEdit = reactive({
   visible: false,
-  title: "编辑主机",
-  data: {} as HostInfo,
-});
+  title: '编辑主机',
+  data: {} as HostInfo
+})
 
 onMounted(() => {
-  getHostList();
-});
+  getHostList()
+})
 
 const query = reactive<PageInfo>({
   page: 1,
-  limit: 10,
-});
+  limit: 10
+})
 
 const getHostList = async () => {
-  loading.value = true;
-  const res = await hostApi.list.request(query);
-  hostList.value = res.data.hosts;
-  total.value = res.data.total;
-  loading.value = false;
-};
+  loading.value = true
+  const res = await hostApi.list.request(query)
+  hostList.value = res.data.hosts
+  total.value = res.data.total
+  loading.value = false
+}
 
 const addHost = () => {
-  hostAdd.visible = true;
-};
+  hostAdd.visible = true
+}
 
 const handlePageChange = (pageInfo: PageInfo) => {
-  query.page = pageInfo.page;
-  query.limit = pageInfo.limit;
-  getHostList();
-};
+  query.page = pageInfo.page
+  query.limit = pageInfo.limit
+  getHostList()
+}
 
 const changeStatus = async (role: RoleInfo) => {
   await roleApi.changeStatus
     .request({
       id: role.id,
-      status: role.status,
+      status: role.status
     })
     .then((res) => {
-      ElMessage.success(res.message);
+      ElMessage.success(res.message)
     })
     .catch(() => {
-      role.status = 1;
-    });
-};
+      role.status = 1
+    })
+}
 
 const deleteHost = (host: HostInfo) => {
-  ElMessageBox.confirm(`此操作将删除[ ${host.ip} ]主机 . 是否继续?`, "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-    draggable: true,
+  ElMessageBox.confirm(`此操作将删除[ ${host.ip} ]主机 . 是否继续?`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+    draggable: true
   })
     .then(() => {
       hostApi.delete
         .request({ id: host.id })
         .then((res) => {
-          getHostList();
-          ElMessage.success(res.message);
+          getHostList()
+          ElMessage.success(res.message)
         })
-        .catch();
+        .catch()
     })
-    .catch(() => {}); // 取消
-};
+    .catch(() => {}) // 取消
+}
 
 const handleEdit = (host: HostInfo) => {
-  roleEdit.data = JSON.parse(JSON.stringify(host));
-  roleEdit.visible = true;
-};
+  roleEdit.data = JSON.parse(JSON.stringify(host))
+  roleEdit.visible = true
+}
 
 const handleSetMenu = async (host: HostInfo) => {
-  setMenu.title = `为【${host.ip}】分配角色：`;
-  setMenu.roleID = host.id;
-  setMenu.defaultCheckedMenus = [];
+  setMenu.title = `为【${host.ip}】分配角色：`
+  setMenu.roleID = host.id
+  setMenu.defaultCheckedMenus = []
 
-  setMenu.visible = true;
-};
+  setMenu.visible = true
+}
 
-const handleTerminal =(host: HostInfo) => {
+const handleTerminal = (host: HostInfo) => {
   const terminalPage = router.push({
     path: '/termial',
     query: {
@@ -268,7 +334,7 @@ const handleTerminal =(host: HostInfo) => {
       ip: host.ip
     }
   })
-  
+
   // window.open(terminalPage.href,"_blank")
 }
 </script>
