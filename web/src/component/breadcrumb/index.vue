@@ -10,20 +10,20 @@
 </template>
 
 <script lang="ts" setup>
-import { ArrowRight } from "@element-plus/icons-vue";
-import { computed } from "vue";
-import { useRouter } from "vue-router";
-const router = useRouter();
+import { ArrowRight } from '@element-plus/icons-vue'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const routers = computed(() => {
-  return router.currentRoute.value.matched.filter((item) => item.name);
-});
+  return router.currentRoute.value.matched.filter((item) => item.name)
+})
 </script>
 
 <style>
 /* 这里为了跟收起图标对其 */
 .bread {
   margin-top: 15px;
-  margin-left: 15px;
   margin-bottom: 15px;
+  margin-left: 15px;
 }
 </style>

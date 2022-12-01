@@ -1,6 +1,6 @@
 /** * Created by lei on 2022/11/16 */
 <template>
-  <el-dialog v-model="dialogVisable" :close="handleClose" style="width: 500px">
+  <el-dialog v-model="dialogVisable" :close="handleClose" style="width: 500px;">
     <template #header="{ close, titleId, titleClass }">
       <div class="my-header">
         <h4 :id="titleId" :class="titleClass">{{ title }}</h4>
@@ -38,7 +38,7 @@
           </el-upload>
         </el-form-item>
 
-        <el-form-item >
+        <el-form-item>
           <el-button type="primary" @click="submitForm(ruleFormRef)"
             >Submit</el-button
           >
@@ -50,67 +50,68 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
-import { UploadFilled } from "@element-plus/icons-vue";
-import { ElMessage, FormInstance, UploadFile, UploadFiles } from "element-plus";
-import { clusterForm } from "@/type/container";
-import { clusterApi } from "../api";
+import { reactive, ref } from 'vue'
+import { UploadFilled } from '@element-plus/icons-vue'
+import { ElMessage, FormInstance, UploadFile, UploadFiles } from 'element-plus'
+import { clusterForm } from '@/type/container'
+import { clusterApi } from '../api'
 
-const ruleFormRef = ref<FormInstance>();
+const ruleFormRef = ref<FormInstance>()
 
 const data = reactive({
   cluster: {
-    name: "",
-  } as clusterForm,
-});
+    name: ''
+  } as clusterForm
+})
 
-const newFormData = new FormData();
+const newFormData = new FormData()
 
 const requestConfig = {
   headers: {
-    'Content-Type': 'multipart/form-data',
-  },
-};
+    'Content-Type': 'multipart/form-data'
+  }
+}
 const handleChange = (file: UploadFile, files: UploadFiles) => {
-  newFormData.append("file", file.raw!);
-};
+  newFormData.append('file', file.raw!)
+}
 
 const submitForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
+  if (!formEl) return
   formEl.validate(async (valid) => {
     if (valid) {
-      newFormData.append("name", data.cluster.name);
+      newFormData.append('name', data.cluster.name)
       await clusterApi.create
-        .requestWithHeaders(newFormData,requestConfig.headers)
+        .requestWithHeaders(newFormData, requestConfig.headers)
         .then((res) => {
-          emits("valueChange");
-          handleClose();
-          ElMessage.success(res.message);
-        }).catch(()=>{
-            newFormData.delete("file");
-            newFormData.delete("name");
-        }); 
+          emits('valueChange')
+          handleClose()
+          ElMessage.success(res.message)
+        })
+        .catch(() => {
+          newFormData.delete('file')
+          newFormData.delete('name')
+        })
     } else {
-      ElMessage.error("请正确填写!");
-      return false;
+      ElMessage.error('请正确填写!')
+      return false
     }
-  });
-};
+  })
+}
 
 const resetForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.resetFields();
-};
+  if (!formEl) return
+  formEl.resetFields()
+}
 
 const props = defineProps<{
-  dialogVisable: Boolean;
-  title: string;
-}>();
-const emits = defineEmits(["update:dialogVisable", "valueChange"]);
+  dialogVisable: boolean
+  title: string
+}>()
+const emits = defineEmits(['update:dialogVisable', 'valueChange'])
 
 const handleClose = () => {
-  emits("update:dialogVisable", false);
-};
+  emits('update:dialogVisable', false)
+}
 </script>
 
 <style scoped lang="less"></style>

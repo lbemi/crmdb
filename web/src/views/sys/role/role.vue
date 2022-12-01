@@ -5,7 +5,7 @@
       v-auth="'sys:role:add'"
       type="primary"
       :icon="Edit"
-      style="margin-bottom: 10px"
+      style="margin-bottom: 10px;"
       @click="addRole"
       >添加角色</el-button
     >
@@ -13,7 +13,7 @@
       stripe
       :data="roleList"
       border
-      style="width: 100%"
+      style="width: 100%;"
       v-loading="loading"
       row-key="id"
     >
@@ -33,9 +33,10 @@
             v-model="scope.row.status"
             class="ml-2"
             style="
+
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-            "
+"
             :active-value="1"
             :inactive-value="2"
             size="small"
@@ -117,138 +118,138 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, toRefs, ref, onMounted } from "vue";
-import { Delete, Edit,View } from "@element-plus/icons-vue";
-import pagination from "@/component/pagination/pagination.vue";
-import { menuApi, roleApi } from "@/views/sys/api";
-import RoleDialog from "./componet/roleDialog.vue";
-import { MenuInfo, PageInfo, RoleInfo } from "@/type/sys";
-import { ElMessage, ElMessageBox } from "element-plus";
-import RoleSetMenu from "./roleSetMenu.vue";
-import { useStore } from "@/store/usestore";
-const use = useStore();
+import { reactive, toRefs, ref, onMounted } from 'vue'
+import { Delete, Edit, View } from '@element-plus/icons-vue'
+import pagination from '@/component/pagination/pagination.vue'
+import { menuApi, roleApi } from '@/views/sys/api'
+import RoleDialog from './componet/roleDialog.vue'
+import { MenuInfo, PageInfo, RoleInfo } from '@/type/sys'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import RoleSetMenu from './roleSetMenu.vue'
+import { useStore } from '@/store/usestore'
+const use = useStore()
 
 const setMenu = reactive({
   visible: false,
-  title: "分配权限",
+  title: '分配权限',
   roleID: 0,
   menuList: [],
-  defaultCheckedMenus: [] as Array<number>,
-});
+  defaultCheckedMenus: [] as Array<number>
+})
 
-const loading = ref<boolean>(false);
+const loading = ref<boolean>(false)
 const data = reactive({
   roleList: [] as Array<RoleInfo>,
-  total: 0,
-});
-const { roleList, total } = toRefs(data);
+  total: 0
+})
+const { roleList, total } = toRefs(data)
 
 const roleAdd = reactive({
   visible: false,
-  title: "添加角色",
-});
+  title: '添加角色'
+})
 
 const roleEdit = reactive({
   visible: false,
-  title: "编辑角色",
-  data: {} as RoleInfo,
-});
+  title: '编辑角色',
+  data: {} as RoleInfo
+})
 
 onMounted(() => {
-  getRoleList();
-  getMenuList();
-});
+  getRoleList()
+  getMenuList()
+})
 
 const query = reactive<PageInfo>({
   page: 1,
-  limit: 10,
-});
+  limit: 10
+})
 
 const getRoleList = async () => {
-  loading.value = true;
-  const res = await roleApi.list.request(query);
-  roleList.value = res.data.roles;
-  total.value = res.data.total;
-  loading.value = false;
-};
+  loading.value = true
+  const res = await roleApi.list.request(query)
+  roleList.value = res.data.roles
+  total.value = res.data.total
+  loading.value = false
+}
 
 const addRole = () => {
-  roleAdd.visible = true;
-};
+  roleAdd.visible = true
+}
 
 const handlePageChange = (pageInfo: PageInfo) => {
-  query.page = pageInfo.page;
-  query.limit = pageInfo.limit;
-  getRoleList();
-};
+  query.page = pageInfo.page
+  query.limit = pageInfo.limit
+  getRoleList()
+}
 
 const changeStatus = async (role: RoleInfo) => {
   await roleApi.changeStatus
     .request({
       id: role.id,
-      status: role.status,
+      status: role.status
     })
     .then((res) => {
-      getRoleList();
+      getRoleList()
 
-      ElMessage.success(res.message);
+      ElMessage.success(res.message)
     })
     .catch(() => {
-      role.status = 1;
-    });
-};
+      role.status = 1
+    })
+}
 
 const deleteRole = (role: RoleInfo) => {
-  ElMessageBox.confirm(`此操作将删除[ ${role.name} ]角色 . 是否继续?`, "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-    draggable: true,
+  ElMessageBox.confirm(`此操作将删除[ ${role.name} ]角色 . 是否继续?`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+    draggable: true
   })
     .then(() => {
       roleApi.delete
         .request({ id: role.id })
         .then((res) => {
-          getRoleList();
-          use.getUserPermissions();
-          ElMessage.success(res.message);
+          getRoleList()
+          use.getUserPermissions()
+          ElMessage.success(res.message)
         })
-        .catch();
+        .catch()
     })
-    .catch(() => {}); // 取消
-};
+    .catch(() => {}) // 取消
+}
 
 const handleEdit = (role: RoleInfo) => {
-  roleEdit.data = JSON.parse(JSON.stringify(role));
-  roleEdit.visible = true;
-};
+  roleEdit.data = JSON.parse(JSON.stringify(role))
+  roleEdit.visible = true
+}
 
 const getMenuList = async () => {
   await menuApi.list.request().then((res) => {
-    setMenu.menuList = res.data.menus;
-  });
-};
+    setMenu.menuList = res.data.menus
+  })
+}
 
 const handleSetMenu = async (role: RoleInfo) => {
-  setMenu.title = `为【${role.name}】分配角色：`;
-  setMenu.roleID = role.id;
-  setMenu.defaultCheckedMenus = [];
+  setMenu.title = `为【${role.name}】分配角色：`
+  setMenu.roleID = role.id
+  setMenu.defaultCheckedMenus = []
 
   await roleApi.getRoleMenus.request({ id: role.id }).then((res) => {
-    const menuList: Array<MenuInfo> = res.data;
+    const menuList: Array<MenuInfo> = res.data
     if (menuList !== null) {
       for (let i = 0; i < menuList.length; i++) {
         if (menuList[i].children !== null) {
           for (let j = 0; j < menuList[i].children.length; j++) {
-            setMenu.defaultCheckedMenus.push(menuList[i].children[j].id);
+            setMenu.defaultCheckedMenus.push(menuList[i].children[j].id)
           }
         }
-        setMenu.defaultCheckedMenus.push(menuList[i].id);
+        setMenu.defaultCheckedMenus.push(menuList[i].id)
       }
     }
-  });
-  setMenu.visible = true;
-};
+  })
+  setMenu.visible = true
+}
 </script>
 
 <style scoped lang="less"></style>

@@ -2,7 +2,7 @@
 <template>
   <el-card>
     <el-container>
-      <el-aside width="200px" style="height: 100%">
+      <el-aside width="200px" style="height: 100%;">
         <el-menu
           active-text-color="#409EFF"
           :unique-opened="true"
@@ -44,91 +44,90 @@
           </template>
         </el-menu>
       </el-aside>
-      <router-view ></router-view>
+      <router-view></router-view>
     </el-container>
   </el-card>
 </template>
 
 <script setup lang="ts">
-import {  reactive , inject, onMounted} from "vue";
-import { RouterView } from "vue-router";
-import { kubeStore } from "@/store/kubernetes/kubernetes";
-import {namespacerApi } from "./api"
-import { Namespace } from "@/type/namespace"
-const kube = kubeStore();
+import { reactive, inject, onMounted } from 'vue'
+import { RouterView } from 'vue-router'
+import { kubeStore } from '@/store/kubernetes/kubernetes'
+import { namespacerApi } from './api'
+import { Namespace } from '@/type/namespace'
+const kube = kubeStore()
 
-const activeCluster = kube.activeCluster;
-const clusters = kube.clusters;
+const activeCluster = kube.activeCluster
+const clusters = kube.clusters
 
-const handleOpen = (key: string, keyPath: string[]) => {};
-const handleClose = (key: string, keyPath: string[]) => {};
+const handleOpen = (key: string, keyPath: string[]) => {}
+const handleClose = (key: string, keyPath: string[]) => {}
 
-const flush = inject("reload")
+const flush = inject('reload')
 const kubernetesRoutes = [
   {
     id: 1,
-    name: "集群信息",
-    path: "/cluster",
+    name: '集群信息',
+    path: '/cluster'
   },
   {
     id: 2,
-    name: "命名空间",
-    path: "/namespace",
+    name: '命名空间',
+    path: '/namespace'
   },
   {
     id: 3,
-    name: "节点管理",
-    path: "/nodes",
+    name: '节点管理',
+    path: '/nodes',
     children: [
       {
         id: 3.1,
-        name: "节点信息",
-        path: "/node",
-      },
-    ],
+        name: '节点信息',
+        path: '/node'
+      }
+    ]
   },
   {
     id: 5,
-    name: "工作负载",
-    path: "/deployment",
+    name: '工作负载',
+    path: '/deployment',
     children: [
       {
         id: 5.1,
-        name: "Deployments",
-        path: "/deployment",
+        name: 'Deployments',
+        path: '/deployment'
       },
       {
         id: 5.2,
-        name: "Stateful Sets",
-        path: "/statefulset",
+        name: 'Stateful Sets',
+        path: '/statefulset'
       },
       {
         id: 5.3,
-        name: "Daemon Sets",
-        path: "/daemonset",
-      },
-    ],
-  },
-];
+        name: 'Daemon Sets',
+        path: '/daemonset'
+      }
+    ]
+  }
+]
 
 const query = reactive({
-  cloud: "",
+  cloud: ''
 })
 
 const state = reactive({
-  namespaces: <Namespace[]>[],
+  namespaces: <Namespace[]>[]
 })
-onMounted(()=>{
-    getNamespace()
+onMounted(() => {
+  getNamespace()
 })
 
-const getNamespace =async ()=>{
+const getNamespace = async () => {
   query.cloud = kube.activeCluster!.name
-  const res=  await namespacerApi.list.request(query)
-state.namespaces = res.data.items
+  const res = await namespacerApi.list.request(query)
+  state.namespaces = res.data.items
   console.log(state.namespaces)
 }
-
 </script>
 
 <style scoped lang="less"></style>

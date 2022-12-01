@@ -4,7 +4,7 @@
     v-model="visible"
     @close="handleClose()"
     :title="title"
-    style="width: 400px"
+    style="width: 400px;"
   >
     <el-tree
       ref="menusRef"
@@ -27,42 +27,44 @@
 </template>
 
 <script setup lang="ts">
-import {  RoleInfo } from "@/type/sys";
-import { ElMessage } from "element-plus";
-import { ref, reactive } from "vue";
-import { userApi } from "../api";
+import { RoleInfo } from '@/type/sys'
+import { ElMessage } from 'element-plus'
+import { ref, reactive } from 'vue'
+import { userApi } from '../api'
 
-const menusRef = ref();
+const menusRef = ref()
 
 const props = defineProps<{
-  visible: boolean;
-  title: string;
-  userID: number;
-  roleList: Array<RoleInfo> | undefined;
-  defaultCheckedRoles: Array<number>;
-}>();
+  visible: boolean
+  title: string
+  userID: number
+  roleList: Array<RoleInfo> | undefined
+  defaultCheckedRoles: Array<number>
+}>()
 
 const data = reactive({
   roleForm: {
-    role_ids: [],
-  },
-});
+    role_ids: []
+  }
+})
 
-const emits = defineEmits(["update:visible", "valueChange"]);
+const emits = defineEmits(['update:visible', 'valueChange'])
 
 const handleClose = () => {
-  emits("update:visible", false);
-};
+  emits('update:visible', false)
+}
 
 const btnOk = async () => {
-const roleIds = menusRef.value.getCheckedKeys();
-  data.roleForm.role_ids = roleIds;
-  userApi.setUserRole.request({id: props.userID},data.roleForm).then((res) => {
-    handleClose()
-    emits("valueChange");
-    ElMessage.success(res.message);
-  });
-};
+  const roleIds = menusRef.value.getCheckedKeys()
+  data.roleForm.role_ids = roleIds
+  userApi.setUserRole
+    .request({ id: props.userID }, data.roleForm)
+    .then((res) => {
+      handleClose()
+      emits('valueChange')
+      ElMessage.success(res.message)
+    })
+}
 </script>
 
 <style scoped lang="less"></style>

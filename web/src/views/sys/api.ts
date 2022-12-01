@@ -1,4 +1,4 @@
-import Api from "@/request/api";
+import Api from '@/request/api'
 
 /*
 	user.POST("/logout", sys.Logout) // 注册
@@ -27,7 +27,6 @@ export const userApi = {
   setUserRole: Api.create('/user/{id}/roles', 'post')
 }
 
-
 /*
   role.POST("", sys.AddRole)          // 添加角色
   role.PUT("/:id", sys.UpdateRole)    // 根据角色ID更新角色信息
@@ -41,14 +40,14 @@ export const userApi = {
 */
 export const roleApi = {
   list: Api.create('/role', 'get'),
-  update: Api.create("/role/{id}",'put'),
-  delete: Api.create("/role/{id}",'delete'),
-  get: Api.create("/role/{id}",'get'),
-  add: Api.create("/role",'post'),
+  update: Api.create('/role/{id}', 'put'),
+  delete: Api.create('/role/{id}', 'delete'),
+  get: Api.create('/role/{id}', 'get'),
+  add: Api.create('/role', 'post'),
 
-  getRoleMenus: Api.create('/role/{id}/menus','get'),
-  setRoleMenus: Api.create('/role/{id}/menus','post'),
-  changeStatus: Api.create('/role/{id}/status/{status}','put'),
+  getRoleMenus: Api.create('/role/{id}/menus', 'get'),
+  setRoleMenus: Api.create('/role/{id}/menus', 'post'),
+  changeStatus: Api.create('/role/{id}/status/{status}', 'put')
 }
 
 /*
@@ -61,9 +60,9 @@ export const roleApi = {
 */
 export const menuApi = {
   list: Api.create('/menu', 'get'),
-  update: Api.create("/menu/{id}",'put'),
-  delete: Api.create("/menu/{id}",'delete'),
-  get: Api.create("/menu/{id}",'get'),
-  add: Api.create("/menu",'post'),
-  changeStatus: Api.create('/menu/{id}/status/{status}','put'),
+  update: Api.create('/menu/{id}', 'put'),
+  delete: Api.create('/menu/{id}', 'delete'),
+  get: Api.create('/menu/{id}', 'get'),
+  add: Api.create('/menu', 'post'),
+  changeStatus: Api.create('/menu/{id}/status/{status}', 'put')
 }

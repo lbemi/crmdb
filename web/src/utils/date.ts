@@ -1,30 +1,30 @@
 interface Option {
-  [key: string]: string;
+  [key: string]: string
 }
 
 export function dateFormat(fmt: string, date: Date) {
-  let ret;
+  let ret
   const opt: Option = {
-    "y+": date.getFullYear().toString(), // 年
-    "M+": (date.getMonth() + 1).toString(), // 月
-    "d+": date.getDate().toString(), // 日
-    "H+": date.getHours().toString(), // 时
-    "m+": date.getMinutes().toString(), // 分
-    "s+": date.getSeconds().toString(), // 秒
+    'y+': date.getFullYear().toString(), // 年
+    'M+': (date.getMonth() + 1).toString(), // 月
+    'd+': date.getDate().toString(), // 日
+    'H+': date.getHours().toString(), // 时
+    'm+': date.getMinutes().toString(), // 分
+    's+': date.getSeconds().toString() // 秒
     // 有其他格式化字符需求可以继续添加，必须转化成字符串
-  };
+  }
   for (const k in opt) {
-    ret = new RegExp("(" + k + ")").exec(fmt);
+    ret = new RegExp('(' + k + ')').exec(fmt)
     if (ret) {
       fmt = fmt.replace(
         ret[1],
-        ret[1].length == 1 ? opt[k] : opt[k].padStart(ret[1].length, "0")
-      );
+        ret[1].length == 1 ? opt[k] : opt[k].padStart(ret[1].length, '0')
+      )
     }
   }
-  return fmt;
+  return fmt
 }
 
 export function dateStrFormat(fmt: string, dateStr: string) {
-  return dateFormat(fmt, new Date(dateStr));
+  return dateFormat(fmt, new Date(dateStr))
 }

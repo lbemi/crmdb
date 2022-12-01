@@ -1,18 +1,18 @@
-import { defineStore } from "pinia";
-import { reactive, ref } from "vue";
-import { clusterInfo } from "@/type/container";
+import { defineStore } from 'pinia'
+import { reactive, ref } from 'vue'
+import { clusterInfo } from '@/type/container'
 
 export const kubeStore = defineStore(
-  "kubeStore",
+  'kubeStore',
   () => {
-    const activeCluster = ref<clusterInfo>();
-    const clusters = ref<Array<clusterInfo>>();
+    const activeCluster = ref<clusterInfo>()
+    const clusters = ref<Array<clusterInfo>>()
     const namespace = ref
-    return { activeCluster, clusters };
+    return { activeCluster, clusters }
   },
   {
     persist: {
-      storage: localStorage,
-    },
+      storage: localStorage
+    }
   }
-);
+)

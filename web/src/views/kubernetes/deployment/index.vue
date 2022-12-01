@@ -2,7 +2,7 @@
 <template>
   <el-table
     :data="tableData"
-    style="width: 100%"
+    style="width: 100%;"
     :row-class-name="tableRowClassName"
   >
     <el-table-column prop="date" label="Date" width="180" />
@@ -12,25 +12,24 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from "vue";
-import { deploymentApi } from "../api";
-import { kubeStore } from "@/store/kubernetes/kubernetes";
+import { reactive, onMounted } from 'vue'
+import { deploymentApi } from '../api'
+import { kubeStore } from '@/store/kubernetes/kubernetes'
 
-const kube = kubeStore();
+const kube = kubeStore()
 onMounted(() => {
-  listDeployment();
-});
+  listDeployment()
+})
 
 const query = reactive({
-  namespace: "default",
-  cloud: kube.activeCluster?.name,
-});
+  namespace: 'default',
+  cloud: kube.activeCluster?.name
+})
 
 const listDeployment = async () => {
-  const res = await deploymentApi.list.request(query);
-  console.log("+++++", res);
-};
-
+  const res = await deploymentApi.list.request(query)
+  console.log('+++++', res)
+}
 
 interface User {
   date: string
@@ -40,7 +39,7 @@ interface User {
 
 const tableRowClassName = ({
   row,
-  rowIndex,
+  rowIndex
 }: {
   row: User
   rowIndex: number
@@ -57,23 +56,23 @@ const tableData: User[] = [
   {
     date: '2016-05-03',
     name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
+    address: 'No. 189, Grove St, Los Angeles'
   },
   {
     date: '2016-05-02',
     name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
+    address: 'No. 189, Grove St, Los Angeles'
   },
   {
     date: '2016-05-04',
     name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
+    address: 'No. 189, Grove St, Los Angeles'
   },
   {
     date: '2016-05-01',
     name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
+    address: 'No. 189, Grove St, Los Angeles'
+  }
 ]
 </script>
 

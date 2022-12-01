@@ -1,5 +1,5 @@
 <template>
-  <el-card style="height: 100%; width: 100%">
+  <el-card style=" width: 100%;height: 100%;">
     <h1>SSH终端--{{ query.ip }}</h1>
     <br />
     <div
@@ -13,77 +13,77 @@
 </template>
 
 <script lang="ts" setup>
-import "xterm/css/xterm.css";
-import { ITerminalOptions, ITheme, Terminal } from "xterm";
-import { FitAddon } from "xterm-addon-fit";
-import { nextTick, reactive, onMounted, onBeforeUnmount } from "vue";
-import { useRoute } from "vue-router";
-import { ElMessage } from "element-plus";
+import 'xterm/css/xterm.css'
+import { ITerminalOptions, ITheme, Terminal } from 'xterm'
+import { FitAddon } from 'xterm-addon-fit'
+import { nextTick, reactive, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
-const { query } = useRoute();
+const { query } = useRoute()
 
 const state = reactive({
   machineId: 0,
-  cmd: "",
-  height: "600px",
+  cmd: '',
+  height: '600px',
   term: null as any,
-  socket: null as any,
-});
+  socket: null as any
+})
 
-const resize = 1;
-const data = 2;
-const ping = 3;
+const resize = 1
+const data = 2
+const ping = 3
 
 onMounted(() => {
-  state.height = window.innerHeight - 200 + "px";
-});
+  state.height = window.innerHeight - 200 + 'px'
+})
 
 onBeforeUnmount(() => {
-  closeAll();
-});
+  closeAll()
+})
 
 nextTick(() => {
-  initXterm();
-  initSocket();
-});
+  initXterm()
+  initSocket()
+})
 
 function initXterm() {
   const term = new Terminal({
     fontSize: 15,
-    fontWeight: "normal",
-    fontFamily: "JetBrainsMono, monaco, Consolas, Lucida Console, monospace",
+    fontWeight: 'normal',
+    fontFamily: 'JetBrainsMono, monaco, Consolas, Lucida Console, monospace',
     cursorBlink: true,
     disableStdin: false,
     theme: {
-      foreground: "white", //字体
-      background: "#060101", //背景色
-      cursor: "help", //设置光标
-    } as ITheme,
-  } as ITerminalOptions);
+      foreground: 'white', //字体
+      background: '#060101', //背景色
+      cursor: 'help' //设置光标
+    } as ITheme
+  } as ITerminalOptions)
 
-  const fitAddon = new FitAddon();
-  term.loadAddon(fitAddon);
-  term.open(document.getElementById("xterm")!);
-  fitAddon.fit();
-  term.focus();
-  state.term = term;
+  const fitAddon = new FitAddon()
+  term.loadAddon(fitAddon)
+  term.open(document.getElementById('xterm')!)
+  fitAddon.fit()
+  term.focus()
+  state.term = term
   // 监听窗口resize
-  window.addEventListener("resize", () => {
+  window.addEventListener('resize', () => {
     try {
       // 窗口大小改变时，触发xterm的resize方法使自适应
-      fitAddon.fit();
+      fitAddon.fit()
       if (state.term) {
-        state.term!.focus();
+        state.term!.focus()
         send({
           type: resize,
           Cols: parseInt(state.term.cols),
-          Rows: parseInt(state.term.rows),
-        });
+          Rows: parseInt(state.term.rows)
+        })
       }
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
-  });
+  })
 
   // / **
   //     *添加事件监听器，用于按下键时的事件。事件值包含
@@ -100,85 +100,85 @@ function initXterm() {
   //  * /
   // 支持输入与粘贴方法
   term.onData((key: any) => {
-    sendCmd(key);
-  });
+    sendCmd(key)
+  })
 }
 
 let url =
-  (location.protocol === "http:" ? "ws" : "wss") +
-  "://" +
+  (location.protocol === 'http:' ? 'ws' : 'wss') +
+  '://' +
   location.hostname +
-  ":8080" +
-  "/api/v1/host/" +
+  ':8080' +
+  '/api/v1/host/' +
   `${query.id}` +
-  "/ws";
+  '/ws'
 
-let pingInterval: any;
+let pingInterval: any
 function initSocket() {
-  console.log(localStorage.getItem("token"));
+  console.log(localStorage.getItem('token'))
 
-  state.socket = new WebSocket(url);
+  state.socket = new WebSocket(url)
 
   // 监听socket连接
   state.socket.onopen = () => {
     // 如果有初始要执行的命令，则发送执行命令
     if (state.cmd) {
-      sendCmd(state.cmd + " \r");
+      sendCmd(state.cmd + ' \r')
     }
     // 开启心跳
     pingInterval = setInterval(() => {
-      send({ type: ping, msg: "ping" });
-    }, 8000);
-  };
+      send({ type: ping, msg: 'ping' })
+    }, 8000)
+  }
 
   // 监听socket错误信息
   state.socket.onerror = (e: any) => {
-    ElMessage.error("连接失败");
-  };
+    ElMessage.error('连接失败')
+  }
 
   state.socket.onclose = () => {
     if (state.term) {
-      state.term.writeln("\r\n\x1b[31m提示: 连接已关闭...");
+      state.term.writeln('\r\n\x1b[31m提示: 连接已关闭...')
     }
     if (pingInterval) {
-      clearInterval(pingInterval);
+      clearInterval(pingInterval)
     }
-  };
+  }
 
   // 发送socket消息
-  state.socket.onsend = send;
+  state.socket.onsend = send
 
   // 监听socket消息
-  state.socket.onmessage = getMessage;
+  state.socket.onmessage = getMessage
 }
 
 function getMessage(msg: any) {
   // msg.data是真正后端返回的数据
-  state.term.write(msg.data);
+  state.term.write(msg.data)
 }
 
 function send(msg: any) {
-  state.socket.send(JSON.stringify(msg));
+  state.socket.send(JSON.stringify(msg))
 }
 
 function sendCmd(key: any) {
   send({
     type: data,
-    msg: key,
-  });
+    msg: key
+  })
 }
 
 function close() {
   if (state.socket) {
-    state.socket.close();
+    state.socket.close()
   }
 }
 
 function closeAll() {
-  close();
+  close()
   if (state.term) {
-    state.term.dispose();
-    state.term = null;
+    state.term.dispose()
+    state.term = null
   }
 }
 </script>
