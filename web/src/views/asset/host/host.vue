@@ -6,7 +6,7 @@
       v-auth="'asset:host:add'"
       type="primary"
       :icon="Edit"
-      style="margin-bottom: 10px;"
+      style="margin-bottom: 10px"
       @click="addHost"
       >添加主机</el-button
     >
@@ -14,7 +14,7 @@
       stripe
       :data="hostList"
       border
-      style="width: 100%;"
+      style="width: 100%"
       v-loading="loading"
       row-key="id"
     >
@@ -23,21 +23,21 @@
         align="center"
         prop="id"
         label="ID"
-        min-width="40px"
+        min-width="50px"
       />
       <el-table-column
         header-align="center"
         align="center"
         prop="ip"
         label="主机IP"
-        min-width="130px"
+        min-width="120px"
       />
       <el-table-column
         header-align="center"
         align="center"
         prop="port"
         label="端口"
-        min-width="80px"
+        min-width="60px"
       />
       <el-table-column
         header-align="center"
@@ -51,16 +51,16 @@
         align="center"
         prop="label"
         label="标签"
-        min-width="40px"
+        min-width="60px"
       >
         <template #default="scope">
           <el-tooltip placement="top" effect="light">
             <template #content>
               <el-tag
-                class="ml-2"
                 type="info"
                 effect="plain"
-                v-for="item in labels(scope.row.label)"
+                v-for="(item, index) in labels(scope.row.label)"
+                :key="index"
                 >{{ item }}</el-tag
               >
             </template>
@@ -80,7 +80,7 @@
         align="center"
         prop="auth_method"
         label="认证方式"
-        min-width="80px"
+        min-width="100px"
       >
         <template #default="scope">
           <el-tag v-if="scope.row.auth_method == 1">Password</el-tag>
@@ -92,7 +92,7 @@
         align="center"
         prop="created_at"
         label="创建时间"
-        min-width="140px"
+        min-width="180px"
       >
         <template #default="scope">
           {{ $filters.dateFormat(scope.row.created_at) }}
@@ -103,7 +103,7 @@
         align="center"
         prop="status"
         label="状态"
-        min-width="60px"
+        min-width="75px"
       >
         <template #default="scope">
           <el-switch
@@ -111,10 +111,9 @@
             v-model="scope.row.status"
             class="ml-2"
             style="
-
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-"
+            "
             :active-value="1"
             :inactive-value="2"
             size="small"
@@ -131,7 +130,7 @@
         align="center"
         prop="enable_ssh"
         label="SSH"
-        min-width="60px"
+        min-width="75px"
       >
         <template #default="scope">
           <el-switch
@@ -139,10 +138,9 @@
             v-model="scope.row.status"
             class="ml-2"
             style="
-
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-"
+            "
             :active-value="1"
             :inactive-value="2"
             size="small"
@@ -159,7 +157,7 @@
         align="center"
         fixed="right"
         label="操作"
-        min-width="300px"
+        min-width="340px"
       >
         <template #default="scope">
           <el-button
@@ -214,8 +212,7 @@
 <script setup lang="ts">
 import { reactive, toRefs, ref, onMounted } from 'vue'
 import { Delete, Edit, View } from '@element-plus/icons-vue'
-import pagination from '@/component/pagination/pagination.vue'
-import { menuApi, roleApi } from '@/views/sys/api'
+import { roleApi } from '@/views/sys/api'
 import { PageInfo, RoleInfo } from '@/type/sys'
 import { HostInfo } from '@/type/host'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -310,7 +307,7 @@ const deleteHost = (host: HostInfo) => {
         })
         .catch()
     })
-    .catch(() => {}) // 取消
+    .catch() // 取消
 }
 
 const handleEdit = (host: HostInfo) => {

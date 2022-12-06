@@ -1,6 +1,6 @@
 /** * Created by lei on 2022/11/01 */
 <template>
-  <div style="width: 300px;">
+  <div style="width: 300px">
     <el-card shadow="always"> Always </el-card>
   </div>
 </template>

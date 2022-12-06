@@ -5,7 +5,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
+import '@/styles/loading.scss'
 
 let bar = ref<HTMLElement>()
 let speed = ref<number>(1)
@@ -32,7 +33,37 @@ const endLoading = () => {
       speed.value = 100
       dom.style.width = speed.value + '%'
     })
-  }, 100)
+  }, 0)
+}
+
+const show = () => {
+  const bodys: Element = document.body
+  const div = document.createElement('div')
+  div.className = 'block-loading'
+  div.innerHTML = `
+            <div class="block-loading-box">
+                <div class="block-loading-box-warp">
+                    <div class="block-loading-box-item"></div>
+                    <div class="block-loading-box-item"></div>
+                    <div class="block-loading-box-item"></div>
+                    <div class="block-loading-box-item"></div>
+                    <div class="block-loading-box-item"></div>
+                    <div class="block-loading-box-item"></div>
+                    <div class="block-loading-box-item"></div>
+                    <div class="block-loading-box-item"></div>
+                    <div class="block-loading-box-item"></div>
+                </div>
+            </div>
+        `
+  bodys.insertBefore(div, bodys.childNodes[0])
+}
+const hide = () => {
+  nextTick(() => {
+    setTimeout(() => {
+      const el = document.querySelector('.block-loading')
+      el && el.parentNode?.removeChild(el)
+    }, 1000)
+  })
 }
 
 defineExpose({

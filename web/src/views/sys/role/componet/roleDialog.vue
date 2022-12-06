@@ -4,14 +4,14 @@
     v-model="visible"
     @close="handleClose(roleFormRef)"
     :title="title"
-    style="width: 400px;"
+    style="width: 400px"
   >
     <el-form
       label-width="100px"
       ref="roleFormRef"
       :rules="roleFormRules"
       :model="form"
-      style="max-width: 300px;"
+      style="max-width: 300px"
     >
       <el-form-item label="名字:" prop="name">
         <el-input v-model="form.name" />
@@ -43,9 +43,7 @@
         <el-switch
           v-model="form.status"
           class="ml-2"
-          style="
-
-  --el-switch-on-color: #409eff; --el-switch-off-color: #ff4949;"
+          style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
           :active-value="1"
           :inactive-value="2"
           size="large"

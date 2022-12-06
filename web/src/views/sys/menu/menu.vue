@@ -147,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, toRefs, ref, onMounted, onUpdated } from 'vue'
+import { reactive, toRefs, ref, onMounted } from 'vue'
 import { Delete, Edit, View } from '@element-plus/icons-vue'
 import pagination from '@/component/pagination/pagination.vue'
 import { menuApi } from '@/views/sys/api'

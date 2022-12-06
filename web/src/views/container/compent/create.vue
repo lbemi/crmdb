@@ -1,7 +1,7 @@
 /** * Created by lei on 2022/11/16 */
 <template>
-  <el-dialog v-model="dialogVisable" :close="handleClose" style="width: 500px;">
-    <template #header="{ close, titleId, titleClass }">
+  <el-dialog v-model="dialogVisable" :close="handleClose" style="width: 500px">
+    <template #header="{ titleId, titleClass }">
       <div class="my-header">
         <h4 :id="titleId" :class="titleClass">{{ title }}</h4>
         <el-divider />
@@ -50,9 +50,10 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, toRefs } from 'vue'
 import { UploadFilled } from '@element-plus/icons-vue'
-import { ElMessage, FormInstance, UploadFile, UploadFiles } from 'element-plus'
+import { ElMessage, UploadFile } from 'element-plus'
+import type { FormInstance } from 'element-plus'
 import { clusterForm } from '@/type/container'
 import { clusterApi } from '../api'
 
@@ -71,8 +72,12 @@ const requestConfig = {
     'Content-Type': 'multipart/form-data'
   }
 }
-const handleChange = (file: UploadFile, files: UploadFiles) => {
-  newFormData.append('file', file.raw!)
+const handleChange = (file: UploadFile | undefined) => {
+  if (!file) {
+    ElMessage.error('请添加配置文件')
+  } else {
+    newFormData.append('file', file.raw || '')
+  }
 }
 
 const submitForm = (formEl: FormInstance | undefined) => {
@@ -107,6 +112,8 @@ const props = defineProps<{
   dialogVisable: boolean
   title: string
 }>()
+
+const { dialogVisable } = toRefs(props)
 const emits = defineEmits(['update:dialogVisable', 'valueChange'])
 
 const handleClose = () => {

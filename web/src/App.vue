@@ -6,7 +6,7 @@
 <script setup lang="ts"></script>
 
 <style lang="less">
-@import url("./assets/styles/rebase.less");
+@import url('./assets/styles/rebase.less');
 
 html,
 body {
