@@ -1,79 +1,111 @@
 /** * Created by lei on 2022/11/29 */
 <template>
-  <el-table
-    :data="tableData"
-    style="width: 100%;"
-    :row-class-name="tableRowClassName"
-  >
-    <el-table-column prop="date" label="Date" width="180" />
-    <el-table-column prop="name" label="Name" width="180" />
-    <el-table-column prop="address" label="Address" />
-  </el-table>
+  <div style="margin-left: 5px">
+    <div>
+      namespace:
+      <el-select
+        v-model="ns.activeNamespace"
+        class="m-2"
+        placeholder="Select"
+        @change="handleChange"
+      >
+        <el-option
+          v-for="item in ns.namespace"
+          :key="item.metadata.name"
+          :label="item.metadata.name"
+          :value="item.metadata.name"
+        />
+      </el-select>
+      <el-button type="primary">添加</el-button>
+      <el-button ref="delete_button" type="danger" disabled>删除</el-button>
+    </div>
+
+    <el-table
+      :data="delploymentData.deployments"
+      style="width: 100%"
+      @selection-change="handleSelectionChange"
+      :loading="loading"
+    >
+      <el-table-column type="selection" width="55" />
+      <el-table-column prop="metadata.name" label="名称" width="220px" />
+      <el-table-column label="镜像" width="400px">
+        <template #default="scope">
+          <el-tag
+            class="ml-2"
+            type="success"
+            v-for="(item, index) in scope.row.spec.template.spec.containers"
+            :key="index"
+            >{{ item.image }}</el-tag
+          >
+        </template>
+      </el-table-column>
+      <el-table-column label="标签" width="180px">
+        <template #default="scope">
+          <el-tag
+            class="ml-2"
+            type="info"
+            v-for="(item, index) in scope.row.metadata.labels"
+            :key="index"
+            >{{ item }}</el-tag
+          >
+        </template>
+      </el-table-column>
+
+      <el-table-column prop="spec.replicas" label="Pods" width="80px">
+        <template #default="scope">
+          {{ scope.row.status.readyReplicas }}/{{ scope.row.status.replicas }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="metadata.creationTimestamp"
+        label="创建时间"
+        width="180px"
+      />
+    </el-table>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, ref } from 'vue'
 import { deploymentApi } from '../api'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
-
+import { nsStore } from '@/store/kubernetes/namespace'
+import { Deployment } from '@/type/deployment'
+const loading = ref(false)
+const ns = nsStore()
 const kube = kubeStore()
 onMounted(() => {
   listDeployment()
 })
 
 const query = reactive({
-  namespace: 'default',
-  cloud: kube.activeCluster?.name
+  namespace: ns.activeNamespace,
+  cloud: kube.activeCluster
 })
 
+const delploymentData = reactive({
+  deployments: [{}] as Deployment[]
+})
+
+const delete_button = ref()
+const handleSelectionChange = () => {
+  console.log(delete_button.value.disabled)
+}
 const listDeployment = async () => {
-  const res = await deploymentApi.list.request(query)
-  console.log('+++++', res)
-}
-
-interface User {
-  date: string
-  name: string
-  address: string
-}
-
-const tableRowClassName = ({
-  row,
-  rowIndex
-}: {
-  row: User
-  rowIndex: number
-}) => {
-  if (rowIndex === 1) {
-    return 'warning-row'
-  } else if (rowIndex === 3) {
-    return 'success-row'
+  try {
+    loading.value = true
+    await deploymentApi.list.request(query).then((res) => {
+      delploymentData.deployments = res.data.items
+      loading.value = false
+    })
+  } catch (error) {
+    console.log(error)
   }
-  return ''
 }
-
-const tableData: User[] = [
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles'
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles'
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles'
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles'
-  }
-]
+const handleChange = () => {
+  query.namespace = ns.activeNamespace
+  listDeployment()
+}
 </script>
 
 <style scoped lang="less"></style>

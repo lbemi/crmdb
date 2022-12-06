@@ -1,3 +1,4 @@
+import { Deployment } from './deployment.d'
 export interface Label {
   app: string
 }
@@ -18,17 +19,13 @@ export interface Metadata {
   resourceVersion: string
   generation: number
   creationTimestamp: string
-  labels: Label
-  annotations: Annotation
-  managedFields: ManagedField[]
-}
-
-export interface MatchLabel {
-  app: string
+  labels: object[]
+  annotations: object[]
+  managedFields: object
 }
 
 export interface Selector {
-  matchLabels: MatchLabel
+  matchLabels: object[]
 }
 
 export interface Label {
@@ -36,7 +33,7 @@ export interface Label {
 }
 
 export interface ObjectMeta {
-  creationTimestamp: any
+  creationTimestamp: string
   labels: object
 }
 
@@ -45,26 +42,22 @@ export interface Port {
   protocol: string
 }
 
-export interface Resource {}
-
 export interface Container {
   name: string
   image: string
   ports: Port[]
-  resources: Resource
+  resources: object
   terminationMessagePath: string
   terminationMessagePolicy: string
   imagePullPolicy: string
 }
-
-export interface SecurityContext {}
 
 export interface Spec {
   containers: Container[]
   restartPolicy: string
   terminationGracePeriodSeconds: number
   dnsPolicy: string
-  securityContext: SecurityContext
+  securityContext: object
   schedulerName: string
 }
 
@@ -83,7 +76,7 @@ export interface Strategy {
   rollingUpdate: RollingUpdate
 }
 
-export interface Spec {
+export interface DeploySpec {
   replicas: number
   selector: Selector
   template: Template
@@ -106,12 +99,17 @@ export interface Statu {
   replicas: number
   updatedReplicas: number
   readyReplicas: number
+  unavailableReplicas: number
   availableReplicas: number
   conditions: Condition[]
 }
 
 export interface Deployment {
   metadata: Metadata
-  spec: Spec
+  spec: DeploySpec
   status: Statu
+}
+
+export class DeploymentData {
+  Deployments: Deployment[]
 }

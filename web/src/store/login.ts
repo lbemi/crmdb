@@ -36,7 +36,7 @@ export const loginStore = defineStore(
               userStore.getUserPermissions()
             })
         })
-        .catch(() => {})
+        .catch()
     }
 
     return { ruleFormRef, ruleForm, userInfo, loginFn }

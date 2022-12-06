@@ -103,6 +103,7 @@ const genRouters = (menus: MenuObj[]) => {
         path: '/kubernetes',
         name: 'kubernetes',
         component: () => import('../views/kubernetes/index.vue'),
+        redirect: '/cluster',
         meta: {
           title: 'kubernetes'
         },
@@ -112,7 +113,7 @@ const genRouters = (menus: MenuObj[]) => {
             name: 'cluster',
             component: () => import('../views/kubernetes/cluster/index.vue'),
             meta: {
-              title: 'deployments'
+              title: 'cluster'
             }
           },
           {

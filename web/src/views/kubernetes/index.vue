@@ -2,16 +2,15 @@
 <template>
   <el-card>
     <el-container>
-      <el-aside width="200px" style="height: 100%;">
+      <el-aside class="in-asibe">
         <el-menu
           active-text-color="#409EFF"
           :unique-opened="true"
           :router="true"
-          @open="handleOpen"
-          @close="handleClose"
+          class="in-menu"
         >
           <el-select
-            v-model.number="activeCluster!.name"
+            v-model="kube.activeCluster"
             class="m-2"
             placeholder="Select"
             @change="flush"
@@ -21,12 +20,16 @@
               :key="item.name"
               :label="item.name + ' - 集群'"
               :value="item.name"
-              style="align-items: center;"
+              style="align-items: center"
             />
           </el-select>
           <hr />
           <template v-for="menu in kubernetesRoutes">
-            <el-menu-item v-if="!menu.children" :index="menu.path">
+            <el-menu-item
+              v-if="!menu.children"
+              :index="menu.path"
+              :key="menu.id"
+            >
               <template #title>{{ menu.name }}</template>
             </el-menu-item>
             <el-sub-menu v-else :index="menu.id + ''" :key="menu.path">
@@ -50,18 +53,16 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, inject, onMounted } from 'vue'
+import { inject, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
-import { namespacerApi } from './api'
-import { Namespace } from '@/type/namespace'
+import { nsStore } from '@/store/kubernetes/namespace'
+
+const namespace = nsStore()
 const kube = kubeStore()
 
 const activeCluster = kube.activeCluster
 const clusters = kube.clusters
-
-const handleOpen = (key: string, keyPath: string[]) => {}
-const handleClose = (key: string, keyPath: string[]) => {}
 
 const flush = inject('reload')
 const kubernetesRoutes = [
@@ -111,23 +112,32 @@ const kubernetesRoutes = [
   }
 ]
 
-const query = reactive({
-  cloud: ''
-})
-
-const state = reactive({
-  namespaces: <Namespace[]>[]
-})
 onMounted(() => {
   getNamespace()
 })
 
-const getNamespace = async () => {
-  query.cloud = kube.activeCluster!.name
-  const res = await namespacerApi.list.request(query)
-  state.namespaces = res.data.items
-  console.log(state.namespaces)
+const getNamespace = () => {
+  namespace
+    .listNamespace()
+    .then(() => {
+      console.log('herer')
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 }
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.in-asibe {
+  width: auto !important;
+  /** 宽度自适应 */
+  text-align: center;
+  flex-direction: column;
+  height: 100%;
+  .in-menu:not(.el-menu--collapse) {
+    width: 160px;
+    height: calc(100vh - 200px);
+  }
+}
+</style>

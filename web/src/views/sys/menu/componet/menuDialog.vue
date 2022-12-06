@@ -4,14 +4,14 @@
     v-model="visible"
     @close="handleClose(menuFormRef)"
     :title="title"
-    style="width: 400px;"
+    style="width: 400px"
   >
     <el-form
       label-width="100px"
       ref="menuFormRef"
       :rules="menuFormRules"
       :model="form"
-      style="max-width: 300px;"
+      style="max-width: 300px"
     >
       <el-form-item label="菜单类型:">
         <el-radio-group v-model.number="form.menu_type">
@@ -86,9 +86,7 @@
         <el-switch
           v-model="form.status"
           class="ml-2"
-          style="
-
-  --el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949;"
+          style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949"
           :active-value="1"
           :inactive-value="0"
           size="large"
@@ -109,9 +107,10 @@
 </template>
 
 <script setup lang="ts">
-import { UserForm, MenuInfo, MenuFrom } from '@/type/sys'
-import { FormInstance, FormRules, ElMessage } from 'element-plus'
-import { ref, reactive, watch } from 'vue'
+import { MenuInfo, MenuFrom } from '@/type/sys'
+import { FormRules, ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
+import { ref, reactive, watch, toRefs } from 'vue'
 import { menuApi } from '../../api'
 import { useStore } from '@/store/usestore'
 
@@ -146,7 +145,7 @@ const props = defineProps<{
   data?: MenuInfo | undefined
   menuList: Array<MenuInfo>
 }>()
-
+const { visible } = toRefs(props)
 const emits = defineEmits(['update:visible', 'valueChange'])
 
 const handleClose = (formEl: FormInstance | undefined) => {
@@ -172,7 +171,7 @@ const menuFormRules = reactive<FormRules>({
 
 const btnOk = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  await formEl.validate((valid, fields) => {
+  await formEl.validate((valid) => {
     if (valid) {
       if (!props.data) {
         menuApi.add.request(form).then((res) => {
@@ -201,20 +200,22 @@ const btnOk = async (formEl: FormInstance | undefined) => {
 watch(
   () => props.data,
   () => {
-    form.menu_type = props.data!.menu_type
-    form.name = props.data!.name
-    form.memo = props.data!.memo
-    form.status = props.data!.status
-    form.sequence = props.data!.sequence
+    if (props.data) {
+      form.menu_type = props.data.menu_type
+      form.name = props.data.name
+      form.memo = props.data.memo
+      form.status = props.data.status
+      form.sequence = props.data.sequence
 
-    form.icon = props.data?.icon
-    form.method = props.data?.method
-    form.url = props.data!.url
-    form.code = props.data?.code
-    if (props.data?.parent_id == 0) {
-      form.parent_id = ''
-    } else {
-      form.parent_id = props.data?.parent_id
+      form.icon = props.data.icon
+      form.method = props.data.method
+      form.url = props.data.url
+      form.code = props.data.code
+      if (props.data.parent_id == 0) {
+        form.parent_id = ''
+      } else {
+        form.parent_id = props.data.parent_id
+      }
     }
   }
 )

@@ -6,7 +6,7 @@
     >
 
     <el-table :data="data.clusters" style="width: 100%">
-      <el-table-column fixed prop="id" label="ID" width="100" />
+      <el-table-column prop="id" label="ID" width="100" />
       <el-table-column prop="name" label="Name" width="120">
         <template #default="scope">
           <el-button link type="primary" @click="handleCluser(scope.row)">{{
@@ -55,7 +55,7 @@
       <el-table-column prop="memory" label="内存" width="160">
         <template #default="scope"> {{ scope.row.memory / 1024 }}M </template>
       </el-table-column>
-      <el-table-column label="操作" width="160">
+      <el-table-column fixed="right" label="操作" width="160">
         <template #default="scope">
           <el-button link type="primary" size="small" @click="handleClick"
             >Detail</el-button
@@ -139,10 +139,10 @@ const handlerDelete = async (cluster: clusterInfo) => {
 }
 
 const handleCluser = (cluster: clusterInfo) => {
-  kube.activeCluster = cluster
+  kube.activeCluster = cluster.name
   kube.clusters = data.clusters
 
-  console.log(cluster)
+  console.log('@Q@@@@@@', cluster)
   router.push({
     name: 'kubernetes'
     // params: {

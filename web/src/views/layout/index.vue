@@ -2,78 +2,66 @@
 <template>
   <div class="common-layout">
     <el-container>
-      <el-aside
-        style="
-          display: flex;
-          justify-content: center;
-          text-align: center;
-          flex-direction: column;
-        "
-      >
-        <el-scrollbar>
-          <el-menu
-            active-text-color="#409EFF"
-            :default-active="routeActive"
-            :unique-opened="true"
-            :router="true"
-            style="height: 100%"
-            :collapse="isCollapse"
-          >
-            <el-icon style="width: 100%">
-              <img
-                style="
-                  margin-top: 50px;
-                  margin-right: 30px;
-                  width: 100px;
-                  height: 70px;
-                "
-                src="@/assets/image/element-plus-logo.svg"
-              />
-            </el-icon>
+      <el-aside style="">
+        <el-menu
+          active-text-color="#409EFF"
+          :default-active="routeActive"
+          :unique-opened="true"
+          :router="true"
+          :collapse="isCollapse"
+        >
+          <el-icon style="width: 100%">
+            <img
+              style="
+                margin-top: 50px;
+                margin-right: 30px;
+                width: 100px;
+                height: 70px;
+              "
+              src="@/assets/image/element-plus-logo.svg"
+            />
+          </el-icon>
 
-            <template v-for="menu in store.menus">
-              <el-menu-item
-                v-if="menu.children === null"
-                :index="menu.url"
-                :key="menu.id"
-              >
+          <template v-for="menu in store.menus">
+            <el-menu-item
+              v-if="menu.children === null"
+              :index="menu.url"
+              :key="menu.id"
+            >
+              <el-icon style="margin-right: 10px; width: 0.5em; height: 0.5em">
+                <SvgIcon :iconName="menu.icon" />
+              </el-icon>
+              <template #title>{{ menu.name }}</template>
+            </el-menu-item>
+            <el-sub-menu v-else :index="menu.id + ''" :key="menu.url">
+              <template #title>
                 <el-icon
                   style="margin-right: 10px; width: 0.5em; height: 0.5em"
                 >
                   <SvgIcon :iconName="menu.icon" />
                 </el-icon>
-                <template #title>{{ menu.name }}</template>
-              </el-menu-item>
-              <el-sub-menu v-else :index="menu.id + ''" :key="menu.url">
-                <template #title>
-                  <el-icon
-                    style="margin-right: 10px; width: 0.5em; height: 0.5em"
-                  >
-                    <SvgIcon :iconName="menu.icon" />
-                  </el-icon>
-                  <span>{{ menu.name }}</span>
-                </template>
-                <el-menu-item
-                  :index="menu.url + child.url"
-                  v-for="child in menu.children"
-                  :key="child.id"
+                <span>{{ menu.name }}</span>
+              </template>
+              <el-menu-item
+                :index="menu.url + child.url"
+                v-for="child in menu.children"
+                :key="child.id"
+              >
+                <el-icon
+                  style="margin-right: 10px; width: 0.5em; height: 0.5em"
                 >
-                  <el-icon
-                    style="margin-right: 10px; width: 0.5em; height: 0.5em"
-                  >
-                    <SvgIcon :iconName="child.icon" />
-                  </el-icon>
-                  {{ child.name }}
-                </el-menu-item>
-              </el-sub-menu>
-            </template>
-          </el-menu>
-        </el-scrollbar>
-        <el-affix target=".el-menu" position="bottom">
-          <el-icon @click="isCollapse = !isCollapse">
-            <SvgIcon iconName="icon-zhankaicaidan" className="icon-1-4em" />
-          </el-icon>
-        </el-affix>
+                  <SvgIcon :iconName="child.icon" />
+                </el-icon>
+                {{ child.name }}
+              </el-menu-item>
+            </el-sub-menu>
+          </template>
+          <el-affix target=".el-menu" position="bottom">
+            <el-icon @click="isCollapse = !isCollapse">
+              <SvgIcon iconName="icon-zhankaicaidan" className="icon-1-4em" />
+            </el-icon>
+          </el-affix>
+        </el-menu>
       </el-aside>
       <el-container>
         <el-header style="padding: 0 5px">
@@ -117,5 +105,11 @@ const isCollapse = ref<boolean>(false)
   width: auto !important;
   /** 宽度自适应 */
   height: 100vh;
+  text-align: center;
+  flex-direction: column;
+  .el-menu:not(.el-menu--collapse) {
+    width: 200px;
+    height: 100%;
+  }
 }
 </style>
