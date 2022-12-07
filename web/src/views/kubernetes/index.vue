@@ -61,7 +61,6 @@ import { nsStore } from '@/store/kubernetes/namespace'
 const namespace = nsStore()
 const kube = kubeStore()
 
-const activeCluster = kube.activeCluster
 const clusters = kube.clusters
 
 const flush = inject('reload')
