@@ -1,4 +1,3 @@
-import { Deployment } from './deployment.d'
 export interface Label {
   app: string
 }
@@ -9,7 +8,7 @@ export interface ManagedField {
   apiVersion: string
   time: string
   fieldsType: string
-  fieldsV1: FieldsV1
+  fieldsV1: object
 }
 
 export interface Metadata {
@@ -110,6 +109,6 @@ export interface Deployment {
   status: Statu
 }
 
-export class DeploymentData {
-  Deployments: Deployment[]
+export class deploymentData {
+  Deployments: Deployment[]=[]
 }

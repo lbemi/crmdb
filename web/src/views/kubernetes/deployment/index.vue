@@ -20,17 +20,17 @@
     </div>
 
     <el-table
-      :data="delploymentData.deployments"
+      :data="delploys.Deployments"
       style="width: 100%"
       @selection-change="handleSelectionChange"
       v-loading="loading"
     >
       <el-table-column type="selection" width="55" />
       <el-table-column prop="metadata.name" label="名称" width="220px" />
+      
       <el-table-column label="镜像" width="400px">
         <template #default="scope">
           <el-tag
-            class="ml-2"
             type="success"
             v-for="(item, index) in scope.row.spec.template.spec.containers"
             :key="index"
@@ -38,10 +38,10 @@
           >
         </template>
       </el-table-column>
+
       <el-table-column label="标签" width="180px">
         <template #default="scope">
           <el-tag
-            class="ml-2"
             type="info"
             v-for="(item, index) in scope.row.metadata.labels"
             :key="index"
@@ -69,7 +69,7 @@ import { reactive, onMounted, ref } from 'vue'
 import { deploymentApi } from '../api'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
 import { nsStore } from '@/store/kubernetes/namespace'
-import { Deployment } from '@/type/deployment'
+import { deploymentData } from '@/type/deployment'
 const loading = ref(false)
 const ns = nsStore()
 const kube = kubeStore()
@@ -82,9 +82,7 @@ const query = reactive({
   cloud: kube.activeCluster
 })
 
-const delploymentData = reactive({
-  deployments: [{}] as Deployment[]
-})
+const delploys = reactive(new deploymentData())
 
 const delete_button = ref()
 const handleSelectionChange = () => {
@@ -94,7 +92,7 @@ const listDeployment = async () => {
   try {
     loading.value = true
     await deploymentApi.list.request(query).then((res) => {
-      delploymentData.deployments = res.data.items
+      delploys.Deployments = res.data.items
       loading.value = false
     })
   } catch (error) {
