@@ -119,7 +119,6 @@ const getNamespace = () => {
   namespace
     .listNamespace()
     .then(() => {
-      console.log('herer')
     })
     .catch((err) => {
       console.error(err)

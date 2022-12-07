@@ -15,15 +15,12 @@ export const nsStore = defineStore(
     })
 
     const listNamespace = async () => {
-      console.log('*(*(*(*', kube.activeCluster)
-
       if (kube.activeCluster) {
         query.cloud = kube.activeCluster
       } else {
         console.log('error')
         return
       }
-      console.log('*(*(*(*', kube.activeCluster)
       const res = await namespacerApi.list.request(query)
       namespace.value = res.data.items
     }
