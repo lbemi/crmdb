@@ -1,4 +1,3 @@
-/* @vite-ignore */
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 import { App, createVNode, render } from 'vue'
 import { useStore } from '@/store/usestore'
@@ -55,7 +54,7 @@ const genRouters = (menus: MenuObj[]) => {
           newRoute.children?.push({
             path: menus[key].url + menus[key].children[i].url,
             name: menus[key].children[i].name,
-            component: () => import(`${vueUrl}.vue`)
+            component: () => import(/* @vite-ignore */ `${vueUrl}.vue`)
           })
       }
     } else {
@@ -63,7 +62,7 @@ const genRouters = (menus: MenuObj[]) => {
       newRoute.children?.push({
         path: menus[key].url,
         name: menus[key].name,
-        component: () => import(`${vueUrl}.vue`)
+        component: () => import(/* @vite-ignore */ `${vueUrl}.vue`)
       })
     }
     // 动态添加路由规则

@@ -1,4 +1,3 @@
-/** * Created by lei on 2022/11/29 */
 <template>
   <div style="margin-left: 5px">
     <div>
@@ -8,7 +7,7 @@
         class="m-2"
         placeholder="Select"
         @change="handleChange"
-      >
+        ><el-option key="all" label="所有命名空间" value="all"></el-option>
         <el-option
           v-for="item in ns.namespace"
           :key="item.metadata.name"
@@ -24,7 +23,7 @@
       :data="delploymentData.deployments"
       style="width: 100%"
       @selection-change="handleSelectionChange"
-      :loading="loading"
+      v-loading="loading"
     >
       <el-table-column type="selection" width="55" />
       <el-table-column prop="metadata.name" label="名称" width="220px" />
