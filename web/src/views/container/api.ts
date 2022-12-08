@@ -8,6 +8,7 @@ import Api from '@/request/api'
 
 export const clusterApi = {
   list: Api.create('/cluster', 'get'),
+  get: Api.create('/cluster/{name}', 'get'),
   create: Api.create('/cluster', 'post'),
   delete: Api.create('/cluster/{id}', 'delete')
 }

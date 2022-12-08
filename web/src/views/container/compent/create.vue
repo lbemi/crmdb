@@ -54,7 +54,7 @@ import { reactive, ref, toRefs } from 'vue'
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage, UploadFile } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { clusterForm } from '@/type/container'
+import { clusterForm } from '@/type/cluster'
 import { clusterApi } from '../api'
 
 const ruleFormRef = ref<FormInstance>()

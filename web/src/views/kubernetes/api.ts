@@ -27,3 +27,15 @@ export const deploymentApi = {
   create: Api.create('/deployment', 'post'),
   delete: Api.create('/deployment/{deploymentName}', 'delete')
 }
+
+/*
+	node := group.Group("/node")
+	{
+		node.GET("", cloud.ListNodes)
+		node.GET("/:nodeName", cloud.GetNode)
+	}
+*/
+export const nodeApi = {
+  list: Api.create('/node', 'get'),
+  get: Api.create('/node/{nodeName}', 'get')
+}

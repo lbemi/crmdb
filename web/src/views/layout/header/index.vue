@@ -3,14 +3,10 @@
   <el-card :body-style="{ padding: '0px' }">
     <div class="header">
       <div style="display: flex; align-items: center; margin-left: 10px">
-        <img
-          style="margin-left: 10px; width: 100px; height: 70px"
-          src="@/assets/image/element-plus-logo.svg"
-        />
         <span style="margin-left: 10px; font-size: large">运维管理平台</span>
       </div>
 
-      <div style="margin-right: 10px">
+      <div style="display: flex; margin-right: 10px; align-items: center">
         <span style="align-items: center; margin-right: 10px">
           欢迎 {{ userInfo?.user_name }}
         </span>
@@ -78,13 +74,13 @@ const logout = () => {
 }
 </script>
 
-<style scoped>
+<style scoped type="less">
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 10px;
   width: 100%;
-  height: 70px;
+  height: 45px;
 }
 </style>

@@ -52,6 +52,18 @@ func ListCluster(c *gin.Context) {
 	response.Success(c, response.StatusOK, list)
 }
 
+func GetCluster(c *gin.Context) {
+	clusterName := c.Param("name")
+	cluster, err := core.V1.Cluster("").GetByName(c, clusterName)
+	if err != nil {
+		log.Logger.Error(err)
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+	log.Logger.Info(cluster)
+	response.Success(c, response.StatusOK, cluster)
+}
+
 func DeleteCluster(c *gin.Context) {
 	id := util.GetQueryToUint64(c, "id")
 

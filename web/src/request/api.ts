@@ -55,7 +55,7 @@ class Api {
    * @param {Object} param 请求该权限的参数
    * @options 请求该权限的载体
    */
-  request(param: any = null, options: any = null): Promise<any> {
+  request(param: any = null, options: any = null): Promise<Response> {
     return request.send(this, param, options)
   }
 
@@ -63,7 +63,7 @@ class Api {
    * 操作该权限，即请求对应的url
    * @param {Object} param 请求该权限的参数
    */
-  requestWithHeaders(param: any, headers: any): Promise<any> {
+  requestWithHeaders(param: any, headers: any): Promise<Response> {
     return request.sendWithHeaders(this, param, headers)
   }
 

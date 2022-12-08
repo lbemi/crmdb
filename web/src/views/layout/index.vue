@@ -68,7 +68,7 @@
           <Header />
         </el-header>
 
-        <el-main style="padding: 10px 5px; margin-top: 12px">
+        <el-main style="padding: 10px 5px; margin-top: 5px">
           <Bredcrumb />
           <router-view v-if="isRouterActive"></router-view>
         </el-main>
@@ -111,5 +111,8 @@ const isCollapse = ref<boolean>(false)
     width: 200px;
     height: 100%;
   }
+}
+.el-header {
+  height: 40px;
 }
 </style>

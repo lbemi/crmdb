@@ -110,5 +110,21 @@ export interface Deployment {
 }
 
 export class deploymentData {
-  Deployments: Deployment[]=[]
+  Deployments: Deployment[] = []
+}
+
+interface query {
+  namespace: string
+  cloud: string
+  deploymentName?: string
+}
+
+export class Data {
+  query: query = {
+    namespace: '',
+    cloud: ''
+  }
+  loading = false
+  selectData: Deployment[] = []
+  Deployments: Deployment[] = []
 }

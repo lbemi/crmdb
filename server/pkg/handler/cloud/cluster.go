@@ -22,6 +22,7 @@ type ICluster interface {
 	Update(ctx context.Context, id uint64, config *cloud.Config) error
 	Get(ctx context.Context, id uint64) (*cloud.Config, error)
 	List(ctx context.Context) (*[]cloud.Config, error)
+	GetByName(ctx context.Context, name string) (*cloud.Config, error)
 	ChangeStatus(id uint64, status bool) error
 	CheckHealth(ctx context.Context) bool
 	//GenerateClient(name, config string) (*cloud2.Clients, *cloud.Config, error)
@@ -165,6 +166,12 @@ func (c *cluster) List(ctx context.Context) (*[]cloud.Config, error) {
 	list, err := c.factory.Cluster().List()
 	util.WithErrorLog(err)
 	return list, nil
+}
+
+func (c *cluster) GetByName(ctx context.Context, name string) (*cloud.Config, error) {
+	clusterInfo, err := c.factory.Cluster().GetByName(name)
+	util.WithErrorLog(err)
+	return clusterInfo, nil
 }
 
 func (c *cluster) CheckHealth(ctx context.Context) bool {
