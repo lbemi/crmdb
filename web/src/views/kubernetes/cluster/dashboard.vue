@@ -108,15 +108,15 @@ table tr th,
 table tr td {
   table-layout: fixed;
   border: 1px solid #dbdbdbe5;
-  height: 40px;
+  height: 45px;
+  width: 100%;
   font-size: 12px;
   color: rgb(145, 143, 143);
   padding-left: 16px;
 }
 table {
   table-layout: fixed;
-  width: 1600px;
-  min-width: auto;
+  width: 100%;
   min-height: 25px;
   line-height: 25px;
   text-align: left;
