@@ -12,6 +12,7 @@ func NewClusterRoutes(router *gin.RouterGroup) {
 		cluster.POST("", cloud.CreateCluster)
 		cluster.GET("", cloud.ListCluster)
 		cluster.DELETE("/:id", cloud.DeleteCluster)
+		cluster.GET("/:name", cloud.GetCluster)
 	}
 
 }

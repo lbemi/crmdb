@@ -1,6 +1,6 @@
 /** * Created by lei on 2022/11/29 */
 <template>
-  <el-card>
+  <el-card class="body">
     <el-container>
       <el-aside class="in-asibe">
         <el-menu
@@ -9,21 +9,25 @@
           :router="true"
           class="in-menu"
         >
-          <el-select
-            v-model="kube.activeCluster"
-            class="m-2"
-            placeholder="Select"
-            @change="flush"
-          >
-            <el-option
-              v-for="item in clusters"
-              :key="item.name"
-              :label="item.name + ' - 集群'"
-              :value="item.name"
-              style="align-items: center"
-            />
-          </el-select>
-          <hr />
+          <div class="cluster-info">
+            <el-select
+              v-model="kube.activeCluster"
+              class="m-2"
+              placeholder="Select"
+              @change="flush"
+            >
+              <el-option
+                v-for="item in clusters"
+                :key="item.name"
+                :label="item.name + ' - 集群'"
+                :value="item.name"
+                :disabled="!item.status"
+                style="align-items: center"
+              />
+            </el-select>
+            <el-divider />
+          </div>
+
           <template v-for="menu in kubernetesRoutes">
             <el-menu-item
               v-if="!menu.children"
@@ -116,26 +120,46 @@ onMounted(() => {
 })
 
 const getNamespace = () => {
-  namespace
-    .listNamespace()
-    .then(() => {
-    })
-    .catch((err) => {
-      console.error(err)
-    })
+  namespace.listNamespace()
 }
 </script>
 
 <style scoped lang="less">
 .in-asibe {
+  display: flex;
+  align-items: center;
+  justify-items: center;
   width: auto !important;
   /** 宽度自适应 */
   text-align: center;
   flex-direction: column;
   height: 100%;
+  padding: 0;
   .in-menu:not(.el-menu--collapse) {
     width: 160px;
-    height: calc(100vh - 200px);
+    height: calc(100vh - 170px);
+  }
+}
+.cluster-info {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 0px;
+  .el-divider--horizontal {
+    margin-top: 1px;
+    margin-bottom: 2px;
+    width: 140px;
+  }
+  .m-2 {
+    margin-top: 0px;
+  }
+}
+.el-card {
+  --el-card-padding: 0px;
+  .el-container {
+    padding-top: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
   }
 }
 </style>

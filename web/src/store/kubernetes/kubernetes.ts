@@ -5,7 +5,7 @@ import { clusterInfo } from '@/type/container'
 export const kubeStore = defineStore(
   'kubeStore',
   () => {
-    const activeCluster = ref<string>()
+    const activeCluster = ref<string>('')
     const clusters = ref<Array<clusterInfo>>()
     return { activeCluster, clusters }
   },

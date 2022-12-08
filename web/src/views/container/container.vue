@@ -83,7 +83,7 @@
 import { onMounted, reactive } from 'vue'
 import CreateCluster from './compent/create.vue'
 import { clusterApi } from './api'
-import { clusterInfo } from '@/type/container'
+import { clusterInfo } from '@/type/cluster'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import router from '@/router'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
@@ -141,14 +141,8 @@ const handlerDelete = async (cluster: clusterInfo) => {
 const handleCluser = (cluster: clusterInfo) => {
   kube.activeCluster = cluster.name
   kube.clusters = data.clusters
-
-  console.log('@Q@@@@@@', cluster)
   router.push({
     name: 'kubernetes'
-    // params: {
-    //     currentCluster: JSON.stringify(cluster),
-    //     clusters: JSON.stringify(data.clusters),
-    // },
   })
 }
 </script>
