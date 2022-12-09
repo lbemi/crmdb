@@ -9,13 +9,13 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx --fix",
     "format": "prettier --write \"./**/*.{html,vue,ts,js,json,md}\"",
-    "lint:style": "stylelint \"./**/*.{css,less,vue,html}\" --fix",
-    "prepare": "husky install"
+    "lint:style": "stylelint \"./**/*.{css,less,vue,html}\" --fix"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.10",
     "@types/echarts": "^4.9.16",
     "axios": "^0.27.2",
+    "echarts": "^5.4.0",
     "element-plus": "^2.2.17",
     "less": "^4.1.3",
     "less-loader": "^11.0.0",
@@ -38,7 +38,6 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-vue": "^9.8.0",
-    "husky": "^8.0.2",
     "pinia": "^2.0.22",
     "postcss": "^8.4.19",
     "postcss-html": "^1.5.0",

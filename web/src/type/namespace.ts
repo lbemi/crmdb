@@ -29,3 +29,22 @@ export interface Namespace {
   spec: Spec
   status: Statu
 }
+export interface NamespaceForm {
+  name: string
+  labels: object
+}
+
+export class NamespaceData {
+  titile = ''
+  visible = false
+  loading = false
+  namespace?: Namespace
+  selectData: Namespace[] = []
+}
+
+export class NamespaceFormData {
+  metadata: NamespaceForm = {
+    name: '',
+    labels: {}
+  }
+}

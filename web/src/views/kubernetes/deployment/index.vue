@@ -36,25 +36,26 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="镜像" width="400px">
+      <el-table-column label="镜像" width="540px">
         <template #default="scope">
           <el-tag
             type="success"
             v-for="(item, index) in scope.row.spec.template.spec.containers"
             :key="index"
-            >{{ item.image }}</el-tag
+            >{{ item.image.split('@')[0] }}</el-tag
           >
         </template>
       </el-table-column>
 
-      <el-table-column label="标签" width="180px">
+      <el-table-column label="标签" width="280px">
         <template #default="scope">
           <el-tag
             type="info"
-            v-for="(item, index) in scope.row.metadata.lbaels"
+            v-for="(item, key, index) in scope.row.metadata.labels"
             :key="index"
-            >{{ item }}</el-tag
           >
+            {{ key }}:{{ item }}
+          </el-tag>
         </template>
       </el-table-column>
 
@@ -63,17 +64,17 @@
           {{ scope.row.status.readyReplicas }}/{{ scope.row.status.replicas }}
         </template>
       </el-table-column>
-      <el-table-column
-        prop="metadata.creationTimestamp"
-        label="创建时间"
-        width="180px"
-      />
+      <el-table-column label="创建时间" width="180px">
+        <template #default="scope">
+          {{ $filters.dateFormat(scope.row.metadata.creationTimestamp) }}
+        </template>
+      </el-table-column>
     </el-table>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted, ref } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { deploymentApi } from '../api'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
 import { nsStore } from '@/store/kubernetes/namespace'
@@ -84,13 +85,7 @@ onMounted(() => {
   listDeployment()
 })
 
-// const query = reactive({
-//   namespace: ns.activeNamespace,
-//   cloud: kube.activeCluster
-// })
 const data = reactive(new Data())
-
-// const delploys = reactive(new deploymentData())
 
 const handleSelectionChange = (value: Deployment[]) => {
   data.selectData = value
@@ -102,8 +97,8 @@ const listDeployment = async () => {
     data.loading = true
     await deploymentApi.list.request(data.query).then((res) => {
       data.Deployments = res.data.items
-      data.loading = false
     })
+    data.loading = false
   } catch (error) {
     console.log(error)
   }

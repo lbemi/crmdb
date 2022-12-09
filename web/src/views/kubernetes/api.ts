@@ -39,3 +39,17 @@ export const nodeApi = {
   list: Api.create('/node', 'get'),
   get: Api.create('/node/{nodeName}', 'get')
 }
+
+/*
+	// event 事件路由
+	event := group.Group("/event")
+	{
+		event.GET("/:namespace", cloud.ListEvents)
+		event.GET("/:namespace/:name", cloud.GetEvent)
+	}
+*/
+
+export const eventApi = {
+  list: Api.create('/event/{namespace}', 'get'),
+  get: Api.create('/event/{namespace}/{name}', 'get')
+}

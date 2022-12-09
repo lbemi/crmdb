@@ -122,4 +122,11 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		configMap.PUT("", cloud.UpdateConfigMap)
 		configMap.DELETE("/:namespace/:configMapName", cloud.DeleteConfigMap)
 	}
+
+	// event 事件路由
+	event := group.Group("/event")
+	{
+		event.GET("/:namespace", cloud.ListEvents)
+		event.GET("/:namespace/:name", cloud.GetEvent)
+	}
 }
