@@ -41,6 +41,7 @@ type ICluster interface {
 	kuberntetes.CronJobGetter
 	kuberntetes.ConfigMapGetter
 	kuberntetes.IngressesGetter
+	kuberntetes.EventGetter
 }
 
 type cluster struct {
@@ -48,6 +49,12 @@ type cluster struct {
 	clusterName string
 }
 
+func (c *cluster) Events(namespace string) kuberntetes.IEvent {
+	if namespace == "all" {
+		namespace = ""
+	}
+	return kuberntetes.NewEvent(c.getClient(c.clusterName).ClientSet, namespace)
+}
 func (c *cluster) Ingresses(namespace string) kuberntetes.IIngresses {
 	if namespace == "" {
 		namespace = "default"

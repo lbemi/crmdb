@@ -122,6 +122,14 @@ const genRouters = (menus: MenuObj[]) => {
             meta: {
               title: 'deployments'
             }
+          },
+          {
+            path: '/namespace',
+            name: 'namespaces',
+            component: () => import('../views/kubernetes/namespace/index.vue'),
+            meta: {
+              title: 'namespaces'
+            }
           }
         ]
       }

@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { UserForm, RoleInfo, RoleFrom } from '@/type/sys'
+import { RoleInfo, RoleFrom } from '@/type/sys'
 import { FormInstance, FormRules, ElMessage } from 'element-plus'
 import { ref, reactive, watch } from 'vue'
 import { roleApi } from '../../api'
