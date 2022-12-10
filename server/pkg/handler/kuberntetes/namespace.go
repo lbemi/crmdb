@@ -16,6 +16,7 @@ type INamespace interface {
 	List(ctx context.Context) (*v1.NamespaceList, error)
 	Get(ctx context.Context, name string) (*v1.Namespace, error)
 	Create(ctx context.Context, obj *v1.Namespace) (*v1.Namespace, error)
+	Update(ctx context.Context, obj *v1.Namespace) (*v1.Namespace, error)
 	Delete(ctx context.Context, name string) error
 }
 
@@ -43,6 +44,14 @@ func (n *namespace) Get(ctx context.Context, name string) (*v1.Namespace, error)
 
 func (n *namespace) Create(ctx context.Context, obj *v1.Namespace) (*v1.Namespace, error) {
 	newNamespace, err := n.cli.ClientSet.CoreV1().Namespaces().Create(ctx, obj, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	return newNamespace, err
+}
+
+func (n *namespace) Update(ctx context.Context, obj *v1.Namespace) (*v1.Namespace, error) {
+	newNamespace, err := n.cli.ClientSet.CoreV1().Namespaces().Update(ctx, obj, metav1.UpdateOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
