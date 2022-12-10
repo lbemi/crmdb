@@ -6,11 +6,11 @@
       v-auth="'sys:user:add'"
       type="primary"
       :icon="Edit"
-      style="margin-bottom: 10px;"
+      style="margin-bottom: 10px"
       @click="addUser"
       >添加用户</el-button
     >
-    <el-table :data="userList" border style="width: 100%;" v-loading="loading">
+    <el-table :data="userList" border style="width: 100%" v-loading="loading">
       <el-table-column prop="id" label="ID" min-width="180px" />
       <el-table-column prop="user_name" label="名称" min-width="180px" />
       <el-table-column prop="description" label="描述" min-width="180px" />
@@ -28,10 +28,9 @@
             v-auth="'sys:user:status'"
             class="ml-2"
             style="
-
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-"
+            "
             :active-value="1"
             :inactive-value="2"
             size="small"

@@ -80,6 +80,7 @@ func CreateNamespace(c *gin.Context) {
 	var namespace v1.Namespace
 	err := c.ShouldBindJSON(&namespace)
 	if err != nil {
+		log.Logger.Error(err)
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
@@ -89,6 +90,33 @@ func CreateNamespace(c *gin.Context) {
 	}
 
 	newNamespace, err := core.V1.Cluster(clusterName).Namespaces().Create(c, &namespace)
+	if err != nil {
+		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
+		return
+	}
+
+	response.Success(c, response.StatusOK, newNamespace)
+}
+
+func UpdateNamespace(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	var namespace v1.Namespace
+	err := c.ShouldBindJSON(&namespace)
+	if err != nil {
+		log.Logger.Error(err)
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	newNamespace, err := core.V1.Cluster(clusterName).Namespaces().Update(c, &namespace)
 	if err != nil {
 		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return

@@ -13,7 +13,7 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="35" />
-      <el-table-column fixed prop="metadata.name" label="名称" width="150" />
+      <el-table-column prop="metadata.name" label="名称" width="150" />
       <el-table-column prop="metadata.labels" label="标签" width="500">
         <template #default="scope">
           <el-tag
@@ -57,18 +57,29 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" width="160">
+      <el-table-column label="创建时间" width="170">
         <template #default="scope">
           {{ $filters.dateFormat(scope.row.metadata.creationTimestamp) }}
         </template>
       </el-table-column>
       <el-table-column fixed="right" label="操作" width="220">
-        <template #default>
+        <template #default="scope">
           <el-button link type="primary" size="small">资源配额与限制</el-button
           ><el-divider direction="vertical" />
-          <el-button link type="primary" size="small">编辑</el-button
+          <el-button
+            link
+            type="primary"
+            size="small"
+            @click="updateNamespace(scope.row)"
+            >编辑</el-button
           ><el-divider direction="vertical" />
-          <el-button link type="primary" size="small">删除</el-button>
+          <el-button
+            link
+            type="danger"
+            size="small"
+            @click="deleteNamespace(scope.row)"
+            >删除</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -77,8 +88,9 @@
   <NamespaceDialog
     :title="data.titile"
     v-model:visible="data.visible"
-    v-model:namespace="data.namespace"
+    :namespace="data.namespace"
     @value-change="ns.listNamespace()"
+    v-if="data.visible"
   />
 </template>
 
@@ -87,8 +99,12 @@ import { nsStore } from '@/store/kubernetes/namespace'
 import { reactive } from 'vue'
 import { NamespaceData, Namespace } from '@/type/namespace'
 import NamespaceDialog from './component/dialog.vue'
+import { namespacerApi } from '../api'
+import { kubeStore } from '@/store/kubernetes/kubernetes'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const ns = nsStore()
+const kube = kubeStore()
 const data = reactive(new NamespaceData())
 const handleSelectionChange = (value: Namespace[]) => {
   data.selectData = value
@@ -96,9 +112,35 @@ const handleSelectionChange = (value: Namespace[]) => {
 
 const createNamespace = () => {
   data.titile = '创建命名空间'
-  console.log(data.visible)
-
   data.visible = true
+}
+
+const updateNamespace = (namespace: Namespace) => {
+  data.titile = '更新命名空间'
+  data.namespace = namespace
+  data.visible = true
+}
+const deleteNamespace = (namespace: Namespace) => {
+  ElMessageBox.confirm(
+    `此操作将删除[ ${namespace.metadata.name} ]命名空间 . 是否继续?`,
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      draggable: true
+    }
+  )
+    .then(() => {
+      namespacerApi.delete
+        .request({ cloud: kube.activeCluster, name: namespace.metadata.name })
+        .then((res) => {
+          ns.listNamespace()
+          ElMessage.success(res.message)
+        })
+        .catch()
+    })
+    .catch() // 取消
 }
 </script>
 

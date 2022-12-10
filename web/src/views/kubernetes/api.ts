@@ -11,6 +11,7 @@ export const namespacerApi = {
   list: Api.create('/namespace', 'get'),
   get: Api.create('/namespace/{name}', 'get'),
   create: Api.create('/namespace', 'post'),
+  update: Api.create('/namespace', 'put'),
   delete: Api.create('/namespace/{name}', 'delete')
 }
 

@@ -12,7 +12,7 @@ export interface Metadata {
   uid: string
   resourceVersion: string
   creationTimestamp: string
-  labels: object
+  labels: { [index: string]: string }
   managedFields: ManagedField[]
 }
 
@@ -31,7 +31,7 @@ export interface Namespace {
 }
 export interface NamespaceForm {
   name: string
-  labels: object
+  labels: { [index: string]: string }
 }
 
 export class NamespaceData {

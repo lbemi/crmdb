@@ -130,6 +130,14 @@ const genRouters = (menus: MenuObj[]) => {
             meta: {
               title: 'namespaces'
             }
+          },
+          {
+            path: '/node',
+            name: 'node',
+            component: () => import('../views/kubernetes/node/index.vue'),
+            meta: {
+              title: 'node'
+            }
           }
         ]
       }

@@ -1,17 +1,17 @@
 <template>
   <div>
-    <h2>Vue3 + Element plus 动态修改表格</h2>
-    <h3>「卡拉云 - 极速搭建企业内部工具，十倍提升开发效率」</h3>
     <el-table :data="tableData" style="width: 100%">
       <el-table-column
         :prop="item.prop"
         :label="item.label"
-        v-for="(item, index) in tableHeader"
+        v-for="item in tableHeader"
         :key="item.prop"
       >
         <template #default="scope">
           <div
-            v-show="item.editable || scope.row.editable"
+            v-show="
+              item.editable || scope.row.editable || tableData.length == 0
+            "
             class="editable-row"
           >
             <template v-if="item.type === 'input'">
@@ -24,39 +24,12 @@
             </template>
           </div>
           <div
-            v-show="!item.editable && !scope.row.editable"
+            v-show="
+              (!item.editable && !scope.row.editable) || tableData.length == 0
+            "
             class="editable-row"
           >
             <span class="editable-row-span">{{ scope.row[item.prop] }}</span>
-            <el-popover
-              placement="right"
-              :width="120"
-              trigger="hover"
-              content="this is content, this is content, this is content"
-            >
-              <template #reference>
-                <el-icon class="icon" :size="18">
-                  <Edit />
-                </el-icon>
-              </template>
-              <div class="menu-list">
-                <div class="menu-item" @click="prepend(scope.$index)">
-                  上方插入一行
-                </div>
-                <div class="menu-item divider" @click="append(scope.$index)">
-                  下方插入一行
-                </div>
-                <div class="menu-item" @click="deleteCurrentColumn(index)">
-                  删除当前列
-                </div>
-                <div class="menu-item" @click="insertBefore(index)">
-                  前方插入一列
-                </div>
-                <div class="menu-item" @click="insertAfter(index)">
-                  后方插入一列
-                </div>
-              </div>
-            </el-popover>
           </div>
         </template>
       </el-table-column>
@@ -67,6 +40,12 @@
             size="small"
             @click="scope.row.editable = true"
             >编辑</el-button
+          >
+          <el-button
+            v-show="tableData.length == 0"
+            size="small"
+            @click="append(scope.$index)"
+            >添加</el-button
           >
           <el-button
             v-show="scope.row.editable"
@@ -88,13 +67,10 @@
 </template>
 
 <script>
+import { onMounted } from 'vue'
 const item = {
-  name: '',
-  birth: '',
-  province: '',
-  city: '',
-  address: '',
-  phone: ''
+  key: '',
+  value: ''
 }
 const header = {
   prop: 'key',
@@ -108,30 +84,31 @@ export default {
     return {
       tableHeader: [
         {
-          prop: 'name',
-          label: '姓名',
+          prop: 'key',
+          label: '变量名称',
           editable: false,
           type: 'input'
         },
         {
-          prop: 'province',
-          label: '省份',
+          prop: 'value',
+          label: '变量值',
           editable: false,
           type: 'input'
         }
       ],
       tableData: [
         {
-          name: '张三',
-          province: '上海市'
+          key: '张三',
+          value: '上海市'
         },
         {
-          name: '李四',
-          province: '上海市'
+          key: '李四',
+          value: '上海市'
         }
       ]
     }
   },
+
   methods: {
     handleEdit(row) {
       row.editable = true
@@ -139,25 +116,25 @@ export default {
     handleDelete(index) {
       this.tableData.splice(index, 1)
     },
-    prepend(index) {
-      item.editable = true
-      this.tableData.splice(index, 0, item)
-    },
+    // prepend(index) {
+    //   item.editable = true
+    //   this.tableData.splice(index, 0, item)
+    // },
     append(index) {
       item.editable = true
       this.tableData.splice(index + 1, 0, item)
     },
     deleteCurrentColumn(index) {
       this.tableHeader.splice(index, 1)
-    },
-    insertBefore(index) {
-      header.editable = true
-      this.tableHeader.splice(index, 0, header)
-    },
-    insertAfter(index) {
-      header.editable = true
-      this.tableHeader.splice(index + 1, 0, header)
     }
+    // insertBefore(index) {
+    //   header.editable = true
+    //   this.tableHeader.splice(index, 0, header)
+    // },
+    // insertAfter(index) {
+    //   header.editable = true
+    //   this.tableHeader.splice(index + 1, 0, header)
+    // }
   }
 }
 </script>
@@ -166,19 +143,23 @@ export default {
 .edit-icon {
   cursor: pointer;
 }
+
 .editable-row {
   display: flex;
   align-items: center;
 }
+
 .editable-row-span {
   display: inline-block;
   margin-right: 6px;
 }
+
 .menu-item {
   height: 32px;
   line-height: 32px;
   padding-left: 12px;
 }
+
 .menu-item:hover {
   color: #fff;
   background: #409eff;

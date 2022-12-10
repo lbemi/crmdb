@@ -98,10 +98,10 @@ const listDeployment = async () => {
     await deploymentApi.list.request(data.query).then((res) => {
       data.Deployments = res.data.items
     })
-    data.loading = false
   } catch (error) {
     console.log(error)
   }
+  data.loading = false
 }
 const handleChange = () => {
   data.query.namespace = ns.activeNamespace

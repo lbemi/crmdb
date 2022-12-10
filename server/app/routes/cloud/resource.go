@@ -13,6 +13,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		namespace.GET("", cloud.ListNamespace)
 		namespace.GET("/:name", cloud.GetNamespace)
 		namespace.POST("", cloud.CreateNamespace)
+		namespace.PUT("", cloud.UpdateNamespace)
 		namespace.DELETE("/:name", cloud.DeleteNamespace)
 	}
 
