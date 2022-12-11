@@ -132,13 +132,12 @@ const getNamespace = () => {
   align-items: center;
   justify-items: center;
   width: auto !important;
-  /** 宽度自适应 */
   text-align: center;
   flex-direction: column;
   height: 100%;
   padding: 0;
   .in-menu:not(.el-menu--collapse) {
-    width: 180px;
+    width: 200px;
     height: calc(100vh - 170px);
   }
 }
