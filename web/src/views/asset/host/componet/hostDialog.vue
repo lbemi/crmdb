@@ -4,14 +4,14 @@
     v-model="visible"
     @close="handleClose(hostFormRef)"
     :title="title"
-    style="width: 400px;"
+    style="width: 400px"
   >
     <el-form
       label-width="100px"
       ref="hostFormRef"
       :rules="hsotFormRules"
       :model="form"
-      style="max-width: 300px;"
+      style="max-width: 300px"
     >
       <el-form-item label="主机IP:" prop="ip">
         <el-input v-model="form.ip" />
@@ -81,16 +81,15 @@
           + 添加标签
         </el-button>
       </el-form-item>
-      <div style="display: flex;">
+      <div style="display: flex">
         <el-form-item label="状态:">
           <el-switch
             v-model="form.status"
             class="ml-2"
             style="
-
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-"
+            "
             :active-value="1"
             :inactive-value="2"
             size="large"
@@ -104,10 +103,9 @@
             v-model="form.enable_ssh"
             class="ml-2"
             style="
-
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-"
+            "
             :active-value="1"
             :inactive-value="2"
             size="large"
