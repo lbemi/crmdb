@@ -95,7 +95,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column fixed="right" label="操作" min-width="300px">
+        <el-table-column fixed="right" label="操作" min-width="250px">
           <template #default="scope">
             <el-button
               v-auth="'sys:menu:edit'"

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { clusterInfo } from '@/type/container'
+import { clusterInfo } from '@/type/cluster'
 
 export const deployStore = defineStore('deploy', () => {
   const activeCluster = ref<clusterInfo>()

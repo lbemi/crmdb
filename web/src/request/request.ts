@@ -2,7 +2,6 @@ import axios, { AxiosRequestConfig, AxiosRequestHeaders } from 'axios'
 import { ElMessage } from 'element-plus'
 import { ResultEnum } from './enums'
 import Api from './api'
-import { ErrorCodes, ref } from 'vue'
 
 const service = axios.create({
   baseURL: 'http://127.0.0.1:8080/api/v1',
@@ -11,7 +10,7 @@ const service = axios.create({
 })
 export interface Response {
   code: number
-  data?: any
+  data?: object
   message: string
 }
 
@@ -67,10 +66,10 @@ export const request = async (
   if (!url) {
     throw new Error('请求url不能为空')
   }
-  const flag = ref(false)
+  let flag = false
   // 简单判断该url是否是restful风格
   if (url.indexOf('{') != -1) {
-    flag.value = true
+    flag = true
     url = templateResolve(url, params)
   }
 
@@ -84,15 +83,23 @@ export const request = async (
   const lowMehtod = method.toLowerCase()
 
   if (lowMehtod === 'post' || lowMehtod === 'put') {
-    if (!flag.value) {
+    if (flag) {
       query.data = options
       query.params = params
-      flag.value = false
+      flag = false
     } else {
-      query.data = params
+      if (headers) {
+        query.data = params
+      } else if (params && options) {
+        query.data = options
+        query.params = params
+      } else if (params && !options) {
+        query.data = params
+      }
     }
   } else {
-    if (flag.value) {
+    if (!flag) {
+      query.data = options
       query.params = params
     } else {
       query.params = params

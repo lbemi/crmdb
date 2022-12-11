@@ -127,4 +127,7 @@ table {
   color: #333333;
   font-size: 14px;
 }
+.el-tabs__content {
+  padding: 0;
+}
 </style>
