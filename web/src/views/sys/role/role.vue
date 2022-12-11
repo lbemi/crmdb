@@ -5,7 +5,7 @@
       v-auth="'sys:role:add'"
       type="primary"
       :icon="Edit"
-      style="margin-bottom: 10px;"
+      style="margin-bottom: 10px"
       @click="addRole"
       >添加角色</el-button
     >
@@ -13,7 +13,7 @@
       stripe
       :data="roleList"
       border
-      style="width: 100%;"
+      style="width: 100%"
       v-loading="loading"
       row-key="id"
     >
@@ -33,10 +33,9 @@
             v-model="scope.row.status"
             class="ml-2"
             style="
-
               --el-switch-on-color: #409eff;
               --el-switch-off-color: #ff4949;
-"
+            "
             :active-value="1"
             :inactive-value="2"
             size="small"
@@ -48,7 +47,7 @@
           />
         </template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作" min-width="300px">
+      <el-table-column fixed="right" label="操作" min-width="320px">
         <template #default="scope">
           <el-button
             v-auth="'sys:role:edit'"

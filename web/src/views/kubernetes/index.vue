@@ -51,7 +51,9 @@
           </template>
         </el-menu>
       </el-aside>
-      <router-view></router-view>
+      <el-main>
+        <router-view></router-view>
+      </el-main>
     </el-container>
   </el-card>
 </template>
@@ -136,7 +138,7 @@ const getNamespace = () => {
   height: 100%;
   padding: 0;
   .in-menu:not(.el-menu--collapse) {
-    width: 160px;
+    width: 180px;
     height: calc(100vh - 170px);
   }
 }
@@ -161,5 +163,8 @@ const getNamespace = () => {
     padding-right: 20px;
     padding-bottom: 20px;
   }
+}
+.el-main {
+  padding-top: 0px;
 }
 </style>
