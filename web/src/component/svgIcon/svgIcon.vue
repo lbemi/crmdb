@@ -1,14 +1,12 @@
 /** * Created by lei on 2022/11/08 */
 <template>
-  <div>
-    <svg :class="svgClass" aria-hidden="true">
-      <use :xlink:href="iconClassName" :fill="color"></use>
-    </svg>
-  </div>
+  <svg :class="svgClass" aria-hidden="true">
+    <use :xlink:href="iconClassName" :fill="color"></use>
+  </svg>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   iconName: {
@@ -40,6 +38,7 @@ const svgClass = computed(() => {
 <style scoped lang="less">
 .svg-icon {
   position: relative;
+  align-items: center;
   width: 1em;
   height: 1em;
   // fill: currentColor;
@@ -47,6 +46,7 @@ const svgClass = computed(() => {
 
 .icon-1-4em {
   position: relative;
+  left: 30%;
   width: 1.4em;
   height: 1.4em;
 }

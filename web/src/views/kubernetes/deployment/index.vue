@@ -26,6 +26,7 @@
       style="width: 100%"
       @selection-change="handleSelectionChange"
       v-loading="data.loading"
+      max-height="100vh - 235px"
     >
       <el-table-column type="selection" width="55" />
       <el-table-column prop="metadata.name" label="名称" width="220px">

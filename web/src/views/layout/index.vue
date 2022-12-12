@@ -8,7 +8,7 @@
           :default-active="routeActive"
           :unique-opened="true"
           :router="true"
-          :collapse="isCollapse"
+          :collapse="store.isCollapse"
         >
           <el-icon style="width: 100%">
             <img
@@ -57,7 +57,7 @@
             </el-sub-menu>
           </template>
           <el-affix target=".el-menu" position="bottom">
-            <el-icon @click="isCollapse = !isCollapse">
+            <el-icon @click="store.isCollapse = !store.isCollapse">
               <SvgIcon iconName="icon-zhankaicaidan" className="icon-1-4em" />
             </el-icon>
           </el-affix>
@@ -97,7 +97,6 @@ const route = useRoute()
 const routeActive = ref()
 routeActive.value = route.path
 const store = useStore()
-const isCollapse = ref<boolean>(false)
 </script>
 
 <style scoped lang="less">
@@ -107,11 +106,13 @@ const isCollapse = ref<boolean>(false)
   height: 100vh;
   text-align: center;
   flex-direction: column;
+
   .el-menu:not(.el-menu--collapse) {
     width: 200px;
     height: 100%;
   }
 }
+
 .el-header {
   height: 40px;
 }

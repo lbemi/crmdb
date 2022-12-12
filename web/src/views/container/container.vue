@@ -87,7 +87,8 @@ import { clusterInfo } from '@/type/cluster'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import router from '@/router'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
-
+import { useStore } from '@/store/usestore'
+const store = useStore()
 const kube = kubeStore()
 const createData = reactive({
   dialogVisable: false,
@@ -141,6 +142,7 @@ const handlerDelete = async (cluster: clusterInfo) => {
 const handleCluser = (cluster: clusterInfo) => {
   kube.activeCluster = cluster.name
   kube.clusters = data.clusters
+  store.isCollapse = true
   router.push({
     name: 'kubernetes'
   })
