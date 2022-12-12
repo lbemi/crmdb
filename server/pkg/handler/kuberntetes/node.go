@@ -6,7 +6,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v12 "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
 type NodeGetter interface {
@@ -18,6 +17,7 @@ type INode interface {
 	Get(ctx context.Context, name string) (*v1.Node, error)
 	Delete(ctx context.Context, name string) error
 	Create(ctx context.Context, node *v1.Node) (*v1.Node, error)
+	Update(ctx context.Context, node *v1.Node) (*v1.Node, error)
 }
 
 type node struct {
@@ -56,13 +56,14 @@ func (n *node) Create(ctx context.Context, node *v1.Node) (*v1.Node, error) {
 	return res, err
 }
 
-func (n *node) Patch(ctx context.Context, node *v12.NodeApplyConfiguration) (*v1.Node, error) {
-	res, err := n.cli.ClientSet.CoreV1().Nodes().Apply(ctx, node, metav1.ApplyOptions{})
+func (n *node) Update(ctx context.Context, node *v1.Node) (*v1.Node, error) {
+	res, err := n.cli.ClientSet.CoreV1().Nodes().Update(ctx, node, metav1.UpdateOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
 	return res, err
 }
+
 func NewNode(cli *cloud.Clients) *node {
 	return &node{cli: cli}
 }

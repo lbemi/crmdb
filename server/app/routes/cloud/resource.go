@@ -82,6 +82,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	{
 		node.GET("", cloud.ListNodes)
 		node.GET("/:nodeName", cloud.GetNode)
+		node.PUT("", cloud.UpdateNode)
 	}
 
 	// service 资源路由
