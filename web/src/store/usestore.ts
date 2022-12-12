@@ -14,7 +14,7 @@ export const useStore = defineStore(
   () => {
     const menus = ref<MenuObj[]>([])
     const permissions = ref<Array<string>>([])
-
+    const isCollapse = ref<boolean>(false)
     const getLeftMenus = async () => {
       await userApi.listMenus.request().then((res) => {
         menus.value = res.data
@@ -25,7 +25,7 @@ export const useStore = defineStore(
         permissions.value = res.data
       })
     }
-    return { menus, permissions, getLeftMenus, getUserPermissions }
+    return { menus, permissions, isCollapse, getLeftMenus, getUserPermissions }
   },
   {
     persist: {

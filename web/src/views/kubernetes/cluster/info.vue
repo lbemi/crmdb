@@ -127,4 +127,7 @@ table {
   color: #333333;
   font-size: 14px;
 }
+.info {
+  max-height: calc(100vh - 200px);
+}
 </style>
