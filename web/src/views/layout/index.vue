@@ -28,7 +28,7 @@
               :index="menu.url"
               :key="menu.id"
             >
-              <el-icon style="margin-right: 10px; width: 0.5em; height: 0.5em">
+              <el-icon style="margin-right: 15px; width: 0.5em; height: 0.5em">
                 <SvgIcon :iconName="menu.icon" />
               </el-icon>
               <template #title>{{ menu.name }}</template>
@@ -36,7 +36,7 @@
             <el-sub-menu v-else :index="menu.id + ''" :key="menu.url">
               <template #title>
                 <el-icon
-                  style="margin-right: 10px; width: 0.5em; height: 0.5em"
+                  style="margin-right: 15px; width: 0.5em; height: 0.5em"
                 >
                   <SvgIcon :iconName="menu.icon" />
                 </el-icon>
@@ -48,7 +48,7 @@
                 :key="child.id"
               >
                 <el-icon
-                  style="margin-right: 10px; width: 0.5em; height: 0.5em"
+                  style="margin-right: 15px; width: 0.5em; height: 0.5em"
                 >
                   <SvgIcon :iconName="child.icon" />
                 </el-icon>
@@ -57,7 +57,10 @@
             </el-sub-menu>
           </template>
           <el-affix target=".el-menu" position="bottom">
-            <el-icon @click="store.isCollapse = !store.isCollapse">
+            <el-icon
+              @click="store.isCollapse = !store.isCollapse"
+              class="icon-zhankai"
+            >
               <SvgIcon iconName="icon-zhankaicaidan" className="icon-1-4em" />
             </el-icon>
           </el-affix>
@@ -115,5 +118,8 @@ const store = useStore()
 
 .el-header {
   height: 40px;
+}
+.icon-zhankai {
+  // text-align: center;
 }
 </style>

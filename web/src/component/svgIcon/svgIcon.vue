@@ -1,8 +1,10 @@
 /** * Created by lei on 2022/11/08 */
 <template>
-  <svg :class="svgClass" aria-hidden="true">
-    <use :xlink:href="iconClassName" :fill="color"></use>
-  </svg>
+  <div class="svg">
+    <svg :class="svgClass" aria-hidden="true">
+      <use :xlink:href="iconClassName" :fill="color"></use>
+    </svg>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -37,7 +39,10 @@ const svgClass = computed(() => {
 
 <style scoped lang="less">
 .svg-icon {
-  position: relative;
+  position: flex;
+  margin-left: 10px;
+  justify-items: center;
+  align-items: center;
   width: 1em;
   height: 1em;
   // fill: currentColor;
@@ -52,6 +57,7 @@ const svgClass = computed(() => {
 
 .icon-2-4em {
   position: relative;
+  left: 30%;
   width: 2.4em;
   height: 2.4em;
 }
