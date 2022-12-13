@@ -62,7 +62,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="icon" label="图标" width="60">
+        <el-table-column prop="icon" label="图标" width="60" align="center">
           <template #default="scope">
             <SvgIcon :iconName="scope.row.icon" :color="'#79bbff'" />
           </template>
