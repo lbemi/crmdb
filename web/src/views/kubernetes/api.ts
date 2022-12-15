@@ -38,7 +38,8 @@ export const deploymentApi = {
 */
 export const nodeApi = {
   list: Api.create('/node', 'get'),
-  get: Api.create('/node/{nodeName}', 'get')
+  get: Api.create('/node/{nodeName}', 'get'),
+  update: Api.create('/node', 'put'),
 }
 
 /*

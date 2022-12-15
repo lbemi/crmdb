@@ -120,9 +120,23 @@ onMounted(() => {
 })
 const handleEdit = (index: number, row: header) => {
   row.editable = true
+  clickTap()
+
 }
 const handleDelete = (index: number) => {
   table.tableData.splice(index, 1)
+  clickTap()
+}
+
+const emit =defineEmits(['on-click'])
+const clickTap = () => {
+  let labels:{ [index: string]: string } = {}
+  for (const k in table.tableData) {
+    if (table.tableData[k].key != '') {
+      labels[table.tableData[k].key] = table.tableData[k].value
+    }
+  }
+  emit('on-click',labels)
 }
 const append = (index: number) => {
   item.editable = false
@@ -135,11 +149,13 @@ const append = (index: number) => {
   item.value = ''
   item.editable = true
   table.tableData.splice(table.tableData.length + 1, 0, item)
-  console.log('+++++++', table.tableData)
+  clickTap()
 }
+
 const add = (header: header) => {
   header.editable = false
 }
+
 </script>
 
 <style scoped lang="less">
