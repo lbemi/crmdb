@@ -2,6 +2,7 @@ package cloud
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
 	v1 "k8s.io/api/core/v1"
@@ -56,10 +57,11 @@ func UpdateNode(c *gin.Context) {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
-	
+
 	var nodeInfo v1.Node
-	err := c.ShouldBindJSON(nodeInfo)
+	err := c.ShouldBindJSON(&nodeInfo)
 	if err != nil {
+		log.Logger.Error(err)
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}

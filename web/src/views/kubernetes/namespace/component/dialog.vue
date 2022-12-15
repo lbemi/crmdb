@@ -249,7 +249,6 @@ watch(
         table.tableData.push(l)
       }
     }
-    console.log(table.tableData)
   },
   {
     immediate: true,

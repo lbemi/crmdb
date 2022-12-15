@@ -233,13 +233,15 @@
     v-model:visible="updateLabelsData.visible"
     :title="updateLabelsData.title"
     :data="updateLabelsData.data"
+    :cloud="kube.activeCluster"
     vi-if="updateLabelsData.visible"
+    @valuechange="listNodes()"
   />
 </template>
 
 <script setup lang="ts">
 import { kubeStore } from '@/store/kubernetes/kubernetes'
-import { reactive } from 'vue'
+import { reactive,onMounted } from 'vue'
 import { nodeApi } from '../api'
 import { NodeData, Node } from '@/type/node'
 import { InfoFilled, CaretBottom } from '@element-plus/icons-vue'
@@ -251,18 +253,26 @@ const updateLabelsData = reactive({
   title: '修改标签',
   data: {} as Node
 })
-nodeApi.list
-  .request({ cloud: kube.activeCluster })
-  .then((result) => {
-    data.nodes = result.data.items
-  })
-  .catch((err) => {
-    console.log(err)
-  })
+
+onMounted(()=>{
+  listNodes()
+})
+const listNodes = () => {
+  nodeApi.list
+    .request({ cloud: kube.activeCluster })
+    .then((result) => {
+      data.nodes = result.data.items
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+}
+
 const updateLabels = (node: Node) => {
   updateLabelsData.visible = true
   updateLabelsData.data = node
 }
+
 </script>
 
 <style scoped lang="less">
