@@ -12,7 +12,7 @@ export interface Metadata {
   uid: string
   resourceVersion: string
   creationTimestamp: string
-  labels: object
+  labels: { [index: string]: string }
   annotations: object
   managedFields: ManagedField[]
 }

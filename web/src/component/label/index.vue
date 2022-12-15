@@ -75,14 +75,6 @@
 
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue'
-
-const item = reactive({
-  key: '',
-  editable: false,
-  value: '',
-  addStatus: false
-})
-
 interface label {
   key: string
   value: string
@@ -93,6 +85,16 @@ interface header {
   editable: boolean
   type: string
 }
+const props = defineProps<{
+  tableData: label[]
+}>()
+const item = reactive({
+  key: '',
+  editable: false,
+  value: '',
+  addStatus: false
+})
+
 const table = reactive({
   tableHeader: [
     {
@@ -111,9 +113,10 @@ const table = reactive({
   tableData: [] as label[]
 })
 onMounted(() => {
+  table.tableData = JSON.parse(JSON.stringify(props.tableData))
   item.editable = true
   item.addStatus = true
-  table.tableData.splice(table.tableData.length, 0, item)
+  table.tableData.splice(props.tableData.length, 0, item)
 })
 const handleEdit = (index: number, row: header) => {
   row.editable = true
