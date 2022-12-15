@@ -206,7 +206,7 @@
     </el-table-column>
 
     <el-table-column fixed="right" label="操作" width="130">
-      <template #default>
+      <template #default="scope">
         <div style="display: flex; align-items: center">
           <el-button link type="primary" size="default">详情</el-button>
           <el-divider direction="vertical" />
@@ -216,7 +216,9 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>修改标签</el-dropdown-item>
+                <el-dropdown-item @click="updateLabels(scope.row)"
+                  >修改标签</el-dropdown-item
+                >
                 <el-dropdown-item>添加污点</el-dropdown-item>
                 <el-dropdown-item>是否可调度</el-dropdown-item>
                 <el-dropdown-item>删除节点</el-dropdown-item>
@@ -227,25 +229,40 @@
       </template>
     </el-table-column>
   </el-table>
+  <Labels
+    v-model:visible="updateLabelsData.visible"
+    :title="updateLabelsData.title"
+    :data="updateLabelsData.data"
+    vi-if="updateLabelsData.visible"
+  />
 </template>
 
 <script setup lang="ts">
 import { kubeStore } from '@/store/kubernetes/kubernetes'
 import { reactive } from 'vue'
 import { nodeApi } from '../api'
-import { NodeData } from '@/type/node'
+import { NodeData, Node } from '@/type/node'
 import { InfoFilled, CaretBottom } from '@element-plus/icons-vue'
+import Labels from './component/lables.vue'
 const kube = kubeStore()
 const data = reactive(new NodeData())
+const updateLabelsData = reactive({
+  visible: false,
+  title: '修改标签',
+  data: {} as Node
+})
 nodeApi.list
   .request({ cloud: kube.activeCluster })
   .then((result) => {
     data.nodes = result.data.items
-    console.log(data.nodes)
   })
   .catch((err) => {
     console.log(err)
   })
+const updateLabels = (node: Node) => {
+  updateLabelsData.visible = true
+  updateLabelsData.data = node
+}
 </script>
 
 <style scoped lang="less">
