@@ -241,7 +241,7 @@
 
 <script setup lang="ts">
 import { kubeStore } from '@/store/kubernetes/kubernetes'
-import { reactive,onMounted } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { nodeApi } from '../api'
 import { NodeData, Node } from '@/type/node'
 import { InfoFilled, CaretBottom } from '@element-plus/icons-vue'
@@ -254,7 +254,7 @@ const updateLabelsData = reactive({
   data: {} as Node
 })
 
-onMounted(()=>{
+onMounted(() => {
   listNodes()
 })
 const listNodes = () => {
@@ -272,7 +272,6 @@ const updateLabels = (node: Node) => {
   updateLabelsData.visible = true
   updateLabelsData.data = node
 }
-
 </script>
 
 <style scoped lang="less">

@@ -40,6 +40,7 @@ export const nodeApi = {
   list: Api.create('/node', 'get'),
   get: Api.create('/node/{nodeName}', 'get'),
   update: Api.create('/node', 'put'),
+  patch: Api.create('/node', 'patch')
 }
 
 /*

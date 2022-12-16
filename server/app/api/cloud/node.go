@@ -78,3 +78,37 @@ func UpdateNode(c *gin.Context) {
 
 	response.Success(c, response.StatusOK, list)
 }
+
+func PatchNode(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	type patchNode struct {
+		name   string            `json:"name"`
+		labels map[string]string `json:"labels"`
+	}
+
+	var patchData patchNode
+	err := c.ShouldBindJSON(&patchData)
+	log.Logger.Info("----", c.Param("name"))
+	if err != nil {
+		log.Logger.Error(err)
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	list, err := core.V1.Cluster(clusterName).Nodes().Patch(c, patchData.name, patchData.labels)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	response.Success(c, response.StatusOK, list)
+}

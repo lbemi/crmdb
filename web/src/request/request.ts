@@ -82,7 +82,7 @@ export const request = async (
   }
   const lowMehtod = method.toLowerCase()
 
-  if (lowMehtod === 'post' || lowMehtod === 'put') {
+  if (lowMehtod != 'get') {
     if (flag) {
       query.data = options
       query.params = params
