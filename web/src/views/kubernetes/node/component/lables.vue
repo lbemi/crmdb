@@ -1,7 +1,12 @@
 /** * Created by lei on 2022/12/15 */
 <template>
-  <el-dialog v-model="visible" :title="title" width="30%" :before-close="handleClose">
-    <Lables v-model:tableData="labels"  @on-click="getLabels" v-if="visible"/>
+  <el-dialog
+    v-model="visible"
+    :title="title"
+    width="30%"
+    :before-close="handleClose"
+  >
+    <Lables v-model:tableData="labels" @on-click="getLabels" v-if="visible" />
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="handleClose()">Cancel</el-button>
@@ -14,9 +19,9 @@
 <script setup lang="ts">
 import Lables from '@/component/label/index.vue'
 import { Node } from '@/type/node'
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { ref, watch } from 'vue'
-import { nodeApi } from '../../api';
+import { ElMessage } from 'element-plus'
+import { ref, watch, reactive } from 'vue'
+import { nodeApi } from '../../api'
 interface label {
   key: string
   value: string
@@ -28,7 +33,11 @@ const props = defineProps<{
   cloud: string
 }>()
 
-const nodeData = ref({} as Node)
+const patchData = reactive({
+  name: '',
+  labels: {}
+})
+// const nodeData = ref({} as Node)
 
 const labels = ref<label[]>([])
 
@@ -37,24 +46,25 @@ const handleClose = () => {
   emits('update:visible', false)
 }
 
-const handleConfirm = () => {
-  console.log('********',nodeData.value.metadata.labels,props.cloud);
-  nodeApi.update.request({ cloud: props.cloud },nodeData.value).then((res)=>{
+const handleConfirm = async () => {
+  // console.log('********', nodeData.value.metadata.labels, props.cloud)
+  await nodeApi.patch.request({ cloud: props.cloud }, patchData).then((res) => {
     ElMessage.success(res.data.message)
   })
   emits('valuechange')
   handleClose()
 }
 
-const getLabels =(labels: { [index: string]: string })=>{
-  nodeData.value.metadata.labels = labels
+const getLabels = (labels: { [index: string]: string }) => {
+  patchData.labels = labels
 }
 
 watch(
   () => props.data,
   () => {
-    nodeData.value = props.data
+    // nodeData.value = props.data
     labels.value = []
+    patchData.name = props.data.metadata.name
     if (props.data) {
       for (let key in props.data.metadata.labels) {
         const l: label = {
@@ -67,6 +77,4 @@ watch(
   }
 )
 </script>
-<style scoped lang="less">
-
-</style>
+<style scoped lang="less"></style>

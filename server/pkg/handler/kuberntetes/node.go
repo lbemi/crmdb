@@ -2,10 +2,12 @@ package kuberntetes
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 type NodeGetter interface {
@@ -18,6 +20,7 @@ type INode interface {
 	Delete(ctx context.Context, name string) error
 	Create(ctx context.Context, node *v1.Node) (*v1.Node, error)
 	Update(ctx context.Context, node *v1.Node) (*v1.Node, error)
+	Patch(ctx context.Context, name string, playLoad map[string]string) (*v1.Node, error)
 }
 
 type node struct {
@@ -57,7 +60,23 @@ func (n *node) Create(ctx context.Context, node *v1.Node) (*v1.Node, error) {
 }
 
 func (n *node) Update(ctx context.Context, node *v1.Node) (*v1.Node, error) {
+
 	res, err := n.cli.ClientSet.CoreV1().Nodes().Update(ctx, node, metav1.UpdateOptions{})
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	return res, err
+}
+
+func (n *node) Patch(ctx context.Context, name string, labels map[string]string) (*v1.Node, error) {
+	patchData := map[string]interface{}{"metadata": map[string]map[string]string{"labels": labels}}
+	playLoadBytes, err := json.Marshal(patchData)
+	if err != nil {
+		log.Logger.Error(err)
+		return nil, err
+	}
+
+	res, err := n.cli.ClientSet.CoreV1().Nodes().Patch(ctx, name, types.StrategicMergePatchType, playLoadBytes, metav1.PatchOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
