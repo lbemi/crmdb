@@ -2,9 +2,11 @@ package app
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/app/routes/asset"
-	"github.com/lbemi/lbemi/app/routes/cloud"
-	"github.com/lbemi/lbemi/app/routes/sys"
+	"github.com/lbemi/lbemi/cmd/app/option"
+	"github.com/lbemi/lbemi/routes"
+	"github.com/lbemi/lbemi/routes/asset"
+	"github.com/lbemi/lbemi/routes/cloud"
+	"github.com/lbemi/lbemi/routes/sys"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,8 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"github.com/lbemi/lbemi/app/option"
-	"github.com/lbemi/lbemi/app/routes"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"

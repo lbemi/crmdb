@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/lbemi/lbemi/app"
+	"github.com/lbemi/lbemi/cmd/app"
 	_ "github.com/lbemi/lbemi/docs"
 )
 
