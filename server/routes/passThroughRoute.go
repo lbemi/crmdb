@@ -2,9 +2,8 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/app/api/asset"
-	"github.com/lbemi/lbemi/app/api/sys"
-
+	"github.com/lbemi/lbemi/api/asset"
+	"github.com/lbemi/lbemi/api/sys"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )

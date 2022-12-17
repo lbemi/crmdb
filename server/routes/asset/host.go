@@ -2,7 +2,7 @@ package asset
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/app/api/asset"
+	"github.com/lbemi/lbemi/api/asset"
 )
 
 func NewHostRouter(router *gin.RouterGroup) {

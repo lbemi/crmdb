@@ -2,7 +2,7 @@ package sys
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/app/api/sys"
+	"github.com/lbemi/lbemi/api/sys"
 )
 
 func NewRoleRouter(router *gin.RouterGroup) {

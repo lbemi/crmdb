@@ -2,7 +2,7 @@ package cloud
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/app/api/cloud"
+	"github.com/lbemi/lbemi/api/cloud"
 )
 
 // NewResourceRoute kubernetes 资源路由
