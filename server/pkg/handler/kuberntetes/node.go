@@ -7,6 +7,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -15,7 +16,7 @@ type NodeGetter interface {
 }
 
 type INode interface {
-	List(ctx context.Context) (*v1.NodeList, error)
+	List(ctx context.Context) ([]*v1.Node, error)
 	Get(ctx context.Context, name string) (*v1.Node, error)
 	Delete(ctx context.Context, name string) error
 	Create(ctx context.Context, node *v1.Node) (*v1.Node, error)
@@ -27,8 +28,8 @@ type node struct {
 	cli *cloud.Clients
 }
 
-func (n *node) List(ctx context.Context) (*v1.NodeList, error) {
-	nodeList, err := n.cli.ClientSet.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+func (n *node) List(ctx context.Context) ([]*v1.Node, error) {
+	nodeList, err := n.cli.Factory.Core().V1().Nodes().Lister().List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -36,7 +37,7 @@ func (n *node) List(ctx context.Context) (*v1.NodeList, error) {
 }
 
 func (n *node) Get(ctx context.Context, name string) (*v1.Node, error) {
-	node, err := n.cli.ClientSet.CoreV1().Nodes().Get(ctx, name, metav1.GetOptions{})
+	node, err := n.cli.Factory.Core().V1().Nodes().Lister().Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}
