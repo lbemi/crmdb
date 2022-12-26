@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type DeploymentGetter interface {
@@ -13,7 +14,7 @@ type DeploymentGetter interface {
 }
 
 type IDeployment interface {
-	List(ctx context.Context) (*v1.DeploymentList, error)
+	List(ctx context.Context) ([]*v1.Deployment, error)
 	Get(ctx context.Context, name string) (*v1.Deployment, error)
 	Create(ctx context.Context, obj *v1.Deployment) (*v1.Deployment, error)
 	Update(ctx context.Context, obj *v1.Deployment) (*v1.Deployment, error)
@@ -25,8 +26,12 @@ type deployment struct {
 	ns  string
 }
 
-func (d *deployment) List(ctx context.Context) (*v1.DeploymentList, error) {
-	list, err := d.cli.ClientSet.AppsV1().Deployments(d.ns).List(ctx, metav1.ListOptions{})
+func NewDeployment(cli *cloud.Clients, namespace string) *deployment {
+	return &deployment{cli: cli, ns: namespace}
+}
+
+func (d *deployment) List(ctx context.Context) ([]*v1.Deployment, error) {
+	list, err := d.cli.Factory.Apps().V1().Deployments().Lister().Deployments(d.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -35,7 +40,8 @@ func (d *deployment) List(ctx context.Context) (*v1.DeploymentList, error) {
 }
 
 func (d *deployment) Get(ctx context.Context, name string) (*v1.Deployment, error) {
-	dep, err := d.cli.ClientSet.AppsV1().Deployments(d.ns).Get(ctx, name, metav1.GetOptions{})
+	dep, err := d.cli.Factory.Apps().V1().Deployments().Lister().Deployments(d.ns).Get(name)
+	//dep, err := d.cli.ClientSet.AppsV1().Deployments(d.ns).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -64,8 +70,4 @@ func (d *deployment) Delete(ctx context.Context, name string) error {
 		log.Logger.Error(err)
 	}
 	return err
-}
-
-func NewDeployment(cli *cloud.Clients, namespace string) *deployment {
-	return &deployment{cli: cli, ns: namespace}
 }

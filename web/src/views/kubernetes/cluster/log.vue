@@ -71,7 +71,7 @@ const listEvent = () => {
   data.query.cloud = kube.activeCluster
   data.query.namespace = 'all'
   eventApi.list.request(data.query).then((res) => {
-    data.events = res.data.items
+    data.events = res.data
   })
   data.loading = false
 }

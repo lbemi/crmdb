@@ -8,6 +8,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/util"
 	"gorm.io/gorm"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -94,19 +95,38 @@ func (c *cluster) GenerateClient(name, config string) (*Clients, *cloud.Config, 
 
 	client.ClientSet = clientSet
 	//生成informer factory
-	client.Factory = informers.NewSharedInformerFactory(clientSet, time.Second*30)
+	client.Factory = informers.NewSharedInformerFactory(clientSet, time.Second*60)
 	client.IsInit = true
-	// TODO Informers
-	//client.Informers.
-	//serviceInformer := client.Factory.Core().V1().Services()
-	//podInformer := client.Factory.Core().V1().Pods()
-	//nodeInformer := client.Factory.Core().V1().Nodes()
-	//client.Factory.Core().V1().
-
-	//deploymentInformer := client.Factory.Apps().V1().Deployments()
-	//daemonSetInformer := client.Factory.Apps().V1().DaemonSets()
-	//statefulSetInformer := client.Factory.Apps().V1().StatefulSets()
 	c.store.Add(name, &client)
+
+	// TODO Informers
+	// 设置需要启动的informer gvr资源
+
+	gvrs := []schema.GroupVersionResource{
+		{Group: "", Version: "v1", Resource: "pods"},
+		{Group: "", Version: "v1", Resource: "nodes"},
+		{Group: "", Version: "v1", Resource: "services"},
+		{Group: "", Version: "v1", Resource: "namespaces"},
+		{Group: "", Version: "v1", Resource: "events"},
+		{Group: "", Version: "v1", Resource: "configmaps"},
+		{Group: "apps", Version: "v1", Resource: "deployments"},
+		{Group: "apps", Version: "v1", Resource: "statefulsets"},
+		{Group: "apps", Version: "v1", Resource: "daemonsets"},
+		{Group: "networking.k8s.io", Version: "v1beta1", Resource: "ingresses"},
+	}
+
+	for _, gvr := range gvrs {
+		// 实例化informer
+		_, err := client.Factory.ForResource(gvr)
+		if err != nil {
+			log.Logger.Error("informer init failed. err: ", err)
+		}
+	}
+	stopChan := make(chan struct{})
+	// 启动informer
+	client.Factory.Start(stopChan)
+	// 等待informer同步完成
+	client.Factory.WaitForCacheSync(stopChan)
 
 	return &client, &conf, nil
 }
