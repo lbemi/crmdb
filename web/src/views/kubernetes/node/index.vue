@@ -261,7 +261,7 @@ const listNodes = () => {
   nodeApi.list
     .request({ cloud: kube.activeCluster })
     .then((result) => {
-      data.nodes = result.data.items
+      data.nodes = result.data
     })
     .catch((err) => {
       console.log(err)
