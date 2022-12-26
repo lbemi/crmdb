@@ -3,9 +3,10 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type ConfigMapGetter interface {
@@ -13,7 +14,7 @@ type ConfigMapGetter interface {
 }
 
 type IConfigMap interface {
-	List(ctx context.Context) (*v1.ConfigMapList, error)
+	List(ctx context.Context) ([]*v1.ConfigMap, error)
 	Get(ctx context.Context, name string) (*v1.ConfigMap, error)
 	Delete(ctx context.Context, name string) error
 	Create(ctx context.Context, node *v1.ConfigMap) (*v1.ConfigMap, error)
@@ -21,12 +22,12 @@ type IConfigMap interface {
 }
 
 type configMap struct {
-	clientSet *kubernetes.Clientset
-	ns        string
+	client *cloud.Clients
+	ns     string
 }
 
-func (s *configMap) List(ctx context.Context) (*v1.ConfigMapList, error) {
-	nodeList, err := s.clientSet.CoreV1().ConfigMaps(s.ns).List(ctx, metav1.ListOptions{})
+func (s *configMap) List(ctx context.Context) ([]*v1.ConfigMap, error) {
+	nodeList, err := s.client.Factory.Core().V1().ConfigMaps().Lister().ConfigMaps(s.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -34,7 +35,7 @@ func (s *configMap) List(ctx context.Context) (*v1.ConfigMapList, error) {
 }
 
 func (s *configMap) Get(ctx context.Context, name string) (*v1.ConfigMap, error) {
-	res, err := s.clientSet.CoreV1().ConfigMaps(s.ns).Get(ctx, name, metav1.GetOptions{})
+	res, err := s.client.Factory.Core().V1().ConfigMaps().Lister().ConfigMaps(s.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -42,7 +43,7 @@ func (s *configMap) Get(ctx context.Context, name string) (*v1.ConfigMap, error)
 }
 
 func (s *configMap) Delete(ctx context.Context, name string) error {
-	err := s.clientSet.CoreV1().ConfigMaps(s.ns).Delete(ctx, name, metav1.DeleteOptions{})
+	err := s.client.ClientSet.CoreV1().ConfigMaps(s.ns).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -50,7 +51,7 @@ func (s *configMap) Delete(ctx context.Context, name string) error {
 }
 
 func (s *configMap) Create(ctx context.Context, configMap *v1.ConfigMap) (*v1.ConfigMap, error) {
-	res, err := s.clientSet.CoreV1().ConfigMaps(s.ns).Create(ctx, configMap, metav1.CreateOptions{})
+	res, err := s.client.ClientSet.CoreV1().ConfigMaps(s.ns).Create(ctx, configMap, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -58,13 +59,13 @@ func (s *configMap) Create(ctx context.Context, configMap *v1.ConfigMap) (*v1.Co
 }
 
 func (s *configMap) Update(ctx context.Context, configMap *v1.ConfigMap) (*v1.ConfigMap, error) {
-	res, err := s.clientSet.CoreV1().ConfigMaps(s.ns).Update(ctx, configMap, metav1.UpdateOptions{})
+	res, err := s.client.ClientSet.CoreV1().ConfigMaps(s.ns).Update(ctx, configMap, metav1.UpdateOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
 	return res, err
 }
 
-func NewConfigMap(client *kubernetes.Clientset, namespace string) *configMap {
-	return &configMap{clientSet: client, ns: namespace}
+func NewConfigMap(client *cloud.Clients, namespace string) *configMap {
+	return &configMap{client: client, ns: namespace}
 }

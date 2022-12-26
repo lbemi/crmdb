@@ -97,7 +97,7 @@ const listDeployment = async () => {
   try {
     data.loading = true
     await deploymentApi.list.request(data.query).then((res) => {
-      data.Deployments = res.data.items
+      data.Deployments = res.data
     })
   } catch (error) {
     console.log(error)

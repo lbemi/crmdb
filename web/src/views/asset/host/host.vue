@@ -256,7 +256,7 @@ onMounted(() => {
 
 const query = reactive<PageInfo>({
   page: 1,
-  limit: 10
+  limit: 50
 })
 
 const getHostList = async () => {

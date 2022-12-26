@@ -53,20 +53,20 @@ func (c *cluster) Events(namespace string) kuberntetes.IEvent {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewEvent(c.getClient(c.clusterName).ClientSet, namespace)
+	return kuberntetes.NewEvent(c.getClient(c.clusterName), namespace)
 }
 func (c *cluster) Ingresses(namespace string) kuberntetes.IIngresses {
 	if namespace == "" {
 		namespace = "default"
 	}
-	return kuberntetes.NewIngress(c.getClient(c.clusterName).ClientSet, namespace)
+	return kuberntetes.NewIngress(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) ConfigMaps(namespace string) kuberntetes.IConfigMap {
 	if namespace == "" {
 		namespace = "default"
 	}
-	return kuberntetes.NewConfigMap(c.getClient(c.clusterName).ClientSet, namespace)
+	return kuberntetes.NewConfigMap(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) CronJobs(namespace string) kuberntetes.ICronJob {
@@ -110,7 +110,7 @@ func (c *cluster) Secrets(namespace string) kuberntetes.ISecret {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewSecret(c.getClient(c.clusterName).ClientSet, namespace)
+	return kuberntetes.NewSecret(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) Namespaces() kuberntetes.INamespace {
@@ -121,7 +121,7 @@ func (c *cluster) Service(namespace string) kuberntetes.IService {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewService(c.getClient(c.clusterName).ClientSet, namespace)
+	return kuberntetes.NewService(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) Nodes() kuberntetes.INode {
