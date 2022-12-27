@@ -11,9 +11,11 @@ export const nsStore = defineStore(
     const namespace = ref<Array<Namespace>>([])
     const activeNamespace = ref<string>('default')
     const query = reactive({
-      cloud: ''
+      cloud: '',
+      page: 1,
+      limit: 10
     })
-
+    const total = ref(0)
     const listNamespace = async () => {
       if (kube.activeCluster) {
         query.cloud = kube.activeCluster
@@ -22,9 +24,10 @@ export const nsStore = defineStore(
         return
       }
       const res = await namespacerApi.list.request(query)
-      namespace.value = res.data.items
+      namespace.value = res.data.data
+      total.value = res.data.total
     }
-    return { namespace, listNamespace, activeNamespace }
+    return { namespace, listNamespace, activeNamespace, total, query }
   },
   {
     persist: {

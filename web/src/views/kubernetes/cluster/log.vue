@@ -51,6 +51,11 @@
         </template></el-table-column
       >
     </el-table>
+    <!-- 分页区域 -->
+    <pagination
+      :total="data.total"
+      @handlePageChange="handlePageChange"
+    ></pagination>
   </div>
 </template>
 
@@ -59,7 +64,10 @@ import { EventData, Event } from '@/type/event'
 import { onMounted, reactive } from 'vue'
 import { eventApi } from '../api'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
+import pagination from '@/component/pagination/pagination.vue'
 import type { ElTableColumn } from 'element-plus'
+import { PageInfo } from '@/type/sys'
+
 const kube = kubeStore()
 const data = reactive(new EventData())
 
@@ -71,11 +79,16 @@ const listEvent = () => {
   data.query.cloud = kube.activeCluster
   data.query.namespace = 'all'
   eventApi.list.request(data.query).then((res) => {
-    data.events = res.data
+    data.events = res.data.data
+    data.total = res.data.total
   })
   data.loading = false
 }
-
+const handlePageChange = (pageInfo: PageInfo) => {
+  data.query.page = pageInfo.page
+  data.query.limit = pageInfo.limit
+  listEvent()
+}
 onMounted(() => {
   listEvent()
 })

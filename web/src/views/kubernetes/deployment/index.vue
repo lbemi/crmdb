@@ -71,15 +71,22 @@
         </template>
       </el-table-column>
     </el-table>
+    <!-- 分页区域 -->
+    <pagination
+      :total="data.total"
+      @handlePageChange="handlePageChange"
+    ></pagination>
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive, onMounted } from 'vue'
 import { deploymentApi } from '../api'
+import pagination from '@/component/pagination/pagination.vue'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
 import { nsStore } from '@/store/kubernetes/namespace'
 import { Deployment, Data } from '@/type/deployment'
+import { PageInfo } from '@/type/sys'
 const ns = nsStore()
 const kube = kubeStore()
 onMounted(() => {
@@ -91,13 +98,15 @@ const data = reactive(new Data())
 const handleSelectionChange = (value: Deployment[]) => {
   data.selectData = value
 }
+
 const listDeployment = async () => {
   data.query.namespace = ns.activeNamespace
   data.query.cloud = kube.activeCluster
   try {
     data.loading = true
     await deploymentApi.list.request(data.query).then((res) => {
-      data.Deployments = res.data
+      data.Deployments = res.data.data
+      data.total = res.data.total
     })
   } catch (error) {
     console.log(error)
@@ -108,7 +117,11 @@ const handleChange = () => {
   data.query.namespace = ns.activeNamespace
   listDeployment()
 }
-
+const handlePageChange = (pageInfo: PageInfo) => {
+  data.query.page = pageInfo.page
+  data.query.limit = pageInfo.limit
+  listDeployment()
+}
 const deployDetail = (deploy: Deployment) => {
   data.query.deploymentName = deploy.metadata.name
   data.query.namespace = deploy.metadata.namespace

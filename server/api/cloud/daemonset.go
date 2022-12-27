@@ -4,10 +4,25 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/handler/types"
 	v1 "k8s.io/api/apps/v1"
+	"strconv"
 )
 
 func ListDaemonSets(c *gin.Context) {
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	limitStr := c.DefaultQuery("limit", "0")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
 	clusterName := c.Query("cloud")
 	if clusterName == "" {
 		response.Fail(c, response.ErrCodeParameter)
@@ -25,8 +40,19 @@ func ListDaemonSets(c *gin.Context) {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
+	// 处理分页
+	var pageQuery types.PageQuery
+	pageQuery.Total = len(daemonSetList)
 
-	response.Success(c, response.StatusOK, daemonSetList)
+	if pageQuery.Total <= limit {
+		pageQuery.Data = daemonSetList
+	} else if page*limit >= pageQuery.Total {
+		pageQuery.Data = daemonSetList[(page-1)*limit : pageQuery.Total]
+	} else {
+		pageQuery.Data = daemonSetList[(page-1)*limit : page*limit]
+	}
+
+	response.Success(c, response.StatusOK, pageQuery)
 }
 
 func GetDaemonSet(c *gin.Context) {

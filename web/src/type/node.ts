@@ -101,7 +101,18 @@ export interface Node {
   spec: Spec
   status: Statu
 }
+interface query {
+  cloud: string
+  page: number
+  limit: number
+}
 
 export class NodeData {
   nodes: Node[] = []
+  query: query = {
+    cloud: '',
+    page: 1,
+    limit: 10
+  }
+  total = 0
 }

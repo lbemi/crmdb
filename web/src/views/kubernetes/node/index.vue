@@ -229,6 +229,11 @@
       </template>
     </el-table-column>
   </el-table>
+  <!-- 分页区域 -->
+  <pagination
+    :total="data.total"
+    @handlePageChange="handlePageChange"
+  ></pagination>
   <Labels
     v-model:visible="updateLabelsData.visible"
     :title="updateLabelsData.title"
@@ -241,11 +246,14 @@
 
 <script setup lang="ts">
 import { kubeStore } from '@/store/kubernetes/kubernetes'
+import pagination from '@/component/pagination/pagination.vue'
 import { reactive, onMounted } from 'vue'
 import { nodeApi } from '../api'
 import { NodeData, Node } from '@/type/node'
 import { InfoFilled, CaretBottom } from '@element-plus/icons-vue'
 import Labels from './component/lables.vue'
+import { PageInfo } from '@/type/sys'
+
 const kube = kubeStore()
 const data = reactive(new NodeData())
 const updateLabelsData = reactive({
@@ -258,16 +266,22 @@ onMounted(() => {
   listNodes()
 })
 const listNodes = () => {
+  data.query.cloud = kube.activeCluster
   nodeApi.list
-    .request({ cloud: kube.activeCluster })
+    .request(data.query)
     .then((result) => {
-      data.nodes = result.data
+      data.nodes = result.data.data
+      data.total = result.data.total
     })
     .catch((err) => {
       console.log(err)
     })
 }
-
+const handlePageChange = (pageInfo: PageInfo) => {
+  data.query.page = pageInfo.page
+  data.query.limit = pageInfo.limit
+  listNodes()
+}
 const updateLabels = (node: Node) => {
   updateLabelsData.visible = true
   updateLabelsData.data = node
