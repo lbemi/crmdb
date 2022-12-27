@@ -13,7 +13,7 @@
       :page-sizes="[10, 20, 50]"
       layout="total, sizes, prev, pager, next, jumper"
       :total="total"
-      @size-change="handlePageChange"
+      @size-change="handleSizeChange"
       @current-change="handlePageChange"
     />
   </div>
@@ -32,6 +32,10 @@ const page = reactive<PageInfo>({
 
 const emit = defineEmits(['handlePageChange'])
 const handlePageChange = () => {
+  emit('handlePageChange', page)
+}
+const handleSizeChange =()=>{
+  page.page = 1
   emit('handlePageChange', page)
 }
 </script>
