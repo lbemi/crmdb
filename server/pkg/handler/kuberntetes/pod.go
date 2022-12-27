@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type PodGetter interface {
@@ -13,7 +14,7 @@ type PodGetter interface {
 }
 
 type IPod interface {
-	List(ctx context.Context) (*v1.PodList, error)
+	List(ctx context.Context) ([]*v1.Pod, error)
 	Get(ctx context.Context, name string) (*v1.Pod, error)
 	Create(ctx context.Context, obj *v1.Pod) (*v1.Pod, error)
 	Update(ctx context.Context, obj *v1.Pod) (*v1.Pod, error)
@@ -25,8 +26,8 @@ type pod struct {
 	ns  string
 }
 
-func (d *pod) List(ctx context.Context) (*v1.PodList, error) {
-	list, err := d.cli.ClientSet.CoreV1().Pods(d.ns).List(ctx, metav1.ListOptions{})
+func (d *pod) List(ctx context.Context) ([]*v1.Pod, error) {
+	list, err := d.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(d.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -35,7 +36,7 @@ func (d *pod) List(ctx context.Context) (*v1.PodList, error) {
 }
 
 func (d *pod) Get(ctx context.Context, name string) (*v1.Pod, error) {
-	dep, err := d.cli.ClientSet.CoreV1().Pods(d.ns).Get(ctx, name, metav1.GetOptions{})
+	dep, err := d.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(d.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}

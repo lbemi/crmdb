@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type NamespaceGetter interface {
@@ -13,7 +14,7 @@ type NamespaceGetter interface {
 }
 
 type INamespace interface {
-	List(ctx context.Context) (*v1.NamespaceList, error)
+	List(ctx context.Context) ([]*v1.Namespace, error)
 	Get(ctx context.Context, name string) (*v1.Namespace, error)
 	Create(ctx context.Context, obj *v1.Namespace) (*v1.Namespace, error)
 	Update(ctx context.Context, obj *v1.Namespace) (*v1.Namespace, error)
@@ -25,8 +26,8 @@ type namespace struct {
 	ns  string
 }
 
-func (n *namespace) List(ctx context.Context) (*v1.NamespaceList, error) {
-	list, err := n.cli.ClientSet.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+func (n *namespace) List(ctx context.Context) ([]*v1.Namespace, error) {
+	list, err := n.cli.SharedInformerFactory.Core().V1().Namespaces().Lister().List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -35,7 +36,7 @@ func (n *namespace) List(ctx context.Context) (*v1.NamespaceList, error) {
 }
 
 func (n *namespace) Get(ctx context.Context, name string) (*v1.Namespace, error) {
-	dep, err := n.cli.ClientSet.CoreV1().Namespaces().Get(ctx, name, metav1.GetOptions{})
+	dep, err := n.cli.SharedInformerFactory.Core().V1().Namespaces().Lister().Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}

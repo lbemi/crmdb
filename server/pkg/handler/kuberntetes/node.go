@@ -29,7 +29,7 @@ type node struct {
 }
 
 func (n *node) List(ctx context.Context) ([]*v1.Node, error) {
-	nodeList, err := n.cli.Factory.Core().V1().Nodes().Lister().List(labels.Everything())
+	nodeList, err := n.cli.SharedInformerFactory.Core().V1().Nodes().Lister().List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -37,7 +37,7 @@ func (n *node) List(ctx context.Context) ([]*v1.Node, error) {
 }
 
 func (n *node) Get(ctx context.Context, name string) (*v1.Node, error) {
-	node, err := n.cli.Factory.Core().V1().Nodes().Lister().Get(name)
+	node, err := n.cli.SharedInformerFactory.Core().V1().Nodes().Lister().Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}

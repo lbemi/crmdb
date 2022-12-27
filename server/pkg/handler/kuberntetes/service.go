@@ -27,7 +27,7 @@ type service struct {
 }
 
 func (s *service) List(ctx context.Context) ([]*v1.Service, error) {
-	nodeList, err := s.client.Factory.Core().V1().Services().Lister().Services(s.ns).List(labels.Everything())
+	nodeList, err := s.client.SharedInformerFactory.Core().V1().Services().Lister().Services(s.ns).List(labels.Everything())
 
 	if err != nil {
 		log.Logger.Error(err)
@@ -36,7 +36,7 @@ func (s *service) List(ctx context.Context) ([]*v1.Service, error) {
 }
 
 func (s *service) Get(ctx context.Context, name string) (*v1.Service, error) {
-	res, err := s.client.Factory.Core().V1().Services().Lister().Services(s.ns).Get(name)
+	res, err := s.client.SharedInformerFactory.Core().V1().Services().Lister().Services(s.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}

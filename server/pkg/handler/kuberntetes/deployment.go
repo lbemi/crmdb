@@ -31,7 +31,7 @@ func NewDeployment(cli *cloud.Clients, namespace string) *deployment {
 }
 
 func (d *deployment) List(ctx context.Context) ([]*v1.Deployment, error) {
-	list, err := d.cli.Factory.Apps().V1().Deployments().Lister().Deployments(d.ns).List(labels.Everything())
+	list, err := d.cli.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -40,7 +40,7 @@ func (d *deployment) List(ctx context.Context) ([]*v1.Deployment, error) {
 }
 
 func (d *deployment) Get(ctx context.Context, name string) (*v1.Deployment, error) {
-	dep, err := d.cli.Factory.Apps().V1().Deployments().Lister().Deployments(d.ns).Get(name)
+	dep, err := d.cli.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.ns).Get(name)
 	//dep, err := d.cli.ClientSet.AppsV1().Deployments(d.ns).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		log.Logger.Error(err)

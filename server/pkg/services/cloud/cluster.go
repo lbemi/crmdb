@@ -95,38 +95,41 @@ func (c *cluster) GenerateClient(name, config string) (*Clients, *cloud.Config, 
 
 	client.ClientSet = clientSet
 	//生成informer factory
-	client.Factory = informers.NewSharedInformerFactory(clientSet, time.Second*60)
+	client.SharedInformerFactory = informers.NewSharedInformerFactory(clientSet, time.Second*60)
 	client.IsInit = true
 	c.store.Add(name, &client)
 
-	// TODO Informers
 	// 设置需要启动的informer gvr资源
-
 	gvrs := []schema.GroupVersionResource{
 		{Group: "", Version: "v1", Resource: "pods"},
 		{Group: "", Version: "v1", Resource: "nodes"},
 		{Group: "", Version: "v1", Resource: "services"},
 		{Group: "", Version: "v1", Resource: "namespaces"},
 		{Group: "", Version: "v1", Resource: "events"},
+		{Group: "", Version: "v1", Resource: "secrets"},
 		{Group: "", Version: "v1", Resource: "configmaps"},
 		{Group: "apps", Version: "v1", Resource: "deployments"},
 		{Group: "apps", Version: "v1", Resource: "statefulsets"},
 		{Group: "apps", Version: "v1", Resource: "daemonsets"},
+		{Group: "apps", Version: "v1", Resource: "replicasets"},
 		{Group: "networking.k8s.io", Version: "v1beta1", Resource: "ingresses"},
+
+		{Group: "batch", Version: "v1beta1", Resource: "cronjobs"},
+		{Group: "batch", Version: "v1", Resource: "jobs"},
 	}
 
 	for _, gvr := range gvrs {
 		// 实例化informer
-		_, err := client.Factory.ForResource(gvr)
+		_, err := client.SharedInformerFactory.ForResource(gvr)
 		if err != nil {
 			log.Logger.Error("informer init failed. err: ", err)
 		}
 	}
 	stopChan := make(chan struct{})
 	// 启动informer
-	client.Factory.Start(stopChan)
+	client.SharedInformerFactory.Start(stopChan)
 	// 等待informer同步完成
-	client.Factory.WaitForCacheSync(stopChan)
+	client.SharedInformerFactory.WaitForCacheSync(stopChan)
 
 	return &client, &conf, nil
 }
