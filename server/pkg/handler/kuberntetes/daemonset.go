@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type DaemonSetGetter interface {
@@ -13,7 +14,7 @@ type DaemonSetGetter interface {
 }
 
 type IDaemonSet interface {
-	List(ctx context.Context) (*v1.DaemonSetList, error)
+	List(ctx context.Context) ([]*v1.DaemonSet, error)
 	Get(ctx context.Context, name string) (*v1.DaemonSet, error)
 	Create(ctx context.Context, obj *v1.DaemonSet) (*v1.DaemonSet, error)
 	Update(ctx context.Context, obj *v1.DaemonSet) (*v1.DaemonSet, error)
@@ -25,8 +26,8 @@ type daemonSet struct {
 	ns  string
 }
 
-func (d *daemonSet) List(ctx context.Context) (*v1.DaemonSetList, error) {
-	list, err := d.cli.ClientSet.AppsV1().DaemonSets(d.ns).List(ctx, metav1.ListOptions{})
+func (d *daemonSet) List(ctx context.Context) ([]*v1.DaemonSet, error) {
+	list, err := d.cli.SharedInformerFactory.Apps().V1().DaemonSets().Lister().DaemonSets(d.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -34,7 +35,7 @@ func (d *daemonSet) List(ctx context.Context) (*v1.DaemonSetList, error) {
 }
 
 func (d *daemonSet) Get(ctx context.Context, name string) (*v1.DaemonSet, error) {
-	dep, err := d.cli.ClientSet.AppsV1().DaemonSets(d.ns).Get(ctx, name, metav1.GetOptions{})
+	dep, err := d.cli.SharedInformerFactory.Apps().V1().DaemonSets().Lister().DaemonSets(d.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}

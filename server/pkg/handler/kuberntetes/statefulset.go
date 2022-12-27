@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type StatefulSetGetter interface {
@@ -13,7 +14,7 @@ type StatefulSetGetter interface {
 }
 
 type IStatefulSet interface {
-	List(ctx context.Context) (*v1.StatefulSetList, error)
+	List(ctx context.Context) ([]*v1.StatefulSet, error)
 	Get(ctx context.Context, name string) (*v1.StatefulSet, error)
 	Create(ctx context.Context, obj *v1.StatefulSet) (*v1.StatefulSet, error)
 	Update(ctx context.Context, obj *v1.StatefulSet) (*v1.StatefulSet, error)
@@ -25,8 +26,8 @@ type statefulSet struct {
 	ns  string
 }
 
-func (d *statefulSet) List(ctx context.Context) (*v1.StatefulSetList, error) {
-	list, err := d.cli.ClientSet.AppsV1().StatefulSets(d.ns).List(ctx, metav1.ListOptions{})
+func (d *statefulSet) List(ctx context.Context) ([]*v1.StatefulSet, error) {
+	list, err := d.cli.SharedInformerFactory.Apps().V1().StatefulSets().Lister().StatefulSets(d.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -35,11 +36,11 @@ func (d *statefulSet) List(ctx context.Context) (*v1.StatefulSetList, error) {
 }
 
 func (d *statefulSet) Get(ctx context.Context, name string) (*v1.StatefulSet, error) {
-	dep, err := d.cli.ClientSet.AppsV1().StatefulSets(d.ns).Get(ctx, name, metav1.GetOptions{})
+	sts, err := d.cli.SharedInformerFactory.Apps().V1().StatefulSets().Lister().StatefulSets(d.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}
-	return dep, err
+	return sts, err
 }
 
 func (d *statefulSet) Create(ctx context.Context, obj *v1.StatefulSet) (*v1.StatefulSet, error) {

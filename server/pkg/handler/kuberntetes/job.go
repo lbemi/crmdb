@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type JobGetter interface {
@@ -13,7 +14,7 @@ type JobGetter interface {
 }
 
 type IJob interface {
-	List(ctx context.Context) (*v1.JobList, error)
+	List(ctx context.Context) ([]*v1.Job, error)
 	Get(ctx context.Context, name string) (*v1.Job, error)
 	Create(ctx context.Context, obj *v1.Job) (*v1.Job, error)
 	Update(ctx context.Context, obj *v1.Job) (*v1.Job, error)
@@ -25,8 +26,8 @@ type job struct {
 	ns  string
 }
 
-func (d *job) List(ctx context.Context) (*v1.JobList, error) {
-	list, err := d.cli.ClientSet.BatchV1().Jobs(d.ns).List(ctx, metav1.ListOptions{})
+func (d *job) List(ctx context.Context) ([]*v1.Job, error) {
+	list, err := d.cli.SharedInformerFactory.Batch().V1().Jobs().Lister().Jobs(d.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -34,11 +35,11 @@ func (d *job) List(ctx context.Context) (*v1.JobList, error) {
 }
 
 func (d *job) Get(ctx context.Context, name string) (*v1.Job, error) {
-	dep, err := d.cli.ClientSet.BatchV1().Jobs(d.ns).Get(ctx, name, metav1.GetOptions{})
+	job, err := d.cli.SharedInformerFactory.Batch().V1().Jobs().Lister().Jobs(d.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}
-	return dep, err
+	return job, err
 }
 
 func (d *job) Create(ctx context.Context, obj *v1.Job) (*v1.Job, error) {

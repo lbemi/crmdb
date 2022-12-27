@@ -27,7 +27,7 @@ type configMap struct {
 }
 
 func (s *configMap) List(ctx context.Context) ([]*v1.ConfigMap, error) {
-	nodeList, err := s.client.Factory.Core().V1().ConfigMaps().Lister().ConfigMaps(s.ns).List(labels.Everything())
+	nodeList, err := s.client.SharedInformerFactory.Core().V1().ConfigMaps().Lister().ConfigMaps(s.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -35,7 +35,7 @@ func (s *configMap) List(ctx context.Context) ([]*v1.ConfigMap, error) {
 }
 
 func (s *configMap) Get(ctx context.Context, name string) (*v1.ConfigMap, error) {
-	res, err := s.client.Factory.Core().V1().ConfigMaps().Lister().ConfigMaps(s.ns).Get(name)
+	res, err := s.client.SharedInformerFactory.Core().V1().ConfigMaps().Lister().ConfigMaps(s.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}

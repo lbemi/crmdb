@@ -15,9 +15,9 @@ import (
 //}
 
 type Clients struct {
-	ClientSet *kubernetes.Clientset
-	Factory   informers.SharedInformerFactory
-	IsInit    bool
+	ClientSet             *kubernetes.Clientset
+	SharedInformerFactory informers.SharedInformerFactory
+	IsInit                bool
 }
 
 type ClientStore struct {

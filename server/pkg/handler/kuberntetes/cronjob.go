@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	v1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type CronJobGetter interface {
@@ -13,7 +14,7 @@ type CronJobGetter interface {
 }
 
 type ICronJob interface {
-	List(ctx context.Context) (*v1.CronJobList, error)
+	List(ctx context.Context) ([]*v1.CronJob, error)
 	Get(ctx context.Context, name string) (*v1.CronJob, error)
 	Create(ctx context.Context, obj *v1.CronJob) (*v1.CronJob, error)
 	Update(ctx context.Context, obj *v1.CronJob) (*v1.CronJob, error)
@@ -25,8 +26,8 @@ type cronJob struct {
 	ns  string
 }
 
-func (d *cronJob) List(ctx context.Context) (*v1.CronJobList, error) {
-	list, err := d.cli.ClientSet.BatchV1().CronJobs(d.ns).List(ctx, metav1.ListOptions{})
+func (d *cronJob) List(ctx context.Context) ([]*v1.CronJob, error) {
+	list, err := d.cli.SharedInformerFactory.Batch().V1().CronJobs().Lister().CronJobs(d.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -34,7 +35,7 @@ func (d *cronJob) List(ctx context.Context) (*v1.CronJobList, error) {
 }
 
 func (d *cronJob) Get(ctx context.Context, name string) (*v1.CronJob, error) {
-	dep, err := d.cli.ClientSet.BatchV1().CronJobs(d.ns).Get(ctx, name, metav1.GetOptions{})
+	dep, err := d.cli.SharedInformerFactory.Batch().V1().CronJobs().Lister().CronJobs(d.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}

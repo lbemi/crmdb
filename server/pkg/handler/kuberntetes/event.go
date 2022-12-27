@@ -23,7 +23,7 @@ type event struct {
 }
 
 func (e *event) List(ctx context.Context) ([]*v1.Event, error) {
-	eventList, err := e.cli.Factory.Core().V1().Events().Lister().Events(e.ns).List(labels.Everything())
+	eventList, err := e.cli.SharedInformerFactory.Core().V1().Events().Lister().Events(e.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -31,7 +31,7 @@ func (e *event) List(ctx context.Context) ([]*v1.Event, error) {
 }
 
 func (e *event) Get(ctx context.Context, name string) (*v1.Event, error) {
-	event, err := e.cli.Factory.Core().V1().Events().Lister().Events(e.ns).Get(name)
+	event, err := e.cli.SharedInformerFactory.Core().V1().Events().Lister().Events(e.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}

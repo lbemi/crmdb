@@ -27,7 +27,7 @@ type secret struct {
 }
 
 func (s *secret) List(ctx context.Context) ([]*v1.Secret, error) {
-	nodeList, err := s.client.Factory.Core().V1().Secrets().Lister().Secrets(s.ns).List(labels.Everything())
+	nodeList, err := s.client.SharedInformerFactory.Core().V1().Secrets().Lister().Secrets(s.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -35,7 +35,7 @@ func (s *secret) List(ctx context.Context) ([]*v1.Secret, error) {
 }
 
 func (s *secret) Get(ctx context.Context, name string) (*v1.Secret, error) {
-	res, err := s.client.Factory.Core().V1().Secrets().Lister().Secrets(s.ns).Get(name)
+	res, err := s.client.SharedInformerFactory.Core().V1().Secrets().Lister().Secrets(s.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}

@@ -27,7 +27,7 @@ type ingresses struct {
 }
 
 func (s *ingresses) List(ctx context.Context) ([]*v1.Ingress, error) {
-	nodeList, err := s.client.Factory.Networking().V1().Ingresses().Lister().Ingresses(s.ns).List(labels.Everything())
+	nodeList, err := s.client.SharedInformerFactory.Networking().V1().Ingresses().Lister().Ingresses(s.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -35,7 +35,7 @@ func (s *ingresses) List(ctx context.Context) ([]*v1.Ingress, error) {
 }
 
 func (s *ingresses) Get(ctx context.Context, name string) (*v1.Ingress, error) {
-	res, err := s.client.Factory.Networking().V1().Ingresses().Lister().Ingresses(s.ns).Get(name)
+	res, err := s.client.SharedInformerFactory.Networking().V1().Ingresses().Lister().Ingresses(s.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}
