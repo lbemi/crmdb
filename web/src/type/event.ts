@@ -48,13 +48,18 @@ interface query {
   namespace: string
   cloud: string
   name?: string
+  page: number
+  limit: number
 }
 
 export class EventData {
   events: Event[] = []
   query: query = {
     namespace: '',
-    cloud: ''
+    cloud: '',
+    page: 1,
+    limit: 10
   }
+  total = 0
   loading = false
 }

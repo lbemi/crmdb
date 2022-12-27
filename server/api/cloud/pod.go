@@ -4,24 +4,26 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/handler/types"
 	v1 "k8s.io/api/core/v1"
+	"strconv"
 )
 
 func ListPods(c *gin.Context) {
 
-	//pageStr := c.DefaultQuery("page", "0")
-	//page, err := strconv.Atoi(pageStr)
-	//if err != nil {
-	//	response.Fail(c, response.ErrCodeParameter)
-	//	return
-	//}
-	//
-	//limitStr := c.DefaultQuery("limit", "0")
-	//limit, err := strconv.Atoi(limitStr)
-	//if err != nil {
-	//	response.Fail(c, response.ErrCodeParameter)
-	//	return
-	//}
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	limitStr := c.DefaultQuery("limit", "0")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
 
 	clusterName := c.Query("cloud")
 	if clusterName == "" {
@@ -41,7 +43,19 @@ func ListPods(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, response.StatusOK, podList)
+	// 处理分页
+	var pageQuery types.PageQuery
+	pageQuery.Total = len(podList)
+
+	if pageQuery.Total <= limit {
+		pageQuery.Data = podList
+	} else if page*limit >= pageQuery.Total {
+		pageQuery.Data = podList[(page-1)*limit : pageQuery.Total]
+	} else {
+		pageQuery.Data = podList[(page-1)*limit : page*limit]
+	}
+
+	response.Success(c, response.StatusOK, pageQuery)
 }
 
 func GetPod(c *gin.Context) {

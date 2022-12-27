@@ -5,10 +5,26 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/handler/types"
 	v1 "k8s.io/api/core/v1"
+	"strconv"
 )
 
 func ListNamespace(c *gin.Context) {
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	limitStr := c.DefaultQuery("limit", "0")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
 	clusterName := c.Query("cloud")
 	if clusterName == "" {
 		response.Fail(c, response.ErrCodeParameter)
@@ -23,7 +39,19 @@ func ListNamespace(c *gin.Context) {
 		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return
 	}
-	response.Success(c, response.StatusOK, namespaceList)
+	// 处理分页
+	var pageQuery types.PageQuery
+	pageQuery.Total = len(namespaceList)
+
+	if pageQuery.Total <= limit {
+		pageQuery.Data = namespaceList
+	} else if page*limit >= pageQuery.Total {
+		pageQuery.Data = namespaceList[(page-1)*limit : pageQuery.Total]
+	} else {
+		pageQuery.Data = namespaceList[(page-1)*limit : page*limit]
+	}
+
+	response.Success(c, response.StatusOK, pageQuery)
 }
 
 func GetNamespace(c *gin.Context) {

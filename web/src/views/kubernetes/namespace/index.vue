@@ -10,7 +10,7 @@
     style="width: 100%"
   >
     <el-table-column type="selection" width="35" />
-    <el-table-column prop="metadata.name" label="名称" width="150" />
+    <el-table-column prop="metadata.name" label="名称" width="220" />
     <el-table-column prop="metadata.labels" label="标签" width="500">
       <template #default="scope">
         <el-tag
@@ -82,6 +82,11 @@
       </template>
     </el-table-column>
   </el-table>
+  <!-- 分页区域 -->
+  <pagination
+    :total="ns.total"
+    @handlePageChange="handlePageChange"
+  ></pagination>
   <NamespaceDialog
     :title="data.titile"
     v-model:visible="data.visible"
@@ -94,11 +99,13 @@
 <script setup lang="ts">
 import { nsStore } from '@/store/kubernetes/namespace'
 import { reactive } from 'vue'
+import pagination from '@/component/pagination/pagination.vue'
 import { NamespaceData, Namespace } from '@/type/namespace'
 import NamespaceDialog from './component/dialog.vue'
 import { namespacerApi } from '../api'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { PageInfo } from '@/type/sys'
 
 const ns = nsStore()
 const kube = kubeStore()
@@ -138,6 +145,11 @@ const deleteNamespace = (namespace: Namespace) => {
         .catch()
     })
     .catch() // 取消
+}
+const handlePageChange = (pageInfo: PageInfo) => {
+  ns.query.page = pageInfo.page
+  ns.query.limit = pageInfo.limit
+  ns.listNamespace()
 }
 </script>
 
