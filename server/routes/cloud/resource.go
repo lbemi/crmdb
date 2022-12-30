@@ -7,6 +7,13 @@ import (
 
 // NewResourceRoute kubernetes 资源路由
 func NewResourceRoute(group *gin.RouterGroup) {
+	// websocket
+	//ws := group.Group("/ws")
+	//{
+	//	ws.GET("", cloud.Ws)
+	//	ws.GET("/send", cloud.WsSendAll)
+	//}
+
 	//namespace 资源路由
 	namespace := group.Group("/namespace")
 	{

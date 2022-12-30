@@ -3,7 +3,7 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -22,7 +22,7 @@ type IConfigMap interface {
 }
 
 type configMap struct {
-	client *cloud.Clients
+	client *store.Clients
 	ns     string
 }
 
@@ -66,6 +66,6 @@ func (s *configMap) Update(ctx context.Context, configMap *v1.ConfigMap) (*v1.Co
 	return res, err
 }
 
-func NewConfigMap(client *cloud.Clients, namespace string) *configMap {
+func NewConfigMap(client *store.Clients, namespace string) *configMap {
 	return &configMap{client: client, ns: namespace}
 }

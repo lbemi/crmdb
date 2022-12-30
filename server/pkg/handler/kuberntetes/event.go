@@ -3,7 +3,7 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -18,7 +18,7 @@ type IEvent interface {
 }
 
 type event struct {
-	cli *cloud.Clients
+	cli *store.Clients
 	ns  string
 }
 
@@ -38,6 +38,6 @@ func (e *event) Get(ctx context.Context, name string) (*v1.Event, error) {
 	return event, err
 }
 
-func NewEvent(client *cloud.Clients, namespace string) *event {
+func NewEvent(client *store.Clients, namespace string) *event {
 	return &event{cli: client, ns: namespace}
 }

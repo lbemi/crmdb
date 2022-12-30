@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, onBeforeUnmount } from 'vue'
 import { deploymentApi } from '../api'
 import pagination from '@/component/pagination/pagination.vue'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
@@ -93,12 +93,29 @@ onMounted(() => {
   listDeployment()
 })
 
+var ws = new WebSocket('ws://127.0.0.1:8080/api/v1/ws')
+ws.onopen = () => {
+  console.log('ws connected.')
+}
+ws.onmessage = (e) => {
+  if (e.data === 'ping') {
+    return
+  }
+  console.log('服务器发送的消息: ', e.data)
+}
+ws.onclose = () => {
+  console.log('close')
+}
 const data = reactive(new Data())
 
 const handleSelectionChange = (value: Deployment[]) => {
   data.selectData = value
 }
 
+onBeforeUnmount(() => {
+  console.log('关闭....')
+  ws.close()
+})
 const listDeployment = async () => {
   data.query.namespace = ns.activeNamespace
   data.query.cloud = kube.activeCluster

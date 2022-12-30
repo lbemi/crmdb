@@ -212,6 +212,7 @@
 <script setup lang="ts">
 import { reactive, toRefs, ref, onMounted } from 'vue'
 import { Delete, Edit, View } from '@element-plus/icons-vue'
+import pagination from '@/component/pagination/pagination.vue'
 import { roleApi } from '@/views/sys/api'
 import { PageInfo, RoleInfo } from '@/type/sys'
 import { HostInfo } from '@/type/host'
@@ -256,7 +257,7 @@ onMounted(() => {
 
 const query = reactive<PageInfo>({
   page: 1,
-  limit: 50
+  limit: 10
 })
 
 const getHostList = async () => {

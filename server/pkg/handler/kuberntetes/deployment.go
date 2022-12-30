@@ -3,7 +3,7 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -22,11 +22,11 @@ type IDeployment interface {
 }
 
 type deployment struct {
-	cli *cloud.Clients
+	cli *store.Clients
 	ns  string
 }
 
-func NewDeployment(cli *cloud.Clients, namespace string) *deployment {
+func NewDeployment(cli *store.Clients, namespace string) *deployment {
 	return &deployment{cli: cli, ns: namespace}
 }
 

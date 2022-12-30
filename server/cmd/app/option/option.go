@@ -6,9 +6,9 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/lbemi/lbemi/pkg/bootstrap"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/model/config"
 	"github.com/lbemi/lbemi/pkg/services"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
 	"gorm.io/gorm"
 )
 
@@ -41,7 +41,7 @@ func (o *Options) Complete() *Options {
 	// 初始化casbin enforcer
 	o.Enforcer = bootstrap.InitPolicyEnforcer(o.DB)
 	// 初始化client store
-	clientStore := cloud.NewClientStore()
+	clientStore := store.NewClientStore()
 
 	// 初始化dbFactory
 	o.Factory = services.NewDbFactory(o.DB, o.Enforcer, clientStore)

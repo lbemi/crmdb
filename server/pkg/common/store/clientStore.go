@@ -1,4 +1,4 @@
-package cloud
+package store
 
 import (
 	"errors"
@@ -7,13 +7,6 @@ import (
 	"sync"
 )
 
-//type Informers struct {
-//	PodInformer v1.PodInformer
-//	NodeInformer v1.NodeInformer
-//	NameSpaceInformer v1.NamespaceInformer
-//	v1.Interface
-//}
-
 type Clients struct {
 	ClientSet             *kubernetes.Clientset
 	SharedInformerFactory informers.SharedInformerFactory
@@ -21,8 +14,8 @@ type Clients struct {
 }
 
 type ClientStore struct {
-	store map[string]*Clients
-	lock  sync.Mutex
+	data map[string]*Clients
+	lock sync.Mutex
 }
 
 type IClientStore interface {
@@ -39,24 +32,24 @@ func (c *ClientStore) Add(key string, resource *Clients) error {
 		return errors.New("key or value is null")
 	}
 	// 如果key已存在则覆盖
-	c.store[key] = resource
+	c.data[key] = resource
 	return nil
 }
 
 func (c *ClientStore) Get(key string) *Clients {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	return c.store[key]
+	return c.data[key]
 }
 
 func (c *ClientStore) Delete(key string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	delete(c.store, key)
+	delete(c.data, key)
 }
 
 func NewClientStore() *ClientStore {
 	return &ClientStore{
-		store: map[string]*Clients{},
+		data: map[string]*Clients{},
 	}
 }

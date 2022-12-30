@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/casbin/casbin/v2"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	client "github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/services/asset"
 	"github.com/lbemi/lbemi/pkg/services/auth"
@@ -23,7 +24,7 @@ type DbFactory struct {
 	db      *gorm.DB
 	enforce *casbin.Enforcer
 	client  *client.KubernetesClient
-	store   *cloud.ClientStore
+	store   *store.ClientStore
 }
 
 func (f *DbFactory) Authentication() auth.AuthenticationInterface {
@@ -50,7 +51,7 @@ func (f *DbFactory) Cluster() cloud.ICluster {
 	return cloud.NewCluster(f.db, f.store)
 }
 
-func NewDbFactory(db *gorm.DB, enforcer *casbin.Enforcer, store *cloud.ClientStore) IDbFactory {
+func NewDbFactory(db *gorm.DB, enforcer *casbin.Enforcer, store *store.ClientStore) IDbFactory {
 	return &DbFactory{
 		db:      db,
 		enforce: enforcer,

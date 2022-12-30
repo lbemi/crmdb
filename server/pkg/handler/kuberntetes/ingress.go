@@ -3,7 +3,7 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -22,7 +22,7 @@ type IIngresses interface {
 }
 
 type ingresses struct {
-	client *cloud.Clients
+	client *store.Clients
 	ns     string
 }
 
@@ -66,6 +66,6 @@ func (s *ingresses) Update(ctx context.Context, ingresses *v1.Ingress) (*v1.Ingr
 	return res, err
 }
 
-func NewIngress(client *cloud.Clients, namespace string) *ingresses {
+func NewIngress(client *store.Clients, namespace string) *ingresses {
 	return &ingresses{client: client, ns: namespace}
 }
