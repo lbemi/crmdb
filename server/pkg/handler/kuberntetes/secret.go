@@ -3,7 +3,7 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -22,7 +22,7 @@ type ISecret interface {
 }
 
 type secret struct {
-	client *cloud.Clients
+	client *store.Clients
 	ns     string
 }
 
@@ -66,6 +66,6 @@ func (s *secret) Update(ctx context.Context, secret *v1.Secret) (*v1.Secret, err
 	return res, err
 }
 
-func NewSecret(client *cloud.Clients, namespace string) *secret {
+func NewSecret(client *store.Clients, namespace string) *secret {
 	return &secret{client: client, ns: namespace}
 }

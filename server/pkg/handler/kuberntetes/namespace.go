@@ -3,7 +3,7 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -22,7 +22,7 @@ type INamespace interface {
 }
 
 type namespace struct {
-	cli *cloud.Clients
+	cli *store.Clients
 	ns  string
 }
 
@@ -67,6 +67,6 @@ func (n *namespace) Delete(ctx context.Context, name string) error {
 	return err
 }
 
-func NewNamespace(cli *cloud.Clients) *namespace {
+func NewNamespace(cli *store.Clients) *namespace {
 	return &namespace{cli: cli}
 }

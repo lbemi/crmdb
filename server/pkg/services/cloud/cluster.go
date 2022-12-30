@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/util"
 	"gorm.io/gorm"
@@ -16,7 +17,7 @@ import (
 )
 
 type ICluster interface {
-	GenerateClient(name, config string) (*Clients, *cloud.Config, error)
+	GenerateClient(name, config string) (*store.Clients, *cloud.Config, error)
 
 	Create(config *cloud.Config) error
 	Delete(id uint64) error
@@ -24,7 +25,7 @@ type ICluster interface {
 	Get(id uint64) (*cloud.Config, error)
 	GetByName(name string) (*cloud.Config, error)
 	List() (*[]cloud.Config, error)
-	GetClient(name string) *Clients
+	GetClient(name string) *store.Clients
 	ChangeStatus(id uint64, status bool) error
 
 	RemoveFromStore(name string)
@@ -32,24 +33,24 @@ type ICluster interface {
 
 type cluster struct {
 	db    *gorm.DB
-	store *ClientStore
+	store *store.ClientStore
 }
 
-func NewCluster(db *gorm.DB, store *ClientStore) *cluster {
+func NewCluster(db *gorm.DB, store *store.ClientStore) *cluster {
 	return &cluster{
 		db:    db,
 		store: store,
 	}
 }
 
-func (c *cluster) GenerateClient(name, config string) (*Clients, *cloud.Config, error) {
+func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Config, error) {
 
 	//如果已经存在或者已经初始化client则退出
 	if c.store.Get(name) != nil && c.store.Get(name).IsInit {
 		return nil, nil, errors.New("client has already been initialized")
 	}
 
-	var client Clients
+	var client store.Clients
 	clientConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(config))
 	if err != nil {
 		c.store.Delete(name)
@@ -188,7 +189,7 @@ func (c *cluster) List() (*[]cloud.Config, error) {
 	return &clu, nil
 }
 
-func (c *cluster) GetClient(name string) *Clients {
+func (c *cluster) GetClient(name string) *store.Clients {
 	return c.store.Get(name)
 }
 

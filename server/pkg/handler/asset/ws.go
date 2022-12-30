@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
 	"github.com/lbemi/lbemi/pkg/model/asset"
 	"golang.org/x/crypto/ssh"
 	"time"
@@ -34,16 +35,19 @@ type IWs interface {
 }
 
 func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.Session, channel ssh.Channel) error {
+	wsstore.WsClientMap.Store(ws)
 	go func() {
 		for {
 			// 从websocket中读取数据
 			_, p, err := ws.ReadMessage()
 			if err != nil {
+				wsstore.WsClientMap.Remove(ws)
 				return
 			}
 			var wsmsg WsMsg
 			err = json.Unmarshal(p, &wsmsg)
 			if err != nil {
+				wsstore.WsClientMap.Remove(ws)
 				log.Logger.Error(err)
 				return
 			}
@@ -52,12 +56,13 @@ func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.S
 			//_, err = stdinPipe.Write(p)
 			switch wsmsg.Type {
 			case 2:
-				channel.Write([]byte(wsmsg.Msg))
+				_, err := channel.Write([]byte(wsmsg.Msg))
 				if err != nil {
+					wsstore.WsClientMap.Remove(ws)
 					return
 				}
 			case 3:
-				session.SendRequest("ping", true, nil)
+				_, err := session.SendRequest("ping", true, nil)
 				if err != nil {
 					ws.WriteMessage(1, []byte("\033[31m已经关闭连接!\033[0m"))
 					return
@@ -94,6 +99,7 @@ func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.S
 			for {
 				x, size, err := reader.ReadRune()
 				if err != nil {
+					wsstore.WsClientMap.Remove(ws)
 					log.Logger.Error(err) //TODO control + D 会一直刷新
 					ws.WriteMessage(1, []byte("\033[31m已经关闭连接!\033[0m"))
 					return
@@ -132,6 +138,7 @@ func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.S
 
 	defer func() {
 		if err := recover(); err != nil {
+			wsstore.WsClientMap.Remove(ws)
 			log.Logger.Error(err)
 		}
 	}()

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -25,7 +25,7 @@ type INode interface {
 }
 
 type node struct {
-	cli *cloud.Clients
+	cli *store.Clients
 }
 
 func (n *node) List(ctx context.Context) ([]*v1.Node, error) {
@@ -84,6 +84,6 @@ func (n *node) Patch(ctx context.Context, name string, labels map[string]string)
 	return res, err
 }
 
-func NewNode(cli *cloud.Clients) *node {
+func NewNode(cli *store.Clients) *node {
 	return &node{cli: cli}
 }

@@ -2,12 +2,11 @@ package asset
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
+	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/model/asset"
-	"net/http"
 	"strconv"
 )
 
@@ -158,14 +157,6 @@ func DeleteHost(c *gin.Context) {
 	response.Success(c, response.StatusOK, nil)
 }
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
 func WsShell(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 32)
 	if err != nil {
@@ -190,7 +181,7 @@ func WsShell(c *gin.Context) {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := wsstore.Upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return

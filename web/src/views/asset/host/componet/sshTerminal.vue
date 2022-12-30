@@ -1,5 +1,5 @@
 <template>
-  <el-card style=" width: 100%;height: 100%;">
+  <el-card style="width: 100%; height: 100%">
     <h1>SSH终端--{{ query.ip }}</h1>
     <br />
     <div
@@ -115,8 +115,6 @@ let url =
 
 let pingInterval: any
 function initSocket() {
-  console.log(localStorage.getItem('token'))
-
   state.socket = new WebSocket(url)
 
   // 监听socket连接

@@ -3,7 +3,7 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -22,7 +22,7 @@ type IDaemonSet interface {
 }
 
 type daemonSet struct {
-	cli *cloud.Clients
+	cli *store.Clients
 	ns  string
 }
 
@@ -66,6 +66,6 @@ func (d *daemonSet) Delete(ctx context.Context, name string) error {
 	return err
 }
 
-func NewDaemonSet(cli *cloud.Clients, namespace string) *daemonSet {
+func NewDaemonSet(cli *store.Clients, namespace string) *daemonSet {
 	return &daemonSet{cli: cli, ns: namespace}
 }

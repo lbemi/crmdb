@@ -3,7 +3,7 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -22,7 +22,7 @@ type IService interface {
 }
 
 type service struct {
-	client *cloud.Clients
+	client *store.Clients
 	ns     string
 }
 
@@ -67,6 +67,6 @@ func (s *service) Update(ctx context.Context, service *v1.Service) (*v1.Service,
 	return res, err
 }
 
-func NewService(client *cloud.Clients, namespace string) *service {
+func NewService(client *store.Clients, namespace string) *service {
 	return &service{client: client, ns: namespace}
 }

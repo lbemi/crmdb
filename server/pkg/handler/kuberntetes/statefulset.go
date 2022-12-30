@@ -3,7 +3,7 @@ package kuberntetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -22,7 +22,7 @@ type IStatefulSet interface {
 }
 
 type statefulSet struct {
-	cli *cloud.Clients
+	cli *store.Clients
 	ns  string
 }
 
@@ -67,6 +67,6 @@ func (d *statefulSet) Delete(ctx context.Context, name string) error {
 	return err
 }
 
-func NewStatefulSet(cli *cloud.Clients, namespace string) *statefulSet {
+func NewStatefulSet(cli *store.Clients, namespace string) *statefulSet {
 	return &statefulSet{cli: cli, ns: namespace}
 }
