@@ -77,7 +77,8 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Co
 
 	conf.PodCidr = list.Items[0].Spec.PodCIDR
 	conf.RunTime = list.Items[0].Status.NodeInfo.ContainerRuntimeVersion
-	conf.Version = list.Items[0].Status.NodeInfo.KubeletVersion
+	version, _ := clientSet.ServerVersion()
+	conf.Version = version.String()
 	conf.Status = true
 	conf.Nodes = len(list.Items)
 	conf.InternalIP = list.Items[0].Status.Addresses[0].Address
