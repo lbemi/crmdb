@@ -100,38 +100,7 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Co
 	client.SharedInformerFactory = informers.NewSharedInformerFactory(clientSet, time.Second*60)
 	client.IsInit = true
 	c.store.Add(name, &client)
-
-	// 设置需要启动的informer gvr资源
-	gvrs := []schema.GroupVersionResource{
-		{Group: "", Version: "v1", Resource: "pods"},
-		{Group: "", Version: "v1", Resource: "nodes"},
-		{Group: "", Version: "v1", Resource: "services"},
-		{Group: "", Version: "v1", Resource: "namespaces"},
-		{Group: "", Version: "v1", Resource: "events"},
-		{Group: "", Version: "v1", Resource: "secrets"},
-		{Group: "", Version: "v1", Resource: "configmaps"},
-		{Group: "apps", Version: "v1", Resource: "deployments"},
-		{Group: "apps", Version: "v1", Resource: "statefulsets"},
-		{Group: "apps", Version: "v1", Resource: "daemonsets"},
-		{Group: "apps", Version: "v1", Resource: "replicasets"},
-		{Group: "networking.k8s.io", Version: "v1beta1", Resource: "ingresses"},
-
-		{Group: "batch", Version: "v1beta1", Resource: "cronjobs"},
-		{Group: "batch", Version: "v1", Resource: "jobs"},
-	}
-
-	for _, gvr := range gvrs {
-		// 实例化informer
-		_, err := client.SharedInformerFactory.ForResource(gvr)
-		if err != nil {
-			log.Logger.Error("informer init failed. err: ", err)
-		}
-	}
-	stopChan := make(chan struct{})
-	// 启动informer
-	client.SharedInformerFactory.Start(stopChan)
-	// 等待informer同步完成
-	client.SharedInformerFactory.WaitForCacheSync(stopChan)
+	go c.StartInformer(client)
 
 	return &client, &conf, nil
 }
@@ -200,4 +169,40 @@ func (c *cluster) ChangeStatus(id uint64, status bool) error {
 
 func (c *cluster) RemoveFromStore(name string) {
 	c.store.Delete(name)
+}
+
+func (c *cluster) StartInformer(client store.Clients) {
+
+	// 设置需要启动的informer gvr资源
+	gvrs := []schema.GroupVersionResource{
+		{Group: "", Version: "v1", Resource: "pods"},
+		{Group: "", Version: "v1", Resource: "nodes"},
+		{Group: "", Version: "v1", Resource: "services"},
+		{Group: "", Version: "v1", Resource: "namespaces"},
+		{Group: "", Version: "v1", Resource: "events"},
+		{Group: "", Version: "v1", Resource: "secrets"},
+		{Group: "", Version: "v1", Resource: "configmaps"},
+		{Group: "apps", Version: "v1", Resource: "deployments"},
+		{Group: "apps", Version: "v1", Resource: "statefulsets"},
+		{Group: "apps", Version: "v1", Resource: "daemonsets"},
+		{Group: "apps", Version: "v1", Resource: "replicasets"},
+		{Group: "networking.k8s.io", Version: "v1beta1", Resource: "ingresses"},
+
+		{Group: "batch", Version: "v1beta1", Resource: "cronjobs"},
+		{Group: "batch", Version: "v1", Resource: "jobs"},
+	}
+
+	for _, gvr := range gvrs {
+		// 实例化informer
+		_, err := client.SharedInformerFactory.ForResource(gvr)
+		if err != nil {
+			log.Logger.Error("informer init failed. err: ", err)
+		}
+	}
+
+	stopChan := make(chan struct{})
+	// 启动informer
+	client.SharedInformerFactory.Start(stopChan)
+	// 等待informer同步完成
+	client.SharedInformerFactory.WaitForCacheSync(stopChan)
 }
