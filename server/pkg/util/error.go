@@ -15,8 +15,14 @@ func WithErrorLog(err error) {
 
 func GinError(c *gin.Context, err error, code int) {
 	if err != nil {
-		log.Logger.Error(err)
 		response.Fail(c, code)
+		panic(err)
+	}
+}
+
+func HandleError(err error) {
+	if err != nil {
+		log.Logger.Error(err)
 		panic(err)
 	}
 }

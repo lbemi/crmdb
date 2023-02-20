@@ -5,6 +5,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/handler/types"
+	"github.com/lbemi/lbemi/pkg/util"
 	v1 "k8s.io/api/apps/v1"
 	"strconv"
 )
@@ -161,6 +162,28 @@ func DeleteDeployment(c *gin.Context) {
 		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return
 	}
+
+	response.Success(c, response.StatusOK, nil)
+}
+
+func ScaleDeployments(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	namespace := c.Param("namespace")
+	deploymentName := c.Param("deploymentName")
+	scale := c.Param("scale")
+	scaleNum, err := strconv.Atoi(scale)
+	util.GinError(c, err, response.ErrCodeParameter)
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	err = core.V1.Cluster(clusterName).Deployments(namespace).Scale(c, deploymentName, int32(scaleNum))
+	util.GinError(c, err, response.ErrCodeParameter)
 
 	response.Success(c, response.StatusOK, nil)
 }
