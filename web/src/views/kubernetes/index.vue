@@ -70,6 +70,7 @@ const kube = kubeStore()
 const clusters = kube.clusters
 
 const flush = inject('reload')
+namespace.activeNamespace = 'default'
 
 const kubernetesRoutes = [
   {

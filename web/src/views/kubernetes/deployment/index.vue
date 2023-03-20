@@ -93,14 +93,24 @@ onMounted(() => {
   listDeployment()
 })
 
-var ws = new WebSocket('ws://127.0.0.1:8080/api/v1/ws')
+var dns = 'ws://127.0.0.1:8080/api/v1/ws/' + kube.activeCluster + '/deployment'
+var ws = new WebSocket(dns)
 ws.onopen = () => {
   console.log('ws connected.')
 }
 ws.onmessage = (e) => {
   if (e.data === 'ping') {
     return
+  } else {
+    const object = JSON.parse(e.data)
+    if (
+      object.type === 'deployment' &&
+      object.result.namespace === ns.activeNamespace
+    ) {
+      data.Deployments = object.result.data
+    }
   }
+
   console.log('服务器发送的消息: ', e.data)
 }
 ws.onclose = () => {
