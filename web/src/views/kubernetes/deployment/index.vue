@@ -105,7 +105,7 @@ ws.onmessage = (e) => {
     const object = JSON.parse(e.data)
     if (
       object.type === 'deployment' &&
-      object.result.namespace === ns.activeNamespace
+      object.result.namespace === ns.activeNamespace && object.cluster == kube.activeCluster
     ) {
       data.Deployments = object.result.data
     }

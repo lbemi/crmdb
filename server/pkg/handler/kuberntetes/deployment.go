@@ -137,7 +137,7 @@ func (d *DeploymentHandler) notifyDeployments(obj interface{}) {
 	sort.Slice(deployments, func(i, j int) bool {
 		return deployments[j].ObjectMeta.GetCreationTimestamp().Time.Before(deployments[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
-
+	fmt.Println(d.clusterName, "-----这个空间-----发生数据变化------------")
 	wsstore.WsClientMap.SendClusterResource(d.clusterName, "deployment", gin.H{
 		"cluster": d.clusterName,
 		"type":    "deployment",
