@@ -6,21 +6,21 @@ import (
 )
 
 type WsClient struct {
-	conn     *websocket.Conn
-	cluster  string
-	resource string
+	Conn     *websocket.Conn
+	Cluster  string
+	Resource string
 }
 
 func NewWsClient(conn *websocket.Conn, cluster string, resource string) *WsClient {
-	return &WsClient{conn: conn, cluster: cluster, resource: resource}
+	return &WsClient{Conn: conn, Cluster: cluster, Resource: resource}
 }
 
 func (w *WsClient) Ping(t time.Duration) {
 	for {
 		time.Sleep(t)
-		err := w.conn.WriteMessage(websocket.PingMessage, []byte("ping"))
+		err := w.Conn.WriteMessage(websocket.PingMessage, []byte("ping"))
 		if err != nil {
-			WsClientMap.Remove(w.conn)
+			WsClientMap.Remove(w.Conn)
 			return
 		}
 	}

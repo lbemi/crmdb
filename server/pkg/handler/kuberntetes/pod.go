@@ -2,7 +2,6 @@ package kuberntetes
 
 import (
 	"context"
-	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	corev1 "k8s.io/api/core/v1"
@@ -79,15 +78,15 @@ func NewPodHandler() *PodHandler {
 }
 
 func (p *PodHandler) OnAdd(obj interface{}) {
-	fmt.Println("Pod: OnAdd :", obj.(*corev1.Pod).Name)
+	//fmt.Println("Pod: OnAdd :", obj.(*corev1.Pod).Name)
 }
 
 func (p *PodHandler) OnUpdate(oldObj, newObj interface{}) {
 
-	fmt.Println("Pod: OnUpdate: ", oldObj.(*corev1.Pod).Name, " --> ", newObj.(*corev1.Pod).Status.Phase)
+	//fmt.Println("Pod: OnUpdate: ", oldObj.(*corev1.Pod).Name, " --> ", newObj.(*corev1.Pod).Status.Phase)
 }
 
 func (p *PodHandler) OnDelete(obj interface{}) {
 
-	fmt.Println("Pod: OnDelete: ", obj.(*corev1.Pod).Name)
+	//fmt.Println("Pod: OnDelete: ", obj.(*corev1.Pod).Name)
 }
