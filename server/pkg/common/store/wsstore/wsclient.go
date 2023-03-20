@@ -6,11 +6,13 @@ import (
 )
 
 type WsClient struct {
-	conn *websocket.Conn
+	conn     *websocket.Conn
+	cluster  string
+	resource string
 }
 
-func NewWsClient(conn *websocket.Conn) *WsClient {
-	return &WsClient{conn: conn}
+func NewWsClient(conn *websocket.Conn, cluster string, resource string) *WsClient {
+	return &WsClient{conn: conn, cluster: cluster, resource: resource}
 }
 
 func (w *WsClient) Ping(t time.Duration) {

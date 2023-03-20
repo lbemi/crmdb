@@ -60,7 +60,6 @@ func GetCluster(c *gin.Context) {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
-	log.Logger.Info(cluster)
 	response.Success(c, response.StatusOK, cluster)
 }
 

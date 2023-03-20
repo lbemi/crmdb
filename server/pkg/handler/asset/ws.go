@@ -35,7 +35,7 @@ type IWs interface {
 }
 
 func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.Session, channel ssh.Channel) error {
-	wsstore.WsClientMap.Store(ws)
+	wsstore.WsClientMap.Store("", "ssh", ws)
 	go func() {
 		for {
 			// 从websocket中读取数据

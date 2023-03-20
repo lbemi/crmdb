@@ -7,11 +7,13 @@ import (
 )
 
 func Ws(c *gin.Context) {
+	clusterName := c.Param("cluster")
+	typeName := c.Param("type")
 	conn, err := wsstore.Upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Logger.Error(err)
 	} else {
-		wsstore.WsClientMap.Store(conn)
+		wsstore.WsClientMap.Store(clusterName, typeName, conn)
 	}
 }
 

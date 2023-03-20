@@ -5,19 +5,21 @@ import (
 	"errors"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/handler/kuberntetes"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/util"
 	"gorm.io/gorm"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/metrics/pkg/client/clientset/versioned"
 	"time"
 )
 
 type ICluster interface {
 	GenerateClient(name, config string) (*store.Clients, *cloud.Config, error)
+	CheckCusterHealth(name string) bool
 
 	Create(config *cloud.Config) error
 	Delete(id uint64) error
@@ -29,6 +31,7 @@ type ICluster interface {
 	ChangeStatus(id uint64, status bool) error
 
 	RemoveFromStore(name string)
+	StartInformer(clusterName string)
 }
 
 type cluster struct {
@@ -42,11 +45,29 @@ func NewCluster(db *gorm.DB, store *store.ClientStore) *cluster {
 		store: store,
 	}
 }
+func (c *cluster) CheckCusterHealth(name string) bool {
+
+	clients := c.store.Get(name)
+	if clients == nil {
+		return false
+	}
+
+	withTimeout, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFunc()
+
+	// 健康检查
+	response := clients.ClientSet.CoreV1().RESTClient().Get().AbsPath("/healthz").Do(withTimeout)
+	if response.Error() != nil {
+		return false
+	}
+	return true
+}
 
 func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Config, error) {
 
 	//如果已经存在或者已经初始化client则退出
-	if c.store.Get(name) != nil && c.store.Get(name).IsInit {
+	clients := c.store.Get(name)
+	if clients != nil && clients.IsInit {
 		return nil, nil, errors.New("client has already been initialized")
 	}
 
@@ -67,12 +88,15 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Co
 	}
 
 	var conf cloud.Config
-	withTimeout, _ := context.WithTimeout(context.TODO(), time.Second*3)
+
+	withTimeout, cancelFunc := context.WithTimeout(context.TODO(), time.Second*3)
+	defer cancelFunc()
+
 	list, err := clientSet.CoreV1().Nodes().List(withTimeout, metav1.ListOptions{})
 	if err != nil {
 		c.store.Delete(name)
 		log.Logger.Error(err)
-		return nil, nil, errors.New("cluster is not health")
+		return nil, nil, errors.New("create cluster failed. please check the config file")
 	}
 
 	conf.PodCidr = list.Items[0].Spec.PodCIDR
@@ -90,18 +114,26 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Co
 		conf.Memory = conf.Memory + node.Status.Capacity.Memory().AsApproximateFloat64()
 	}
 
-	conf.Memory = conf.Memory / 1024
-
+	conf.Memory = conf.Memory / 1000
 	conf.Name = name
 	conf.KubeConfig = config
 
+	//初始化metricSet
+	metricSet, err := versioned.NewForConfig(clientConfig)
+	if err != nil {
+		log.Logger.Error(err)
+		return nil, nil, errors.New("create cluster failed. please check the config file")
+	}
+
+	client.MetricSet = metricSet
 	client.ClientSet = clientSet
 	//生成informer factory
 	client.SharedInformerFactory = informers.NewSharedInformerFactory(clientSet, time.Second*60)
 	client.IsInit = true
 	c.store.Add(name, &client)
-	go c.StartInformer(client)
 
+	//go c.StartInformer(client)
+	go c.StartInformer(name)
 	return &client, &conf, nil
 }
 
@@ -171,34 +203,44 @@ func (c *cluster) RemoveFromStore(name string) {
 	c.store.Delete(name)
 }
 
-func (c *cluster) StartInformer(client store.Clients) {
+func (c *cluster) StartInformer(clusterName string) {
+	log.Logger.Info(clusterName, "-------------初始化Informer")
+	client := c.store.Get(clusterName)
+	if client == nil {
+		log.Logger.Error("初始化Informer失败.")
+	}
 
 	// 设置需要启动的informer gvr资源
-	gvrs := []schema.GroupVersionResource{
-		{Group: "", Version: "v1", Resource: "pods"},
-		{Group: "", Version: "v1", Resource: "nodes"},
-		{Group: "", Version: "v1", Resource: "services"},
-		{Group: "", Version: "v1", Resource: "namespaces"},
-		{Group: "", Version: "v1", Resource: "events"},
-		{Group: "", Version: "v1", Resource: "secrets"},
-		{Group: "", Version: "v1", Resource: "configmaps"},
-		{Group: "apps", Version: "v1", Resource: "deployments"},
-		{Group: "apps", Version: "v1", Resource: "statefulsets"},
-		{Group: "apps", Version: "v1", Resource: "daemonsets"},
-		{Group: "apps", Version: "v1", Resource: "replicasets"},
-		{Group: "networking.k8s.io", Version: "v1beta1", Resource: "ingresses"},
-
-		{Group: "batch", Version: "v1beta1", Resource: "cronjobs"},
-		{Group: "batch", Version: "v1", Resource: "jobs"},
-	}
-
-	for _, gvr := range gvrs {
-		// 实例化informer
-		_, err := client.SharedInformerFactory.ForResource(gvr)
-		if err != nil {
-			log.Logger.Error("informer init failed. err: ", err)
-		}
-	}
+	//gvrs := []schema.GroupVersionResource{
+	//	{Group: "", Version: "v1", Resource: "pods"},
+	//	{Group: "", Version: "v1", Resource: "nodes"},
+	//	{Group: "", Version: "v1", Resource: "services"},
+	//	{Group: "", Version: "v1", Resource: "namespaces"},
+	//	{Group: "", Version: "v1", Resource: "events"},
+	//	{Group: "", Version: "v1", Resource: "secrets"},
+	//	{Group: "", Version: "v1", Resource: "configmaps"},
+	//	{Group: "apps", Version: "v1", Resource: "deployments"},
+	//	{Group: "apps", Version: "v1", Resource: "statefulsets"},
+	//	{Group: "apps", Version: "v1", Resource: "daemonsets"},
+	//	{Group: "apps", Version: "v1", Resource: "replicasets"},
+	//	{Group: "networking.k8s.io", Version: "v1beta1", Resource: "ingresses"},
+	//
+	//	{Group: "batch", Version: "v1beta1", Resource: "cronjobs"},
+	//	{Group: "batch", Version: "v1", Resource: "jobs"},
+	//}
+	//
+	//for _, gvr := range gvrs {
+	//	// 实例化informer
+	//	_, err := client.SharedInformerFactory.ForResource(gvr)
+	//	if err != nil {
+	//		log.Logger.Error("informer init failed. err: ", err)
+	//	}
+	//}
+	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(kuberntetes.NewDeploymentHandler(client, clusterName))
+	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(kuberntetes.NewPodHandler())
+	client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(kuberntetes.NewNameSpaceHandler())
+	client.SharedInformerFactory.Core().V1().Events().Informer().AddEventHandler(kuberntetes.NewEventHandler())
+	client.SharedInformerFactory.Core().V1().Nodes().Informer().AddEventHandler(kuberntetes.NewNodeHandler())
 
 	stopChan := make(chan struct{})
 	// 启动informer

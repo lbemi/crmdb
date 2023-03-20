@@ -4,11 +4,13 @@ import (
 	"errors"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/metrics/pkg/client/clientset/versioned"
 	"sync"
 )
 
 type Clients struct {
 	ClientSet             *kubernetes.Clientset
+	MetricSet             *versioned.Clientset
 	SharedInformerFactory informers.SharedInformerFactory
 	IsInit                bool
 }
