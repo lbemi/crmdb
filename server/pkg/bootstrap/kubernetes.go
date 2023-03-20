@@ -25,6 +25,7 @@ func LoadKubernetes(f services.IDbFactory) {
 			}
 			klog.Errorf("%s集群异常", cluster.Name)
 		} else {
+			go f.Cluster().StartInformer(cluster.Name)
 			if !cluster.Status {
 				err := f.Cluster().ChangeStatus(cluster.ID, true)
 				if err != nil {

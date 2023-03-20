@@ -14,7 +14,7 @@ func PassThroughRoutes(router *gin.RouterGroup) {
 	router.GET("/captcha", sys.GetCaptcha)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/host/:id/ws", asset.WsShell)
-	router.GET("/ws", cloud.Ws)
+	router.GET("/ws/:cluster/:type", cloud.Ws)
 	router.GET("/ws/send", cloud.WsSendAll)
 
 }

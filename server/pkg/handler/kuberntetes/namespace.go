@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type NamespaceGetter interface {
@@ -28,9 +29,14 @@ type namespace struct {
 
 func (n *namespace) List(ctx context.Context) ([]*v1.Namespace, error) {
 	list, err := n.cli.SharedInformerFactory.Core().V1().Namespaces().Lister().List(labels.Everything())
+
 	if err != nil {
 		log.Logger.Error(err)
 	}
+
+	sort.Slice(list, func(i, j int) bool {
+		return list[j].ObjectMeta.CreationTimestamp.Time.Before(list[i].ObjectMeta.CreationTimestamp.Time)
+	})
 
 	return list, err
 }
@@ -69,4 +75,23 @@ func (n *namespace) Delete(ctx context.Context, name string) error {
 
 func NewNamespace(cli *store.Clients) *namespace {
 	return &namespace{cli: cli}
+}
+
+type NameSpaceHandler struct {
+}
+
+func (n *NameSpaceHandler) OnAdd(obj interface{}) {
+	//TODO implement me
+}
+
+func (n *NameSpaceHandler) OnUpdate(oldObj, newObj interface{}) {
+	//TODO implement me
+}
+
+func (n *NameSpaceHandler) OnDelete(obj interface{}) {
+	//TODO implement me
+}
+
+func NewNameSpaceHandler() *NameSpaceHandler {
+	return &NameSpaceHandler{}
 }

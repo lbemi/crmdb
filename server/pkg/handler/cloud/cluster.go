@@ -9,7 +9,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services"
 	"github.com/lbemi/lbemi/pkg/util"
-	"time"
 )
 
 type ClusterGetter interface {
@@ -132,7 +131,10 @@ func (c *cluster) Deployments(namespace string) kuberntetes.IDeployment {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewDeployment(c.getClient(c.clusterName), namespace)
+
+	dep := kuberntetes.NewDeployment(c.getClient(c.clusterName), namespace)
+	//dep.Start()
+	return dep
 }
 
 func (c *cluster) Create(ctx context.Context, config *form.ClusterReq) error {
@@ -182,33 +184,27 @@ func (c *cluster) GetByName(ctx context.Context, name string) (*cloud.Config, er
 }
 
 func (c *cluster) CheckHealth(ctx context.Context) bool {
+
 	// 获取集群信息
 	config, err := c.factory.Cluster().GetByName(c.clusterName)
 	if err != nil || config == nil {
 		return false
 	}
-	// 解密
-	kf := util.Decrypt(config.KubeConfig)
-	if !config.Status {
-		// 如果集群异常，执行一次初始化，如果初始化失败，则返回false，正常则返回true
-		_, _, err := c.factory.Cluster().GenerateClient(config.Name, kf)
-		if err != nil {
-			return false
-		}
+
+	health := c.factory.Cluster().CheckCusterHealth(c.clusterName)
+	if health && !config.Status {
 		err = c.ChangeStatus(config.ID, true)
 		if err != nil {
 			return false
 		}
+		return true
 	}
 
-	withTimeout, _ := context.WithTimeout(ctx, time.Second*3)
-	_, err = c.Nodes().List(withTimeout)
-	if err != nil {
+	if !health && config.Status {
 		err = c.ChangeStatus(config.ID, false)
 		if err != nil {
 			return false
 		}
-		c.factory.Cluster().RemoveFromStore(config.Name)
 		return false
 	}
 

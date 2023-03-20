@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/common/store"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type EventGetter interface {
@@ -27,6 +28,9 @@ func (e *event) List(ctx context.Context) ([]*v1.Event, error) {
 	if err != nil {
 		log.Logger.Error(err)
 	}
+	sort.Slice(eventList, func(i, j int) bool {
+		return eventList[j].ObjectMeta.CreationTimestamp.Time.Before(eventList[i].ObjectMeta.CreationTimestamp.Time)
+	})
 	return eventList, err
 }
 
@@ -40,4 +44,23 @@ func (e *event) Get(ctx context.Context, name string) (*v1.Event, error) {
 
 func NewEvent(client *store.Clients, namespace string) *event {
 	return &event{cli: client, ns: namespace}
+}
+
+type EventHandler struct {
+}
+
+func (e *EventHandler) OnAdd(obj interface{}) {
+	//TODO implement me
+}
+
+func (e *EventHandler) OnUpdate(oldObj, newObj interface{}) {
+	//TODO implement me
+}
+
+func (e *EventHandler) OnDelete(obj interface{}) {
+	//TODO implement me
+}
+
+func NewEventHandler() *EventHandler {
+	return &EventHandler{}
 }
