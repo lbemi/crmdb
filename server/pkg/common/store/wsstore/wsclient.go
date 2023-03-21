@@ -18,10 +18,13 @@ func NewWsClient(conn *websocket.Conn, cluster string, resource string) *WsClien
 func (w *WsClient) Ping(t time.Duration) {
 	for {
 		time.Sleep(t)
+		wsLock.Lock()
 		err := w.Conn.WriteMessage(websocket.PingMessage, []byte("ping"))
+		wsLock.Unlock()
 		if err != nil {
-			WsClientMap.Remove(w.Conn)
+add			WsClientMap.Remove(w.Conn)
 			return
 		}
+
 	}
 }

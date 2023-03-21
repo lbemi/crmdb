@@ -133,7 +133,6 @@ func (c *cluster) Deployments(namespace string) kuberntetes.IDeployment {
 	}
 
 	dep := kuberntetes.NewDeployment(c.getClient(c.clusterName), namespace)
-	//dep.Start()
 	return dep
 }
 

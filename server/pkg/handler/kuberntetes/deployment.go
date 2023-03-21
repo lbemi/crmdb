@@ -3,7 +3,6 @@ package kuberntetes
 import (
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
@@ -113,17 +112,14 @@ func NewDeploymentHandler(client *store.Clients, clusterName string) *Deployment
 
 func (d *DeploymentHandler) OnAdd(obj interface{}) {
 	d.notifyDeployments(obj)
-	fmt.Println("OnAdd :", obj.(*appsv1.Deployment).Name)
 }
 
 func (d *DeploymentHandler) OnUpdate(oldObj, newObj interface{}) {
 	d.notifyDeployments(newObj)
-	fmt.Println("OnUpdate: ", oldObj.(*appsv1.Deployment).Name, " --> ", newObj.(*appsv1.Deployment).Status.AvailableReplicas)
 }
 
 func (d *DeploymentHandler) OnDelete(obj interface{}) {
 	d.notifyDeployments(obj)
-	fmt.Println("OnDelete: ", obj.(*appsv1.Deployment).Name)
 }
 
 func (d *DeploymentHandler) notifyDeployments(obj interface{}) {
@@ -137,11 +133,11 @@ func (d *DeploymentHandler) notifyDeployments(obj interface{}) {
 	sort.Slice(deployments, func(i, j int) bool {
 		return deployments[j].ObjectMeta.GetCreationTimestamp().Time.Before(deployments[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
-	fmt.Println(d.clusterName, "-----这个空间-----发生数据变化------------")
-	wsstore.WsClientMap.SendClusterResource(d.clusterName, "deployment", gin.H{
+	//fmt.Println(d.clusterName, "-----这个空间-----发生数据变化------------")
+	go wsstore.WsClientMap.SendClusterResource(d.clusterName, "deployment", map[string]interface{}{
 		"cluster": d.clusterName,
 		"type":    "deployment",
-		"result": gin.H{
+		"result": map[string]interface{}{
 			"namespace": namespace,
 			"data":      deployments,
 		},
