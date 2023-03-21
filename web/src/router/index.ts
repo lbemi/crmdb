@@ -138,6 +138,14 @@ const genRouters = (menus: MenuObj[]) => {
             meta: {
               title: 'node'
             }
+          },
+          {
+            path: '/pod',
+            name: 'pod',
+            component: () => import('../views/kubernetes/pod/index.vue'),
+            meta: {
+              title: 'pod'
+            }
           }
         ]
       }

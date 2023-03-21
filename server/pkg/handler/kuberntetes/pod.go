@@ -4,9 +4,11 @@ import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type PodGetter interface {
@@ -31,6 +33,10 @@ func (d *pod) List(ctx context.Context) ([]*corev1.Pod, error) {
 	if err != nil {
 		log.Logger.Error(err)
 	}
+
+	sort.Slice(list, func(i, j int) bool {
+		return list[j].ObjectMeta.CreationTimestamp.Time.Before(list[i].ObjectMeta.CreationTimestamp.Time)
+	})
 
 	return list, err
 }
@@ -71,22 +77,47 @@ func NewPod(cli *store.Clients, namespace string) *pod {
 	return &pod{cli: cli, ns: namespace}
 }
 
-type PodHandler struct{}
+type PodHandler struct {
+	client      *store.Clients
+	clusterName string
+}
 
-func NewPodHandler() *PodHandler {
-	return &PodHandler{}
+func NewPodHandler(client *store.Clients, clusterName string) *PodHandler {
+	return &PodHandler{client: client, clusterName: clusterName}
 }
 
 func (p *PodHandler) OnAdd(obj interface{}) {
-	//fmt.Println("Pod: OnAdd :", obj.(*corev1.Pod).Name)
+	p.notifyPods(obj)
 }
 
 func (p *PodHandler) OnUpdate(oldObj, newObj interface{}) {
-
+	p.notifyPods(newObj)
 	//fmt.Println("Pod: OnUpdate: ", oldObj.(*corev1.Pod).Name, " --> ", newObj.(*corev1.Pod).Status.Phase)
 }
 
 func (p *PodHandler) OnDelete(obj interface{}) {
 
-	//fmt.Println("Pod: OnDelete: ", obj.(*corev1.Pod).Name)
+	p.notifyPods(obj)
+}
+
+func (p *PodHandler) notifyPods(obj interface{}) {
+	namespace := obj.(*corev1.Pod).Namespace
+	pods, err := p.client.SharedInformerFactory.Core().V1().Pods().Lister().Pods(namespace).List(labels.Everything())
+	if err != nil {
+		log.Logger.Error(err)
+	}
+
+	//按时间排序
+	sort.Slice(pods, func(i, j int) bool {
+		return pods[j].ObjectMeta.GetCreationTimestamp().Time.Before(pods[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
+
+	go wsstore.WsClientMap.SendClusterResource(p.clusterName, "pod", map[string]interface{}{
+		"cluster": p.clusterName,
+		"type":    "pod",
+		"result": map[string]interface{}{
+			"namespace": namespace,
+			"data":      pods,
+		},
+	})
 }

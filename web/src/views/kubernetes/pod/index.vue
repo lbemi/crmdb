@@ -16,24 +16,23 @@
           :value="item.metadata.name"
         />
       </el-select>
-      <el-button type="primary">创建Deployment</el-button>
-      <el-button type="danger" :disabled="data.selectData.length == 0"
+      <el-button type="danger" :disabled="pod.data.selectData.length == 0"
         >批量删除</el-button
       >
     </div>
 
     <el-table
-      :data="data.Deployments"
+      :data="pod.data.pods"
       style="width: 100%"
       @selection-change="handleSelectionChange"
-      v-loading="data.loading"
+      v-loading="pod.data.loading"
       max-height="100vh - 235px"
     >
       <el-table-column type="selection" width="55" />
 
       <el-table-column prop="metadata.name" label="名称" width="220px">
         <template #default="scope">
-          <el-button link type="primary" @click="deployDetail(scope.row)">
+          <el-button link type="primary">
             {{ scope.row.metadata.name }}</el-button
           >
         </template>
@@ -41,7 +40,7 @@
       <el-table-column label="状态" width="220px">
         <template #default="scope">
           <el-button
-            v-if="scope.row.status.conditions[0].status === 'True'"
+            v-if="scope.row.status.conditions[1].status === 'True'"
             type="success"
             :icon="Check"
             size="small"
@@ -50,16 +49,7 @@
           <el-button v-else type="danger" :icon="Close" size="small" circle />
         </template>
       </el-table-column>
-      <el-table-column label="镜像" width="540px">
-        <template #default="scope">
-          <el-tag
-            type="success"
-            v-for="(item, index) in scope.row.spec.template.spec.containers"
-            :key="index"
-            >{{ item.image.split('@')[0] }}</el-tag
-          >
-        </template>
-      </el-table-column>
+     
 
       <el-table-column label="标签" width="280px">
         <template #default="scope">
@@ -73,16 +63,12 @@
         </template>
       </el-table-column>
 
-      <el-table-column prop="spec.replicas" label="Pods" width="80px">
+      <el-table-column prop="status.podIP" label="IP" width="220px">
         <template #default="scope">
-          <a style="color: green">{{ scope.row.status.readyReplicas || '0' }}</a
-          >/ <a style="color: green">{{ scope.row.status.replicas }}</a
-          >/
-          <a style="color: red">{{
-            scope.row.status.unavailableReplicas || '0'
-          }}</a>
+            {{ scope.row.status.podIP }}
         </template>
       </el-table-column>
+
       <el-table-column label="创建时间" width="180px">
         <template #default="scope">
           {{ $filters.dateFormat(scope.row.metadata.creationTimestamp) }}
@@ -91,12 +77,70 @@
     </el-table>
     <!-- 分页区域 -->
     <pagination
-      :total="data.total"
+      :total="pod.data.total"
       @handlePageChange="handlePageChange"
     ></pagination>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import pagination from '@/component/pagination/pagination.vue'
+import { nsStore } from '@/store/kubernetes/namespace'
+import { kubeStore } from '@/store/kubernetes/kubernetes'
+import { podStore } from '@/store/kubernetes/pods'
+import { onMounted } from 'vue'
+import { Check, Close } from '@element-plus/icons-vue'
+import { PageInfo } from '@/type/sys'
+import { webSocketURL } from '@/request/request'
+const pod = podStore()
+const ns = nsStore()
+const kube = kubeStore()
+onMounted(() => {
+  pod.data.loading = true
+  pod.listPods()
+  pod.data.loading = false
+})
+
+const handleSelectionChange = () => {}
+
+const handleChange = () => {
+  pod.data.loading = true
+  pod.listPods()
+  pod.data.loading = false
+}
+
+const handlePageChange = (pageInfo: PageInfo) => {
+  pod.data.query.page = pageInfo.page
+  pod.data.query.limit = pageInfo.limit
+  pod.data.loading = true
+  pod.listPods()
+  pod.data.loading = false
+}
+
+var dns = webSocketURL + kube.activeCluster + '/pod'
+var ws = new WebSocket(dns)
+ws.onopen = () => {
+  console.log('ws connected.')
+}
+ws.onmessage = (e) => {
+  if (e.data === 'ping') {
+    return
+  } else {
+    const object = JSON.parse(e.data)
+    if (
+      object.type === 'pod' &&
+      object.result.namespace === ns.activeNamespace &&
+      object.cluster == kube.activeCluster
+    ) {
+      pod.data.pods = object.result.data
+    }
+  }
+
+}
+ws.onclose = () => {
+  console.log('close')
+}
+
+</script>
 
 <style scoped lang="less"></style>

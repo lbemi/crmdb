@@ -96,6 +96,12 @@ const kubernetesRoutes = [
     ]
   },
   {
+    id: 4,
+    name: 'Pod管理',
+    path: '/pod',
+  
+  },
+  {
     id: 5,
     name: '工作负载',
     path: '/deployment',
