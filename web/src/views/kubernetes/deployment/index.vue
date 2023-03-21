@@ -105,13 +105,16 @@ import { nsStore } from '@/store/kubernetes/namespace'
 import { Deployment, Data } from '@/type/deployment'
 import { PageInfo } from '@/type/sys'
 import { Check, Close } from '@element-plus/icons-vue'
+import {podStore} from '@/store/kubernetes/pods'
+import { webSocketURL } from '@/request/request'
+const pod = podStore()
 const ns = nsStore()
 const kube = kubeStore()
 onMounted(() => {
   listDeployment()
 })
 
-var dns = 'ws://127.0.0.1:8080/api/v1/ws/' + kube.activeCluster + '/deployment'
+var dns = webSocketURL + kube.activeCluster + '/deployment'
 var ws = new WebSocket(dns)
 ws.onopen = () => {
   console.log('ws connected.')
@@ -130,11 +133,11 @@ ws.onmessage = (e) => {
     }
   }
 
-  console.log('服务器发送的消息: ', e.data)
 }
 ws.onclose = () => {
   console.log('close')
 }
+
 
 const data = reactive(new Data())
 
@@ -177,6 +180,7 @@ const deployDetail = (deploy: Deployment) => {
   const res = deploymentApi.get.request(data.query)
 
   console.log(res)
+
 }
 </script>
 

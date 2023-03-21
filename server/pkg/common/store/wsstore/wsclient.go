@@ -22,7 +22,7 @@ func (w *WsClient) Ping(t time.Duration) {
 		err := w.Conn.WriteMessage(websocket.PingMessage, []byte("ping"))
 		wsLock.Unlock()
 		if err != nil {
-add			WsClientMap.Remove(w.Conn)
+			WsClientMap.Remove(w.Conn)
 			return
 		}
 

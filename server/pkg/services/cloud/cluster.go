@@ -236,7 +236,7 @@ func (c *cluster) StartInformer(clusterName string) {
 	//	}
 	//}
 	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(kuberntetes.NewDeploymentHandler(client, clusterName))
-	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(kuberntetes.NewPodHandler())
+	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(kuberntetes.NewPodHandler(client, clusterName))
 	client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(kuberntetes.NewNameSpaceHandler())
 	client.SharedInformerFactory.Core().V1().Events().Informer().AddEventHandler(kuberntetes.NewEventHandler())
 	client.SharedInformerFactory.Core().V1().Nodes().Informer().AddEventHandler(kuberntetes.NewNodeHandler())

@@ -1,5 +1,4 @@
 import request from './request'
-import { LoginReq } from '@/store/interface/user'
 interface Response {
   code: number
   data?: any
