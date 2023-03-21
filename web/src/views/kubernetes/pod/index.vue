@@ -30,26 +30,24 @@
     >
       <el-table-column type="selection" width="55" />
 
-      <el-table-column prop="metadata.name" label="名称" width="220px">
+      <el-table-column prop="metadata.name" label="名称" width="320px">
         <template #default="scope">
-          <el-button link type="primary">
-            {{ scope.row.metadata.name }}</el-button
-          >
+          <el-button link type="primary">{{
+            scope.row.metadata.name
+          }}</el-button>
+          <div v-if="scope.row.status.phase != 'Running'" style="color: red">
+            {{ scope.row.status.containerStatuses[0].state }}
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="状态" width="220px">
         <template #default="scope">
-          <el-button
-            v-if="scope.row.status.conditions[1].status === 'True'"
-            type="success"
-            :icon="Check"
-            size="small"
-            circle
-          />
-          <el-button v-else type="danger" :icon="Close" size="small" circle />
+          <span v-if="scope.row.status.phase == 'Running'" style="color: green">
+            {{ scope.row.status.phase }}</span
+          >
+          <span v-else style="color: red"> {{ scope.row.status.phase }}</span>
         </template>
       </el-table-column>
-     
 
       <el-table-column label="标签" width="280px">
         <template #default="scope">
@@ -65,10 +63,14 @@
 
       <el-table-column prop="status.podIP" label="IP" width="220px">
         <template #default="scope">
-            {{ scope.row.status.podIP }}
+          {{ scope.row.status.podIP }}
         </template>
       </el-table-column>
-
+      <el-table-column prop="spec.nodeName" label="所在节点" width="220px">
+        <template #default="scope">
+          {{ scope.row.spec.nodeName }}
+        </template>
+      </el-table-column>
       <el-table-column label="创建时间" width="180px">
         <template #default="scope">
           {{ $filters.dateFormat(scope.row.metadata.creationTimestamp) }}
@@ -135,12 +137,10 @@ ws.onmessage = (e) => {
       pod.data.pods = object.result.data
     }
   }
-
 }
 ws.onclose = () => {
   console.log('close')
 }
-
 </script>
 
 <style scoped lang="less"></style>
