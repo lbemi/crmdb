@@ -1,3 +1,4 @@
+/** * Created by lei on 2023/03/21 */
 <template>
   <div style="margin-left: 5px">
     <div>
@@ -96,88 +97,6 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { reactive, onMounted, onBeforeUnmount } from 'vue'
-import { deploymentApi } from '../api'
-import pagination from '@/component/pagination/pagination.vue'
-import { kubeStore } from '@/store/kubernetes/kubernetes'
-import { nsStore } from '@/store/kubernetes/namespace'
-import { Deployment, Data } from '@/type/deployment'
-import { PageInfo } from '@/type/sys'
-import { Check, Close } from '@element-plus/icons-vue'
-const ns = nsStore()
-const kube = kubeStore()
-onMounted(() => {
-  listDeployment()
-})
-
-var dns = 'ws://127.0.0.1:8080/api/v1/ws/' + kube.activeCluster + '/deployment'
-var ws = new WebSocket(dns)
-ws.onopen = () => {
-  console.log('ws connected.')
-}
-ws.onmessage = (e) => {
-  if (e.data === 'ping') {
-    return
-  } else {
-    const object = JSON.parse(e.data)
-    if (
-      object.type === 'deployment' &&
-      object.result.namespace === ns.activeNamespace &&
-      object.cluster == kube.activeCluster
-    ) {
-      data.Deployments = object.result.data
-    }
-  }
-
-  console.log('服务器发送的消息: ', e.data)
-}
-ws.onclose = () => {
-  console.log('close')
-}
-
-const data = reactive(new Data())
-
-const handleSelectionChange = (value: Deployment[]) => {
-  data.selectData = value
-}
-
-onBeforeUnmount(() => {
-  console.log('关闭....')
-  ws.close()
-})
-const listDeployment = async () => {
-  data.query.namespace = ns.activeNamespace
-  data.query.cloud = kube.activeCluster
-  try {
-    data.loading = true
-    await deploymentApi.list.request(data.query).then((res) => {
-      data.Deployments = res.data.data
-      data.total = res.data.total
-    })
-  } catch (error) {
-    console.log(error)
-  }
-  data.loading = false
-}
-const handleChange = () => {
-  data.query.namespace = ns.activeNamespace
-  listDeployment()
-}
-const handlePageChange = (pageInfo: PageInfo) => {
-  data.query.page = pageInfo.page
-  data.query.limit = pageInfo.limit
-  listDeployment()
-}
-const deployDetail = (deploy: Deployment) => {
-  data.query.deploymentName = deploy.metadata.name
-  data.query.namespace = deploy.metadata.namespace
-  console.log(data.query)
-
-  const res = deploymentApi.get.request(data.query)
-
-  console.log(res)
-}
-</script>
+<script setup lang="ts"></script>
 
 <style scoped lang="less"></style>
