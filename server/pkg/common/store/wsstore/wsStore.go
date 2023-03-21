@@ -1,7 +1,6 @@
 package wsstore
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 	"sync"
@@ -14,6 +13,8 @@ func init() {
 	WsClientMap = &WsClientStore{}
 }
 
+var wsLock sync.Mutex
+
 type WsClientStore struct {
 	data sync.Map
 	lock sync.Mutex
@@ -21,9 +22,8 @@ type WsClientStore struct {
 
 func (w *WsClientStore) Store(cluster, resource string, conn *websocket.Conn) {
 	wc := NewWsClient(conn, cluster, resource)
-	fmt.Printf("WS-----::: %s: %s----%v ++++++++++++\n", wc.Cluster, wc.Resource, wc.Conn.RemoteAddr())
 	w.data.Store(conn.RemoteAddr().String(), wc)
-	go wc.Ping(time.Second * 5)
+	go wc.Ping(time.Second * 3)
 }
 
 func (w *WsClientStore) Remove(client *websocket.Conn) {
@@ -35,7 +35,6 @@ func (w *WsClientStore) SendAll(msg interface{}) {
 	defer w.lock.Unlock()
 	w.data.Range(func(key, value any) bool {
 		c := value.(*WsClient).Conn
-		fmt.Println("ws----------::::: ", key.(*WsClient).Conn)
 		err := c.WriteJSON(msg)
 		if err != nil {
 			w.Remove(c)
@@ -46,19 +45,24 @@ func (w *WsClientStore) SendAll(msg interface{}) {
 }
 
 func (w *WsClientStore) SendClusterResource(clusterName, resource string, msg interface{}) {
-	w.lock.Lock()
-	defer w.lock.Unlock()
+	closeCh := make(chan struct{})
+	defer close(closeCh)
+
 	w.data.Range(func(key, value any) bool {
 		c := value.(*WsClient)
 		if c.Cluster == clusterName && c.Resource == resource {
-			fmt.Printf("%s--------%s 资源发生改变-----> 向《%s-%s-%s》发送数据\n", clusterName, resource, c.Cluster, c.Resource, c.Conn.RemoteAddr().String())
+			wsLock.Lock()
+			defer wsLock.Unlock()
 			err := c.Conn.WriteJSON(msg)
-			if err != nil {
-				w.Remove(c.Conn)
-				log.Println(err)
-			}
-		}
 
+			if err != nil {
+				log.Println(err)
+				w.Remove(c.Conn)
+
+			}
+
+		}
 		return true
 	})
+
 }

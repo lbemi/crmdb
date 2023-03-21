@@ -204,7 +204,6 @@ func (c *cluster) RemoveFromStore(name string) {
 }
 
 func (c *cluster) StartInformer(clusterName string) {
-	log.Logger.Info(clusterName, "-------------初始化Informer")
 	client := c.store.Get(clusterName)
 	if client == nil {
 		log.Logger.Error("初始化Informer失败.")
