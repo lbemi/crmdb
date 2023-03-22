@@ -126,7 +126,7 @@ func PatchNode(c *gin.Context) {
 
 	var patchData patchNode
 	err := c.ShouldBindJSON(&patchData)
-	log.Logger.Info("----", c.Param("name"))
+
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrCodeParameter)
@@ -135,7 +135,7 @@ func PatchNode(c *gin.Context) {
 
 	list, err := core.V1.Cluster(clusterName).Nodes().Patch(c, patchData.name, patchData.labels)
 	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
+		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return
 	}
 
