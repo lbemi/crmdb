@@ -40,7 +40,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="状态" width="220px">
+      <el-table-column label="状态" width="80px">
         <template #default="scope">
           <span v-if="scope.row.status.phase == 'Running'" style="color: green">
             {{ scope.row.status.phase }}</span
@@ -48,7 +48,11 @@
           <span v-else style="color: red"> {{ scope.row.status.phase }}</span>
         </template>
       </el-table-column>
-
+      <el-table-column label="重启次数" width="80px">
+        <template #default="scope">
+          {{ scope.row.status.containerStatuses[0].restartCount }}
+        </template>
+      </el-table-column>
       <el-table-column label="标签" width="280px">
         <template #default="scope">
           <el-tag
@@ -91,7 +95,6 @@ import { nsStore } from '@/store/kubernetes/namespace'
 import { kubeStore } from '@/store/kubernetes/kubernetes'
 import { podStore } from '@/store/kubernetes/pods'
 import { onMounted } from 'vue'
-import { Check, Close } from '@element-plus/icons-vue'
 import { PageInfo } from '@/type/sys'
 import { webSocketURL } from '@/request/request'
 const pod = podStore()

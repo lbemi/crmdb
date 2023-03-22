@@ -16,7 +16,10 @@
         />
       </el-select>
       <el-button type="primary">创建Deployment</el-button>
-      <el-button type="danger" :disabled="data.selectData.length == 0"
+      <el-button
+        type="danger"
+        :disabled="data.selectData.length == 0"
+        @click="depoly.deleteDeoloyments(data.selectData)"
         >批量删除</el-button
       >
     </div>
@@ -49,6 +52,7 @@
           <el-button v-else type="danger" :icon="Close" size="small" circle />
         </template>
       </el-table-column>
+
       <el-table-column label="镜像" width="540px">
         <template #default="scope">
           <el-tag
@@ -105,9 +109,9 @@ import { nsStore } from '@/store/kubernetes/namespace'
 import { Deployment, Data } from '@/type/deployment'
 import { PageInfo } from '@/type/sys'
 import { Check, Close } from '@element-plus/icons-vue'
-import {podStore} from '@/store/kubernetes/pods'
+import { deployStore } from '@/store/kubernetes/deployment'
 import { webSocketURL } from '@/request/request'
-const pod = podStore()
+const depoly = deployStore()
 const ns = nsStore()
 const kube = kubeStore()
 onMounted(() => {
@@ -132,17 +136,16 @@ ws.onmessage = (e) => {
       data.Deployments = object.result.data
     }
   }
-
 }
 ws.onclose = () => {
   console.log('close')
 }
 
-
 const data = reactive(new Data())
 
 const handleSelectionChange = (value: Deployment[]) => {
   data.selectData = value
+  console.log(data.selectData)
 }
 
 onBeforeUnmount(() => {
@@ -180,7 +183,6 @@ const deployDetail = (deploy: Deployment) => {
   const res = deploymentApi.get.request(data.query)
 
   console.log(res)
-
 }
 </script>
 
