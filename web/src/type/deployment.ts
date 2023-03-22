@@ -109,7 +109,6 @@ export interface Deployment {
   status: Statu
 }
 
-
 export class deploymentData {
   Deployments: Deployment[] = []
 }

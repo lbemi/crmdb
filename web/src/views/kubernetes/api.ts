@@ -26,7 +26,7 @@ export const deploymentApi = {
   list: Api.create('/deployment/{namespace}', 'get'),
   get: Api.create('/deployment/{namespace}/{deploymentName}', 'get'),
   create: Api.create('/deployment', 'post'),
-  delete: Api.create('/deployment/{deploymentName}', 'delete')
+  delete: Api.create('/deployment/{namespace}/{deploymentName}', 'delete')
 }
 
 /*
