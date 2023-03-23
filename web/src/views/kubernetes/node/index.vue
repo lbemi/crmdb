@@ -107,7 +107,7 @@
       </template>
       <template #default="scope">
         <div>
-          {{ scope.row.status.allocatable.pods }}/
+          {{ scope.row.usage.pod }}/
           {{ scope.row.status.capacity.pods }}
         </div>
       </template>
@@ -119,16 +119,7 @@
         >
       </template>
       <template #default="scope">
-        <div>
-          {{
-            parseFloat(
-              (scope.row.status.capacity.cpu -
-                scope.row.status.allocatable.cpu) /
-                scope.row.status.capacity.cpu +
-                ''
-            )
-          }}%
-        </div>
+        <div>{{ Math.round(scope.row.usage.cpu * 100) }}%</div>
       </template>
     </el-table-column>
     <el-table-column width="120" align="center">
@@ -138,15 +129,7 @@
         >
       </template>
       <template #default="scope">
-        <div>
-          {{
-            (
-              (scope.row.status.capacity.memory.split('Ki')[0] -
-                scope.row.status.allocatable.memory.split('Ki')[0]) /
-              scope.row.status.capacity.memory.split('Ki')[0]
-            ).toFixed(2)
-          }}%
-        </div>
+        <div>{{ Math.round(scope.row.usage.memory * 100) }}%</div>
       </template>
     </el-table-column>
 
