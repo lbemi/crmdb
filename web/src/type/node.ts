@@ -100,7 +100,15 @@ export interface Node {
   metadata: Metadata
   spec: Spec
   status: Statu
+  usage: Usage
 }
+
+interface Usage {
+  pod: number
+  cpu: number
+  memory: number
+}
+
 interface query {
   cloud: string
   page: number
