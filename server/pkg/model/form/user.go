@@ -12,7 +12,7 @@ type UserLoginForm struct {
 	CaptchaId string `json:"captcha_id" form:"captcha_id"  binding:"required"`
 }
 
-func (u UserLoginForm) GetMessages() util.ValidatorMessages {
+func (u *UserLoginForm) GetMessages() util.ValidatorMessages {
 	return util.ValidatorMessages{
 		"user_name.required":  "用户名不能为空",
 		"password.required":   "密码不能为空,最少5位",
@@ -30,7 +30,7 @@ type RegisterUserForm struct {
 	Status      uint8  `json:"status" form:"status"` // 状态(1:正常 2:未激活 3:暂停使用)
 }
 
-func (u RegisterUserForm) GetMessages() util.ValidatorMessages {
+func (u *RegisterUserForm) GetMessages() util.ValidatorMessages {
 	return util.ValidatorMessages{
 		"user_name.required": "用户名不能为空",
 		"password.required":  "密码不能为空,最少5位",
@@ -47,7 +47,7 @@ type UpdateUserFrom struct {
 	Description string `json:"description"`
 }
 
-func (u UpdateUserFrom) GetMessages() util.ValidatorMessages {
+func (u *UpdateUserFrom) GetMessages() util.ValidatorMessages {
 	return util.ValidatorMessages{
 		"user_name.required": "用户名不能为空",
 		"email.email":        "email格式错误",
