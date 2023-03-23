@@ -128,7 +128,7 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Co
 	client.MetricSet = metricSet
 	client.ClientSet = clientSet
 	//生成informer factory
-	client.SharedInformerFactory = informers.NewSharedInformerFactory(clientSet, time.Second*60)
+	client.SharedInformerFactory = informers.NewSharedInformerFactory(clientSet, 0)
 	client.IsInit = true
 	c.store.Add(name, &client)
 
