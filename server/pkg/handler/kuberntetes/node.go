@@ -101,6 +101,7 @@ func (n *node) Update(ctx context.Context, node *v1.Node) (*v1.Node, error) {
 func (n *node) Patch(ctx context.Context, name string, labels map[string]string) (*v1.Node, error) {
 	patchData := map[string]interface{}{"metadata": map[string]map[string]string{"labels": labels}}
 	playLoadBytes, err := json.Marshal(patchData)
+
 	if err != nil {
 		log.Logger.Error(err)
 		return nil, err

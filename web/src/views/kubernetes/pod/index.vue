@@ -72,7 +72,8 @@
       </el-table-column>
       <el-table-column prop="spec.nodeName" label="所在节点" width="220px">
         <template #default="scope">
-          {{ scope.row.spec.nodeName }}
+          <div> {{ scope.row.spec.nodeName }}</div>
+          <div> {{ scope.row.status.hostIP }}</div>
         </template>
       </el-table-column>
       <el-table-column label="创建时间" width="180px">
