@@ -27,10 +27,10 @@ type IMenu interface {
 }
 
 type menu struct {
-	factory services.IDbFactory
+	factory services.FactoryImp
 }
 
-func NewMenu(f services.IDbFactory) IMenu {
+func NewMenu(f services.FactoryImp) IMenu {
 	return &menu{
 		factory: f,
 	}

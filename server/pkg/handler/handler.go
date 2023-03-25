@@ -26,15 +26,11 @@ type Getter interface {
 
 type Handler struct {
 	Config    *config.Config
-	DbFactory services.IDbFactory
+	DbFactory services.FactoryImp
 	RedisCli  *r.Client
 }
 
-//func (c *Handler) Resource() cloud.IResource {
-//	return cloud.NewResource(c.DbFactory)
-//}
-
-func NewHandler(factory services.IDbFactory, redisCli *r.Client) Getter {
+func NewHandler(factory services.FactoryImp, redisCli *r.Client) Getter {
 	return &Handler{
 		DbFactory: factory,
 		RedisCli:  redisCli,

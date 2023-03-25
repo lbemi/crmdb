@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type IDbFactory interface {
+type FactoryImp interface {
 	Authentication() auth.AuthenticationInterface
 	User() sys.IUSer
 	Role() sys.IRole
@@ -51,7 +51,7 @@ func (f *DbFactory) Cluster() cloud.ICluster {
 	return cloud.NewCluster(f.db, f.store)
 }
 
-func NewDbFactory(db *gorm.DB, enforcer *casbin.Enforcer, store *store.ClientStore) IDbFactory {
+func NewDbFactory(db *gorm.DB, enforcer *casbin.Enforcer, store *store.ClientStore) FactoryImp {
 	return &DbFactory{
 		db:      db,
 		enforce: enforcer,

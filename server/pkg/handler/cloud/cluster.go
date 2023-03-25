@@ -4,10 +4,11 @@ import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	cloud2 "github.com/lbemi/lbemi/pkg/common/store"
-	"github.com/lbemi/lbemi/pkg/handler/kuberntetes"
+	"github.com/lbemi/lbemi/pkg/handler/kubernetes"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services"
+	"github.com/lbemi/lbemi/pkg/services/k8s"
 	"github.com/lbemi/lbemi/pkg/util"
 )
 
@@ -28,112 +29,118 @@ type ICluster interface {
 
 	// 注册资源接口
 
-	kuberntetes.DeploymentGetter
-	kuberntetes.StatefulSetGetter
-	kuberntetes.DaemonSetGetter
-	kuberntetes.NodeGetter
-	kuberntetes.ServiceGetter
-	kuberntetes.NamespaceGetter
-	kuberntetes.SecretGetter
-	kuberntetes.PodGetter
-	kuberntetes.JobGetter
-	kuberntetes.CronJobGetter
-	kuberntetes.ConfigMapGetter
-	kuberntetes.IngressesGetter
-	kuberntetes.EventGetter
+	kubernetes.DeploymentGetter
+	kubernetes.StatefulSetGetter
+	kubernetes.DaemonSetGetter
+	kubernetes.NodeGetter
+	kubernetes.ServiceGetter
+	kubernetes.NamespaceGetter
+	kubernetes.SecretGetter
+	kubernetes.PodGetter
+	kubernetes.JobGetter
+	kubernetes.CronJobGetter
+	kubernetes.ConfigMapGetter
+	kubernetes.IngressesGetter
+	kubernetes.EventGetter
+	kubernetes.ReplicasetGetter
 }
 
 type cluster struct {
-	factory     services.IDbFactory
+	factory     services.FactoryImp
+	k8s         k8s.FactoryImp
 	clusterName string
 }
 
-func (c *cluster) Events(namespace string) kuberntetes.IEvent {
+func (c *cluster) Events(namespace string) kubernetes.IEvent {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewEvent(c.getClient(c.clusterName), namespace)
+	return kubernetes.NewEvent(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
-func (c *cluster) Ingresses(namespace string) kuberntetes.IIngresses {
+func (c *cluster) Ingresses(namespace string) kubernetes.IIngresses {
 	if namespace == "" {
 		namespace = "default"
 	}
-	return kuberntetes.NewIngress(c.getClient(c.clusterName), namespace)
+	return kubernetes.NewIngresses(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 
-func (c *cluster) ConfigMaps(namespace string) kuberntetes.IConfigMap {
+func (c *cluster) ConfigMaps(namespace string) kubernetes.IConfigMap {
+	if namespace == "all" {
+		namespace = ""
+	}
+	return kubernetes.NewConfigMap(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+}
+
+func (c *cluster) CronJobs(namespace string) kubernetes.ICronJob {
 	if namespace == "" {
 		namespace = "default"
 	}
-	return kuberntetes.NewConfigMap(c.getClient(c.clusterName), namespace)
+	return kubernetes.NewCronJob(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 
-func (c *cluster) CronJobs(namespace string) kuberntetes.ICronJob {
-	if namespace == "" {
-		namespace = "default"
-	}
-	return kuberntetes.NewCronJob(c.getClient(c.clusterName), namespace)
-}
-
-func (c *cluster) Jobs(namespace string) kuberntetes.IJob {
+func (c *cluster) Jobs(namespace string) kubernetes.IJob {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewJob(c.getClient(c.clusterName), namespace)
+	return kubernetes.NewJob(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 
-func (c *cluster) DaemonSets(namespace string) kuberntetes.IDaemonSet {
+func (c *cluster) DaemonSets(namespace string) kubernetes.IDaemonSet {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewDaemonSet(c.getClient(c.clusterName), namespace)
+	return kubernetes.NewDaemonSet(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 
-func (c *cluster) StatefulSets(namespace string) kuberntetes.IStatefulSet {
+func (c *cluster) StatefulSets(namespace string) kubernetes.IStatefulSet {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewStatefulSet(c.getClient(c.clusterName), namespace)
+	return kubernetes.NewStatefulSet(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 
-func (c *cluster) Pods(namespace string) kuberntetes.IPod {
+func (c *cluster) Pods(namespace string) kubernetes.IPod {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewPod(c.getClient(c.clusterName), namespace)
+	return kubernetes.NewPod(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 
-// kubernetes 资源接口
+// k8s 资源接口
 
-func (c *cluster) Secrets(namespace string) kuberntetes.ISecret {
+func (c *cluster) Secrets(namespace string) kubernetes.ISecret {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewSecret(c.getClient(c.clusterName), namespace)
+	return kubernetes.NewSecret(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 
-func (c *cluster) Namespaces() kuberntetes.INamespace {
-	return kuberntetes.NewNamespace(c.getClient(c.clusterName))
+func (c *cluster) Namespaces() kubernetes.INamespace {
+	return kubernetes.NewNamespace(k8s.NewK8sFactory(c.getClient(c.clusterName), ""))
 }
 
-func (c *cluster) Service(namespace string) kuberntetes.IService {
+func (c *cluster) Service(namespace string) kubernetes.IService {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kuberntetes.NewService(c.getClient(c.clusterName), namespace)
+	return kubernetes.NewService(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 
-func (c *cluster) Nodes() kuberntetes.INode {
-	return kuberntetes.NewNode(c.getClient(c.clusterName))
+func (c *cluster) Nodes() kubernetes.INode {
+	return kubernetes.NewNode(k8s.NewK8sFactory(c.getClient(c.clusterName), ""))
 }
 
-func (c *cluster) Deployments(namespace string) kuberntetes.IDeployment {
+func (c *cluster) Deployments(namespace string) kubernetes.IDeployment {
 	if namespace == "all" {
 		namespace = ""
 	}
-
-	dep := kuberntetes.NewDeployment(c.getClient(c.clusterName), namespace)
-	return dep
+	return kubernetes.NewDeployment(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+}
+func (c *cluster) Replicaset(namespace string) kubernetes.ReplicasetImp {
+	if namespace == "all" {
+		namespace = ""
+	}
+	return kubernetes.NewReplicaset(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 
 func (c *cluster) Create(ctx context.Context, config *form.ClusterReq) error {
@@ -218,6 +225,6 @@ func (c *cluster) getClient(name string) *cloud2.Clients {
 	return c.factory.Cluster().GetClient(name)
 }
 
-func NewCluster(factory services.IDbFactory, clusterName string) *cluster {
+func NewCluster(factory services.FactoryImp, clusterName string) *cluster {
 	return &cluster{factory: factory, clusterName: clusterName}
 }

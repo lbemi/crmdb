@@ -53,17 +53,30 @@
           {{ scope.row.status.containerStatuses[0].restartCount }}
         </template>
       </el-table-column>
-      <el-table-column label="标签" width="280px" show-overflow-tooltip>
+      <el-table-column label="标签" width="280px">
         <template #default="scope">
-          <div class="ellipsis">
+          <el-tooltip placement="top" effect="light">
+            <template #content>
+              <div style="display: flex;flex-direction: column;">
+                <el-tag
+              class="label"
+              type="info"
+              v-for="(item, key, index) in scope.row.metadata.labels"
+              :key="index"
+            >
+             {{ key }}:{{ item }}
+            </el-tag>
+              </div>
+            </template>
             <el-tag
               type="info"
               v-for="(item, key, index) in scope.row.metadata.labels"
               :key="index"
             >
-              <span>{{ key }}:{{ item }}</span>
+             <div>{{ key }}:{{ item }}</div>
             </el-tag>
-          </div>
+          </el-tooltip>
+            
         </template>
       </el-table-column>
 
@@ -150,6 +163,9 @@ ws.onclose = () => {
 </script>
 
 <style scoped lang="less">
+.label {
+  margin-top: 3px;
+}
 .ellipsis {
   height: 60px;
   white-space: nowrap;

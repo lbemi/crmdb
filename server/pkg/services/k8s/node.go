@@ -1,4 +1,4 @@
-package kuberntetes
+package k8s
 
 import (
 	"context"
@@ -10,15 +10,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	apitype "k8s.io/apimachinery/pkg/types"
-	"sort"
 	"time"
 )
 
-type NodeGetter interface {
-	Nodes() INode
-}
-
-type INode interface {
+type NodeImp interface {
 	List(ctx context.Context) ([]*types.Node, error)
 	Get(ctx context.Context, name string) (*v1.Node, error)
 	Delete(ctx context.Context, name string) error
@@ -55,10 +50,6 @@ func (n *node) List(ctx context.Context) ([]*types.Node, error) {
 		}
 		nodes = append(nodes, item)
 	}
-	// 按创建时间排序排序
-	sort.Slice(nodes, func(i, j int) bool {
-		return nodes[j].ObjectMeta.GetCreationTimestamp().Time.After(nodes[i].ObjectMeta.GetCreationTimestamp().Time)
-	})
 
 	if err != nil {
 		log.Logger.Error(err)
@@ -147,7 +138,7 @@ func (n *node) getPodNumByNode(ctx context.Context, nodeName string) int {
 	return count
 }
 
-func NewNode(cli *store.Clients) *node {
+func newNode(cli *store.Clients) *node {
 	return &node{cli: cli}
 }
 

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
-	"github.com/lbemi/lbemi/pkg/handler/kuberntetes"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
+	"github.com/lbemi/lbemi/pkg/services/k8s"
 	"github.com/lbemi/lbemi/pkg/util"
 	"gorm.io/gorm"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -209,37 +209,11 @@ func (c *cluster) StartInformer(clusterName string) {
 		log.Logger.Error("初始化Informer失败.")
 	}
 
-	// 设置需要启动的informer gvr资源
-	//gvrs := []schema.GroupVersionResource{
-	//	{Group: "", Version: "v1", Resource: "pods"},
-	//	{Group: "", Version: "v1", Resource: "nodes"},
-	//	{Group: "", Version: "v1", Resource: "services"},
-	//	{Group: "", Version: "v1", Resource: "namespaces"},
-	//	{Group: "", Version: "v1", Resource: "events"},
-	//	{Group: "", Version: "v1", Resource: "secrets"},
-	//	{Group: "", Version: "v1", Resource: "configmaps"},
-	//	{Group: "apps", Version: "v1", Resource: "deployments"},
-	//	{Group: "apps", Version: "v1", Resource: "statefulsets"},
-	//	{Group: "apps", Version: "v1", Resource: "daemonsets"},
-	//	{Group: "apps", Version: "v1", Resource: "replicasets"},
-	//	{Group: "networking.k8s.io", Version: "v1beta1", Resource: "ingresses"},
-	//
-	//	{Group: "batch", Version: "v1beta1", Resource: "cronjobs"},
-	//	{Group: "batch", Version: "v1", Resource: "jobs"},
-	//}
-	//
-	//for _, gvr := range gvrs {
-	//	// 实例化informer
-	//	_, err := client.SharedInformerFactory.ForResource(gvr)
-	//	if err != nil {
-	//		log.Logger.Error("informer init failed. err: ", err)
-	//	}
-	//}
-	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(kuberntetes.NewDeploymentHandler(client, clusterName))
-	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(kuberntetes.NewPodHandler(client, clusterName))
-	client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(kuberntetes.NewNameSpaceHandler())
-	client.SharedInformerFactory.Core().V1().Events().Informer().AddEventHandler(kuberntetes.NewEventHandler())
-	client.SharedInformerFactory.Core().V1().Nodes().Informer().AddEventHandler(kuberntetes.NewNodeHandler())
+	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(k8s.NewDeploymentHandler(client, clusterName))
+	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(k8s.NewPodHandler(client, clusterName))
+	client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(k8s.NewNameSpaceHandler())
+	client.SharedInformerFactory.Core().V1().Events().Informer().AddEventHandler(k8s.NewEventHandler())
+	client.SharedInformerFactory.Core().V1().Nodes().Informer().AddEventHandler(k8s.NewNodeHandler())
 
 	stopChan := make(chan struct{})
 	// 启动informer

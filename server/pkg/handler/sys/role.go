@@ -29,10 +29,10 @@ type IRole interface {
 }
 
 type role struct {
-	factory services.IDbFactory
+	factory services.FactoryImp
 }
 
-func NewRole(f services.IDbFactory) *role {
+func NewRole(f services.FactoryImp) *role {
 	return &role{
 		factory: f,
 	}

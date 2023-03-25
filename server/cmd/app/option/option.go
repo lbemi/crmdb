@@ -13,7 +13,7 @@ import (
 )
 
 type Options struct {
-	Factory   services.IDbFactory
+	Factory   services.FactoryImp
 	Config    *config.Config
 	DB        *gorm.DB
 	Redis     *redis.Client
