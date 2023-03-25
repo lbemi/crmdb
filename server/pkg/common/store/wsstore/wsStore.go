@@ -3,6 +3,7 @@ package wsstore
 import (
 	"github.com/gorilla/websocket"
 	"log"
+	"strings"
 	"sync"
 	"time"
 )
@@ -50,18 +51,22 @@ func (w *WsClientStore) SendClusterResource(clusterName, resource string, msg in
 
 	w.data.Range(func(key, value any) bool {
 		c := value.(*WsClient)
-		if c.Cluster == clusterName && c.Resource == resource {
-			wsLock.Lock()
-			defer wsLock.Unlock()
-			err := c.Conn.WriteJSON(msg)
+		resourceName := strings.Split(c.Resource, ",")
+		for _, name := range resourceName {
+			if c.Cluster == clusterName && name == resource {
+				wsLock.Lock()
+				defer wsLock.Unlock()
+				err := c.Conn.WriteJSON(msg)
 
-			if err != nil {
-				log.Println(err)
-				w.Remove(c.Conn)
+				if err != nil {
+					log.Println(err)
+					w.Remove(c.Conn)
+
+				}
 
 			}
-
 		}
+
 		return true
 	})
 

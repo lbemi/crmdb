@@ -18,8 +18,11 @@ export const podStore = defineStore('pod', () => {
     data.pods = res.data.data
     data.total = res.data.total
   }
+  const deletPod = async (namespace: string, podName: string) => {
+    await podApi.delete.request({"cloud":kube.activeCluster, "namespace": namespace, "podName": [podName] })
+  }
 
-  return { clusters, listPods, data }
+  return { clusters, data, listPods, deletPod }
 })
 
 export default podStore

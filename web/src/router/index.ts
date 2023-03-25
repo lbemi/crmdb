@@ -70,7 +70,7 @@ const genRouters = (menus: MenuObj[]) => {
   }
   router.addRoute({
     path: '/',
-    name: 'index',
+    name: 'Index',
     component: () => import('../views/layout/index.vue'),
     redirect: '/dashboard',
     children: [
@@ -113,6 +113,14 @@ const genRouters = (menus: MenuObj[]) => {
             component: () => import('../views/kubernetes/cluster/index.vue'),
             meta: {
               title: 'cluster'
+            },
+          },
+          {
+            path: '/deployment/detail',
+            name: 'detail',
+            component: ()=>import('@/views/kubernetes/deployment/deploymentDetail.vue'),
+            meta: {
+              title: 'detail'
             }
           },
           {
@@ -121,7 +129,20 @@ const genRouters = (menus: MenuObj[]) => {
             component: () => import('../views/kubernetes/deployment/index.vue'),
             meta: {
               title: 'deployments'
-            }
+            },
+            // children: [
+            //   {
+            //     path: '/detail',
+            //     name: 'detail',
+            //     component: ()=>import('@/views/kubernetes/deployment/deploymentDetail.vue'),
+            //     redirect: '/detail',
+            //     meta: {
+            //       title: 'detail'
+            //     },
+                
+            //   },
+              
+            // ]
           },
           {
             path: '/namespace',

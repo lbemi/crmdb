@@ -25,6 +25,7 @@ export const namespacerApi = {
 export const deploymentApi = {
   list: Api.create('/deployment/{namespace}', 'get'),
   get: Api.create('/deployment/{namespace}/{deploymentName}', 'get'),
+  detail: Api.create('/deployment/{namespace}/{deploymentName}/pod', 'get'),
   create: Api.create('/deployment', 'post'),
   delete: Api.create('/deployment/{namespace}/{deploymentName}', 'delete')
 }

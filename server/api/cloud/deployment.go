@@ -187,3 +187,22 @@ func ScaleDeployments(c *gin.Context) {
 
 	response.Success(c, response.StatusOK, nil)
 }
+
+func GetDeploymentPods(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	namespace := c.Param("namespace")
+	deploymentName := c.Param("deploymentName")
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	pods, err := core.V1.Cluster(clusterName).Deployments(namespace).GetDeploymentPods(c, deploymentName)
+	util.GinError(c, err, response.ErrCodeParameter)
+
+	response.Success(c, response.StatusOK, pods)
+}
