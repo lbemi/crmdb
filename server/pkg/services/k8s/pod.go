@@ -17,6 +17,7 @@ type PodImp interface {
 	Create(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error)
 	Update(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error)
 	Delete(ctx context.Context, name string) error
+	GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) ([]*corev1.Pod, error)
 }
 
 type pod struct {
@@ -71,6 +72,32 @@ func (d *pod) Delete(ctx context.Context, name string) error {
 		log.Logger.Error(err)
 	}
 	return err
+}
+func (d *pod) GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) ([]*corev1.Pod, error) {
+
+	res := make([]*corev1.Pod, 0)
+	pods, err := d.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(namespace).List(labels.Everything())
+
+	if err != nil {
+		log.Logger.Error(err)
+		return nil, err
+	}
+	for _, item := range pods {
+		for _, l := range label {
+			i := 0
+			for k1, v1 := range l {
+				for k2, v2 := range item.Labels {
+					if k1 == k2 && v1 == v2 {
+						i++
+					}
+				}
+			}
+			if i == len(l) {
+				res = append(res, item)
+			}
+		}
+	}
+	return res, nil
 }
 
 type PodHandler struct {

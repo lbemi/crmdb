@@ -10,6 +10,7 @@ export const deployStore = defineStore('deploy', () => {
   const activeCluster = ref<clusterInfo>()
   const clusters = ref<Array<clusterInfo>>()
 
+  const activeDeployment = ref<Deployment>()
   const deleteDeoloyments = (deploymentNames: [Deployment]) => {
     deploymentNames.forEach((item) => {
       deploymentApi.delete.request({
@@ -19,5 +20,10 @@ export const deployStore = defineStore('deploy', () => {
       })
     })
   }
-  return { activeCluster, clusters, deleteDeoloyments }
+  return { activeCluster, clusters, deleteDeoloyments,activeDeployment }
+},
+{
+  persist: {
+    storage: localStorage
+  }
 })

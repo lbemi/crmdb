@@ -1,4 +1,5 @@
 <template>
+  
   <div style="margin-left: 5px">
     <div>
       Namespace:
@@ -111,6 +112,8 @@ import { PageInfo } from '@/type/sys'
 import { Check, Close } from '@element-plus/icons-vue'
 import { deployStore } from '@/store/kubernetes/deployment'
 import { webSocketURL } from '@/request/request'
+import router from '@/router'
+
 const depoly = deployStore()
 const ns = nsStore()
 const kube = kubeStore()
@@ -175,14 +178,13 @@ const handlePageChange = (pageInfo: PageInfo) => {
   data.query.limit = pageInfo.limit
   listDeployment()
 }
-const deployDetail = (deploy: Deployment) => {
-  data.query.deploymentName = deploy.metadata.name
-  data.query.namespace = deploy.metadata.namespace
-  console.log(data.query)
+const deployDetail = (dep: Deployment) => {
+  depoly.activeDeployment = dep
+  router.push({
+    name: 'detail'
+  })
 
-  const res = deploymentApi.get.request(data.query)
 
-  console.log(res)
 }
 </script>
 

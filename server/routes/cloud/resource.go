@@ -43,7 +43,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		deployment.PUT("", cloud.UpdateDeployment)
 		deployment.DELETE("/:namespace/:deploymentName", cloud.DeleteDeployment)
 		deployment.PUT("/:namespace/:deploymentName/:scale", cloud.ScaleDeployments)
-
+		deployment.GET("/:namespace/:deploymentName/pod", cloud.GetDeploymentPods)
 	}
 
 	//statefulSet 资源路由

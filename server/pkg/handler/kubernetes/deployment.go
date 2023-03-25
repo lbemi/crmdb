@@ -6,6 +6,8 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
 )
 
@@ -20,6 +22,8 @@ type IDeployment interface {
 	Update(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error)
 	Delete(ctx context.Context, name string) error
 	Scale(ctx context.Context, name string, replicaNum int32) error
+
+	GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, error)
 }
 
 type Deployment struct {
@@ -88,4 +92,44 @@ func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) e
 	}
 
 	return nil
+}
+
+func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, error) {
+	dep, err := d.k8s.Deployment().Get(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	replicaSets, err := d.k8s.Replicaset().List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	res := make([]map[string]string, 0)
+
+	for _, item := range replicaSets {
+		if d.isRsFromDep(dep, item) {
+			selectorAsMap, err := v1.LabelSelectorAsMap(item.Spec.Selector)
+			if err != nil {
+				return nil, err
+			}
+
+			res = append(res, selectorAsMap)
+		}
+	}
+
+	pods, err := d.k8s.Pod().GetPodByLabels(ctx, dep.Namespace, res)
+	if err != nil {
+		return nil, err
+	}
+	return pods, nil
+
+}
+
+func (d *Deployment) isRsFromDep(dep *appsv1.Deployment, rs *appsv1.ReplicaSet) bool {
+	for _, ref := range rs.OwnerReferences {
+		if ref.Kind == "Deployment" && ref.Name == dep.Name {
+			return true
+		}
+	}
+	return false
 }
