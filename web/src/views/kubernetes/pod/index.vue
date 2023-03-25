@@ -53,15 +53,17 @@
           {{ scope.row.status.containerStatuses[0].restartCount }}
         </template>
       </el-table-column>
-      <el-table-column label="标签" width="280px">
+      <el-table-column label="标签" width="280px" show-overflow-tooltip>
         <template #default="scope">
-          <el-tag
-            type="info"
-            v-for="(item, key, index) in scope.row.metadata.labels"
-            :key="index"
-          >
-            {{ key }}:{{ item }}
-          </el-tag>
+          <div class="ellipsis">
+            <el-tag
+              type="info"
+              v-for="(item, key, index) in scope.row.metadata.labels"
+              :key="index"
+            >
+              <span>{{ key }}:{{ item }}</span>
+            </el-tag>
+          </div>
         </template>
       </el-table-column>
 
@@ -72,8 +74,8 @@
       </el-table-column>
       <el-table-column prop="spec.nodeName" label="所在节点" width="220px">
         <template #default="scope">
-          <div> {{ scope.row.spec.nodeName }}</div>
-          <div> {{ scope.row.status.hostIP }}</div>
+          <div>{{ scope.row.spec.nodeName }}</div>
+          <div>{{ scope.row.status.hostIP }}</div>
         </template>
       </el-table-column>
       <el-table-column label="创建时间" width="180px">
@@ -147,4 +149,12 @@ ws.onclose = () => {
 }
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.ellipsis {
+  height: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  overflow-y: auto;
+  // text-overflow: ellipsis;
+}
+</style>
