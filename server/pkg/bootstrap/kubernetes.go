@@ -6,7 +6,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func LoadKubernetes(f services.IDbFactory) {
+func LoadKubernetes(f services.FactoryImp) {
 	clusterList, err := f.Cluster().List()
 	if err != nil {
 		klog.Error(err)

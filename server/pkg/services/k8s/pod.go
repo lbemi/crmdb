@@ -1,4 +1,4 @@
-package kuberntetes
+package k8s
 
 import (
 	"context"
@@ -11,11 +11,7 @@ import (
 	"sort"
 )
 
-type PodGetter interface {
-	Pods(namespace string) IPod
-}
-
-type IPod interface {
+type PodImp interface {
 	List(ctx context.Context) ([]*corev1.Pod, error)
 	Get(ctx context.Context, name string) (*corev1.Pod, error)
 	Create(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error)
@@ -26,6 +22,10 @@ type IPod interface {
 type pod struct {
 	cli *store.Clients
 	ns  string
+}
+
+func newPod(cli *store.Clients, ns string) *pod {
+	return &pod{cli: cli, ns: ns}
 }
 
 func (d *pod) List(ctx context.Context) ([]*corev1.Pod, error) {
@@ -71,10 +71,6 @@ func (d *pod) Delete(ctx context.Context, name string) error {
 		log.Logger.Error(err)
 	}
 	return err
-}
-
-func NewPod(cli *store.Clients, namespace string) *pod {
-	return &pod{cli: cli, ns: namespace}
 }
 
 type PodHandler struct {

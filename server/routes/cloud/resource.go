@@ -5,7 +5,7 @@ import (
 	"github.com/lbemi/lbemi/api/cloud"
 )
 
-// NewResourceRoute kubernetes 资源路由
+// NewResourceRoute k8s 资源路由
 func NewResourceRoute(group *gin.RouterGroup) {
 	// websocket
 	//ws := group.Group("/ws")

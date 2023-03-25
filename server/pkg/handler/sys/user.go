@@ -30,10 +30,10 @@ type IUSer interface {
 }
 
 type user struct {
-	factory services.IDbFactory
+	factory services.FactoryImp
 }
 
-func NewUser(f services.IDbFactory) IUSer {
+func NewUser(f services.FactoryImp) IUSer {
 	return &user{
 		factory: f,
 	}
