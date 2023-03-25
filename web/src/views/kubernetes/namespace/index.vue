@@ -35,7 +35,7 @@
             "
           ></div>
           <span style="margin-left: 5px; font-size: 12px; color: #67c23a"
-            >就绪
+            >{{ scope.row.status.phase }}
           </span>
         </div>
         <div v-else>
@@ -49,7 +49,7 @@
             "
           ></div>
           <span style="margin-left: 5px; font-size: 12px; color: #f56c6c"
-            >未就绪
+            >{{ scope.row.status.phase }}
           </span>
         </div>
       </template>

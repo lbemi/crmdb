@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	apitype "k8s.io/apimachinery/pkg/types"
 	"sort"
+	"time"
 )
 
 type NodeGetter interface {
@@ -38,7 +39,7 @@ func (n *node) List(ctx context.Context) ([]*types.Node, error) {
 	for _, node := range nodeList {
 		cpuUsage, memoryUsage, err := n.GetNodeUsage(ctx, node)
 		if err != nil {
-			log.Logger.Error("获取节点资源使用情况失败", err)
+			log.Logger.Error("获取节点资源使用情况失败，请检查metric-server是否正常。错误信息：", err)
 		}
 		podNum := n.getPodNumByNode(ctx, node.Name)
 		item := &types.Node{
@@ -116,7 +117,10 @@ func (n *node) Patch(ctx context.Context, name string, labels map[string]string)
 
 func (n *node) GetNodeUsage(ctx context.Context, node *v1.Node) (cpuUsage, memoryUsage float64, err error) {
 
-	nodeMetric, err := n.cli.MetricSet.MetricsV1beta1().NodeMetricses().Get(ctx, node.Name, metav1.GetOptions{})
+	// 如果两秒超时，则返回空
+	withTimeout, cancelFunc := context.WithTimeout(ctx, 1*time.Second)
+	defer cancelFunc()
+	nodeMetric, err := n.cli.MetricSet.MetricsV1beta1().NodeMetricses().Get(withTimeout, node.Name, metav1.GetOptions{})
 	if err != nil {
 		return
 	}
