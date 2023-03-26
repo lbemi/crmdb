@@ -28,3 +28,19 @@ func (w *WsClient) Ping(t time.Duration) {
 
 	}
 }
+
+func (w *WsClient) Write(p []byte) (n int, err error) {
+	err = w.Conn.WriteMessage(websocket.TextMessage, p)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(p), nil
+}
+func (w *WsClient) Read(p []byte) (n int, err error) {
+	_, bytes, err := w.Conn.ReadMessage()
+	if err != nil {
+		return 0, err
+	}
+	return copy(p, string(bytes)), nil
+}

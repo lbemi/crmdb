@@ -167,6 +167,22 @@ const genRouters = (menus: MenuObj[]) => {
             meta: {
               title: 'pod'
             }
+          },
+          {
+            path: '/shell',
+            name: 'shell',
+            component: () => import('../views/kubernetes/shell.vue'),
+            meta: {
+              title: 'shell'
+            }
+          },
+          {
+            path: '/log',
+            name: 'log',
+            component: () => import('../views/kubernetes/pod/log.vue'),
+            meta: {
+              title: 'log'
+            }
           }
         ]
       }

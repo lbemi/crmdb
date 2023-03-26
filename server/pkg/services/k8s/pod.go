@@ -8,6 +8,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/remotecommand"
 	"sort"
 )
 
@@ -18,6 +21,8 @@ type PodImp interface {
 	Update(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error)
 	Delete(ctx context.Context, name string) error
 	GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) ([]*corev1.Pod, error)
+	PodExec(ctx context.Context, namespace, pod, container string, command []string) (remotecommand.Executor, error)
+	GetPodLog(ctx context.Context, pod, container string) *rest.Request
 }
 
 type pod struct {
@@ -29,8 +34,8 @@ func newPod(cli *store.Clients, ns string) *pod {
 	return &pod{cli: cli, ns: ns}
 }
 
-func (d *pod) List(ctx context.Context) ([]*corev1.Pod, error) {
-	list, err := d.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(d.ns).List(labels.Everything())
+func (p *pod) List(ctx context.Context) ([]*corev1.Pod, error) {
+	list, err := p.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(p.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)
 	}
@@ -42,41 +47,42 @@ func (d *pod) List(ctx context.Context) ([]*corev1.Pod, error) {
 	return list, err
 }
 
-func (d *pod) Get(ctx context.Context, name string) (*corev1.Pod, error) {
-	dep, err := d.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(d.ns).Get(name)
+func (p *pod) Get(ctx context.Context, name string) (*corev1.Pod, error) {
+	dep, err := p.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(p.ns).Get(name)
 	if err != nil {
 		log.Logger.Error(err)
 	}
 	return dep, err
 }
 
-func (d *pod) Create(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error) {
-	newPod, err := d.cli.ClientSet.CoreV1().Pods(d.ns).Create(ctx, obj, metav1.CreateOptions{})
+func (p *pod) Create(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error) {
+	newPod, err := p.cli.ClientSet.CoreV1().Pods(p.ns).Create(ctx, obj, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
 	return newPod, err
 }
 
-func (d *pod) Update(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error) {
-	updatePod, err := d.cli.ClientSet.CoreV1().Pods(d.ns).Update(ctx, obj, metav1.UpdateOptions{})
+func (p *pod) Update(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error) {
+	updatePod, err := p.cli.ClientSet.CoreV1().Pods(p.ns).Update(ctx, obj, metav1.UpdateOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
 	return updatePod, err
 }
 
-func (d *pod) Delete(ctx context.Context, name string) error {
-	err := d.cli.ClientSet.CoreV1().Pods(d.ns).Delete(ctx, name, metav1.DeleteOptions{})
+func (p *pod) Delete(ctx context.Context, name string) error {
+	err := p.cli.ClientSet.CoreV1().Pods(p.ns).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		log.Logger.Error(err)
 	}
 	return err
 }
-func (d *pod) GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) ([]*corev1.Pod, error) {
+
+func (p *pod) GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) ([]*corev1.Pod, error) {
 
 	res := make([]*corev1.Pod, 0)
-	pods, err := d.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(namespace).List(labels.Everything())
+	pods, err := p.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(namespace).List(labels.Everything())
 
 	if err != nil {
 		log.Logger.Error(err)
@@ -98,6 +104,37 @@ func (d *pod) GetPodByLabels(ctx context.Context, namespace string, label []map[
 		}
 	}
 	return res, nil
+}
+
+func (p *pod) PodExec(ctx context.Context, namespace, pod, container string, command []string) (remotecommand.Executor, error) {
+	option := &corev1.PodExecOptions{
+		Container: container,
+		Command:   command,
+		Stderr:    true,
+		Stdin:     true,
+		Stdout:    true,
+		TTY:       true,
+	}
+	request := p.cli.ClientSet.CoreV1().RESTClient().Post().Resource("pods").Namespace(namespace).
+		Name(pod).SubResource("exec").Param("color", "true").
+		VersionedParams(option, scheme.ParameterCodec)
+	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
+	if err != nil {
+		log.Logger.Error(err)
+		return nil, err
+	}
+	return executor, nil
+}
+
+func (p *pod) GetPodLog(ctx context.Context, pod, container string) *rest.Request {
+	var tailLine int64 = 100
+
+	option := &corev1.PodLogOptions{
+		Follow:    true,
+		Container: container,
+		TailLines: &tailLine,
+	}
+	return p.cli.ClientSet.CoreV1().Pods(p.ns).GetLogs(pod, option)
 }
 
 type PodHandler struct {

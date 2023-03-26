@@ -96,6 +96,16 @@
           {{ $filters.dateFormat(scope.row.metadata.creationTimestamp) }}
         </template>
       </el-table-column>
+      <el-table-column fixed="right" label="操作" width="160">
+                    <template #default="scope">
+                        <el-button link type="primary" size="small" >详情</el-button><el-divider
+                            direction="vertical" />
+                        <el-button link type="primary" size="small">编辑</el-button><el-divider direction="vertical" />
+                        <el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
+                        <el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
+                        <el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button>
+                    </template>
+                </el-table-column>
     </el-table>
     <!-- 分页区域 -->
     <pagination
@@ -113,6 +123,9 @@ import { podStore } from '@/store/kubernetes/pods'
 import { onMounted } from 'vue'
 import { PageInfo } from '@/type/sys'
 import { webSocketURL } from '@/request/request'
+import { Pod } from '@/type/pod'
+import { ElMessageBox, ElMessage } from 'element-plus'
+import router from '@/router'
 const pod = podStore()
 const ns = nsStore()
 const kube = kubeStore()
@@ -138,6 +151,41 @@ const handlePageChange = (pageInfo: PageInfo) => {
   pod.data.loading = false
 }
 
+const jumpPodExec =(p: Pod) =>{
+  pod.podShell = p
+  router.push({
+    name: "shell"
+  })
+}
+const jumpPodLog =(p: Pod) =>{
+  pod.podShell = p
+  router.push({
+    name: "log"
+  })
+}
+
+const deletePod = async (p: Pod) => {
+    ElMessageBox.confirm(
+        `此操作将删除[ ${p.metadata.name} ] 容器 . 是否继续?`,
+        '警告',
+        {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }
+    ).then(() => {
+        pod.deletPod(p.metadata.namespace, p.metadata.name)
+        pod.listPods()
+        ElMessage({
+            type: 'success',
+            message: '${pod.metadata.name} 已删除',
+        })
+    }).catch(
+
+    ) // 取消
+
+
+}
 var dns = webSocketURL + kube.activeCluster + '/pod'
 var ws = new WebSocket(dns)
 ws.onopen = () => {
