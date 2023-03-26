@@ -67,11 +67,13 @@ export const eventApi = {
 		pod.POST("", cloud.CreatePod)
 		pod.PUT("", cloud.UpdatePod)
 		pod.DELETE("/:namespace/:podName", cloud.DeletePod)
+    pod.GET("/:namespace/:podName/:container", cloud.PodExec)
 	}
 */
 export const podApi = {
   list: Api.create('/pod/{namespace}', 'get'),
   get: Api.create('/pod/{namespace}/{podName}', 'get'),
   delete: Api.create('/pod/{namespace}/{podName}', 'delete'),
-  create: Api.create('/pod', 'post')
+  create: Api.create('/pod', 'post'),
+  log: Api.create('/pod/log/{namespace}/{podName}/{container}',"get")
 }

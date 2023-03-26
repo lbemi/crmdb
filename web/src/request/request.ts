@@ -5,7 +5,7 @@ import Api from './api'
 
 export const webSocketURL = 'ws://127.0.0.1:8080/api/v1/ws/'
 
-const service = axios.create({
+export const service = axios.create({
   baseURL: 'http://127.0.0.1:8080/api/v1',
   // baseURL: "http://127.0.0.1:8090/",
   timeout: 15000

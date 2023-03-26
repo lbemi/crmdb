@@ -61,7 +61,6 @@ func (w *WsClientStore) SendClusterResource(clusterName, resource string, msg in
 				if err != nil {
 					log.Println(err)
 					w.Remove(c.Conn)
-
 				}
 
 			}

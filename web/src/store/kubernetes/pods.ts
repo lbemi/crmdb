@@ -4,13 +4,13 @@ import { clusterInfo } from '@/type/cluster'
 import { podApi } from '@/views/kubernetes/api'
 import { nsStore } from './namespace'
 import { kubeStore } from './kubernetes'
-import { Data } from '@/type/pod'
+import { Data, Pod } from '@/type/pod'
 export const podStore = defineStore('pod', () => {
   const ns = nsStore()
   const kube = kubeStore()
   const clusters = ref<Array<clusterInfo>>()
   const data = reactive(new Data())
-
+  const podShell = ref<Pod>()
   const listPods = async () => {
     data.query.cloud = kube.activeCluster
     data.query.namespace = ns.activeNamespace
@@ -19,10 +19,15 @@ export const podStore = defineStore('pod', () => {
     data.total = res.data.total
   }
   const deletPod = async (namespace: string, podName: string) => {
-    await podApi.delete.request({"cloud":kube.activeCluster, "namespace": namespace, "podName": [podName] })
+    await podApi.delete.request({ "cloud": kube.activeCluster, "namespace": namespace, "podName": [podName] })
   }
 
-  return { clusters, data, listPods, deletPod }
-})
+  return { clusters, data, podShell, listPods, deletPod }
+},
+  {
+    persist: {
+      storage: localStorage
+    }
+  })
 
 export default podStore

@@ -32,6 +32,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		pod.POST("", cloud.CreatePod)
 		pod.PUT("", cloud.UpdatePod)
 		pod.DELETE("/:namespace/:podName", cloud.DeletePod)
+		pod.GET("/log/:namespace/:podName/:container", cloud.GetPodLog)
 	}
 
 	//deployment 资源路由

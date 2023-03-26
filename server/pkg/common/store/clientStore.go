@@ -4,6 +4,7 @@ import (
 	"errors"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/metrics/pkg/client/clientset/versioned"
 	"sync"
 )
@@ -13,6 +14,7 @@ type Clients struct {
 	MetricSet             *versioned.Clientset
 	SharedInformerFactory informers.SharedInformerFactory
 	IsInit                bool
+	Config                *rest.Config
 }
 
 type ClientStore struct {
@@ -20,7 +22,7 @@ type ClientStore struct {
 	lock sync.Mutex
 }
 
-type IClientStore interface {
+type ClientStoreImp interface {
 	Add(key string, resource *Clients) error
 	Get(key string) *Clients
 	Delete(key string)
