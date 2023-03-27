@@ -7,7 +7,7 @@ import (
 
 type UserLoginForm struct {
 	UserName  string `json:"user_name" form:"user_name" binding:"required"` // 用户名
-	Password  string ` json:"password" form:"password" binding:"required,min=5,max=20"`
+	Password  string `json:"password" form:"password" binding:"required,min=5,max=20"`
 	Captcha   string `json:"captcha" form:"captcha"  binding:"required,min=5,max=5"`
 	CaptchaId string `json:"captcha_id" form:"captcha_id"  binding:"required"`
 }
@@ -16,7 +16,7 @@ func (u *UserLoginForm) GetMessages() util.ValidatorMessages {
 	return util.ValidatorMessages{
 		"user_name.required":  "用户名不能为空",
 		"password.required":   "密码不能为空,最少5位",
-		"captcha.required":    "验证码不能为空",
+		"captcha.required":    "验证码不填写错误",
 		"captcha_id.required": "captcha_id不存在",
 	}
 }
