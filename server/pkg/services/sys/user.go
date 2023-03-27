@@ -196,8 +196,8 @@ func (u *user) GetButtonsByUserID(userID uint64) (*[]sys.Menu, error) {
 // GetLeftMenusByUserID 根据用户ID获取左侧菜单
 func (u *user) GetLeftMenusByUserID(userID uint64) (*[]sys.Menu, error) {
 	var menus []sys.Menu
-	err := u.db.Debug().Table("menus").Select(" menus.id, menus.parent_id,menus.name,menus.memo, menus.url, menus.icon,menus.sequence,"+
-		"menus.method, menus.menu_type, menus.status").
+	err := u.db.Debug().Table("menus").Select(" menus.id, menus.parent_id,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
+		"menus.method, menus.menu_type, menus.status, menus.component, menus.title, menus.is_link,menus.is_hide,menus.is_affix,menus.is_keepalive,menus.is_iframe").
 		Joins("left join role_menus on menus.id = role_menus.menu_id where role_menus.role_id in (?) and menus.menu_type = 1 and menus.status = 1",
 			u.db.Table("roles").Select("roles.id").
 				Joins("left join user_roles on user_roles.role_id = roles.id where  user_roles.user_id = ? and roles.status = 1", userID)).

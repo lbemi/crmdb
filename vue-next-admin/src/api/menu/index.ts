@@ -26,5 +26,11 @@ export function useMenuApi() {
 				params,
 			});
 		},
+		getUserMenu: () => {
+			return request({
+				url: '/user/menus',
+				method: 'get',
+			});
+		},
 	};
 }

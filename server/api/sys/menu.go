@@ -21,7 +21,7 @@ func AddMenu(c *gin.Context) {
 		return
 	}
 	// 判断权限是否已存在
-	_, err := core.V1.Menu().GetMenuByMenuNameUrl(c, menu.URL, menu.Method)
+	_, err := core.V1.Menu().GetMenuByMenuNameUrl(c, menu.Path, menu.Method)
 	if err != gorm.ErrRecordNotFound {
 		response.Fail(c, response.ErrCodeFount)
 		return

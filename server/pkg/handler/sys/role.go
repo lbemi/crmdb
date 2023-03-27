@@ -123,7 +123,7 @@ func (r *role) SetRole(c context.Context, roleID uint64, menuIDs []uint64) error
 		log.Logger.Error(err)
 		//清除rule表中规则
 		for _, menu := range *menus {
-			err := r.factory.Authentication().DeleteRolePermissionWithRole(roleID, menu.URL, menu.Method)
+			err := r.factory.Authentication().DeleteRolePermissionWithRole(roleID, menu.Path, menu.Method)
 			if err != nil {
 				log.Logger.Error(err)
 				break
