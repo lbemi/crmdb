@@ -70,7 +70,7 @@ func (c *authentication) SetRolePermission(roleId uint64, menus *[]sys.Menu) (bo
 func (c *authentication) setRolePermission(roleId uint64, menus *[]sys.Menu) (bool, error) {
 	for _, menu := range *menus {
 		if menu.MenuType == 2 || menu.MenuType == 3 {
-			ok, err := c.enforcer.AddPermissionForUser(strconv.FormatUint(roleId, 10), menu.URL, menu.Method)
+			ok, err := c.enforcer.AddPermissionForUser(strconv.FormatUint(roleId, 10), menu.Path, menu.Method)
 			if !ok || err != nil {
 				return ok, err
 			}

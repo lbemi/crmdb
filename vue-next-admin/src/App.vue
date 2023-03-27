@@ -4,7 +4,7 @@
 		<LockScreen v-if="themeConfig.isLockScreen" />
 		<Setings ref="setingsRef" v-show="setLockScreen" />
 		<CloseFull v-if="!themeConfig.isLockScreen" />
-		<Upgrade v-if="getVersion" />
+		<!-- <Upgrade v-if="getVersion" /> -->
 		<!-- <Sponsors /> -->
 	</el-config-provider>
 </template>
@@ -25,7 +25,7 @@ import setIntroduction from '/@/utils/setIconfont';
 const LockScreen = defineAsyncComponent(() => import('/@/layout/lockScreen/index.vue'));
 const Setings = defineAsyncComponent(() => import('/@/layout/navBars/breadcrumb/setings.vue'));
 const CloseFull = defineAsyncComponent(() => import('/@/layout/navBars/breadcrumb/closeFull.vue'));
-const Upgrade = defineAsyncComponent(() => import('/@/layout/upgrade/index.vue'));
+// const Upgrade = defineAsyncComponent(() => import('/@/layout/upgrade/index.vue'));
 // const Sponsors = defineAsyncComponent(() => import('/@/layout/sponsors/index.vue'));
 
 // 定义变量内容

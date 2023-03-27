@@ -10,7 +10,7 @@ type MenusReq struct {
 	Status   int8   `json:"status"`    // 状态(1:启用 2:不启用)
 	Memo     string `json:"memo"`      // 备注
 	ParentID uint64 `json:"parent_id"` // 父级ID
-	URL      string `json:"url"`       // 菜单URL
+	Path     string `json:"path"`      // 菜单URL
 	Name     string `json:"name"`      // 菜单名称
 	Sequence int    `json:"sequence"`  // 排序值
 	MenuType int8   `json:"menu_type"` // 菜单类型 1 左侧菜单,2 按钮, 3 非展示权限
@@ -24,7 +24,7 @@ type UpdateMenusReq struct {
 	Status   int8   `json:"status"`    // 状态(1:启用 2:不启用)
 	Memo     string `json:"memo"`      // 备注
 	ParentID uint64 `json:"parent_id"` // 父级ID
-	URL      string `json:"url"`       // 菜单URL
+	Path     string `json:"path"`      // 菜单URL
 	Name     string `json:"name"`      // 菜单名称
 	Sequence int    `json:"sequence"`  // 排序值
 	MenuType int8   `json:"menu_type"` // 菜单类型 1 左侧菜单,2 按钮, 3 非展示权限

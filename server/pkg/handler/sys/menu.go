@@ -42,8 +42,10 @@ func (m *menu) Create(c context.Context, obj *form.MenusReq) (menu *sys.Menu, er
 		Memo:     obj.Memo,
 		ParentID: obj.ParentID,
 		Status:   obj.Status,
-		URL:      obj.URL,
-		Icon:     obj.Icon,
+		Path:     obj.Path,
+		Meta: sys.Meta{
+			Icon: obj.Icon,
+		},
 		Sequence: obj.Sequence,
 		MenuType: obj.MenuType,
 		Method:   obj.Method,
@@ -67,8 +69,8 @@ func (m *menu) Update(c context.Context, menu *form.UpdateMenusReq, menuID uint6
 		return err
 	}
 
-	if res.URL != menu.URL || res.Method != menu.Method {
-		err = m.factory.Authentication().UpdatePermissions(res.URL, res.Method, menu.URL, menu.Method)
+	if res.Path != menu.Path || res.Method != menu.Method {
+		err = m.factory.Authentication().UpdatePermissions(res.Path, res.Method, menu.Path, menu.Method)
 		if err != nil {
 			log.Logger.Error(err)
 			return err
@@ -86,7 +88,7 @@ func (m *menu) Delete(c context.Context, menuID uint64) error {
 	}
 
 	// 清除rules
-	err = m.factory.Authentication().DeleteRolePermission(menuInfo.URL, menuInfo.Method)
+	err = m.factory.Authentication().DeleteRolePermission(menuInfo.Path, menuInfo.Method)
 	if err != nil {
 		log.Logger.Error(err)
 		return err
