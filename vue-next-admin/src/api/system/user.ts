@@ -1,4 +1,3 @@
-import { number } from '@intlify/core-base';
 import request from '/@/utils/request';
 
 
