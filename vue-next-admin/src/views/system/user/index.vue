@@ -17,23 +17,32 @@
 				</el-button>
 			</div>
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
-                <el-table-column prop="id" label="用户ID" show-overflow-tooltip></el-table-column>
+				<el-table-column prop="id" label="用户ID" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="user_name" label="用户名称" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="email" label="邮箱" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="status" label="用户状态" show-overflow-tooltip>
 					<template #default="scope">
-						<el-tag type="success" v-if="scope.row.status">启用</el-tag>
-						<el-tag type="info" v-else>禁用</el-tag>
+						<el-switch
+							v-model="scope.row.status"
+							class="ml-2"
+							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
+							:active-value="1"
+							:inactive-value="2"
+							size="small"
+							inline-prompt
+							active-text="启用"
+							inactive-text="禁用"
+							width="45px"
+							@click="changeStatus(scope.row)"
+						/>
 					</template>
 				</el-table-column>
 				<el-table-column prop="description" label="用户描述" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="created_at" label="创建时间" show-overflow-tooltip></el-table-column>
 				<el-table-column label="操作" width="100">
 					<template #default="scope">
-						<el-button  size="small" text type="primary" @click="onOpenEditUser('edit', scope.row)"
-							>修改</el-button
-						>
-						<el-button  size="small" text type="primary" @click="onRowDel(scope.row)">删除</el-button>
+						<el-button size="small" text type="primary" @click="onOpenEditUser('edit', scope.row)">修改</el-button>
+						<el-button size="small" text type="primary" @click="onRowDel(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -55,7 +64,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" >
+<script setup lang="ts">
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useUserApi } from '/@/api/system/user';
@@ -78,17 +87,25 @@ const state = reactive<SysUserState>({
 	},
 });
 
+const changeStatus = async (obj: any) => {
+  await userApi.updateStatus(obj.id, obj.status).then((res) => {
+      getTableData()
+      ElMessage.success(res.message)
+    })
+    .catch(() => {
+        obj.status = 1
+    })
+}
+
 // 初始化表格数据
 const getTableData = async () => {
 	state.tableData.loading = true;
-	
+
 	await userApi.listUser(state.tableData.param).then((res) => {
-        
 		state.tableData.data = res.data.users;
 		state.tableData.total = res.data.total;
 	});
 
-    
 	setTimeout(() => {
 		state.tableData.loading = false;
 	}, 500);
@@ -99,7 +116,7 @@ const onOpenAddUser = (type: string) => {
 };
 // 打开修改用户弹窗
 const onOpenEditUser = (type: string, row: RowUserType) => {
-	userDialogRef.value.openDialog(type, row);
+	userDialogRef.value.openDialog(type, JSON.parse(JSON.stringify(row)));
 };
 // 删除用户
 const onRowDel = (row: RowUserType) => {
@@ -109,10 +126,14 @@ const onRowDel = (row: RowUserType) => {
 		type: 'warning',
 	})
 		.then(() => {
-			getTableData();
-			ElMessage.success('删除成功');
+			userApi.deleteUser(row.id).then(() => {
+				ElMessage.success('删除成功');
+				getTableData();
+			});
 		})
-		.catch(() => {});
+		.catch(() => {
+			ElMessage.error('删除失败');
+		});
 };
 // 分页改变
 const onHandleSizeChange = (val: number) => {
