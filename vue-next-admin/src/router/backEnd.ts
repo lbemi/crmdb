@@ -1,5 +1,4 @@
 import { RouteRecordRaw } from 'vue-router';
-import { storeToRefs } from 'pinia';
 import pinia from '/@/stores/index';
 import { useUserInfo } from '/@/stores/userInfo';
 import { useRequestOldRoutes } from '/@/stores/requestOldRoutes';
@@ -108,15 +107,13 @@ export async function setAddRoute() {
  */
 export function getBackEndControlRoutes() {
 	// 模拟 admin 与 test
-	const stores = useUserInfo(pinia);
-	const { userInfos } = storeToRefs(stores);
+	// const stores = useUserInfo(pinia);
+	// const { userInfos } = storeToRefs(stores);
 	// const auth = userInfos.value.roles[0];
-	const auth = 'admin';
 	// 管理员 admin
 	// if (auth === 'admin') return menuApi.getAdminMenu();
-	if (auth === 'admin') return menuApi.getUserMenu();
+	return menuApi.getUserMenu();
 	// 其它用户 test
-	else return menuApi.getTestMenu();
 }
 
 /**
