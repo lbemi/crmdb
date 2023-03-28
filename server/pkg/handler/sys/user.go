@@ -65,8 +65,7 @@ func (u *user) Register(c context.Context, params *form.RegisterUserForm) (err e
 }
 func (u *user) Update(c context.Context, userID uint64, params *form.UpdateUserFrom) (err error) {
 	userInfo := &sys.User{
-		UserName: params.UserName,
-		//Mobile:      params.Mobile,
+		UserName:    params.UserName,
 		Email:       params.Email,
 		Description: params.Description,
 		Status:      params.Status,
@@ -77,6 +76,7 @@ func (u *user) Update(c context.Context, userID uint64, params *form.UpdateUserF
 	}
 	return nil
 }
+
 func (u *user) GetUserInfoById(c context.Context, id uint64) (user *sys.User, err error) {
 	user, err = u.factory.User().GetUserInfoById(id)
 	if err != nil {
