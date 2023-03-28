@@ -111,7 +111,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					{
 						path: '/system/user',
 						name: 'systemUser',
-						component: () => import('/@/views/system/user/index.vue'),
+						component: () => import('../views/system/user/index.vue'),
 						meta: {
 							title: 'message.router.systemUser',
 							isLink: '',

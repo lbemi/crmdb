@@ -3,10 +3,11 @@ import request from '/@/utils/request';
 
 export function useUserApi() {
 	return {
-		listUser: () => {
+		listUser: (query: any) => {
 			return request({
 				url: '/user',
 				method: 'get',
+                params: query
 			});
 		},
 		getTestMenu: (params?: object) => {
