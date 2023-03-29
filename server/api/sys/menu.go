@@ -90,7 +90,15 @@ func GetMenu(c *gin.Context) {
 
 func ListMenus(c *gin.Context) {
 	var menuType []int8
-	menuTypeStr := c.DefaultQuery("menu_type", "1,2,3")
+	isTree := true
+
+	menuTypeStr := c.DefaultQuery("menuType", "1,2,3")
+	tree := c.DefaultQuery("isTree", "true")
+
+	if tree == "false" {
+		isTree = false
+	}
+
 	menuTypeSlice := strings.Split(menuTypeStr, ",")
 	for _, t := range menuTypeSlice {
 		res, err := strconv.Atoi(t)
@@ -115,7 +123,7 @@ func ListMenus(c *gin.Context) {
 		return
 	}
 
-	res, err := core.V1.Menu().List(c, page, limit, menuType)
+	res, err := core.V1.Menu().List(c, page, limit, menuType, isTree)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return

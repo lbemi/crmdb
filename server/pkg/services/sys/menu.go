@@ -15,7 +15,7 @@ type IMenu interface {
 	Update(*form.UpdateMenusReq, uint64) error
 	Delete(uint64) error
 	Get(uint64) (*sys.Menu, error)
-	List(page, limit int, menuType []int8) (res *form.PageMenu, err error)
+	List(page, limit int, menuType []int8, isTree bool) (res *form.PageMenu, err error)
 
 	GetByIds([]uint64) (*[]sys.Menu, error)
 	GetMenuByMenuNameUrl(string, string) (*sys.Menu, error)
@@ -84,7 +84,7 @@ func (m *menu) Get(mId uint64) (menu *sys.Menu, err error) {
 	return
 }
 
-func (m *menu) List(page, limit int, menuType []int8) (res *form.PageMenu, err error) {
+func (m *menu) List(page, limit int, menuType []int8, isTree bool) (res *form.PageMenu, err error) {
 
 	var (
 		menuList []sys.Menu
@@ -96,21 +96,28 @@ func (m *menu) List(page, limit int, menuType []int8) (res *form.PageMenu, err e
 		if tx := m.db.Order("sequence DESC").Where("menu_type in (?)", menuType).Find(&menuList); tx.Error != nil {
 			return nil, tx.Error
 		}
-		treeMenu := GetTreeMenus(menuList, 0)
 
 		if err := m.db.Model(&sys.Menu{}).Where("menu_type in (?)", menuType).Count(&total).Error; err != nil {
 			return nil, err
 		}
 
+		if isTree {
+			treeMenu := GetTreeMenus(menuList, 0)
+			res = &form.PageMenu{
+				Menus: treeMenu,
+				Total: total,
+			}
+			return
+		}
 		res = &form.PageMenu{
-			Menus: treeMenu,
+			Menus: menuList,
 			Total: total,
 		}
 		return res, err
 	}
 
 	//分页数据
-	if err := m.db.Order("sequence DESC").Where("parent_id = 0").Where("menu_type in (?)", menuType).Limit(limit).Offset((page - 1) * limit).
+	if err := m.db.Order("sequence DESC").Where("menu_type in (?)", menuType).Limit(limit).Offset((page - 1) * limit).
 		Find(&menuList).Error; err != nil {
 		return nil, err
 	}
@@ -143,13 +150,21 @@ func (m *menu) List(page, limit int, menuType []int8) (res *form.PageMenu, err e
 
 	}
 
-	if err := m.db.Model(&sys.Menu{}).Where("parent_id = 0").Where("menu_type in (?)", menuType).Count(&total).Error; err != nil {
+	//查询 total 数量
+	if err := m.db.Model(&sys.Menu{}).Where("menu_type in (?)", menuType).Count(&total).Error; err != nil {
 		return nil, err
 	}
+	if isTree {
+		treeMenus := GetTreeMenus(menuList, 0)
+		res = &form.PageMenu{
+			Menus: treeMenus,
+			Total: total,
+		}
+		return
+	}
 
-	treeMenus := GetTreeMenus(menuList, 0)
 	res = &form.PageMenu{
-		Menus: treeMenus,
+		Menus: menuList,
 		Total: total,
 	}
 

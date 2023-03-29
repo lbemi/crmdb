@@ -18,7 +18,7 @@ type IMenu interface {
 	Update(c context.Context, menu *form.UpdateMenusReq, menuID uint64) error
 	Delete(c context.Context, menuID uint64) error
 	Get(c context.Context, menuID uint64) (menu *sys.Menu, err error)
-	List(c context.Context, page, limit int, menuType []int8) (res *form.PageMenu, err error)
+	List(c context.Context, page, limit int, menuType []int8, isTree bool) (res *form.PageMenu, err error)
 
 	GetByIds(c context.Context, menuIDs []uint64) (menus *[]sys.Menu, err error)
 	GetMenuByMenuNameUrl(context.Context, string, string) (*sys.Menu, error)
@@ -112,8 +112,8 @@ func (m *menu) Get(c context.Context, menuID uint64) (menu *sys.Menu, err error)
 	return
 }
 
-func (m *menu) List(c context.Context, page, limit int, menuType []int8) (res *form.PageMenu, err error) {
-	if res, err = m.factory.Menu().List(page, limit, menuType); err != nil {
+func (m *menu) List(c context.Context, page, limit int, menuType []int8, isTree bool) (res *form.PageMenu, err error) {
+	if res, err = m.factory.Menu().List(page, limit, menuType, isTree); err != nil {
 		log.Logger.Error(err)
 		return
 	}

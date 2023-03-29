@@ -1,5 +1,6 @@
 // 定义内容
 export default {
+
 	router: {
 		home: '首页',
 		system: '系统设置',
@@ -8,6 +9,7 @@ export default {
 		systemUser: '用户管理',
 		systemDept: '部门管理',
 		systemDic: '字典管理',
+        systemApi: 'API管理',
 		limits: '权限管理',
 		limitsFrontEnd: '前端控制',
 		limitsFrontEndPage: '页面权限',
