@@ -68,7 +68,7 @@ func (m *menu) Delete(mId uint64) error {
 
 	// 清除menus
 	if err := tx.Where("id =  ?", mId).
-		Or("parent_id = ?", mId).
+		Or("parentID = ?", mId).
 		Delete(&sys.Menu{}).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -93,11 +93,11 @@ func (m *menu) List(page, limit int, menuType []int8, isTree bool) (res *form.Pa
 
 	// 全量查询
 	if page == 0 && limit == 0 {
-		if tx := m.db.Order("sequence DESC").Where("menu_type in (?)", menuType).Find(&menuList); tx.Error != nil {
+		if tx := m.db.Order("sequence DESC").Where("menuType in (?)", menuType).Find(&menuList); tx.Error != nil {
 			return nil, tx.Error
 		}
 
-		if err := m.db.Model(&sys.Menu{}).Where("menu_type in (?)", menuType).Count(&total).Error; err != nil {
+		if err := m.db.Model(&sys.Menu{}).Where("menuType in (?)", menuType).Count(&total).Error; err != nil {
 			return nil, err
 		}
 
@@ -117,7 +117,7 @@ func (m *menu) List(page, limit int, menuType []int8, isTree bool) (res *form.Pa
 	}
 
 	//分页数据
-	if err := m.db.Order("sequence DESC").Where("menu_type in (?)", menuType).Limit(limit).Offset((page - 1) * limit).
+	if err := m.db.Order("sequence DESC").Where("menuType in (?)", menuType).Limit(limit).Offset((page - 1) * limit).
 		Find(&menuList).Error; err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (m *menu) List(page, limit int, menuType []int8, isTree bool) (res *form.Pa
 	// 查询子角色
 	if len(menuIds) != 0 {
 		var menus []sys.Menu
-		if err := m.db.Where("parent_id in ?", menuIds).Where("menu_type in (?)", menuType).Find(&menus).Error; err != nil {
+		if err := m.db.Where("parentID in ?", menuIds).Where("menuType in (?)", menuType).Find(&menus).Error; err != nil {
 			return nil, err
 		}
 		menuList = append(menuList, menus...)
@@ -142,7 +142,7 @@ func (m *menu) List(page, limit int, menuType []int8, isTree bool) (res *form.Pa
 		}
 		if len(ids) != 0 {
 			var ms []sys.Menu
-			if err := m.db.Where("parent_id in ?", ids).Where("menu_type in (?)", menuType).Find(&ms).Error; err != nil {
+			if err := m.db.Where("parentID in ?", ids).Where("menuType in (?)", menuType).Find(&ms).Error; err != nil {
 				return nil, err
 			}
 			menuList = append(menuList, ms...)
@@ -151,7 +151,7 @@ func (m *menu) List(page, limit int, menuType []int8, isTree bool) (res *form.Pa
 	}
 
 	//查询 total 数量
-	if err := m.db.Model(&sys.Menu{}).Where("menu_type in (?)", menuType).Count(&total).Error; err != nil {
+	if err := m.db.Model(&sys.Menu{}).Where("menuType in (?)", menuType).Count(&total).Error; err != nil {
 		return nil, err
 	}
 	if isTree {
@@ -180,7 +180,7 @@ func (m *menu) GetByIds(mIds []uint64) (menus *[]sys.Menu, err error) {
 }
 
 func (m *menu) GetMenuByMenuNameUrl(url, method string) (menu *sys.Menu, err error) {
-	err = m.db.Where("url = ? and method = ?", url, method).First(&menu).Error
+	err = m.db.Where("path = ? and method = ?", url, method).First(&menu).Error
 	return
 }
 
