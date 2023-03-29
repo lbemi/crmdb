@@ -16,43 +16,44 @@
 					新增菜单
 				</el-button>
 			</div>
-			<el-table
-				:data="state.tableData.data"
-				v-loading="state.tableData.loading"
-				style="width: 100%"
-				row-key="path"
-				:tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-			>
-				<el-table-column label="菜单名称" show-overflow-tooltip>
+			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" row-key="path">
+				<el-table-column label="ID" show-overflow-tooltip>
 					<template #default="scope">
-						<SvgIcon :name="scope.row.meta.icon" />
+						<span class="ml10">{{ $t(scope.row.id) }}</span>
+					</template>
+				</el-table-column>
+				<el-table-column label="分组" show-overflow-tooltip width="100">
+					<template #default="scope">
+						<el-tag class="ml-2" effect="plain">{{ scope.row.group }}</el-tag>
+					</template>
+				</el-table-column>
+				<el-table-column label="描述" show-overflow-tooltip>
+					<template #default="scope">
 						<span class="ml10">{{ $t(scope.row.memo) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column label="类型" show-overflow-tooltip width="90">
+				<el-table-column prop="path" label="请求路径" show-overflow-tooltip></el-table-column>
+
+				<el-table-column label="请求方法" show-overflow-tooltip>
 					<template #default="scope">
-						<!-- <el-tag type="success" size="small">{{ scope.row.xx }}菜单</el-tag> -->
-						<span v-if="scope.row.menuType == 1" style="font-size: 13px">
-							<el-tag class="ml-2" type="success" effect="light" >菜单</el-tag>
+						<span v-if="scope.row.method === 'GET'" style="font-size: 13px" text="bold">
+							<el-tag class="ml-2">{{ scope.row.method }}</el-tag>
+						</span>
+						<span v-else-if="scope.row.method === 'POST'" style="font-size: 13px">
+							<el-tag class="ml-2" type="success">{{ scope.row.method }}</el-tag>
+						</span>
+						<span v-else-if="scope.row.method === 'DELETE'" style="font-size: 13px">
+							<el-tag class="ml-2" type="danger">{{ scope.row.method }}</el-tag>
+						</span>
+						<span v-else-if="scope.row.method === 'PUT'" style="font-size: 13px">
+							<el-tag class="ml-2" type="warning">{{ scope.row.method }}</el-tag>
 						</span>
 						<span v-else style="font-size: 13px">
-							<el-tag class="ml-2" type="danger" effect="light">按钮</el-tag>
+							<el-tag class="ml-2">{{ scope.row.method }}</el-tag>
 						</span>
-						
 					</template>
 				</el-table-column>
-				<el-table-column prop="path" label="路由路径" show-overflow-tooltip></el-table-column>
-				<el-table-column label="组件路径" show-overflow-tooltip>
-					<template #default="scope">
-						<span>{{ scope.row.component }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column label="权限标识" show-overflow-tooltip>
-					<template #default="scope">
-						<span>{{ scope.row.code }}</span>
-					</template>
-				</el-table-column>
-                <el-table-column prop="status" label="状态" width="80">
+				<el-table-column prop="status" label="状态" width="80">
 					<template #default="scope">
 						<el-switch
 							v-model="scope.row.status"
@@ -74,28 +75,47 @@
 						{{ scope.row.sequence }}
 					</template>
 				</el-table-column>
-
+				<el-table-column label="创建时间" show-overflow-tooltip width="250">
+					<template #default="scope">
+						{{ scope.row.created_at }}
+					</template>
+				</el-table-column>
 				<el-table-column label="操作" show-overflow-tooltip width="140">
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onOpenEditMenu('edit', scope.row)">编辑</el-button>
+						<el-button size="small" text type="primary" @click="onOpenAddMenu('add')">新增</el-button>
+						<el-button size="small" text type="primary" @click="onOpenEditMenu('edit', scope.row)">修改</el-button>
 						<el-button size="small" text type="primary" @click="onTabelRowDel(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
+			<el-pagination
+				@size-change="onHandleSizeChange"
+				@current-change="onHandleCurrentChange"
+				class="mt15"
+				:pager-count="5"
+				:page-sizes="[10, 20, 30]"
+				v-model:current-page="state.tableData.param.page"
+				background
+				v-model:page-size="state.tableData.param.limit"
+				layout="total, sizes, prev, pager, next, jumper"
+				:total="state.tableData.total"
+			>
+			</el-pagination>
 		</el-card>
 		<MenuDialog ref="menuDialogRef" @refresh="getTableData()" />
 	</div>
 </template>
 
-<script setup lang="ts" name="systemMenu">
+<script setup lang="ts" name="systemApi">
 import { defineAsyncComponent, ref, onMounted, reactive } from 'vue';
 import { RouteRecordRaw } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMenuApi } from '/@/api/menu';
+
 // import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";
 
 // 引入组件
-const MenuDialog = defineAsyncComponent(() => import('/@/views/system/menu/dialog.vue'));
+const MenuDialog = defineAsyncComponent(() => import('./dialog.vue'));
 
 // 定义变量内容
 const menuApi = useMenuApi();
@@ -104,17 +124,22 @@ const state = reactive({
 	tableData: {
 		data: [] as RouteRecordRaw[],
 		loading: true,
-	},
-	params: {
-		menuType: "1,2", //获取菜单,1为目录,2为菜单
+		param: {
+			page: 1,
+			limit: 10,
+			menuType: 3,
+			isTree: false,
+		},
+		total: 0,
 	},
 });
 
 // 获取路由数据，真实请从接口获取
 const getTableData = async () => {
 	state.tableData.loading = true;
-	await menuApi.listMenu(state.params).then((res) => {
+	await menuApi.listMenu(state.tableData.param).then((res) => {
 		state.tableData.data = res.data.menus;
+		state.tableData.total = res.data.total;
 	});
 	// state.tableData.data = routesList.value;
 	setTimeout(() => {
@@ -131,8 +156,7 @@ const onOpenEditMenu = (type: string, row: RouteRecordRaw) => {
 };
 // 删除菜单或按钮
 const onTabelRowDel = (row: any) => {
-    let text = row.menuType === 1 ? '菜单' : '按钮' 
-	ElMessageBox.confirm(`此操作将永久删除${text}：${row.name}, 是否继续?`, '警告', {
+	ElMessageBox.confirm(`此操作将永久删除API：${row.name}, 是否继续?`, '警告', {
 		confirmButtonText: '删除',
 		cancelButtonText: '取消',
 		type: 'warning',
@@ -145,15 +169,13 @@ const onTabelRowDel = (row: any) => {
 		})
 		.catch(() => {});
 };
-
-//修改状态
 const changeStatus = async (obj: any) => {
 	let text = obj.status === 1 ? '启用' : '停用';
 	ElMessageBox({
 		closeOnClickModal: false,
 		closeOnPressEscape: false,
 		title: '警告',
-		message: '确认要 ' + text + ' "' + obj.name + '"角色吗?',
+		message: '确认要 ' + text + ' "' + obj.name + '" API吗?',
 		showCancelButton: true,
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
@@ -167,6 +189,16 @@ const changeStatus = async (obj: any) => {
 		.catch(() => {
 			obj.status = obj.status === 1 ? 2 : 1;
 		});
+};
+// 分页改变
+const onHandleSizeChange = (val: number) => {
+	state.tableData.param.limit = val;
+	getTableData();
+};
+// 分页改变
+const onHandleCurrentChange = (val: number) => {
+	state.tableData.param.page = val;
+	getTableData();
 };
 // 页面加载时
 onMounted(() => {

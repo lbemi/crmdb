@@ -12,11 +12,11 @@ import request from '/@/utils/request';
  */
 export function useMenuApi() {
 	return {
-		getAdminMenu: (params?: object) => {
+		addMenu: (data: object) => {
 			return request({
-				url: '/gitee/lyt-top/vue-next-admin-images/raw/master/menu/adminMenu.json',
-				method: 'get',
-				params,
+				url: '/menu',
+				method: 'post',
+				data,
 			});
 		},
 		getTestMenu: (params?: object) => {

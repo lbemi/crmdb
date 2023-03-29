@@ -44,12 +44,19 @@ func (m *menu) Create(c context.Context, obj *form.MenusReq) (menu *sys.Menu, er
 		Status:   obj.Status,
 		Path:     obj.Path,
 		Meta: sys.Meta{
-			Icon: obj.Icon,
+			Icon:        obj.Icon,
+			Title:       obj.Title,
+			IsLink:      obj.IsLink,
+			IsAffix:     obj.IsAffix,
+			IsHide:      obj.IsHide,
+			IsIframe:    obj.IsIframe,
+			IsKeepAlive: obj.IsKeepAlive,
 		},
-		Sequence: obj.Sequence,
-		MenuType: obj.MenuType,
-		Method:   obj.Method,
-		Code:     obj.Code,
+		Component: obj.Component,
+		Sequence:  obj.Sequence,
+		MenuType:  obj.MenuType,
+		Method:    obj.Method,
+		Code:      obj.Code,
 	}); err != nil {
 		log.Logger.Error(err)
 		return

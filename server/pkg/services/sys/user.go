@@ -180,9 +180,9 @@ func (u *user) SetUserRoles(userID uint64, roleIDS []uint64) (err error) {
 func (u *user) GetButtonsByUserID(userID uint64) (*[]sys.Menu, error) {
 	var permissions []sys.Menu
 
-	err := u.db.Debug().Table("menus").Select(" menus.id, menus.code,menus.menu_type,menus.status").
+	err := u.db.Debug().Table("menus").Select(" menus.id, menus.code,menus.menuType,menus.status").
 		Joins("left join role_menus on menus.id = role_menus.menu_id ").
-		Joins("left join user_roles on user_roles.role_id = role_menus.role_id where role_menus.role_id in (?) and menus.menu_type in (2,3) and menus.status = 1",
+		Joins("left join user_roles on user_roles.role_id = role_menus.role_id where role_menus.role_id in (?) and menus.menuType in (2,3) and menus.status = 1",
 			u.db.Table("roles").Select("roles.id").
 				Joins("left join user_roles on user_roles.role_id = roles.id where  user_roles.user_id = ? and roles.status = 1", userID)).
 		Group("id").
@@ -196,13 +196,13 @@ func (u *user) GetButtonsByUserID(userID uint64) (*[]sys.Menu, error) {
 // GetLeftMenusByUserID 根据用户ID获取左侧菜单
 func (u *user) GetLeftMenusByUserID(userID uint64) (*[]sys.Menu, error) {
 	var menus []sys.Menu
-	err := u.db.Debug().Table("menus").Select(" menus.id, menus.parent_id,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
-		"menus.method, menus.menu_type, menus.status, menus.component, menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
-		Joins("left join role_menus on menus.id = role_menus.menu_id where role_menus.role_id in (?) and menus.menu_type = 1 and menus.status = 1",
+	err := u.db.Debug().Table("menus").Select(" menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
+		"menus.method, menus.menuType, menus.status, menus.component, menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
+		Joins("left join role_menus on menus.id = role_menus.menu_id where role_menus.role_id in (?) and menus.menuType = 1 and menus.status = 1",
 			u.db.Table("roles").Select("roles.id").
 				Joins("left join user_roles on user_roles.role_id = roles.id where  user_roles.user_id = ? and roles.status = 1", userID)).
 		Group("id").
-		Order("parent_id ASC").
+		Order("parentID ASC").
 		Order("sequence DESC").
 		Scan(&menus).Error
 
