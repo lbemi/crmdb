@@ -8,6 +8,7 @@ export default {
 		systemUser: '用戶管理',
 		systemDept: '部門管理',
 		systemDic: '字典管理',
+        systemApi: 'API管理',
 		limits: '許可權管理',
 		limitsFrontEnd: '前端控制',
 		limitsFrontEndPage: '頁面許可權',

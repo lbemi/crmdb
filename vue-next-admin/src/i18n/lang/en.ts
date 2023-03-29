@@ -8,6 +8,7 @@ export default {
 		systemUser: 'systemUser',
 		systemDept: 'systemDept',
 		systemDic: 'systemDic',
+        systemApi: 'systemApi',
 		limits: 'limits',
 		limitsFrontEnd: 'FrontEnd',
 		limitsFrontEndPage: 'FrontEndPage',

@@ -22,17 +22,18 @@ type Menu struct {
 	Redirect  string `json:"redirect" gorm:"column:name;size:128;"`
 	Method    string `gorm:"column:method;size:32;not null;comment:操作类型 none/GET/POST/PUT/DELETE" json:"method,omitempty" form:"method"` // 操作类型 none/GET/POST/PUT/DELETE
 	Code      string `gorm:"column:code;size:128;not null;" json:"code"`                                                                 // 前端鉴权code 例： user:role:add, user:role:delete
+	Group     string `gorm:"column:group;size:256;not null;" json:"group"`
 	Meta      `json:"meta"`
 	Children  []Menu `gorm:"-" json:"children"`
 }
 
 type Meta struct {
 	Title       string `json:"title" gorm:"column:title;size:128;not null;comment:标题"`
-	IsLink      bool   `json:"is_link" gorm:"column:is_link"`
-	IsHide      bool   `json:"is_hide" gorm:"column:is_hide"`
-	IsKeepAlive bool   `json:"is_keepalive" gorm:"column:is_keepalive"`
-	IsAffix     bool   `json:"is_affix" gorm:"column:is_affix"`
-	IsIframe    bool   `json:"is_iframe" gorm:"column:is_iframe"`
+	IsLink      bool   `json:"isLink" gorm:"column:isLink"`
+	IsHide      bool   `json:"isHide" gorm:"column:isHide"`
+	IsKeepAlive bool   `json:"isKeepAlive" gorm:"column:isKeepAlive"`
+	IsAffix     bool   `json:"isAffix" gorm:"column:isAffix"`
+	IsIframe    bool   `json:"isIframe" gorm:"column:isIframe"`
 	Icon        string `gorm:"column:icon;size:32;comment:icon图标" json:"icon" form:"icon"`
 }
 

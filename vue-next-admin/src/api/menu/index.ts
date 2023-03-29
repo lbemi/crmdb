@@ -32,5 +32,24 @@ export function useMenuApi() {
 				method: 'get',
 			});
 		},
+        listMenu: (params?: any) => {
+			return request({
+				url: '/menu',
+				method: 'get',
+                params: params
+			});
+		},
+        updateMenuStatu: (id: number, status: number) => {
+			return request({
+                url: '/menu/' +id +'/status/' + status ,
+                method: 'put',
+			});
+		},
+        deleteMenu: (id: number) => {
+			return request({
+				url: '/menu/' + id,
+				method: 'delete',
+			});
+		},
 	};
 }
