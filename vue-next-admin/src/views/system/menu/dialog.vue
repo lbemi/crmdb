@@ -149,9 +149,6 @@
 
 <script setup lang="ts" name="systemMenuDialog">
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useRoutesList } from '/@/stores/routesList';
-import { i18n } from '/@/i18n/index';
 import { useMenuApi } from '/@/api/menu';
 import { ElMessage } from 'element-plus';
 
@@ -168,6 +165,7 @@ const menuDialogFormRef = ref();
 const state = reactive({
 	// 参数请参考 `/src/router/route.ts` 中的 `dynamicRoutes` 路由菜单格式
 	ruleForm: {
+        id: 0,
 		parentID: 0, // 上级菜单
 		menuType: 1, // 菜单类型 1为菜单 2为按钮
 		name: '', // 路由名称
@@ -212,13 +210,12 @@ const getMenuData = async () => {
 // 打开弹窗
 const openDialog = (type: string, row?: any) => {
 	if (type === 'edit') {
-        state.ruleForm = JSON.parse(JSON.stringify(row));
+		state.ruleForm = JSON.parse(JSON.stringify(row));
 
-        state.dialog.title = '修改菜单';
+		state.dialog.title = '修改菜单';
 		state.dialog.submitTxt = '修 改';
-		
 	} else {
-        state.dialog.title = '新增菜单';
+		state.dialog.title = '新增菜单';
 		state.dialog.submitTxt = '新 增';
 
 		// 清空表单，此项需加表单验证才能使用
@@ -244,19 +241,31 @@ const onCancel = () => {
 };
 // 提交
 const onSubmit = async () => {
-	console.log(state.ruleForm);
-	await menuApi
-		.addMenu(state.ruleForm)
-		.then((res) => {
-			ElMessage.success(res.message);
-			closeDialog(); // 关闭弹窗
-			emit('refresh');
-		})
-		.catch((e: any) => {
-			ElMessage.error(e.message);
-		});
-	closeDialog(); // 关闭弹窗
-	// if (state.dialog.type === 'add') { }
+	if (state.dialog.type === 'add') {
+		await menuApi
+			.addMenu(state.ruleForm)
+			.then((res) => {
+				ElMessage.success(res.message);
+				closeDialog(); // 关闭弹窗
+				emit('refresh');
+			})
+			.catch((e: any) => {
+				ElMessage.error(e.message);
+			});
+		closeDialog(); // 关闭弹窗
+	} else {
+		await menuApi
+			.updateMenu(state.ruleForm.id ,state.ruleForm)
+			.then((res) => {
+				ElMessage.success(res.message);
+				closeDialog(); // 关闭弹窗
+				emit('refresh');
+			})
+			.catch((e: any) => {
+				ElMessage.error(e.message);
+			});
+		closeDialog(); // 关闭弹窗
+    }
 	// setBackEndControlRefreshRoutes() // 刷新菜单，未进行后端接口测试
 };
 // 页面加载时

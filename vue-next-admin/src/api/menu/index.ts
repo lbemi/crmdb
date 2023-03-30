@@ -19,11 +19,11 @@ export function useMenuApi() {
 				data,
 			});
 		},
-		getTestMenu: (params?: object) => {
+		updateMenu: (id: number, data: object) => {
 			return request({
-				url: '/gitee/lyt-top/vue-next-admin-images/raw/master/menu/testMenu.json',
-				method: 'get',
-				params,
+				url: '/menu/' + id,
+				method: 'put',
+                data: data
 			});
 		},
 		getUserMenu: () => {
