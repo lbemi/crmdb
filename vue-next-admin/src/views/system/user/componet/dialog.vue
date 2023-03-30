@@ -57,6 +57,7 @@
 import { reactive, ref } from 'vue';
 import { FormInstance, FormRules, ElMessage } from 'element-plus';
 import { useUserApi } from '/@/api/system/user';
+import {RowUserType} from "/@/types/views";
 // 定义子组件向父组件传值/事件
 const emit = defineEmits(['refresh']);
 
@@ -127,7 +128,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 
 // 关闭弹窗
 const closeDialog = (formEl: FormInstance | undefined) => {
-	
+
 	if (!formEl) return;
 	formEl.resetFields();
     state.dialog.isShowDialog = false;
@@ -141,7 +142,9 @@ const validatePass = (rule: any, value: string, callback: any) => {
 	} else {
 		if (state.ruleForm.confirmPassword !== '') {
 			if (!ruleFormRef.value) return;
-			ruleFormRef.value.validateField('confirmPassword', () => null);
+      if (ruleFormRef.value) {
+        ruleFormRef.value.validateField('confirmPassword', () => null);
+      }
 		}
 		callback();
 	}

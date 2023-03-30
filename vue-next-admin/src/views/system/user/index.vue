@@ -38,7 +38,9 @@
 					</template>
 				</el-table-column>
 				<el-table-column prop="description" label="用户描述" show-overflow-tooltip></el-table-column>
-				<el-table-column prop="created_at" label="创建时间" show-overflow-tooltip></el-table-column>
+				<el-table-column prop="created_at" label="创建时间" show-overflow-tooltip>
+					<template #default="scope"> {{ dateStrFormat(scope.row.created_at) }}</template>
+				</el-table-column>
 				<el-table-column label="操作" width="100">
 					<template #default="scope">
 						<el-button size="small" text type="primary" @click="onOpenEditUser('edit', scope.row)">修改</el-button>
@@ -68,6 +70,7 @@
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useUserApi } from '/@/api/system/user';
+import {RowUserType, SysUserState} from "/@/types/views";
 
 // 引入组件
 const UserDialog = defineAsyncComponent(() => import('./componet/dialog.vue'));
@@ -88,14 +91,16 @@ const state = reactive<SysUserState>({
 });
 
 const changeStatus = async (obj: any) => {
-  await userApi.updateStatus(obj.id, obj.status).then((res) => {
-      getTableData()
-      ElMessage.success(res.message)
-    })
-    .catch(() => {
-        obj.status = 1
-    })
-}
+	await userApi
+		.updateStatus(obj.id, obj.status)
+		.then((res) => {
+			getTableData();
+			ElMessage.success(res.message);
+		})
+		.catch(() => {
+			obj.status = 1;
+		});
+};
 
 // 初始化表格数据
 const getTableData = async () => {

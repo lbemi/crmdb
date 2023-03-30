@@ -149,7 +149,7 @@
 
 <script setup lang="ts" name="systemMenuDialog">
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
-import { useMenuApi } from '/@/api/menu';
+import { useMenuApi } from '/@/api/system/menu';
 import { ElMessage } from 'element-plus';
 
 // import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";

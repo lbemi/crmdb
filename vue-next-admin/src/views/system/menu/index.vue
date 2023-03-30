@@ -33,12 +33,11 @@
 					<template #default="scope">
 						<!-- <el-tag type="success" size="small">{{ scope.row.xx }}菜单</el-tag> -->
 						<span v-if="scope.row.menuType == 1" style="font-size: 13px">
-							<el-tag class="ml-2" type="success" effect="light" >菜单</el-tag>
+							<el-tag class="ml-2" type="success" effect="light">菜单</el-tag>
 						</span>
 						<span v-else style="font-size: 13px">
 							<el-tag class="ml-2" type="danger" effect="light">按钮</el-tag>
 						</span>
-						
 					</template>
 				</el-table-column>
 				<el-table-column prop="path" label="路由路径" show-overflow-tooltip></el-table-column>
@@ -52,7 +51,7 @@
 						<span>{{ scope.row.code }}</span>
 					</template>
 				</el-table-column>
-                <el-table-column prop="status" label="状态" width="80">
+				<el-table-column prop="status" label="状态" width="80">
 					<template #default="scope">
 						<el-switch
 							v-model="scope.row.status"
@@ -74,7 +73,9 @@
 						{{ scope.row.sequence }}
 					</template>
 				</el-table-column>
-
+				<el-table-column prop="created_at" label="创建时间" show-overflow-tooltip>
+					<template #default="scope"> {{ dateStrFormat(scope.row.created_at) }}</template>
+				</el-table-column>
 				<el-table-column label="操作" show-overflow-tooltip width="140">
 					<template #default="scope">
 						<el-button size="small" text type="primary" @click="onOpenEditMenu('edit', scope.row)">编辑</el-button>
@@ -91,7 +92,8 @@
 import { defineAsyncComponent, ref, onMounted, reactive } from 'vue';
 import { RouteRecordRaw } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { useMenuApi } from '/@/api/menu';
+import { useMenuApi } from '/@/api/system/menu';
+
 // import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";
 
 // 引入组件
@@ -106,7 +108,7 @@ const state = reactive({
 		loading: true,
 	},
 	params: {
-		menuType: "1,2", //获取菜单,1为目录,2为菜单
+		menuType: '1,2', //获取菜单,1为目录,2为菜单
 	},
 });
 
@@ -131,14 +133,14 @@ const onOpenEditMenu = (type: string, row: RouteRecordRaw) => {
 };
 // 删除菜单或按钮
 const onTabelRowDel = (row: any) => {
-    let text = row.menuType === 1 ? '菜单' : '按钮' 
+	let text = row.menuType === 1 ? '菜单' : '按钮';
 	ElMessageBox.confirm(`此操作将永久删除${text}：${row.name}, 是否继续?`, '警告', {
 		confirmButtonText: '删除',
 		cancelButtonText: '取消',
 		type: 'warning',
 	})
 		.then(async () => {
-           await menuApi.deleteMenu(row.id)
+			await menuApi.deleteMenu(row.id);
 			ElMessage.success('删除成功');
 			getTableData();
 			//await setBackEndControlRefreshRoutes() // 刷新菜单，未进行后端接口测试
@@ -153,7 +155,7 @@ const changeStatus = async (obj: any) => {
 		closeOnClickModal: false,
 		closeOnPressEscape: false,
 		title: '警告',
-		message: '确认要 ' + text + ' "' + obj.name + '"角色吗?',
+		message: '确认要 ' + text + ' "' + obj.name + '"菜单吗?',
 		showCancelButton: true,
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',

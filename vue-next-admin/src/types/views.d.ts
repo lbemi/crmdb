@@ -58,17 +58,20 @@ declare type ParamsState = {
  * views system
  */
 // role
-declare interface RowRoleType {
-	roleName: string;
-	roleSign: string;
+export declare interface RoleType {
+	id: number;
+	name: string;
+	memo: string;
 	describe: string;
-	sort: number;
-	status: boolean;
-	createTime: string;
+	status: number;
+	created_at: string;
+	updated_at: string;
+	sequence: number;
+	children: RoleType[];
 }
 
 interface SysRoleTableType extends TableType {
-	data: RowRoleType[];
+	data: RoleType[];
 }
 
 declare interface SysRoleState {
@@ -109,6 +112,29 @@ declare type DeptTreeType = {
 	id: number | string;
 	children?: DeptTreeType[];
 };
+export type MenuType ={
+	id: number,
+	parentID: number // 上级菜单
+	menuType: number, // 菜单类型 1为菜单 2为按钮
+	name: string, // 路由名称
+	memo: string, //显示的名称
+	component: string, // 组件路径
+	sequence: number, // 菜单排序
+	path: string, // 路由路径
+	redirect: string, // 路由重定向，有子集 children 时
+	status: number,
+	group: string,
+	code: string, //权限标识
+	meta: {
+		title: string, // 菜单名称
+		icon: string // 菜单图标
+		isHide: boolean, // 是否隐藏
+		isKeepAlive: boolean, // 是否缓存
+		isAffix: boolean, // 是否固定
+		isLink: string, // 外链/内嵌时链接地址（http:xxx.com），开启外链条件，`1、isLink: 链接地址不为空`
+		isIframe: boolean, // 是否内嵌，开启条件，`1、isIframe:true 2、isLink：链接地址不为空`
+	},
+}
 
 // dept
 declare interface RowDeptType extends DeptTreeType {
