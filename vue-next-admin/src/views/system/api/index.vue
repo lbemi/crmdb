@@ -75,10 +75,8 @@
 						{{ scope.row.sequence }}
 					</template>
 				</el-table-column>
-				<el-table-column label="创建时间" show-overflow-tooltip width="250">
-					<template #default="scope">
-						{{ scope.row.created_at }}
-					</template>
+				<el-table-column prop="created_at" label="创建时间" show-overflow-tooltip>
+					<template #default="scope"> {{ dateStrFormat(scope.row.created_at) }}</template>
 				</el-table-column>
 				<el-table-column label="操作" show-overflow-tooltip width="140">
 					<template #default="scope">
@@ -110,7 +108,7 @@
 import { defineAsyncComponent, ref, onMounted, reactive } from 'vue';
 import { RouteRecordRaw } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { useMenuApi } from '/@/api/menu';
+import { useMenuApi } from '/@/api/system/menu';
 
 // import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";
 
@@ -162,7 +160,7 @@ const onTabelRowDel = (row: any) => {
 		type: 'warning',
 	})
 		.then(async () => {
-           await menuApi.deleteMenu(row.id)
+			await menuApi.deleteMenu(row.id);
 			ElMessage.success('删除成功');
 			getTableData();
 			//await setBackEndControlRefreshRoutes() // 刷新菜单，未进行后端接口测试
