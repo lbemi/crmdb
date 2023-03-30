@@ -16,7 +16,7 @@ type IRole interface {
 	Get(uint64) (*[]sys.Role, error)
 	List(page, limit int) (res *form.PageRole, err error)
 
-	GetMenusByRoleID(roleID uint64) (*[]sys.Menu, error)
+	GetMenusByRoleID(roleID uint64, menuType []int8) (*[]sys.Menu, error)
 	SetRole(roleID uint64, menuIDs []uint64) error
 	GetRolesByMenuID(menuID uint64) (*[]uint64, error)
 	GetRoleByRoleName(roleName string) (*sys.Role, error)
@@ -157,13 +157,14 @@ func (r *role) List(page, limit int) (res *form.PageRole, err error) {
 	return
 }
 
-func (r *role) GetMenusByRoleID(roleID uint64) (*[]sys.Menu, error) {
+func (r *role) GetMenusByRoleID(roleID uint64, menuType []int8) (*[]sys.Menu, error) {
 	var menus []sys.Menu
-	err := r.db.Table("menus").Select(" menus.id, menus.parent_id,menus.name, menus.url, menus.icon,menus.menu_type,menus.sequence,menus.code,menus.method").
-		Joins("left join role_menus on menus.id = role_menus.menu_id", roleID).
-		Where("role_menus.role_id = ?", roleID).
-		Where("menus.menu_type != 1").
-		Order("parent_id ASC").
+	err := r.db.Table("menus").Select("menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,+"+
+		"menus.method, menus.menuType, menus.status, menus.component, menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
+		Joins("left join role_menus on menus.id = role_menus.menuID", roleID).
+		Where("role_menus.roleID = ?", roleID).
+		Where("menus.menuType in ?", menuType).
+		Order("parentId ASC").
 		Order("sequence ASC").
 		Scan(&menus).Error
 	if err != nil {
@@ -209,7 +210,7 @@ func (r *role) SetRole(roleID uint64, menuIDs []uint64) error {
 }
 
 func (r *role) GetRolesByMenuID(menuID uint64) (roleIds *[]uint64, err error) {
-	err = r.db.Where("menu_id = ?", menuID).Table("role_menus").Pluck("role_id", &roleIds).Error
+	err = r.db.Where("menuID = ?", menuID).Table("role_menus").Pluck("roleID", &roleIds).Error
 	if err != nil {
 		return
 	}

@@ -1,47 +1,45 @@
 <template>
 	<div class="system-role-dialog-container">
 		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="500px">
-			<el-form ref="roleAuthDialogFormRef" :model="state.ruleForm" size="default" label-width="90px">
-        <el-row>
+			<el-form ref="roleAuthDialogFormRef" :model="state" size="default" label-width="90px">
+				<el-row>
 					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-							<el-tabs v-model="state.activeName"
-                       tab-position="left"
-              >
-								<el-tab-pane label="菜单权限" name="first">
-									<el-checkbox v-model="state.menuExpand" @change="handleCheckedTreeExpand($event, 'menu')">展开/折叠 </el-checkbox>
-									<el-checkbox v-model="state.menuNodeAll" @change="handleCheckedTreeNodeAll($event, 'menu')">全选/全不选 </el-checkbox>
-									<el-tree
-										class="tree-border"
-										:data="state.menuData"
-										show-checkbox
-										ref="menuRef"
-										node-key="id"
-										empty-text="加载中，请稍后"
-										:props="{
-											label: 'memo',
-											children: 'children',
-										}"
-										:default-checked-keys="state.menuCheckedKeys"
-									></el-tree>
-								</el-tab-pane>
-								<el-tab-pane label="API权限" name="second">
-									<el-checkbox v-model="state.apiExpand" @change="handleCheckedTreeExpand($event, 'api')">展开/折叠 </el-checkbox>
-									<el-checkbox v-model="state.apiNodeAll" @change="handleCheckedTreeNodeAll($event, 'api')">全选/全不选 </el-checkbox>
-									<el-tree
-										class="tree-border"
-										:data="state.apiData"
-										show-checkbox
-										ref="apiRef"
-										node-key="id"
-										empty-text="加载中，请稍后"
-										:props="{
-											children: 'children',
-											label: 'memo',
-										}"
-										:default-checked-keys="state.apiCheckedKeys"
-									></el-tree>
-								</el-tab-pane>
-							</el-tabs>
+						<el-tabs v-model="state.activeName" tab-position="left">
+							<el-tab-pane label="菜单权限" name="first">
+								<el-checkbox v-model="state.menuExpand" @change="handleCheckedTreeExpand($event, 'menu')">展开/折叠 </el-checkbox>
+								<el-checkbox v-model="state.menuNodeAll" @change="handleCheckedTreeNodeAll($event, 'menu')">全选/全不选 </el-checkbox>
+								<el-tree
+									class="tree-border"
+									:data="state.menuData"
+									show-checkbox
+									ref="menuRef"
+									node-key="id"
+									empty-text="加载中，请稍后"
+									:props="{
+										label: 'memo',
+										children: 'children',
+									}"
+									:default-checked-keys="state.menuCheckedKeys"
+								></el-tree>
+							</el-tab-pane>
+							<el-tab-pane label="API权限" name="second">
+								<el-checkbox v-model="state.apiExpand" @change="handleCheckedTreeExpand($event, 'api')">展开/折叠 </el-checkbox>
+								<el-checkbox v-model="state.apiNodeAll" @change="handleCheckedTreeNodeAll($event, 'api')">全选/全不选 </el-checkbox>
+								<el-tree
+									class="tree-border"
+									:data="state.apiData"
+									show-checkbox
+									ref="apiRef"
+									node-key="id"
+									empty-text="加载中，请稍后"
+									:props="{
+										children: 'children',
+										label: 'memo',
+									}"
+									:default-checked-keys="state.apiCheckedKeys"
+								></el-tree>
+							</el-tab-pane>
+						</el-tabs>
 					</el-col>
 				</el-row>
 			</el-form>
@@ -56,7 +54,7 @@
 </template>
 
 <script setup lang="ts" name="systemRoleAuthDialog">
-import { reactive, ref } from 'vue';
+import {onMounted, reactive, ref} from 'vue';
 import { useMenuApi } from '/@/api/system/menu';
 import { unref } from 'vue-demi';
 import { MenuType, RoleType } from '/@/types/views';
@@ -73,29 +71,17 @@ const menuRef = ref<HTMLElement | null>(null);
 const apiRef = ref<HTMLElement | null>(null);
 const roleAuthDialogFormRef = ref<HTMLElement | null>(null);
 const state = reactive({
-	ruleForm: {
-		name: '', // 角色名称
-		memo: '', // 角色描述
-		sequence: 0, // 排序
-		status: 1, // 角色状态
-	},
-	apiIds: [],
+	id: 0,
 	apiExpand: false,
 	apiNodeAll: false,
-	menuIds: [],
 	menuExpand: false,
 	menuNodeAll: false,
 	apiAndMenuIDs: [],
 	activeName: 'first',
 	menuCheckedKeys: [],
 	apiCheckedKeys: [],
-	selectData: [],
 	menuData: [],
 	apiData: [],
-	menuProps: {
-		children: 'children',
-		label: 'label',
-	},
 	dialog: {
 		isShowDialog: false,
 		type: '',
@@ -106,19 +92,57 @@ const state = reactive({
 
 // 打开弹窗
 const openAuthDialog = (row: RoleType) => {
-	state.ruleForm = row;
 	state.dialog.title = row.name + '角色-授权';
 	state.dialog.submitTxt = '修 改';
 	state.dialog.isShowDialog = true;
+	state.id = row.id;
+	state.apiCheckedKeys = [];
+	state.menuCheckedKeys = [];
+	state.activeName="first";
+
 	listMenuAndButton();
 	listApi();
+	getRoleMenus();
+	getRoleApis();
 };
 
 const listMenuAndButton = async () => {
 	await menuApi.listMenu({ menuType: '1,2' }).then((res) => {
 		state.menuData = res.data.menus;
+
 	});
 };
+
+const getRoleMenus =async () =>{
+	roleApi.getRoleMenu(state.id,{menuType: "1,2"}).then((res)=>{
+		if (res.data) {
+			res.data.forEach((item)=>{
+				state.menuCheckedKeys.push(item.id)
+				if(item.children) {
+					item.children.forEach((res) => {
+						state.menuCheckedKeys.push(res.id)
+					})
+				}
+			})
+		}
+	})
+	// console.log("----",state.menuCheckedKeys)
+}
+const getRoleApis =async () =>{
+	roleApi.getRoleMenu(state.id,{menuType: "3"}).then((res)=>{
+		if(res.data) {
+			res.data.forEach((item)=>{
+				state.apiCheckedKeys.push(item.id)
+				if(item.children) {
+					item.children.forEach((res) => {
+						state.apiCheckedKeys.push(res.id)
+					})
+				}
+			})
+		}
+
+	})
+}
 const listApi = async () => {
 	await menuApi.listMenu({ menuType: '3', isTree: false }).then((res) => {
 		state.apiData = buildApiTree(res.data.menus);
@@ -144,7 +168,6 @@ const buildApiTree = (apis: MenuType[]) => {
 		};
 		apiTree.push(treeNode);
 	}
-	console.log('****', apiTree);
 	return apiTree;
 };
 
@@ -185,40 +208,13 @@ const onCancel = () => {
 };
 // 提交
 const onSubmit = () => {
-	// const formWrap = unref(roleFormRef) as any;
-	// if (!formWrap) return;
-	// formWrap.validate((valid: boolean) => {
-	//   if (valid) {
-	//     state.bunLoading = true;
-	//     if (state.roleForm != null && state.roleForm.roleId != undefined) {
-	//       state.roleForm.menuIds = getMenuAllCheckedKeys();
-	//       state.roleForm.apiIds = getApiAllCheckedKeys();
-	//       updateRole(state.roleForm).then(() => {
-	//         ElMessage.success("修改成功");
-	//         state.bunLoading = true;
-	//         state.open = false;
-	//         getList();
-	//       });
-	//     } else {
 	getAllCheckIds();
-	roleApi.addRole(state.ruleForm).then(() => {
-		ElMessage.success('添加成功');
-	});
+	roleApi.setRoleAuth(state.id, {menuIDS: state.apiAndMenuIDs}).then(()=>{
+		ElMessage.success("授权成功")
+	}).catch((res)=>{
+		ElMessage.error(res.message)
+	})
 
-	// state.apiAndMenuIDs.push(...state.menuIds,...state.apiIds)
-
-	// addRole(state.roleForm).then(() => {
-	//   ElMessage.success("新增成功");
-	//   state.bunLoading = true;
-	//   state.open = false;
-	//   getList();
-	//     });
-	//   }
-	// }
-	// });
-	// closeDialog();
-	// emit('refresh');
-	// if (state.dialog.type === 'add') { }
 };
 
 // 所有菜单节点数据
@@ -249,6 +245,7 @@ const getAllCheckIds = () => {
 	state.apiAndMenuIDs = [];
 	getMenuAllCheckedKeys();
 	getApiAllCheckedKeys();
+	console.log("提交的权限列表",state.apiAndMenuIDs)
 };
 
 // 暴露变量

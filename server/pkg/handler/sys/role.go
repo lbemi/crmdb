@@ -20,7 +20,7 @@ type IRole interface {
 	Get(c context.Context, roleID uint64) (roles *[]sys.Role, err error)
 	List(c context.Context, page, limit int) (res *form.PageRole, err error)
 
-	GetMenusByRoleID(c context.Context, roleID uint64) (*[]sys.Menu, error)
+	GetMenusByRoleID(c context.Context, roleID uint64, menuType []int8) (*[]sys.Menu, error)
 	SetRole(c context.Context, roleID uint64, menuIDs []uint64) error
 	GetRolesByMenuID(c context.Context, menuID uint64) (roleIDs *[]uint64, err error)
 	GetRoleByRoleName(c context.Context, roleName string) (*sys.Role, error)
@@ -93,8 +93,8 @@ func (r *role) List(c context.Context, page, limit int) (res *form.PageRole, err
 	return
 }
 
-func (r *role) GetMenusByRoleID(c context.Context, roleID uint64) (*[]sys.Menu, error) {
-	menus, err := r.factory.Role().GetMenusByRoleID(roleID)
+func (r *role) GetMenusByRoleID(c context.Context, roleID uint64, menuType []int8) (*[]sys.Menu, error) {
+	menus, err := r.factory.Role().GetMenusByRoleID(roleID, menuType)
 	if err != nil {
 		log.Logger.Error(err)
 		return menus, err

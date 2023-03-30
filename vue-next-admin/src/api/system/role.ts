@@ -24,9 +24,16 @@ export function useRoleApi() {
                 data: data
             });
         },
+        getRoleMenu: (id: number, params?: any) => {
+            return request({
+                url: '/role/'+id +'/menus',
+                method: 'get',
+                params: params
+            });
+        },
         setRoleAuth: (id:number,data: any) => {
             return request({
-                url: '/role/'+ id,
+                url: '/role/'+ id +'/menus',
                 method: 'post',
                 data: data
             });

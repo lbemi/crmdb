@@ -8,6 +8,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/util"
 	"strconv"
+	"strings"
 )
 
 func AddRole(c *gin.Context) {
@@ -117,13 +118,26 @@ func GetMenusByRole(c *gin.Context) {
 
 	rid := util.GetQueryToUint(c, "id")
 
+	//
+	menuTypeStr := c.DefaultQuery("menuType", "1,2,3")
+	var menuType []int8
+	menuTypeSlice := strings.Split(menuTypeStr, ",")
+	for _, t := range menuTypeSlice {
+		res, err := strconv.Atoi(t)
+		if err != nil {
+			response.Fail(c, response.ErrCodeParameter)
+			return
+		}
+		menuType = append(menuType, int8(res))
+	}
+
 	_, err := core.V1.Role().Get(c, rid)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return
 	}
 
-	res, err := core.V1.Role().GetMenusByRoleID(c, rid)
+	res, err := core.V1.Role().GetMenusByRoleID(c, rid, menuType)
 	if err != nil {
 		response.Fail(c, response.ErrOperateFailed)
 		return

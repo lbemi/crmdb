@@ -181,8 +181,8 @@ func (u *user) GetButtonsByUserID(userID uint64) (*[]sys.Menu, error) {
 	var permissions []sys.Menu
 
 	err := u.db.Debug().Table("menus").Select(" menus.id, menus.code,menus.menuType,menus.status").
-		Joins("left join role_menus on menus.id = role_menus.menu_id ").
-		Joins("left join user_roles on user_roles.role_id = role_menus.role_id where role_menus.role_id in (?) and menus.menuType in (2,3) and menus.status = 1",
+		Joins("left join role_menus on menus.id = role_menus.menuID ").
+		Joins("left join user_roles on user_roles.role_id = role_menus.roleID where role_menus.roleID in (?) and menus.menuType in (2,3) and menus.status = 1",
 			u.db.Table("roles").Select("roles.id").
 				Joins("left join user_roles on user_roles.role_id = roles.id where  user_roles.user_id = ? and roles.status = 1", userID)).
 		Group("id").
@@ -198,7 +198,7 @@ func (u *user) GetLeftMenusByUserID(userID uint64) (*[]sys.Menu, error) {
 	var menus []sys.Menu
 	err := u.db.Debug().Table("menus").Select(" menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
 		"menus.method, menus.menuType, menus.status, menus.component, menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
-		Joins("left join role_menus on menus.id = role_menus.menu_id where role_menus.role_id in (?) and menus.menuType = 1 and menus.status = 1",
+		Joins("left join role_menus on menus.id = role_menus.menuID where role_menus.roleID in (?) and menus.menuType = 1 and menus.status = 1",
 			u.db.Table("roles").Select("roles.id").
 				Joins("left join user_roles on user_roles.role_id = roles.id where  user_roles.user_id = ? and roles.status = 1", userID)).
 		Group("id").
