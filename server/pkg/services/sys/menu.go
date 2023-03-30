@@ -68,7 +68,7 @@ func (m *menu) Delete(mId uint64) error {
 	}
 
 	// 清除role_menus
-	if err := tx.Where("menu_id = ?", mId).Delete(&sys.RoleMenu{}).Error; err != nil {
+	if err := tx.Where("menuID= ?", mId).Delete(&sys.RoleMenu{}).Error; err != nil {
 		tx.Rollback()
 		return err
 	}

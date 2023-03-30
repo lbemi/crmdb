@@ -3,7 +3,7 @@ package form
 import "github.com/lbemi/lbemi/pkg/model/sys"
 
 type Menus struct {
-	MenuIDS []uint64 `json:"menu_ids"`
+	MenuIDS []uint64 `json:"menuIDS"`
 }
 
 type MenusReq struct {
@@ -17,6 +17,7 @@ type MenusReq struct {
 	Method    string `json:"method"`   // 操作类型 none/GET/POST/PUT/DELETE
 	Code      string `json:"code"`     // 前端鉴权code 例： user:role:add, user:role:delete
 	Component string `json:"component"`
+	Redirect  string `json:"redirect"`
 	Meta      `json:"meta"`
 }
 type Meta struct {

@@ -52,6 +52,7 @@ func (m *menu) Create(c context.Context, obj *form.MenusReq) (menu *sys.Menu, er
 			IsIframe:    obj.Meta.IsIframe,
 			IsKeepAlive: obj.Meta.IsKeepAlive,
 		},
+		Redirect:  obj.Redirect,
 		Component: obj.Component,
 		Sequence:  obj.Sequence,
 		MenuType:  obj.MenuType,
