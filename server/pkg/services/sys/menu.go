@@ -38,7 +38,14 @@ func (m *menu) Create(obj *sys.Menu) (*sys.Menu, error) {
 }
 
 func (m *menu) Update(obj *form.UpdateMenusReq, mId uint64) error {
+	//	 TODO 看看有没有其他的写法
 	objMap := structs.Map(obj)
+	delete(objMap, "Meta")
+	metaMap := structs.Map(obj.Meta)
+	for k, v := range metaMap {
+		objMap[k] = v
+	}
+
 	tx := m.db.Model(&sys.Menu{}).Where("id = ?  ", mId).Updates(objMap)
 	if tx.RowsAffected == 0 {
 		return errors.New("update failed")
