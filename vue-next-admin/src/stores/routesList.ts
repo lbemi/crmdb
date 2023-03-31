@@ -14,8 +14,6 @@ export const useRoutesList = defineStore('routesList', {
 	}),
 	actions: {
 		async setRoutesList(data: Array<string>) {
-			console.log("设置route到pina： ", data);
-			
 			this.routesList = data;
 		},
 		async setColumnsMenuHover(bool: Boolean) {

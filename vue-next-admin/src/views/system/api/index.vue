@@ -2,18 +2,18 @@
 	<div class="system-menu-container layout-pd">
 		<el-card shadow="hover">
 			<div class="system-menu-search mb15">
-				<el-input size="default" placeholder="请输入菜单名称" style="max-width: 180px"> </el-input>
+				<el-input size="default" placeholder="请输入API名称" style="max-width: 180px"> </el-input>
 				<el-button size="default" type="primary" class="ml10">
 					<el-icon>
 						<ele-Search />
 					</el-icon>
 					查询
 				</el-button>
-				<el-button size="default" type="success" class="ml10" @click="onOpenAddMenu('add')">
+				<el-button size="default" type="success" class="ml10" @click="onOpenAddApi('add')">
 					<el-icon>
 						<ele-FolderAdd />
 					</el-icon>
-					新增菜单
+					新增API
 				</el-button>
 			</div>
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" row-key="path">
@@ -80,8 +80,8 @@
 				</el-table-column>
 				<el-table-column label="操作" show-overflow-tooltip width="140">
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onOpenAddMenu('add')">新增</el-button>
-						<el-button size="small" text type="primary" @click="onOpenEditMenu('edit', scope.row)">修改</el-button>
+						<el-button size="small" text type="primary" @click="onOpenAddApi('add')">新增</el-button>
+						<el-button size="small" text type="primary" @click="onOpenEditApi('edit', scope.row)">修改</el-button>
 						<el-button size="small" text type="primary" @click="onTabelRowDel(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>
@@ -145,11 +145,11 @@ const getTableData = async () => {
 	}, 500);
 };
 // 打开新增菜单弹窗
-const onOpenAddMenu = (type: string) => {
+const onOpenAddApi = (type: string) => {
 	menuDialogRef.value.openDialog(type);
 };
 // 打开编辑菜单弹窗
-const onOpenEditMenu = (type: string, row: RouteRecordRaw) => {
+const onOpenEditApi = (type: string, row: RouteRecordRaw) => {
 	menuDialogRef.value.openDialog(type, row);
 };
 // 删除菜单或按钮
@@ -198,6 +198,7 @@ const onHandleCurrentChange = (val: number) => {
 	state.tableData.param.page = val;
 	getTableData();
 };
+
 // 页面加载时
 onMounted(() => {
 	getTableData();

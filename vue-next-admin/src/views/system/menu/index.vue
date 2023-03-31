@@ -9,7 +9,7 @@
 					</el-icon>
 					查询
 				</el-button>
-				<el-button size="default" type="success" class="ml10" @click="onOpenAddMenu('add')">
+				<el-button size="default" type="success" class="ml10" @click="onOpenAddMenu('add')" v-auth="'sys:menu:add'">
 					<el-icon>
 						<ele-FolderAdd />
 					</el-icon>
@@ -23,7 +23,7 @@
 				row-key="path"
 				:tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
 			>
-				<el-table-column label="菜单名称" show-overflow-tooltip>
+				<el-table-column label="菜单描述" show-overflow-tooltip>
 					<template #default="scope">
 						<SvgIcon :name="scope.row.meta.icon" />
 						<span class="ml10">{{ $t(scope.row.memo) }}</span>
@@ -55,6 +55,7 @@
 					<template #default="scope">
 						<el-switch
 							v-model="scope.row.status"
+              v-auth="'sys:menu:status'"
 							class="ml-2"
 							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
 							:active-value="1"
@@ -78,8 +79,8 @@
 				</el-table-column>
 				<el-table-column label="操作" show-overflow-tooltip width="140">
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onOpenEditMenu('edit', scope.row)">编辑</el-button>
-						<el-button size="small" text type="primary" @click="onTabelRowDel(scope.row)">删除</el-button>
+						<el-button size="small" text type="primary" @click="onOpenEditMenu('edit', scope.row)" v-auth="'sys:menu:edit'">编辑</el-button>
+						<el-button size="small" text type="primary" @click="onTabelRowDel(scope.row)" v-auth="'sys:menu:del'">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>

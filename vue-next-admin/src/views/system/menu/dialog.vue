@@ -24,19 +24,24 @@
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
 						<el-form-item label="菜单类型">
-							<el-radio-group v-model="state.ruleForm.menuType">
-								<el-radio label="1">菜单</el-radio>
-								<el-radio label="2">按钮</el-radio>
+							<el-radio-group v-model.number="state.ruleForm.menuType">
+								<el-radio-button label="1">菜单</el-radio-button>
+								<el-radio-button label="2">按钮</el-radio-button>
 							</el-radio-group>
 						</el-form-item>
 					</el-col>
-					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20" v-if="state.ruleForm.menuType == 1">
 						<el-form-item label="菜单名称">
 							<el-input v-model="state.ruleForm.meta.title" placeholder="格式: message.router.xxx" clearable></el-input>
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="显示名称">
+							<template #label>
+								<el-tooltip effect="dark" content="菜单的描述信息仅做展示使用" placement="top-start">
+									<span>显示名称</span>
+								</el-tooltip>
+							</template>
 							<el-input v-model="state.ruleForm.memo" clearable></el-input>
 						</el-form-item>
 					</el-col>
@@ -52,7 +57,7 @@
 							</el-form-item>
 						</el-col>
 						<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-							<el-form-item label="重定向">
+							<el-form-item label="重定向" :disabled="state.ruleForm.parentID != 0 ? true : false">
 								<el-input v-model="state.ruleForm.redirect" placeholder="请输入路由重定向" clearable></el-input>
 							</el-form-item>
 						</el-col>
@@ -72,14 +77,6 @@
 								</el-input>
 							</el-form-item>
 						</el-col>
-						<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-							<el-form-item label="是否启用">
-								<el-radio-group v-model="state.ruleForm.status">
-									<el-radio :label="1">启用</el-radio>
-									<el-radio :label="2">不启用</el-radio>
-								</el-radio-group>
-							</el-form-item>
-						</el-col>
 					</template>
 					<template v-if="state.ruleForm.menuType == 2">
 						<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
@@ -91,6 +88,11 @@
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="菜单排序">
 							<el-input-number v-model="state.ruleForm.sequence" controls-position="right" placeholder="请输入排序" class="w100" />
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="路由路径">
+							<el-input v-model="state.ruleForm.path" placeholder="路由中的 path 值" clearable></el-input>
 						</el-form-item>
 					</el-col>
 					<template v-if="state.ruleForm.menuType == 1">
@@ -135,6 +137,21 @@
 							</el-form-item>
 						</el-col>
 					</template>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="是否启用">
+							<el-radio-group v-model="state.ruleForm.status">
+								<el-radio :label="1">启用</el-radio>
+								<el-radio :label="2">不启用</el-radio>
+							</el-radio-group>
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item v-if="state.ruleForm.menuType === 2" id="ss" v-model="state.ruleForm.menuType" label="请求方式:">
+							<el-select v-model="state.ruleForm.method" clearable placeholder="请选择" value-key="value">
+								<el-option v-for="item in state.methodOptions" :key="item.value" :label="item.label" :value="item.value" />
+							</el-select>
+						</el-form-item>
+					</el-col>
 				</el-row>
 			</el-form>
 			<template #footer>
@@ -165,7 +182,7 @@ const menuDialogFormRef = ref();
 const state = reactive({
 	// 参数请参考 `/src/router/route.ts` 中的 `dynamicRoutes` 路由菜单格式
 	ruleForm: {
-        id: 0,
+		id: 0,
 		parentID: 0, // 上级菜单
 		menuType: 1, // 菜单类型 1为菜单 2为按钮
 		name: '', // 路由名称
@@ -177,6 +194,7 @@ const state = reactive({
 		status: 1,
 		group: '',
 		code: '', //权限标识
+		method: 'GET',
 		meta: {
 			title: '', // 菜单名称
 			icon: '', // 菜单图标
@@ -188,7 +206,24 @@ const state = reactive({
 		},
 	},
 	isLink: false, //是否是外链
-
+	methodOptions: [
+		{
+			value: 'GET',
+			label: 'GET',
+		},
+		{
+			value: 'POST',
+			label: 'POST',
+		},
+		{
+			value: 'DELETE',
+			label: 'DELETE',
+		},
+		{
+			value: 'PUT',
+			label: 'PUT',
+		},
+	],
 	menuData: [], // 上级菜单数据
 	dialog: {
 		isShowDialog: false,
@@ -255,7 +290,7 @@ const onSubmit = async () => {
 		closeDialog(); // 关闭弹窗
 	} else {
 		await menuApi
-			.updateMenu(state.ruleForm.id ,state.ruleForm)
+			.updateMenu(state.ruleForm.id, state.ruleForm)
 			.then((res) => {
 				ElMessage.success(res.message);
 				closeDialog(); // 关闭弹窗
@@ -265,7 +300,7 @@ const onSubmit = async () => {
 				ElMessage.error(e.message);
 			});
 		closeDialog(); // 关闭弹窗
-    }
+	}
 	// setBackEndControlRefreshRoutes() // 刷新菜单，未进行后端接口测试
 };
 // 页面加载时
