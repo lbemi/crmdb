@@ -44,6 +44,7 @@ type UpdateMenusReq struct {
 	Code      string `json:"code"`     // 前端鉴权code 例： user:role:add, user:role:delete
 	Component string `json:"component"`
 	Group     string `json:"group"`
+	Redirect  string `json:"redirect"`
 	Meta      `json:"meta" gorm:"meta"`
 }
 

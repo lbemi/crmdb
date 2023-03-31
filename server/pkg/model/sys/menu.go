@@ -19,7 +19,7 @@ type Menu struct {
 	Name      string `gorm:"column:name;size:128;not null;comment:菜单名称" json:"name" form:"name"`                                           // 菜单名称
 	Sequence  int    `gorm:"column:sequence;not null;comment:排序值" json:"sequence" form:"sequence"`                                         // 排序值
 	MenuType  int8   `gorm:"column:menuType;type:tinyint(1);not null;comment:菜单类型(1 左侧菜单,2 按钮, 3 非展示权限)" json:"menuType" form:"menu_type"` // 菜单类型 1 左侧菜单,2 按钮, 3 非展示权限
-	Redirect  string `json:"redirect" gorm:"column:name;size:128;"`
+	Redirect  string `json:"redirect" gorm:"column:redirect;size:128;"`
 	Method    string `gorm:"column:method;size:32;not null;comment:操作类型 none/GET/POST/PUT/DELETE" json:"method,omitempty" form:"method"` // 操作类型 none/GET/POST/PUT/DELETE
 	Code      string `gorm:"column:code;size:128;not null;" json:"code"`                                                                 // 前端鉴权code 例： user:role:add, user:role:delete
 	Group     string `gorm:"column:group;size:256;not null;" json:"group"`
