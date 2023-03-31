@@ -9,7 +9,7 @@
 					</el-icon>
 					查询
 				</el-button>
-				<el-button size="default" type="success" class="ml10" @click="onOpenAddRole('add')">
+				<el-button size="default" type="success" class="ml10" @click="onOpenAddRole('add')" v-auth="'sys:role:add'">
 					<el-icon>
 						<ele-FolderAdd />
 					</el-icon>
@@ -24,6 +24,7 @@
           <template #default="scope">
             <el-switch
                 v-model="scope.row.status"
+                v-auth="'sys:role:status'"
                 class="ml-2"
                 style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
                 :active-value="1"
@@ -43,13 +44,13 @@
 				</el-table-column>
 				<el-table-column label="操作" width="140">
 					<template #default="scope">
-						<el-button  size="small" text type="primary" @click="onOpenEditRole('edit', scope.row)"
+						<el-button  size="small" text type="primary" @click="onOpenEditRole('edit', scope.row)" v-auth="'sys:role:edit'"
 							>修改</el-button
 						>
-            <el-button  size="small" text type="primary" @click="onOpenAuthRole(scope.row)"
+            <el-button  size="small" text type="primary" @click="onOpenAuthRole(scope.row)" v-auth="'sys:role:set'"
             >授权</el-button
             >
-						<el-button size="small" text type="primary" @click="onRowDel(scope.row)">删除</el-button>
+						<el-button size="small" text type="primary" @click="onRowDel(scope.row)" v-auth="'sys:role:del'">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -74,7 +75,7 @@
 
 <script setup lang="ts" name="systemRole">
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
-import {ElMessageBox, ElMessage, FormInstance} from 'element-plus';
+import {ElMessageBox, ElMessage} from 'element-plus';
 import { useRoleApi } from '/@/api/system/role';
 import {SysRoleState,RoleType} from "/@/types/views";
 
@@ -104,7 +105,6 @@ const getTableData = async () => {
 		state.tableData.data = res.data.roles;
 		state.tableData.total = res.data.total;
 	});
-	console.log(state.tableData);
 	setTimeout(() => {
 		state.tableData.loading = false;
 	}, 500);

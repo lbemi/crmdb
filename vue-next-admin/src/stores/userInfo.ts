@@ -17,6 +17,10 @@ export const useUserInfo = defineStore('userInfo', {
 		},
 	}),
 	actions: {
+		async setUserAuthButton(authList: []) {
+			this.userInfos.authBtnList = authList;
+		},
+
 		async setUserInfos() {
 			// 存储用户信息到浏览器缓存
 			if (Session.get('userInfo')) {
@@ -43,7 +47,7 @@ export const useUserInfo = defineStore('userInfo', {
 					// test 页面权限标识，对应路由 meta.roles，用于控制路由的显示/隐藏
 					let testRoles: Array<string> = ['common'];
 					// test 按钮权限标识
-					let testAuthBtnList: Array<string> = ['btn.add', 'btn.link'];
+					// let testAuthBtnList: Array<string> = ['btn.add', 'btn.link'];
 					// 不同用户模拟不同的用户权限
 					if (userName === 'admin') {
 						defaultRoles = adminRoles;

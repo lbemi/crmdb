@@ -43,6 +43,7 @@ func (m *menu) Create(c context.Context, obj *form.MenusReq) (menu *sys.Menu, er
 		ParentID: obj.ParentID,
 		Status:   obj.Status,
 		Path:     obj.Path,
+		Group:    obj.Group,
 		Meta: sys.Meta{
 			Icon:        obj.Meta.Icon,
 			Title:       obj.Meta.Title,

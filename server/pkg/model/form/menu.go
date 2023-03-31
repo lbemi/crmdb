@@ -18,6 +18,7 @@ type MenusReq struct {
 	Code      string `json:"code"`     // 前端鉴权code 例： user:role:add, user:role:delete
 	Component string `json:"component"`
 	Redirect  string `json:"redirect"`
+	Group     string `json:"group"`
 	Meta      `json:"meta"`
 }
 type Meta struct {
@@ -42,6 +43,7 @@ type UpdateMenusReq struct {
 	Method    string `json:"method"`   // 操作类型 none/GET/POST/PUT/DELETE
 	Code      string `json:"code"`     // 前端鉴权code 例： user:role:add, user:role:delete
 	Component string `json:"component"`
+	Group     string `json:"group"`
 	Meta      `json:"meta" gorm:"meta"`
 }
 

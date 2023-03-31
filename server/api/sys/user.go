@@ -240,7 +240,16 @@ func GetLeftMenusByCurrentUser(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, response.StatusOK, res)
+	permissions, err := core.V1.User().GetButtonsByUserID(c, uid)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	data := make(map[string]interface{}, 2)
+	data["menus"] = res
+	data["permission"] = permissions
+	response.Success(c, response.StatusOK, data)
 }
 func UpdateUserStatus(c *gin.Context) {
 

@@ -13,7 +13,13 @@ export function authDirective(app: App) {
 	app.directive('auth', {
 		mounted(el, binding) {
 			const stores = useUserInfo();
-			if (!stores.userInfos.authBtnList.some((v: string) => v === binding.value)) el.parentNode.removeChild(el);
+			// if (!stores.userInfos.authBtnList.some((v: string) => v === binding.value)) el.parentNode.removeChild(el); //无权限的按钮删除掉
+			// 无权限的按钮置灰色
+			if (!stores.userInfos.authBtnList.some((v: string) => v === binding.value)) {
+				el.setAttribute('disabled', 'true');
+				el.classList.add('is-disabled');
+				el.addEventListener('click', disableClickFn, true);
+			}
 		},
 	});
 	// 多个权限验证，满足一个则显示（v-auths="[xxx,xxx]"）
@@ -37,4 +43,8 @@ export function authDirective(app: App) {
 			if (!flag) el.parentNode.removeChild(el);
 		},
 	});
+}
+
+const disableClickFn = (event: any) => {
+	event && event.stopImmediatePropagation()
 }

@@ -9,7 +9,7 @@
 					</el-icon>
 					查询
 				</el-button>
-				<el-button size="default" type="success" class="ml10" @click="onOpenAddUser('add')">
+				<el-button size="default" type="success" class="ml10" @click="onOpenAddUser('add')" v-auth="'sys:user:add'">
 					<el-icon>
 						<ele-FolderAdd />
 					</el-icon>
@@ -34,6 +34,7 @@
 							inactive-text="禁用"
 							width="45px"
 							@click="changeStatus(scope.row)"
+              v-auth="'sys:user:status'"
 						/>
 					</template>
 				</el-table-column>
@@ -43,8 +44,8 @@
 				</el-table-column>
 				<el-table-column label="操作" width="100">
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onOpenEditUser('edit', scope.row)">修改</el-button>
-						<el-button size="small" text type="primary" @click="onRowDel(scope.row)">删除</el-button>
+						<el-button size="small" text type="primary" @click="onOpenEditUser('edit', scope.row)" v-auth="'sys:user:edit'">修改</el-button>
+						<el-button size="small" text type="primary" @click="onRowDel(scope.row)" v-auth="'sys:user:del'">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
