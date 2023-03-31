@@ -9,10 +9,11 @@
 					</el-icon>
 					查询
 				</el-button>
-				<el-button size="default" type="success" class="ml10" @click="handleCreate">
-					<el-icon>
-						<ele-FolderAdd />
-					</el-icon>
+				<el-button @click="loadCluster">ceshi </el-button>
+				<el-button size="default" type="success" class="ml10" @click="loadCluster()">
+<!--					<el-icon>-->
+<!--						<ele-FolderAdd />-->
+<!--					</el-icon>-->
 					导入集群
 				</el-button>
 			</div>
@@ -43,7 +44,7 @@
 				<el-table-column prop="service_cidr" label="Service_CIDR" width="130" />
 				<el-table-column prop="cpu" label="CPU" width="120" />
 				<el-table-column prop="memory" label="内存" width="160">
-					<template #default="scope"> {{ scope.row.memory / 1024 }}M </template>
+					<template #default="scope"> {{Math.round(scope.row.memory / 1024/1024)  }}G </template>
 				</el-table-column>
 				<el-table-column fixed="right" label="操作" width="170">
 					<template #default="scope">
@@ -52,18 +53,14 @@
 				</el-table-column>
 			</el-table>
 		</el-card>
+		<CreateCluster v-model:dialogVisible="state.dialogVisible" @value-change="getCluster()"
+									 :title="state.title" v-if="state.dialogVisible" />
 	</div>
-  <CreateCluster
-      v-model:dialog-visible="state.dialogVisible"
-      @value-change="getCluster()"
-      :title="state.title"
-  />
 </template>
 
-<script setup lang="ts" name="kubernetes">
+<script setup lang="ts" name="kubernetesCluster">
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import router from '/@/router';
-
 import { ClusterInfo } from '/@/types/cluster';
 import { useClusterApi } from '/@/api/kubernetes/cluster';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -72,7 +69,7 @@ const CreateCluster = defineAsyncComponent(() => import('./component/create.vue'
 
 const clusterAPI = useClusterApi();
 const state = reactive({
-  dialogVisible: false,
+	dialogVisible: false,
 	title: '创建集群',
 });
 
@@ -84,8 +81,8 @@ onMounted(() => {
 	getCluster();
 });
 
-const handleCreate = () => {
-	// createData.dialogVisable = true;
+const loadCluster = () => {
+	state.dialogVisible = true;
 };
 
 const data = reactive({
@@ -123,20 +120,11 @@ const handleCluster = (cluster: any) => {
 	// kube.clusters = data.clusters;
 	// store.isCollapse = true;
 	router.push({
-		name: 'kubernetes',
+		name: 'kubernetesDashboard',
 	});
 };
 </script>
+
 <style scoped lang="scss">
-.kubernetes-container {
-	:deep(.el-card__body) {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		overflow: auto;
-		.el-table {
-			flex: 1;
-		}
-	}
-}
+
 </style>
