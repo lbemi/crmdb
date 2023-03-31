@@ -14,11 +14,12 @@ export function useClusterApi() {
                 method: 'delete'
 			});
 		},
-        createCluster: (data:any) => {
+        createCluster: (data:any, header:any) => {
             return request({
                 url: '/cluster',
                 method:  "post",
-                data: data
+                data: data,
+                headers: header
             })
         },
         getCluster: (clusterName: string)=>{

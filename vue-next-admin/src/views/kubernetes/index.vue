@@ -53,6 +53,11 @@
 			</el-table>
 		</el-card>
 	</div>
+  <CreateCluster
+      v-model:dialog-visible="state.dialogVisible"
+      @value-change="getCluster()"
+      :title="state.title"
+  />
 </template>
 
 <script setup lang="ts" name="kubernetes">
@@ -63,12 +68,11 @@ import { ClusterInfo } from '/@/types/cluster';
 import { useClusterApi } from '/@/api/kubernetes/cluster';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
-const CreateCluser = defineAsyncComponent(() => import('./component/create.vue'));
+const CreateCluster = defineAsyncComponent(() => import('./component/create.vue'));
 
 const clusterAPI = useClusterApi();
-
-const createData = reactive({
-	dialogVisable: false,
+const state = reactive({
+  dialogVisible: false,
 	title: '创建集群',
 });
 
@@ -93,7 +97,7 @@ const getCluster = async () => {
 	data.clusters = res.data;
 };
 
-const deleteCluster = async (cluster: ClusterInfo) => {
+const deleteCluster = async (cluster: any) => {
 	ElMessageBox.confirm(`此操作将删除[ ${cluster.name} ]集群 . 是否继续?`, '提示', {
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
@@ -114,7 +118,7 @@ const deleteCluster = async (cluster: ClusterInfo) => {
 		.catch(); // 取消
 };
 
-const handleCluster = (cluster: ClusterInfo) => {
+const handleCluster = (cluster: any) => {
 	// kube.activeCluster = cluster.name;
 	// kube.clusters = data.clusters;
 	// store.isCollapse = true;
