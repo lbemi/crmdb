@@ -11,9 +11,9 @@
 				</el-button>
 				<el-button @click="loadCluster">ceshi </el-button>
 				<el-button size="default" type="success" class="ml10" @click="loadCluster()">
-<!--					<el-icon>-->
-<!--						<ele-FolderAdd />-->
-<!--					</el-icon>-->
+					<!--					<el-icon>-->
+					<!--						<ele-FolderAdd />-->
+					<!--					</el-icon>-->
 					导入集群
 				</el-button>
 			</div>
@@ -44,7 +44,7 @@
 				<el-table-column prop="service_cidr" label="Service_CIDR" width="130" />
 				<el-table-column prop="cpu" label="CPU" width="120" />
 				<el-table-column prop="memory" label="内存" width="160">
-					<template #default="scope"> {{Math.round(scope.row.memory / 1024/1024)  }}G </template>
+					<template #default="scope"> {{ Math.round(scope.row.memory / 1024 / 1024) }}G </template>
 				</el-table-column>
 				<el-table-column fixed="right" label="操作" width="170">
 					<template #default="scope">
@@ -53,8 +53,7 @@
 				</el-table-column>
 			</el-table>
 		</el-card>
-		<CreateCluster v-model:dialogVisible="state.dialogVisible" @value-change="getCluster()"
-									 :title="state.title" v-if="state.dialogVisible" />
+		<CreateCluster v-model:dialogVisible="state.dialogVisible" @value-change="getCluster()" :title="state.title" v-if="state.dialogVisible" />
 	</div>
 </template>
 
@@ -64,18 +63,16 @@ import router from '/@/router';
 import { ClusterInfo } from '/@/types/cluster';
 import { useClusterApi } from '/@/api/kubernetes/cluster';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { kubernetesInfo } from '/@/stores/kubernetes';
 
 const CreateCluster = defineAsyncComponent(() => import('./component/create.vue'));
 
+const  k8sStore = kubernetesInfo();
 const clusterAPI = useClusterApi();
 const state = reactive({
 	dialogVisible: false,
 	title: '创建集群',
 });
-
-const handleClick = () => {
-	console.log('click');
-};
 
 onMounted(() => {
 	getCluster();
@@ -116,15 +113,13 @@ const deleteCluster = async (cluster: any) => {
 };
 
 const handleCluster = (cluster: any) => {
-	// kube.activeCluster = cluster.name;
-	// kube.clusters = data.clusters;
-	// store.isCollapse = true;
+
+	k8sStore.activeCluster = cluster.name;
+
 	router.push({
 		name: 'kubernetesDashboard',
 	});
 };
 </script>
 
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

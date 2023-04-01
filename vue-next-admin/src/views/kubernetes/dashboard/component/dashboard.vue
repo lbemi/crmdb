@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { ECharts, EChartOption, init } from 'echarts'
+import {EChartOption, ECharts, init} from 'echarts'
 
 onMounted(() => {
   app1()
@@ -19,7 +19,8 @@ onMounted(() => {
 const app1 = () => {
   const charEle = document.getElementById('echart') as HTMLDivElement
   const charEch: ECharts = init(charEle)
-  const option: EChartOption = {
+
+  const option = {
     xAxis: {
       type: 'category',
       data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -82,7 +83,7 @@ const app2 = () => {
 const app3 = () => {
   const charEle = document.getElementById('echart1') as HTMLElement
   const charEch: ECharts = init(charEle)
-  const option: EChartOption = {
+  const option = {
     xAxis: {
       type: 'category',
       data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -101,7 +102,7 @@ const app3 = () => {
 }
 </script>
 
-<style scoped lang="less">
+<style scoped lang="scss">
 table,
 table tr th,
 table tr td {

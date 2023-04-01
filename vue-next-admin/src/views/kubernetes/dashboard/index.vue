@@ -1,23 +1,33 @@
 <template>
-    <div class="body">
+    <div class="layout-padding">
+        <el-card shadow="hover" class="layout-padding-auto">
         <!-- <div>Cluster-集群</div> -->
-        <el-tabs type="border-card">
+        <el-tabs  >
             <el-tab-pane lazy label="概览"><Dashboard /></el-tab-pane>
             <el-tab-pane lazy label="基本信息"><Info /></el-tab-pane>
             <el-tab-pane label="连接信息">连接信息</el-tab-pane>
             <el-tab-pane label="集群资源">集群资源</el-tab-pane>
             <el-tab-pane lazy label="集群日志"><Log /></el-tab-pane>
         </el-tabs>
+        </el-card>
     </div>
 </template>
 
 <script setup lang="ts" name="kubernetesDashboard">
 import Dashboard from './component/dashboard.vue'
-import Info from './component/info.vue'
-import Log from './component/log.vue'
+// import Info from './component/info.vue'
+// import Log from './component/log.vue'
+import {kubernetesInfo} from "/@/stores/kubernetes";
+import {defineAsyncComponent} from "vue";
+
+const Info = defineAsyncComponent(()=>import('./component/info.vue'))
+const Log = defineAsyncComponent(() => import('./component/log.vue'))
+
+const k8sStore = kubernetesInfo();
+console.log(k8sStore.activeCluster)
 </script>
 
-<style scoped lang="less">
+<style scoped lang="scss">
 .body {
   margin-left: 10px;
   width: 100%;

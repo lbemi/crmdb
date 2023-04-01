@@ -124,8 +124,8 @@ func PatchNode(c *gin.Context) {
 		labels map[string]string `json:"labels"`
 	}
 
-	var patchData patchNode
-	err := c.ShouldBindJSON(&patchData)
+	var patchData = &patchNode{}
+	err := c.ShouldBindJSON(patchData)
 
 	if err != nil {
 		log.Logger.Error(err)
