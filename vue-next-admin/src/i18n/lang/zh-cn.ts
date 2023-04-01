@@ -19,6 +19,8 @@ export default {
 		kubernetes: 'kubernetes容器',
 		kubernetesCluster: 'kubernetes列表',
 		kubernetesDashboard: 'Dashboard',
+		k8sDeployment: 'Deployment',
+		k8sNode: 'Node',
 		menu: '菜单嵌套',
 		menu1: '菜单1',
 		menu11: '菜单11',

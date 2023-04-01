@@ -21,3 +21,4 @@ export interface ClusterForm {
     name: string
     kube_config: UploadFile
 }
+
