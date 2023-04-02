@@ -19,7 +19,7 @@ type NodeImp interface {
 	Delete(ctx context.Context, name string) error
 	Create(ctx context.Context, node *v1.Node) (*v1.Node, error)
 	Update(ctx context.Context, node *v1.Node) (*v1.Node, error)
-	Patch(ctx context.Context, name string, playLoad map[string]string) (*v1.Node, error)
+	Patch(ctx context.Context, name string, playLoad map[string]interface{}) (*v1.Node, error)
 
 	GetNodeUsage(ctx context.Context, node *v1.Node) (cpuUsage, memoryUsage float64, err error)
 }
@@ -90,8 +90,8 @@ func (n *node) Update(ctx context.Context, node *v1.Node) (*v1.Node, error) {
 	return res, err
 }
 
-func (n *node) Patch(ctx context.Context, name string, labels map[string]string) (*v1.Node, error) {
-	patchData := map[string]interface{}{"metadata": map[string]map[string]string{"labels": labels}}
+func (n *node) Patch(ctx context.Context, name string, labels map[string]interface{}) (*v1.Node, error) {
+	patchData := map[string]interface{}{"metadata": map[string]map[string]interface{}{"labels": labels}}
 	playLoadBytes, err := json.Marshal(patchData)
 
 	if err != nil {
