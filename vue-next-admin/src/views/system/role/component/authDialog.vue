@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts" name="systemRoleAuthDialog">
-import {onMounted, reactive, ref} from 'vue';
+import { reactive, ref} from 'vue';
 import { useMenuApi } from '/@/api/system/menu';
 import { unref } from 'vue-demi';
 import { MenuType, RoleType } from '/@/types/views';
@@ -211,6 +211,8 @@ const onSubmit = () => {
 	getAllCheckIds();
 	roleApi.setRoleAuth(state.id, {menuIDS: state.apiAndMenuIDs}).then(()=>{
 		ElMessage.success("授权成功")
+		closeDialog()
+		emit("refresh")
 	}).catch((res)=>{
 		ElMessage.error(res.message)
 	})

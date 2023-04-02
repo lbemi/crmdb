@@ -144,7 +144,7 @@
 			:data="data.data"
 			:cloud="clusterStore.activeCluster"
 			vi-if="data.visible"
-			@valuechange="listNodes()"
+			@valueChange="listNodes()"
 		/>
 	</div>
 </template>

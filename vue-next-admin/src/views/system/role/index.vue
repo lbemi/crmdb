@@ -69,7 +69,7 @@
 			</el-pagination>
 		</div>
 		<RoleDialog ref="roleDialogRef" @refresh="getTableData()" />
-    <RoleAuthDialog  ref="roleAuthDialogRef"/>
+    <RoleAuthDialog  ref="roleAuthDialogRef" @refresh="getTableData()"/>
 	</div>
 </template>
 
