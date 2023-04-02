@@ -19,7 +19,7 @@ type INode interface {
 	Delete(ctx context.Context, name string) error
 	Create(ctx context.Context, node *v1.Node) (*v1.Node, error)
 	Update(ctx context.Context, node *v1.Node) (*v1.Node, error)
-	Patch(ctx context.Context, name string, playLoad map[string]string) (*v1.Node, error)
+	Patch(ctx context.Context, name string, playLoad map[string]interface{}) (*v1.Node, error)
 }
 
 type node struct {
@@ -77,7 +77,7 @@ func (n *node) Update(ctx context.Context, node *v1.Node) (*v1.Node, error) {
 	return res, err
 }
 
-func (n *node) Patch(ctx context.Context, name string, labels map[string]string) (*v1.Node, error) {
+func (n *node) Patch(ctx context.Context, name string, labels map[string]interface{}) (*v1.Node, error) {
 	res, err := n.k8s.Node().Patch(ctx, name, labels)
 	if err != nil {
 		log.Logger.Error(err)

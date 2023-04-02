@@ -120,12 +120,12 @@ func PatchNode(c *gin.Context) {
 	}
 
 	type patchNode struct {
-		name   string            `json:"name"`
-		labels map[string]string `json:"labels"`
+		Name   string                 `json:"name"`
+		Labels map[string]interface{} `json:"labels"`
 	}
 
-	var patchData = &patchNode{}
-	err := c.ShouldBindJSON(patchData)
+	var patchData patchNode
+	err := c.ShouldBindJSON(&patchData)
 
 	if err != nil {
 		log.Logger.Error(err)
@@ -133,7 +133,7 @@ func PatchNode(c *gin.Context) {
 		return
 	}
 
-	list, err := core.V1.Cluster(clusterName).Nodes().Patch(c, patchData.name, patchData.labels)
+	list, err := core.V1.Cluster(clusterName).Nodes().Patch(c, patchData.Name, patchData.Labels)
 	if err != nil {
 		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
 		return
