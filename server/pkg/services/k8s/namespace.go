@@ -7,7 +7,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"sort"
 )
 
 type NamespaceImp interface {
@@ -28,10 +27,6 @@ func (n *namespace) List(ctx context.Context) ([]*v1.Namespace, error) {
 	if err != nil {
 		log.Logger.Error(err)
 	}
-
-	sort.Slice(list, func(i, j int) bool {
-		return list[j].ObjectMeta.CreationTimestamp.Time.Before(list[i].ObjectMeta.CreationTimestamp.Time)
-	})
 
 	return list, err
 }
@@ -73,6 +68,12 @@ func newNamespace(cli *store.Clients) *namespace {
 }
 
 type NameSpaceHandler struct {
+	cli *store.Clients
+	ns  string
+}
+
+func NewNameSpaceHandler(cli *store.Clients, ns string) *NameSpaceHandler {
+	return &NameSpaceHandler{cli: cli, ns: ns}
 }
 
 func (n *NameSpaceHandler) OnAdd(obj interface{}) {
@@ -85,8 +86,4 @@ func (n *NameSpaceHandler) OnUpdate(oldObj, newObj interface{}) {
 
 func (n *NameSpaceHandler) OnDelete(obj interface{}) {
 	//TODO implement me
-}
-
-func NewNameSpaceHandler() *NameSpaceHandler {
-	return &NameSpaceHandler{}
 }

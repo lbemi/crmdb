@@ -197,7 +197,7 @@ func (u *user) GetButtonsByUserID(userID uint64) (*[]sys.Menu, error) {
 func (u *user) GetLeftMenusByUserID(userID uint64) (*[]sys.Menu, error) {
 	var menus []sys.Menu
 	err := u.db.Debug().Table("menus").Select(" menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
-		"menus.method, menus.menuType, menus.status,menus.redirect, menus.component, menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
+		"menus.method, menus.menuType, menus.status,menus.redirect, menus.component, menus.isK8s,menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
 		Joins("left join role_menus on menus.id = role_menus.menuID where role_menus.roleID in (?) and menus.menuType = 1 and menus.status = 1",
 			u.db.Table("roles").Select("roles.id").
 				Joins("left join user_roles on user_roles.role_id = roles.id where  user_roles.user_id = ? and roles.status = 1", userID)).

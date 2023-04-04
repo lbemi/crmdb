@@ -42,14 +42,18 @@ func ListNamespace(c *gin.Context) {
 	// 处理分页
 	var pageQuery types.PageQuery
 	pageQuery.Total = len(namespaceList)
+	if page != 0 && limit != 0 {
+		if pageQuery.Total <= limit {
+			pageQuery.Data = namespaceList
+		} else if page*limit >= pageQuery.Total {
+			pageQuery.Data = namespaceList[(page-1)*limit : pageQuery.Total]
+		} else {
+			pageQuery.Data = namespaceList[(page-1)*limit : page*limit]
+		}
+		response.Success(c, response.StatusOK, pageQuery)
 
-	if pageQuery.Total <= limit {
-		pageQuery.Data = namespaceList
-	} else if page*limit >= pageQuery.Total {
-		pageQuery.Data = namespaceList[(page-1)*limit : pageQuery.Total]
-	} else {
-		pageQuery.Data = namespaceList[(page-1)*limit : page*limit]
 	}
+	pageQuery.Data = namespaceList
 
 	response.Success(c, response.StatusOK, pageQuery)
 }

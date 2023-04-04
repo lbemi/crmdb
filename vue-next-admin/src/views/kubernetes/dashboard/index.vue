@@ -15,16 +15,21 @@
 
 <script setup lang="ts" name="kubernetesDashboard">
 import Dashboard from './component/dashboard.vue'
-// import Info from './component/info.vue'
-// import Log from './component/log.vue'
 import {kubernetesInfo} from "/@/stores/kubernetes";
-import {defineAsyncComponent} from "vue";
+import {defineAsyncComponent, onMounted} from "vue";
+import {useNamespaceApi} from "/@/api/kubernetes/namespace";
 
 const Info = defineAsyncComponent(()=>import('./component/info.vue'))
 const Log = defineAsyncComponent(() => import('./component/log.vue'))
 
+const namespaceApi = useNamespaceApi();
 const k8sStore = kubernetesInfo();
-console.log(k8sStore.activeCluster)
+
+onMounted(()=>{
+    namespaceApi.listNamespace({cloud:k8sStore.activeCluster}).then((res) => {
+        k8sStore.setNamespace(res.data.data)
+    })
+})
 </script>
 
 <style scoped lang="scss">

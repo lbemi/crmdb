@@ -40,13 +40,14 @@ export async function initBackEndControlRoutes() {
 	// 触发初始化用户信息 pinia
 	// https://gitee.com/lyt-top/vue-next-admin/issues/I5F1HP
 	await useUserInfo().setUserInfos();
+
 	// 获取路由菜单数据
 	const res = await getBackEndControlRoutes();
 	// 无登录权限时，添加判断
 	// https://gitee.com/lyt-top/vue-next-admin/issues/I64HVO
 	if (res.data.length <= 0) return Promise.resolve(true);
 	// 设置按钮权限
-	await useUserInfo().setUserAuthButton(res.data.permission)
+	await useUserInfo().setUserAuthButton(res.data.permission);
 	// 存储接口原始路由（未处理component），根据需求选择使用
 	useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(res.data.menus)));
 	// 处理路由（component），替换 dynamicRoutes（/@/router/route）第一个顶级 children 的路由
