@@ -28,6 +28,7 @@ type Meta struct {
 	IsKeepAlive bool   `json:"isKeepAlive"`
 	IsAffix     bool   `json:"isAffix"`
 	IsIframe    bool   `json:"isIframe"`
+	IsK8s       bool   `json:"isK8S" gorm:"isK8s"`
 	Icon        string `json:"icon"`
 }
 
