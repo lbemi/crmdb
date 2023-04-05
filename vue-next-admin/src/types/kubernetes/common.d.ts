@@ -1,9 +1,10 @@
-declare interface QueryType<T = any>{
+declare class QueryType<T = any>{
 	query: {
 		page: number;
 		limit: number;
 		[key: string]: T;
 	};
+	data?: any;
 	total: number;
 	loading: boolean;
 }

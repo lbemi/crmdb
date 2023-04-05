@@ -78,7 +78,7 @@ onMounted(() => {
 	getCluster();
 });
 const getCluster = async () => {
-	await clusterApi.getCluster(k8sStore.activeCluster).then((res) => {
+	await clusterApi.getCluster(k8sStore.state.activeCluster).then((res) => {
 		state.cluster = res.data;
 	});
 };

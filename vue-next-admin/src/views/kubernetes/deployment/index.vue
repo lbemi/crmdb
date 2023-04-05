@@ -3,9 +3,15 @@
 		<el-card shadow="hover">
 			<div class="mb15">
 				命名空间:
-				<el-select v-model="kubeStore.activeNamespace" style="max-width: 180px" class="m-2" placeholder="Select" size="default" @change="handleChange"
+				<el-select
+					v-model="k8sStore.state.activeNamespace"
+					style="max-width: 180px"
+					class="m-2"
+					placeholder="Select"
+					size="default"
+					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in namespace" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
+					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
 				</el-select>
 				<el-button type="primary" size="default" class="ml10">创建Deployment</el-button>
 				<el-button type="danger" size="default" class="ml10" :disabled="data.selectData.length == 0" @click="deleteDeployments(data.selectData)"
@@ -27,13 +33,22 @@
 						<el-button link type="primary" @click="deployDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
 					</template>
 				</el-table-column>
-				<el-table-column label="状态" width="220px">
+				<el-table-column label="状态" width="90px">
 					<template #default="scope">
 						<el-button v-if="scope.row.status.conditions[0].status === 'True'" type="success" :icon="Check" size="small" circle />
 						<el-button v-else type="danger" :icon="Close" size="small" circle />
 					</template>
 				</el-table-column>
+				<el-table-column prop="spec.replicas" label="Pods" width="150px" align="center">
+					<template #header> <span>Pods</span><br /><span style="font-size: 10px; font-weight: 50">就绪/副本/失败</span> </template>
 
+					<template #default="scope">
+						<a style="color: green">{{ scope.row.status.readyReplicas || '0' }}</a
+						>/ <a style="color: green">{{ scope.row.status.replicas }}</a
+						>/
+						<a style="color: red">{{ scope.row.status.unavailableReplicas || '0' }}</a>
+					</template>
+				</el-table-column>
 				<el-table-column label="镜像" width="540px">
 					<template #default="scope">
 						<el-tag type="success" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
@@ -42,20 +57,12 @@
 					</template>
 				</el-table-column>
 
-				<el-table-column label="标签" width="280px" show-overflow-tooltip="true">
+				<el-table-column label="标签" width="280px" show-overflow-tooltip>
 					<template #default="scope">
 						<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index"> {{ key }}:{{ item }} </el-tag>
 					</template>
 				</el-table-column>
 
-				<el-table-column prop="spec.replicas" label="Pods" width="80px">
-					<template #default="scope">
-						<a style="color: green">{{ scope.row.status.readyReplicas || '0' }}</a
-						>/ <a style="color: green">{{ scope.row.status.replicas }}</a
-						>/
-						<a style="color: red">{{ scope.row.status.unavailableReplicas || '0' }}</a>
-					</template>
-				</el-table-column>
 				<el-table-column label="创建时间" width="180px">
 					<template #default="scope">
 						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
@@ -77,40 +84,32 @@ import { V1Deployment } from '@kubernetes/client-node';
 import { PageInfo } from '/@/types/kubernetes/common';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import router from '/@/router';
+import { ElMessage } from 'element-plus';
+import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
-const deploymentApi = useDeploymentApi();
-const { activeCluster, activeNamespace, setActiveDeployment, setActiveNamespace, namespace } = kubernetesInfo();
-const kubeStore = kubernetesInfo();
-onMounted(() => {
-	listDeployment();
-});
-const deleteDeployments = (data: any) => {};
-//
-// var dns = webSocketURL + activeCluster+ '/deployment'
-// var ws = new WebSocket(dns)
-// ws.onopen = () => {
-//   console.log('ws connected.')
-// }
-// ws.onmessage = (e) => {
-//   if (e.data === 'ping') {
-//     return
-//   } else {
-//     const object = JSON.parse(e.data)
-//     if (
-//       object.type === 'deployment' &&
-//       object.result.namespace === activeNamespace &&
-//       object.cluster == activeCluster
-//     ) {
-//       data.deployments = object.result.data
-//     }
-//   }
-// }
-// ws.onclose = () => {
-//   console.log('close')
-// }
 
-// const data = reactive(new Data())
+const deploymentApi = useDeploymentApi();
+const k8sStore = kubernetesInfo();
+const socketApi = useWebsocketApi();
+
+const ws = socketApi.createWebsocket('deployment');
+ws.onmessage = (e) => {
+	if (e.data === 'ping') {
+		return;
+	} else {
+		const object = JSON.parse(e.data);
+		if (
+			object.type === 'deployment' &&
+			object.result.namespace === k8sStore.state.activeNamespace &&
+			object.cluster == k8sStore.state.activeCluster
+		) {
+			data.deployments = object.result.data;
+		}
+	}
+};
+const deleteDeployments = (data: any) => {};
+
 const data = reactive({
 	query: {
 		cloud: '',
@@ -125,24 +124,19 @@ const data = reactive({
 });
 const handleSelectionChange = (value: any) => {
 	data.selectData = value;
-	console.log(data.selectData);
 };
 
-onBeforeUnmount(() => {
-	console.log('关闭....');
-	// ws.close()
-});
 const listDeployment = async () => {
-	data.namespace = activeNamespace;
-	data.query.cloud = activeCluster;
+	data.namespace = k8sStore.state.activeNamespace;
+	data.query.cloud = k8sStore.state.activeCluster;
 	try {
 		data.loading = true;
-		await deploymentApi.listDeployment(kubeStore.activeNamespace, data.query).then((res) => {
+		await deploymentApi.listDeployment(k8sStore.state.activeNamespace, data.query).then((res) => {
 			data.deployments = res.data.data;
 			data.total = res.data.total;
 		});
-	} catch (error) {
-		console.log(error);
+	} catch (e: any) {
+		ElMessage.error(e.data.message);
 	}
 	data.loading = false;
 };
@@ -158,11 +152,22 @@ const handlePageChange = (pageInfo: PageInfo) => {
 	listDeployment();
 };
 const deployDetail = async (dep: V1Deployment) => {
-	await setActiveDeployment(dep);
+	k8sStore.state.activeDeployment = dep;
 	router.push({
-		name: 'detail',
+		name: 'k8sDeploymentDetail',
+		params: {
+			name: dep.metadata?.name
+		}
 	});
 };
+
+onMounted(() => {
+	listDeployment();
+});
+
+onBeforeUnmount(() => {
+	ws.close();
+});
 </script>
 
 <style scoped lang="less"></style>
