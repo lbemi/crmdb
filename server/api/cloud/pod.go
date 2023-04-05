@@ -247,3 +247,71 @@ func GetPodLog(c *gin.Context) {
 		c.Writer.(http.Flusher).Flush()
 	}
 }
+
+/*
+// WebSocket 读取 Pod 实时日志并推送给前端
+func tailLog(podName, containerName string, ws *websocket.Conn) {
+    // 创建 Kubernetes REST API 客户端
+    clientset, err := kubernetes.NewForConfig(kubeconfig)
+    if err != nil {
+        log.Printf("Failed to create Kubernetes clientset: %v", err)
+        return
+    }
+
+    // 获取 Pod 对象
+    pod, err := clientset.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
+    if err != nil {
+        log.Printf("Failed to get Pod %s: %v", podName, err)
+        return
+    }
+
+    // 通过 Pod 对象获取日志
+    req := clientset.CoreV1().Pods(namespace).GetLogs(podName, &corev1.PodLogOptions{
+        Container: containerName,
+        Follow:    true,
+    })
+    logStream, err := req.Stream(context.Background())
+    if err != nil {
+        log.Printf("Failed to open log stream for Pod %s container %s: %v", podName, containerName, err)
+        return
+    }
+    defer logStream.Close()
+
+    // 读取日志并发送到 WebSocket
+    buf := make([]byte, 1024)
+    for {
+        // 读取日志
+        n, err := logStream.Read(buf)
+        if err != nil {
+            log.Printf("Failed to read log for Pod %s container %s: %v", podName, containerName, err)
+            return
+        }
+
+        // 发送到 WebSocket
+        err = ws.WriteMessage(websocket.TextMessage, buf[:n])
+        if err != nil {
+            log.Printf("Failed to write log to WebSocket for Pod %s container %s: %v", podName, containerName, err)
+            return
+        }
+    }
+}
+
+// WebSocket 处理函数
+func handleWebSocket(c *gin.Context) {
+    // 升级为 WebSocket 连接
+    ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+    if err != nil {
+        log.Printf("Failed to upgrade to WebSocket: %v", err)
+        return
+    }
+    defer ws.Close()
+
+    // 从 URL 参数中获取 Pod 名称和容器名称
+    podName := c.Query("pod")
+    containerName := c.Query("container")
+
+    // 读取 Pod 实时日志并推送给前端
+    tailLog(podName, containerName, ws)
+}
+
+*/

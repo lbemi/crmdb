@@ -68,14 +68,14 @@ const state = reactive<EventData>({
 	total: 0,
 	loading: false,
 });
-const clusterStore = kubernetesInfo();
+const k8sStore = kubernetesInfo();
 const eventApi = useEventApi();
 const filterTag = (value: string, row: Event) => {
 	return row.type === value;
 };
 const listEvent = () => {
 	state.loading = true;
-	state.query.cloud = clusterStore.activeCluster;
+	state.query.cloud = k8sStore.state.activeCluster;
 	state.query.namespace = 'all';
 	eventApi.getEventLog("all",state.query).then((res) => {
 		if (res.data.data) {

@@ -142,7 +142,7 @@
 			v-model:visible="data.visible"
 			:title="data.title"
 			:data="data.data"
-			:cloud="clusterStore.activeCluster"
+			:cloud="k8sStore.state.activeCluster"
 			vi-if="data.visible"
 			@valueChange="listNodes()"
 		/>
@@ -173,13 +173,13 @@ const data = reactive({
 	title: '修改标签',
 	data: {} as Node,
 });
-const clusterStore = kubernetesInfo();
+const k8sStore = kubernetesInfo();
 
 onMounted(() => {
 	listNodes();
 });
 const listNodes = () => {
-	data.query.cloud = clusterStore.activeCluster;
+	data.query.cloud = k8sStore.state.activeCluster;
 	nodeApi
 		.listNode(data.query)
 		.then((result) => {

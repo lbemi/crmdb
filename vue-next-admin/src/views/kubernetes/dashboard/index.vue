@@ -26,8 +26,8 @@ const namespaceApi = useNamespaceApi();
 const k8sStore = kubernetesInfo();
 
 onMounted(()=>{
-    namespaceApi.listNamespace({cloud:k8sStore.activeCluster}).then((res) => {
-        k8sStore.setNamespace(res.data.data)
+    namespaceApi.listNamespace({cloud:k8sStore.state.activeCluster}).then((res) => {
+        k8sStore.state.namespace=res.data.data
     })
 })
 </script>

@@ -114,7 +114,7 @@ const deleteCluster = async (cluster: any) => {
 
 const handleCluster = (cluster: any) => {
 
-	k8sStore.activeCluster = cluster.name;
+	k8sStore.state.activeCluster = cluster.name;
 
 	router.push({
 		name: 'kubernetesDashboard',
