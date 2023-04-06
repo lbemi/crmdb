@@ -20,7 +20,7 @@
 		>
 			<el-table-column type="selection" width="55" />
 
-			<el-table-column prop="metadata.name" label="名称" width="220px">
+			<el-table-column prop="metadata.name" label="名称" width="300px" show-overflow-tooltip>
 				<template #default="scope">
 					<el-button link type="primary">{{ scope.row.metadata.name }}</el-button>
 					<div v-if="scope.row.status.phase != 'Running'" style="color: red">
@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts" name="k8sPod">
-import { defineAsyncComponent, onMounted } from 'vue';
+import {defineAsyncComponent, onBeforeUnmount, onMounted} from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import router from '/@/router';
 import { podInfo } from '/@/stores/pod';
@@ -164,6 +164,9 @@ onMounted(() => {
 	podStore.state.loading = true;
 	podStore.listPod();
 	podStore.state.loading = false;
+});
+onBeforeUnmount(() => {
+  ws.close();
 });
 </script>
 

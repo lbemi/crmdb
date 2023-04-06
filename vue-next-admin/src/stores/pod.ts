@@ -22,7 +22,7 @@ export const podInfo = defineStore('podInfo', () => {
 		total: 0,
 		loading: false,
         selectData: [],
-        podShell: ''
+        podShell: {} as V1Pod
 	});
 	const listPod = async () => {
 		state.query.cloud = k8sStore.state.activeCluster
