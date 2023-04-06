@@ -121,7 +121,7 @@ const handlePageChange = (pageInfo) => {
 const jumpPodExec = (p: V1Pod) => {
 	podStore.state.podShell = p;
 	router.push({
-		name: 'shell',
+		name: 'podShell',
 	});
 };
 const jumpPodLog = (p: V1Pod) => {
