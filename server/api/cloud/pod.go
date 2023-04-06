@@ -3,6 +3,7 @@ package cloud
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
@@ -11,7 +12,6 @@ import (
 	"io"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/remotecommand"
-	"net/http"
 	"strconv"
 	"time"
 )
@@ -234,17 +234,25 @@ func GetPodLog(c *gin.Context) {
 	}
 	defer reader.Close()
 
+	conn, err := wsstore.Upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+	defer conn.Close()
+
+	wsClient := wsstore.NewWsClient(conn, clusterName, "log")
 	for {
 		buf := make([]byte, 1024)
 		n, err := reader.Read(buf)
 		if err != nil && err != io.EOF {
 			break
 		}
-		w, err := c.Writer.Write([]byte(string(buf[0:n])))
-		if w == 0 || err != nil {
+
+		err = wsClient.Conn.WriteMessage(websocket.TextMessage, buf[0:n])
+		if err != nil {
 			break
 		}
-		c.Writer.(http.Flusher).Flush()
 	}
 }
 
