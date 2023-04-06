@@ -9,8 +9,8 @@
 
 			<el-button type="primary" size="default" class="ml10" @click="logs = ''">清空</el-button>
 			<el-button type="primary" size="default" class="ml10" @click="stop = !stop">{{ stop ? '继续' : '暂停' }}</el-button>
-        <el-scrollbar ref="scrollbarRef" height="800px" >
-          <div ref="innerRef" id="logs" class="logs">
+        <el-scrollbar ref="scrollbarRef" height="800px"  class="logs">
+          <div ref="innerRef" id="logs">
             {{ logs }}
           </div>
         </el-scrollbar>
