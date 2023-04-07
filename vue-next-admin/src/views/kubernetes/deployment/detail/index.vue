@@ -4,37 +4,37 @@
 			<el-row :gutter="20">
 				<el-col :span="20">
 					<el-button type="info" :icon="ArrowLeft" text @click="backRoute">返回</el-button>
-					<span style="font-weight: 35">{{ k8sStore.state.activeDeployment?.metadata.name }}</span></el-col
+					<span style="font-weight: 35">{{ k8sStore.state.activeDeployment?.metadata?.name }}</span></el-col
 				>
 				<el-col :span="4"
 					><el-button type="primary" size="small" :icon="Edit">编辑</el-button>
-					<el-button type="primary" size="small" :icon="View">查看YAML</el-button></el-col
+					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button></el-col
 				>
 			</el-row>
 
 			<el-descriptions :column="3" border>
 				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">{{
-					k8sStore.state.activeDeployment?.metadata.name
+					k8sStore.state.activeDeployment?.metadata?.name
 				}}</el-descriptions-item>
 				<el-descriptions-item label="命名空间" label-align="right" align="center">{{
-					k8sStore.state.activeDeployment?.metadata.namespace
+					k8sStore.state.activeDeployment?.metadata?.namespace
 				}}</el-descriptions-item>
 				<el-descriptions-item label="副本数" label-align="right" align="center">{{
-					k8sStore.state.activeDeployment?.spec.replicas
+					k8sStore.state.activeDeployment?.spec?.replicas
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
 					dateStrFormat(k8sStore.state.activeDeployment?.metadata.creationTimestamp)
 				}}</el-descriptions-item>
 				<el-descriptions-item label="选择器" label-align="right" align="center">
 					<div class="tag-center">
-						<el-tag effect="plain" round v-for="(item, key, index) in k8sStore.state.activeDeployment?.spec.selector.matchLabels" :key="index">
+						<el-tag effect="plain" round v-for="(item, key, index) in k8sStore.state.activeDeployment?.spec?.selector.matchLabels" :key="index">
 							{{ key }}:{{ item }}
 						</el-tag>
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="镜像" label-align="right" align="center">
 					<div class="tag-center">
-						<el-tag round effect="plain" v-for="(item, index) in k8sStore.state.activeDeployment?.spec.template.spec.containers" :key="index">{{
+						<el-tag round effect="plain" v-for="(item, index) in k8sStore.state.activeDeployment?.spec?.template.spec.containers" :key="index">{{
 							item.image.split('@')[0]
 						}}</el-tag>
 					</div>
@@ -44,7 +44,7 @@
 						<el-tag
 							effect="plain"
 							type="info"
-							v-for="(item, key, index) in k8sStore.state.activeDeployment?.metadata.annotations"
+							v-for="(item, key, index) in k8sStore.state.activeDeployment?.metadata?.annotations"
 							:key="index"
 							show-overflow-tooltip
 						>
@@ -63,15 +63,15 @@
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="策略" label-align="right" align="center">{{
-					k8sStore.state.activeDeployment?.spec.strategy.type
+					k8sStore.state.activeDeployment?.spec?.strategy?.type
 				}}</el-descriptions-item>
 				<el-descriptions-item label="状态" label-align="right" align="center">
-					就绪：<a v-if="k8sStore.state.activeDeployment?.status.readyReplicas">{{ k8sStore.state.activeDeployment?.status.readyReplicas }}</a>
-					<a style="color: red" v-else>0</a> /{{ k8sStore.state.activeDeployment?.status.replicas }} 个，已更新：{{
-						k8sStore.state.activeDeployment?.status.updatedReplicas
+					就绪：<a v-if="k8sStore.state.activeDeployment?.status?.readyReplicas">{{ k8sStore.state.activeDeployment?.status?.readyReplicas }}</a>
+					<a style="color: red" v-else>0</a> /{{ k8sStore.state.activeDeployment?.status?.replicas }} 个，已更新：{{
+						k8sStore.state.activeDeployment?.status?.updatedReplicas
 					}}
 					个，可用：
-					<a v-if="k8sStore.state.activeDeployment?.status.readyReplicas">{{ k8sStore.state.activeDeployment?.status.readyReplicas }}</a>
+					<a v-if="k8sStore.state.activeDeployment?.status?.readyReplicas">{{ k8sStore.state.activeDeployment?.status?.readyReplicas }}</a>
 					<a style="color: red" v-else>0</a>
 
 					个
@@ -83,7 +83,7 @@
 
 			<div v-show="data.iShow">
 				<el-divider />
-				<el-table :data="k8sStore.state.activeDeployment?.status.conditions" stripe style="width: 100%">
+				<el-table :data="k8sStore.state.activeDeployment?.status?.conditions" stripe style="width: 100%">
 					<el-table-column prop="type" label="类型" />
 					<el-table-column prop="status" label="状态" />
 					<el-table-column prop="lastUpdateTime" label="更新时间">
@@ -157,8 +157,8 @@
 								<el-button link type="primary" size="small" @click="handleClick">详情</el-button><el-divider direction="vertical" />
 								<el-button link type="primary" size="small">编辑</el-button><el-divider direction="vertical" />
 								<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
-								<el-button link type="primary" size="small">终端</el-button><el-divider direction="vertical" />
-								<el-button link type="primary" size="small">日志</el-button>
+								<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
+								<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button>
 							</template>
 						</el-table-column>
 					</el-table>
@@ -168,10 +168,11 @@
 				<el-tab-pane label="Task" name="fourth">Task</el-tab-pane>
 			</el-tabs>
 		</el-card>
+    <YamlDialog ref="yamlRef" />
 	</div>
 </template>
 <script lang="ts" setup name="k8sDeploymentDetail">
-import { reactive, onMounted, ref, onBeforeUnmount } from 'vue';
+import {reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent} from 'vue';
 import type { TabsPaneContext } from 'element-plus';
 import { ArrowLeft, CaretBottom, Edit, View } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
@@ -183,10 +184,16 @@ import { useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { usePodApi } from '/@/api/kubernetes/pod';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
+import {podInfo} from "/@/stores/pod";
 
+const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'))
+
+const yamlRef = ref()
 const deploymentApi = useDeploymentApi();
 const route = useRoute();
 const websocketApi = useWebsocketApi();
+const podStore = podInfo()
+
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	console.log(tab, event);
 };
@@ -215,13 +222,25 @@ onMounted(() => {
 
 const getPods = async () => {
 	const res = await deploymentApi.detailDeployment(
-		k8sStore.state.activeDeployment!.metadata.namespace,
-		k8sStore.state.activeDeployment?.metadata.name,
+		k8sStore.state.activeDeployment.metadata?.namespace?.toString(),
+		k8sStore.state.activeDeployment?.metadata?.name?.toString(),
 		data.param
 	);
 	data.pods = res.data;
 };
 
+const jumpPodExec = (p: V1Pod) => {
+  podStore.state.podShell = p;
+  router.push({
+    name: 'podShell',
+  });
+};
+const jumpPodLog = (p: V1Pod) => {
+  podStore.state.podShell = p;
+  router.push({
+    name: 'podLog',
+  });
+};
 const backRoute = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));
 	router.push({
@@ -245,8 +264,11 @@ const deletePod = async (pod: V1Pod) => {
 		.catch(); // 取消
 };
 
+const showYaml =async () =>{
+  yamlRef.value.openDialog(k8sStore.state.activeDeployment)
+}
 const buildWebsocket = async () => {
-	const ws =await websocketApi.createWebsocket( 'deployment');
+	const ws = await websocketApi.createWebsocket('deployment');
 
 	ws.onmessage = (e) => {
 		if (e.data === 'ping') {
@@ -255,12 +277,12 @@ const buildWebsocket = async () => {
 			const object = JSON.parse(e.data);
 			if (
 				object.type === 'deployment' &&
-				object.result.namespace === k8sStore.state.activeDeployment?.metadata.namespace &&
+				object.result.namespace === k8sStore.state.activeDeployment?.metadata?.namespace &&
 				object.cluster == k8sStore.state.activeCluster
 			) {
 				data.deployment = object.result.data;
 				data.deployment.forEach((item) => {
-					if (item.metadata.name == k8sStore.state.activeDeployment?.metadata.name) {
+					if (item.metadata.name == k8sStore.state.activeDeployment?.metadata?.name) {
 						k8sStore.state.activeDeployment = item;
 						return;
 					}
@@ -269,7 +291,6 @@ const buildWebsocket = async () => {
 		}
 	};
 };
-
 </script>
 <style lang="scss">
 .tag-center {

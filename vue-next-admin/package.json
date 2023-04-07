@@ -10,6 +10,8 @@
 		"lint-fix": "eslint --fix --ext .js --ext .jsx --ext .vue src/"
 	},
 	"dependencies": {
+		"@codemirror/lang-javascript": "^6.1.5",
+		"@codemirror/theme-one-dark": "^6.1.1",
 		"@element-plus/icons-vue": "^2.1.0",
 		"@kubernetes/client-node": "^0.18.1",
 		"@types/echarts": "^4.9.16",
@@ -24,6 +26,7 @@
 		"element-plus": "^2.3.1",
 		"js-cookie": "^3.0.1",
 		"js-table2excel": "^1.0.3",
+		"json2yaml": "^1.1.0",
 		"jsplumb": "^2.15.6",
 		"mitt": "^3.0.0",
 		"nprogress": "^0.2.0",
@@ -37,12 +40,14 @@
 		"splitpanes": "^3.1.5",
 		"vue": "^3.2.47",
 		"vue-clipboard3": "^2.0.0",
+		"vue-codemirror": "^6.1.1",
 		"vue-demi": "^0.13.11",
 		"vue-grid-layout": "^3.0.0-beta1",
 		"vue-i18n": "^9.2.2",
 		"vue-router": "^4.1.6",
 		"xterm": "^5.1.0",
-		"xterm-addon-fit": "^0.7.0"
+		"xterm-addon-fit": "^0.7.0",
+		"yamljs": "^0.3.0"
 	},
 	"devDependencies": {
 		"@types/node": "^18.15.10",

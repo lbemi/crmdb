@@ -1,9 +1,9 @@
 <template>
 	<div class="layout-pd">
 		<el-card shadow="hover" class="mb15">
-			<span>容器组名: {{ pod?.metadata.name }}：</span>
-			<el-select v-model="selectContainer" class="m-2" placeholder="选择容器" size="default" @change="containerChange">
-				<el-option v-for="item in pod?.spec.containers" :key="item.name" :label="item.name" :value="item.name" />
+			<span class="mb15">容器组名: {{ pod?.metadata?.name }}：</span>
+			<el-select v-model="selectContainer" class="mb15" placeholder="选择容器" size="default" @change="containerChange">
+				<el-option v-for="item in pod?.spec?.containers" :key="item.name" :label="item.name" :value="item.name" />
 			</el-select>
 			<div ref="terminal" element-loading-text="拼命连接中" id="xterm" class="xterm" :style="{ height: state.height }" />
 		</el-card>
@@ -55,7 +55,7 @@ function initXterm() {
 		cursorBlink: true,
 		disableStdin: false,
 		theme: {
-			foreground: '#7e9192', //字体
+			foreground: '#ffffff', //字体
 			background: '#060101', //背景色
 			cursor: 'help', //设置光标
 		} as ITheme,
@@ -64,7 +64,7 @@ function initXterm() {
 	const fitAddon = new FitAddon();
 	term.loadAddon(fitAddon);
 	term.open(document.getElementById('xterm')!);
-	term.writeln('\n\n 正在初始化终端...');
+	term.writeln('\n 正在初始化终端,请选择容器...');
 	fitAddon.fit();
 	term.focus();
 	state.term = term;
@@ -87,7 +87,7 @@ function initXterm() {
 }
 
 function initSocket() {
-	state.socket = webSocketApi.createShellWebsocket(pod.metadata.namespace, pod.metadata.name, selectContainer.value);
+	state.socket = webSocketApi.createShellWebsocket(pod.metadata?.namespace!, pod.metadata?.name!, selectContainer.value);
 
 	// 监听socket错误信息
 	state.socket.onerror = (e: any) => {
