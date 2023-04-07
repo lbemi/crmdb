@@ -21,6 +21,7 @@ export default {
 		kubernetesDashboard: 'Dashboard',
 		k8sDeployment: 'Deployment',
 		k8sDeploymentDetail: '详情',
+		deploymentCreate: '创建deployment',
 		podShell:'pod日志',
 		k8sNode: 'Node',
 		k8sPod: 'Pod',
