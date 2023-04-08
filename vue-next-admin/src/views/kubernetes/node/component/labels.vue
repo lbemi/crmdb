@@ -69,12 +69,12 @@ watch(
 	() => {
 		// nodeData.value = props.data
 		labels.value = [];
-		patchData.name = props.data.metadata.name;
+		patchData.name = props.data.metadata?.name!;
 		if (props.data) {
-			for (let key in props.data.metadata.labels) {
+			for (let key in props.data.metadata?.labels) {
 				const l: label = {
 					key: key,
-					value: props.data.metadata.labels[key],
+					value: props.data.metadata?.labels![key],
 				};
 				labels.value.push(l);
 			}
