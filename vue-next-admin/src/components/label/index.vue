@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<el-table :data="table.tableData" style="width: 100%; font-size: 12px">
-			<el-table-column :prop="item.prop" :label="item.label" v-for="item in table.tableHeader" :key="item.prop">
+		<el-table :data="table.tableData" style="width: 100%; font-size: 12px" size="small">
+			<el-table-column :prop="item.prop" :label="item.label" v-for="item in table.tableHeader" :key="item.prop" >
 				<template #default="scope">
 					<div v-show="item.editable || scope.row.editable">
 						<template v-if="item.type === 'input'">
@@ -10,7 +10,8 @@
 								size="small"
 								v-model="scope.row[item.prop]"
 								:placeholder="`${item.label}`"
-								@change="handleEdit(scope.$index, scope.row)"
+								@change="handleEdit(scope.$index, scope.row)
+								"
 							/>
 						</template>
 					</div>
@@ -38,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue';
+import {onMounted, reactive, watch} from 'vue';
 interface label {
 	key: string;
 	value: string;
@@ -50,8 +51,9 @@ interface header {
 	type: string;
 }
 const props = defineProps<{
-	tableData: label[];
+	tableData?: label[];
 }>();
+
 const item = reactive({
 	key: '',
 	editable: false,
@@ -63,13 +65,13 @@ const table = reactive({
 	tableHeader: [
 		{
 			prop: 'key',
-			label: '变量名称',
+			label: 'key',
 			editable: false,
 			type: 'input',
 		},
 		{
 			prop: 'value',
-			label: '变量值',
+			label: 'value',
 			editable: false,
 			type: 'input',
 		},
@@ -82,7 +84,12 @@ onMounted(() => {
 		item.editable = true;
 		item.addStatus = true;
 		table.tableData.splice(props.tableData.length, 0, item);
+	} else {
+		item.editable = true;
+		item.addStatus = true;
+		table.tableData.splice(0, 0, item);
 	}
+
 });
 const handleEdit = (index: number, row: header) => {
 	row.editable = true;
@@ -116,6 +123,13 @@ const append = (index: number) => {
 	table.tableData.splice(table.tableData.length + 1, 0, item);
 	clickTap();
 };
+
+// watch((props.tableData),()=>{
+// 	if(props.tableData) {
+// 		console.log("标签：", props.tableData)
+// 		table.tableData = JSON.parse(JSON.stringify(props.tableData));
+// 	}
+// })
 
 const add = (header: header) => {
 	header.editable = false;
