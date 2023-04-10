@@ -22,10 +22,10 @@
 				<el-input-number v-model="data.replicas" :min="1" :max="100" />
 			</el-form-item>
 			<el-form-item label="标签">
-				<Label @on-click="getLabels" v-bind:tableData="tableData"/>
+				<Label :labelData="data.labelData" @on-click="getLabels" v-bind:tableData="tableData" />
 			</el-form-item>
 			<el-form-item label="注解">
-				<Label @on-click="getAnnotations" />
+				<Label :labelData="data.annotationsData" @on-click="getAnnotations" />
 			</el-form-item>
 		</el-form>
 	</div>
@@ -41,8 +41,10 @@ const Label = defineAsyncComponent(() => import('/@/components/label/index.vue')
 
 const k8sStore = kubernetesInfo();
 const enableEdit = ref(false);
-const tableData = ref([])
+const tableData = ref([]);
 const data = reactive({
+	labelData: [],
+  annotationsData: [],
 	replicas: 1,
 	resourceType: 'deployment',
 	meta: {
@@ -78,23 +80,52 @@ const getLabels = (labels: any) => {
 const getAnnotations = (labels: any) => {
 	data.meta.annotations = labels;
 };
+
+const handleLables = (lables: { [key: string]: string }) => {
+  const labelsTup = []
+  Object.keys(lables).forEach((key)=>{
+    labelsTup.push({key:lables[key]})
+  })
+  return labelsTup
+};
 const props = defineProps<{
-	resourceType?: 'deployment',
-	metadata?: V1ObjectMeta
+	bindData;
 }>();
+
+const emit = defineEmits(['updateData']);
 
 defineExpose({
 	data,
 });
+
 watch(
-	(props),
+	props,
+	(newValue,oldValue) => {
+		console.log('监测到原始code发生变化 了：', props.bindData.metadata.labels);
+		data.resourceType = props.bindData.resourceType;
+		data.meta = props.bindData.metadata;
+		data.replicas = props.bindData.replicas;
+    //处理labels标签
+    if(props.bindData.metadata.labels) {
+      data.labelData = handleLables(props.bindData.metadata.labels)
+    }
+    if(props.bindData.metadata.annotations) {
+      data.annotationsData = handleLables(props.bindData.metadata.annotations)
+    }
+		enableEdit.value = true;
+	},
+	{ immediate: true, deep: true }
+);
+
+watch(
+	data,
 	() => {
-		if (props.resourceType) {
-			data.resourceType = props.resourceType;
-			enableEdit.value = true;
+		if (data) {
+			console.log('子组件的data发生改变了。。。', data);
+			emit('updateData', data); //触发更新数据事件
 		}
 	},
-	{ immediate: true }
+	{ immediate: true, deep: true }
 );
 </script>
 

@@ -1,6 +1,6 @@
 <template>
-	<div class="layout-pd">
-		<el-card shadow="hover">
+	<div class="layout-padding container" >
+		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="mb15">
 				<el-input size="default" placeholder="请输入集群名称" style="max-width: 180px"> </el-input>
 				<el-button size="default" type="primary" class="ml10">
@@ -122,4 +122,16 @@ const handleCluster = (cluster: any) => {
 };
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.container {
+  :deep(.el-card__body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: auto;
+    .el-table {
+      flex: 1;
+    }
+  }
+}
+</style>

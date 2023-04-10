@@ -51,7 +51,7 @@ interface header {
 	type: string;
 }
 const props = defineProps<{
-	tableData?: label[];
+	labelData?: label[];
 }>();
 
 const item = reactive({
@@ -79,11 +79,11 @@ const table = reactive({
 	tableData: [] as label[],
 });
 onMounted(() => {
-	if (props.tableData) {
-		table.tableData = JSON.parse(JSON.stringify(props.tableData));
+	if (props.labelData) {
+		table.tableData = JSON.parse(JSON.stringify(props.labelData));
 		item.editable = true;
 		item.addStatus = true;
-		table.tableData.splice(props.tableData.length, 0, item);
+		table.tableData.splice(props.labelData.length, 0, item);
 	} else {
 		item.editable = true;
 		item.addStatus = true;
@@ -100,15 +100,18 @@ const handleDelete = (index: number) => {
 	clickTap();
 };
 
+const data = reactive({
+  labels: {} as {[key:string]:string}
+})
 const emit = defineEmits(['on-click']);
 const clickTap = () => {
-	let labels: { [index: string]: string } = {};
+	data.labels = {} as { [index: string]: string };
 	for (const k in table.tableData) {
 		if (table.tableData[k].key != '') {
-			labels[table.tableData[k].key] = table.tableData[k].value;
+      data.labels[table.tableData[k].key] = table.tableData[k].value;
 		}
 	}
-	emit('on-click', labels);
+  emit('on-click', data.labels);
 };
 const append = (index: number) => {
 	item.editable = false;
@@ -124,13 +127,20 @@ const append = (index: number) => {
 	clickTap();
 };
 
-// watch((props.tableData),()=>{
-// 	if(props.tableData) {
-// 		console.log("标签：", props.tableData)
-// 		table.tableData = JSON.parse(JSON.stringify(props.tableData));
-// 	}
-// })
+watch(()=>props.labelData,()=>{
+	if(props.labelData) {
+		table.tableData = props.labelData;
+	}
+},{
+  immediate: true,
+  deep: true
+})
+watch(()=>data,()=>{
 
+},{
+  immediate: true,
+  deep: true
+})
 const add = (header: header) => {
 	header.editable = false;
 };

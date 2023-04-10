@@ -1,7 +1,7 @@
 /** * Created by lei on 2023/03/21 */
 <template>
-	<div class="layout-pd">
-		<el-card shadow="hover">
+  <div class="layout-padding container" >
+    <el-card shadow="hover" class="layout-padding-auto">
 		<div class="mb15 " >
 			命名空间:
 			<el-select v-model="k8sStore.state.activeNamespace" style="max-width: 180px" size="default" class="m-2" placeholder="Select" @change="handleChange"
@@ -180,5 +180,16 @@ onBeforeUnmount(() => {
 	overflow: hidden;
 	overflow-y: auto;
 	// text-overflow: ellipsis;
+}
+.container {
+  :deep(.el-card__body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: auto;
+    .el-table {
+      flex: 1;
+    }
+  }
 }
 </style>
