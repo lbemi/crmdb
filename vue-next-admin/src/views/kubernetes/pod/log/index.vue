@@ -1,6 +1,6 @@
 <template>
-	<div class="layout-pd">
-		<el-card shadow="hover" class="mb15">
+  <div class="layout-padding container" >
+    <el-card shadow="hover" class="layout-padding-auto">
 			<span class="mb15">容器组名: {{ pod?.metadata.name }}</span> :
 			<el-select v-model="selectContainer" class="m-2" placeholder="选择容器" size="default">
 				<el-option v-for="item in pod?.spec.containers" :key="item.name" :label="item.name" :value="item.name" />
@@ -37,7 +37,7 @@ const getLog = async () => {
 	if (ws.value) {
 		ws.value.close();
 	}
-	ws.value = websocketApi.createLogWebsocket(pod.metadata?.namespace, pod?.metadata.name!, selectContainer.value);
+	ws.value = websocketApi.createLogWebsocket(pod.metadata?.namespace!, pod.metadata?.name!, selectContainer.value);
 	const logDiv = document.getElementById('logs');
 	const cacheLog = ref('');
 	ws.value.onmessage = (e) => {
@@ -76,5 +76,16 @@ onBeforeUnmount(() => {
 	border: 1px solid black;
 	padding: 10px;
 	white-space: pre-line;
+}
+.container {
+  :deep(.el-card__body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: auto;
+    .el-table {
+      flex: 1;
+    }
+  }
 }
 </style>

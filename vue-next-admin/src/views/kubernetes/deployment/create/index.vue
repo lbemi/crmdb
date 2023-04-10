@@ -1,21 +1,21 @@
 <template>
-	<div class="layout-pd">
-		<el-card shadow="hover">
+	<div class="layout-padding div-container">
+		<el-card shadow="hover" class="layout-padding-auto">
 			<el-backtop :right="100" :bottom="100" />
-			<div style="height: 100%">
+
+			<div>
 				<el-steps :active="data.active" finish-status="success" simple>
 					<el-step title="基本信息" description="Some description" />
 					<el-step title="容器配置" description="Some description" />
 					<el-step title="高级配置" description="Some description" />
 				</el-steps>
 			</div>
-			<el-card style="height: 100%">
-				<el-row>
-					<el-col :span="1" />
-					<el-col :span="15">
+			<el-row>
+				<el-col :span="13">
+					<el-card style="padding-left: 20px; margin-top: 15px">
 						<div>
 							<div style="margin-top: 10px" id="0" v-show="data.active === 0">
-								<Meta ref="metaRef" v-bind:metadata="data.tableData" v-bind:resourceType="'deployment'" />
+								<Meta ref="metaRef" :bindData="data.bindMetaData" @updateData="getMeta" />
 							</div>
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
 								<Containers ref="containersRef" />
@@ -24,42 +24,47 @@
 								<h1>asdj</h1>
 							</div>
 						</div>
-					</el-col>
-					<el-col :span="1" />
-					<el-col :span="6">
-						<codemirror v-model="data.code" :style="{ height: '100%' }" :autofocus="true" :tabSize="2" :extensions="extensions" />
-					</el-col>
-					<el-col :span="3" style="margin-left: 20px">
-						<div class="btn">
-							<div>
-								<el-link type="primary" :underline="false" @click="jumpTo(0)" class="men">基础信息</el-link>
-							</div>
-							<div>
-								<el-link type="primary" :underline="false" @click="jumpTo(1)" class="men">容器配置</el-link>
-							</div>
-							<div>
-								<el-link type="primary" :underline="false" @click="jumpTo(2)" class="men">高级配置</el-link>
-							</div>
-							<el-button @click="next" style="margin-top: 5px" size="small">下一步</el-button>
-							<el-button @click="confirm" style="margin-top: 5px" size="small">确认</el-button>
+					</el-card>
+				</el-col>
+				<el-col :span="1" />
+				<el-col :span="7">
+					<codemirror v-model="data.code" style="height: 100%; margin-top: 15px" :autofocus="true" :tabSize="2" :extensions="extensions" />
+				</el-col>
+				<el-col :span="3" style="margin-left: 20px">
+					<div class="btn">
+						<div>
+							<el-link type="primary" :underline="false" @click="jumpTo(0)" class="men">基础信息</el-link>
 						</div>
-					</el-col>
-				</el-row>
-			</el-card>
+						<div>
+							<el-link type="primary" :underline="false" @click="jumpTo(1)" class="men">容器配置</el-link>
+						</div>
+						<div>
+							<el-link type="primary" :underline="false" @click="jumpTo(2)" class="men">高级配置</el-link>
+						</div>
+						<el-button @click="next" style="margin-top: 5px" size="small">下一步</el-button>
+						<el-button @click="confirm" style="margin-top: 5px" size="small">确认</el-button>
+					</div>
+				</el-col>
+			</el-row>
 		</el-card>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, reactive } from 'vue';
+import { defineAsyncComponent, onMounted, reactive, watch } from 'vue';
 
 import { ref } from 'vue-demi';
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { V1Container, V1Deployment, V1DeploymentSpec, V1EnvVar, V1PodTemplate } from '@kubernetes/client-node';
+import { V1Deployment, V1DeploymentSpec } from '@kubernetes/client-node';
 import yaml from 'js-yaml';
 
+const getMeta = (newData) => {
+	console.log('获取到新的meta：', newData);
+	data.deployment.metadata = newData.meta;
+	data.deployment.spec!.replicas = newData.replicas;
+};
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
 const metaRef = ref<InstanceType<typeof Meta>>();
@@ -75,16 +80,22 @@ const data = reactive({
 			namespace: 'default',
 		},
 		spec: {
-			replicas: 1,
 			template: {
 				spec: {
-					container: [],
+					containers: [],
 				},
 			},
 		},
 	} as V1Deployment,
 	code: '',
-	tableData: [],
+	// 绑定初始值
+	bindMetaData: {
+		metadata: {
+			namespace: 'default',
+		} as V1DeploymentSpec,
+		replicas: 1,
+		resourceType: 'deployment',
+	},
 });
 
 const extensions = [javascript(), oneDark];
@@ -93,20 +104,50 @@ const jumpTo = (id) => {
 	document.getElementById(id).scrollIntoView(true);
 };
 const next = () => {
-	data.deployment.metadata = metaRef.value.data.meta;
-	data.deployment.spec!.replicas = metaRef.value.data.replicas;
-	data.code = yaml.dump(data.deployment);
+	// data.deployment.metadata = metaRef.value.data.meta;
+	// data.deployment.spec!.replicas = metaRef.value.data.replicas;
+	// data.code = yaml.dump(data.deployment);
 	if (data.active++ > 2) data.active = 0;
 };
 const confirm = () => {
-	data.deployment.metadata = metaRef.value.data.meta;
-	data.deployment.spec!.template.spec!.container = containersRef.value.getContainers();
-	data.deployment.spec!.replicas = metaRef.value.data.replicas;
-	console.log('获取到的deployment数据：', data.deployment);
+	// data.deployment.metadata = metaRef.value.data.meta;
+	// data.deployment.spec!.template.spec!.containers = containersRef.value.getContainers();
+	// data.deployment.spec!.replicas = metaRef.value.data.replicas;
+	// console.log('获取到的deployment数据：', data.deployment);
 	data.code = yaml.dump(data.deployment);
 };
+
 onMounted(() => {
 	data.code = yaml.dump(data.deployment);
+	// 监控deployment表单，如果发生改变，则重新渲染code编辑器
+	watch(
+		() => data.deployment,
+		() => {
+			data.code = yaml.dump(data.deployment);
+		},
+		{
+			immediate: true,
+			deep: true,
+		}
+	);
+	// 监控code编辑器，如果发生改变，回填数据到表单中
+	watch(
+		() => data.code,
+		(newValue) => {
+			const code = yaml.dump(data.deployment);
+			if (newValue === code) {
+				return;
+			}
+			const newData = yaml.load(newValue);
+			console.log('监测code变化了', newData);
+			data.bindMetaData.metadata = newData.metadata;
+			data.bindMetaData.replicas = newData.spec.replicas;
+		},
+		{
+			immediate: true,
+			deep: true,
+		}
+	);
 });
 </script>
 
@@ -134,5 +175,16 @@ onMounted(() => {
 .el-table-column {
 	padding-top: 2px;
 	padding-bottom: 2px;
+}
+.div-container {
+	:deep(.el-card__body) {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		overflow: auto;
+		.el-table {
+			flex: 1;
+		}
+	}
 }
 </style>

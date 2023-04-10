@@ -1,6 +1,6 @@
 <template>
-	<div class="layout-pd">
-		<el-card shadow="hover">
+	<div class="layout-padding container">
+		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="mb15">
 				命名空间:
 				<el-select
@@ -175,4 +175,16 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="scss">
+.container {
+  :deep(.el-card__body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: auto;
+    .el-table {
+      flex: 1;
+    }
+  }
+}
+</style>

@@ -1,6 +1,6 @@
 <template>
-	<div class="layout-pd">
-		<el-card shadow="hover">
+	<div class="layout-padding container" >
+		<el-card shadow="hover" class="layout-padding-auto">
 			<el-table :data="data.nodes" style="width: 100%" max-height="100vh - 200px">
 				<el-table-column label="名称/IP地址/UID" width="140" align="center" show-overflow-tooltip>
 					<template #default="scope">
@@ -203,25 +203,15 @@ const updateLabels = (node: Node) => {
 </script>
 
 <style scoped lang="scss">
-//// .tooltip-base-box {
-////   width: 600px;
-//// }
-//.el-popper is-dark {
-//	display: flex;
-//	align-items: center;
-//	flex-direction: column;
-//	justify-content: space-between;
-//}
-//.label {
-//	margin-top: 3px;
-//}
-//.example-showcase .el-dropdown + .el-dropdown {
-//	margin-left: 15px;
-//}
-//.example-showcase .el-dropdown-link {
-//	cursor: pointer;
-//	color: var(--el-color-primary);
-//	display: flex;
-//	align-items: center;
-//}
+.container {
+  :deep(.el-card__body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: auto;
+    .el-table {
+      flex: 1;
+    }
+  }
+}
 </style>

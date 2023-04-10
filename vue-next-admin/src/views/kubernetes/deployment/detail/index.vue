@@ -1,6 +1,6 @@
 <template>
-	<div class="layout-pd">
-		<el-card shadow="hover">
+  <div class="layout-padding container" >
+    <el-card shadow="hover" class="layout-padding-auto">
 			<el-row :gutter="20">
 				<el-col :span="20">
 					<el-button type="info" :icon="ArrowLeft" text @click="backRoute">返回</el-button>
@@ -304,5 +304,16 @@ const buildWebsocket = async () => {
 		white-space: normal;
 		height: auto;
 	}
+}
+.container {
+  :deep(.el-card__body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: auto;
+    .el-table {
+      flex: 1;
+    }
+  }
 }
 </style>
