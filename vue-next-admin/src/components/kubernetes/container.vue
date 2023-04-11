@@ -270,7 +270,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, reactive, ref } from 'vue';
+import {defineAsyncComponent, reactive, ref, watch} from 'vue';
 import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
 
@@ -439,10 +439,22 @@ const protocolType = [
 	},
 ];
 
+const props = defineProps({
+	container: V1Container
+})
+const emit =defineEmits(['updateContainer'])
+
 defineExpose({
 	getContainer,
 	data,
 });
+
+watch(()=>data.container,()=>{
+	emit('updateContainer',data.container)
+},{
+	deep:true,
+	immediate: true
+})
 </script>
 
 <style scoped lang="scss">

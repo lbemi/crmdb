@@ -18,7 +18,7 @@
 								<Meta ref="metaRef" :bindData="data.bindMetaData" @updateData="getMeta" />
 							</div>
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-								<!--								<Containers ref="containersRef" />-->
+								<Containers ref="containersRef" :containers="data.deployment.spec?.template.spec?.containers" @updateContainers="getContainers" />
 							</div>
 							<div style="margin-top: 10px" id="2" v-show="data.active === 2">
 								<h1>asdj</h1>
@@ -57,24 +57,14 @@ import { ref } from 'vue-demi';
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { V1Deployment, V1DeploymentSpec } from '@kubernetes/client-node';
+import {V1Container, V1Deployment, V1DeploymentSpec} from '@kubernetes/client-node';
 import yaml from 'js-yaml';
-import {isObjectValueEqual} from "/@/utils/arrayOperation";
+import { isObjectValueEqual } from '/@/utils/arrayOperation';
 
-const getMeta = (newData) => {
-  console.log("获取到的deployment数据:",newData,data,isObjectValueEqual(data.deployment.metadata,newData.meta ))
-
-	// if (!isObjectValueEqual(data.deployment.metadata,newData.meta )  || data.deployment.spec!.replicas != newData.replicas) {
-		data.deployment.metadata = newData.meta;
-		data.deployment.spec!.replicas = newData.replicas;
-		data.code = yaml.dump(data.deployment);
-	// }
-};
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
 const metaRef = ref<InstanceType<typeof Meta>>();
 const containersRef = ref<InstanceType<typeof Containers>>();
-
 // 格式化 env
 const data = reactive({
 	active: 0,
@@ -103,8 +93,18 @@ const data = reactive({
 		resourceType: 'deployment',
 	},
 });
-
 const extensions = [javascript(), oneDark];
+const getContainers= (containers:Array<V1Container>)=>{
+	data.deployment.spec.template.spec.containers = containers
+}
+const getMeta = (newData) => {
+	console.log('获取到的deployment数据:', newData, data, isObjectValueEqual(data.deployment.metadata, newData.meta));
+	// if (!isObjectValueEqual(data.deployment.metadata,newData.meta )  || data.deployment.spec!.replicas != newData.replicas) {
+	data.deployment.metadata = newData.meta;
+	data.deployment.spec!.replicas = newData.replicas;
+	data.code = yaml.dump(data.deployment);
+	// }
+};
 const jumpTo = (id) => {
 	data.active = id;
 	document.getElementById(id).scrollIntoView(true);

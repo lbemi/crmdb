@@ -31,11 +31,10 @@ const props = defineProps({
 const handleLabels = () => {
 	const labelsTup = {};
 	for (const k in data.labels) {
-		if (data.labels[k].key != '') {
+		if (data.labels[k].key != '' && data.labels[k].value != '') {
 			labelsTup[data.labels[k].key] = data.labels[k].value;
 		}
 	}
-	console.log('------------', labelsTup);
 	return labelsTup;
 };
 
@@ -46,7 +45,6 @@ watch(
 	() => props.labelData,
 	() => {
 		if ( props.labelData) {
-			console.log('我收到了父组件传递的lables了并复制给了data,labels。。。', data.labels, 'new:', props.labelData);
 			data.labels = props.labelData;
 		}
 	},
@@ -61,7 +59,6 @@ watch(
 	() => data.labels,
 	() => {
 		const labels = handleLabels();
-    console.log("@@@@@@@@",labels)
     if(!isObjectValueEqual(labels,{})) {
       emit('updateLabels', labels);
     }
@@ -73,4 +70,6 @@ watch(
 );
 </script>
 
-<style scoped></style>
+<style scoped>
+
+</style>
