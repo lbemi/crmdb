@@ -18,7 +18,7 @@
 								<Meta ref="metaRef" :bindData="data.bindMetaData" @updateData="getMeta" />
 							</div>
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-								<Containers ref="containersRef" />
+								<!--								<Containers ref="containersRef" />-->
 							</div>
 							<div style="margin-top: 10px" id="2" v-show="data.active === 2">
 								<h1>asdj</h1>
@@ -59,11 +59,16 @@ import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { V1Deployment, V1DeploymentSpec } from '@kubernetes/client-node';
 import yaml from 'js-yaml';
+import {isObjectValueEqual} from "/@/utils/arrayOperation";
 
 const getMeta = (newData) => {
-	console.log('获取到新的meta：', newData);
-	data.deployment.metadata = newData.meta;
-	data.deployment.spec!.replicas = newData.replicas;
+  console.log("获取到的deployment数据:",newData,data,isObjectValueEqual(data.deployment.metadata,newData.meta ))
+
+	// if (!isObjectValueEqual(data.deployment.metadata,newData.meta )  || data.deployment.spec!.replicas != newData.replicas) {
+		data.deployment.metadata = newData.meta;
+		data.deployment.spec!.replicas = newData.replicas;
+		data.code = yaml.dump(data.deployment);
+	// }
 };
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
@@ -80,6 +85,7 @@ const data = reactive({
 			namespace: 'default',
 		},
 		spec: {
+			replicas: 1,
 			template: {
 				spec: {
 					containers: [],
@@ -116,38 +122,51 @@ const confirm = () => {
 	// console.log('获取到的deployment数据：', data.deployment);
 	data.code = yaml.dump(data.deployment);
 };
-
-onMounted(() => {
-	data.code = yaml.dump(data.deployment);
-	// 监控deployment表单，如果发生改变，则重新渲染code编辑器
-	watch(
-		() => data.deployment,
-		() => {
-			data.code = yaml.dump(data.deployment);
-		},
-		{
-			immediate: true,
-			deep: true,
-		}
-	);
-	// 监控code编辑器，如果发生改变，回填数据到表单中
-	watch(
-		() => data.code,
-		(newValue) => {
-			const code = yaml.dump(data.deployment);
-			if (newValue === code) {
-				return;
+// 监控deployment表单，如果发生改变，则重新渲染code编辑器
+// watch(
+//     () => data.deployment,
+//     (value,oldValue) => {
+//       console.log("deployment 新老数据：",value, "老的:",oldValue, "原始数据：",data.deployment)
+//
+//       if(value != oldValue) {
+//         console.log("重新渲染code编辑器：")
+//         data.code = yaml.dump(data.deployment);
+//       }
+//     },
+//     {
+//       immediate: true,
+//       deep: true,
+//     }
+// );
+// 监控code编辑器，如果发生改变，回填数据到表单中
+watch(
+	() => data.code,
+	(newValue, oldValue) => {
+		// console.log("Code ----新的：",newValue, "老的:",oldValue)
+		if (newValue) {
+			if (newValue != oldValue) {
+				const newData = yaml.load(newValue);
+				console.log('code变化了，回填数据', newData, 'oldCPde:', oldValue);
+				data.bindMetaData.metadata = newData.metadata;
+				data.bindMetaData.replicas = newData.spec?.replicas!;
 			}
-			const newData = yaml.load(newValue);
-			console.log('监测code变化了', newData);
-			data.bindMetaData.metadata = newData.metadata;
-			data.bindMetaData.replicas = newData.spec.replicas;
-		},
-		{
-			immediate: true,
-			deep: true,
 		}
-	);
+		// const code = yaml.dump(data.deployment);
+		// if (newValue === code) {
+		// 	return;
+		// }
+		// const newData = yaml.load(newValue);
+		// console.log('监测code变化了', newData);
+		// data.bindMetaData.metadata = newData.metadata;
+		// data.bindMetaData.replicas = newData.spec.replicas;
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
+onMounted(() => {
+	// data.code = yaml.dump(data.deployment);
 });
 </script>
 
