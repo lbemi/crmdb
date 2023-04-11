@@ -129,17 +129,12 @@ defineExpose({
 
 watch(
 	() => props.bindData,
-	(newValue, oldValue) => {
-		// console.log('反向更新数据，', props.bindData.metadata.labels);
+	() => {
 		data.resourceType = props.bindData.resourceType;
 		data.meta = props.bindData.metadata;
 		//处理labels标签
-		// console.log("反向更新数据，",props.bindData.metadata.labels)
 		handleLabels(props.bindData.metadata.labels);
 		handAnnotations(props.bindData.metadata.annotations);
-		// if (props.bindData.metadata.annotations) {
-		// 	data.annotationsData = handleLabels(props.bindData.metadata.annotations);
-		// }
 		data.replicas = props.bindData.replicas;
 		enableEdit.value = true;
 	},
@@ -177,4 +172,8 @@ const types = [
 ];
 </script>
 
-<style scoped></style>
+<style scoped>
+.el-form-item {
+	margin-bottom: 4px;
+}
+</style>

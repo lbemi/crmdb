@@ -1,9 +1,14 @@
 <template>
 	<div class="layout-pd">
 		<div>
+			<!--			<el-tabs v-model="editableTabsValue" type="card" editable class="demo-tabs" @edit="handleTabsEdit">-->
+			<!--				<el-tab-pane v-for="(item,index) in editableTabs" :key="index" :label="item.title" :name="item.name" :closable='item.closeAble'>-->
+			<!--					<container :ref="setItemRef" :container="data.containers[index]" @updateContainer='getContainer' />-->
+			<!--				</el-tab-pane>-->
+			<!--			</el-tabs>-->
 			<el-tabs v-model="editableTabsValue" type="card" editable class="demo-tabs" @edit="handleTabsEdit">
-				<el-tab-pane v-for="(item,index) in editableTabs" :key="index" :label="item.title" :name="item.name" :closable='item.closeAble'>
-					<container :ref="setItemRef"></container>
+				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :label="'容器' + (index+1)" :name="index+1" :closable="index == 0">
+					<container :container="item" @updateContainer="getContainer" />
 				</el-tab-pane>
 			</el-tabs>
 		</div>
@@ -11,38 +16,39 @@
 </template>
 
 <script setup lang="ts">
-import {defineAsyncComponent, reactive} from 'vue';
-import {ref} from 'vue-demi';
-import {V1Container} from '@kubernetes/client-node';
-import type {TabPaneName} from 'element-plus';
+import { defineAsyncComponent, reactive, watch } from 'vue';
+import { ref } from 'vue-demi';
+import {V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext} from '@kubernetes/client-node';
+import type { TabPaneName } from 'element-plus';
 
-const Container = defineAsyncComponent(() => import("./container.vue"))
+const Container = defineAsyncComponent(() => import('./container.vue'));
 
-let tabIndex = 1;
+let tabIndex = 0;
 const editableTabsValue = ref('1');
-const itemRefs = ref([])
+const itemRefs = ref([]);
 //动态设置ref
-const setItemRef =(el) =>{
-	if(el) {
-		itemRefs.value.push(el)
+const setItemRef = (el) => {
+	if (el) {
+		itemRefs.value.push(el);
 	}
-}
+};
 const editableTabs = ref([
 	{
 		title: '容器' + tabIndex,
 		name: '1',
 		closeAble: false,
-	}
+	},
 ]);
 
 const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 'add') => {
 	if (action === 'add') {
 		const newTabName = `${++tabIndex}`;
-		editableTabs.value.push({
-			title: '容器' + newTabName,
-			name: newTabName,
-			closeAble: true
-		});
+		// editableTabs.value.push({
+		// 	title: '容器' + newTabName,
+		// 	name: newTabName,
+		// 	closeAble: true,
+		// });
+		data.containers.push(data.container)
 		editableTabsValue.value = newTabName;
 	} else if (action === 'remove') {
 		const tabs = editableTabs;
@@ -51,7 +57,7 @@ const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 
 			tabs.value.forEach((tab, index) => {
 				if (tab.name === targetName) {
 					const nextTab = tabs[index + 1] || tabs[index - 1];
-					itemRefs.value.splice(index,1)
+					itemRefs.value.splice(index, 1);
 					if (nextTab) {
 						activeName = nextTab.name;
 					}
@@ -64,23 +70,56 @@ const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 
 	}
 };
 
-
 const data = reactive({
 	containers: [] as V1Container[],
+	container: {
+		securityContext: {
+			privileged: false,
+		} as V1SecurityContext,
+		livenessProbe: {},
+		readinessProbe: {},
+		startupProbe: {},
+		env: [] as V1EnvVar[],
+		ports: [] as V1ContainerPort,
+	} as V1Container,
 });
 
-const getContainers = ()=>{
-	console.log("********",itemRefs.value)
-	data.containers=[]
-	itemRefs.value.forEach((res,index) =>{
-		data.containers[index] = res.getContainer()
-	})
-	return data.containers
-}
+const getContainer = (container: V1Container) => {
+	// console.log("********",itemRefs.value)
+	// data.containers=[]
+	// itemRefs.value.forEach((res,index) =>{
+	// 	data.containers[index] = res.getContainer()
+	// })
+	// return data.containers
+	const index = parseInt(editableTabsValue.value);
+	data.containers[index] = container;
+};
 
-defineExpose({
-	getContainers
-})
+const props = defineProps({
+	containers: Array<V1Container>,
+});
+
+watch(
+	props.containers,
+	() => {
+		console.log("传递过来的containers：",props.containers)
+		if (props.containers) {
+			data.containers = props.containers;
+		}
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
+const emit = defineEmits(['updateContainers'])
+
+watch(()=>data.containers ,()=> {
+	emit('updateContainers',data.containers)
+});
+// defineExpose({
+// 	getContainers,
+// });
 </script>
 
 <style scoped lang="scss">
