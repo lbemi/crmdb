@@ -22,10 +22,32 @@
 				<el-input-number v-model="data.replicas" :min="1" :max="100" />
 			</el-form-item>
 			<el-form-item label="标签">
-				<Label :labelData="data.labelData" @on-click="getLabels" v-bind:tableData="tableData" />
+				<el-button
+					:icon="CirclePlusFilled"
+					type="primary"
+					size="small"
+					text
+					style="padding-left: 0"
+					@click="data.labelData.push({ key: '', value: '' })"
+					>新增</el-button
+				>
+			</el-form-item>
+			<el-form-item v-if="data.labelData.length != 0">
+				<Label :labelData="data.labelData" @updateLabels="getLabels" />
 			</el-form-item>
 			<el-form-item label="注解">
-				<Label :labelData="data.annotationsData" @on-click="getAnnotations" />
+				<el-button
+					:icon="CirclePlusFilled"
+					type="primary"
+					size="small"
+					text
+					style="padding-left: 0"
+					@click="data.annotationsData.push({ key: '', value: '' })"
+					>新增</el-button
+				>
+			</el-form-item>
+			<el-form-item v-if="data.annotationsData.length != 0">
+				<Label :labelData="data.annotationsData" @updateLabels="getAnnotations" />
 			</el-form-item>
 		</el-form>
 	</div>
@@ -36,15 +58,20 @@ import { defineAsyncComponent, reactive, watch } from 'vue';
 import { V1ObjectMeta } from '@kubernetes/client-node';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { ref } from 'vue-demi';
-
-const Label = defineAsyncComponent(() => import('/@/components/label/index.vue'));
+import { CirclePlusFilled } from '@element-plus/icons-vue';
+import { isObjectValueEqual } from '/@/utils/arrayOperation';
+interface label {
+  key: string;
+  value: string;
+}
+const Label = defineAsyncComponent(() => import('/@/components/kubernetes/label.vue'));
 
 const k8sStore = kubernetesInfo();
 const enableEdit = ref(false);
-const tableData = ref([]);
+// const tableData = ref([]);
 const data = reactive({
-	labelData: [],
-  annotationsData: [],
+	labelData: [] as  label[],
+	annotationsData: [],
 	replicas: 1,
 	resourceType: 'deployment',
 	meta: {
@@ -52,6 +79,80 @@ const data = reactive({
 	} as V1ObjectMeta,
 });
 
+const getLabels = (labels: any) => {
+	if (!isObjectValueEqual(data.meta.labels, labels)) {
+		data.meta.labels = labels;
+	}
+};
+
+const getAnnotations = (labels: any) => {
+	if (!isObjectValueEqual(data.meta.annotations, labels)) {
+		data.meta.annotations = labels;
+	}
+};
+
+const handleLabels = (labels: { [key: string]: string }) => {
+	const labelsTup = [];
+	for (let key in labels) {
+		const l = {
+			key: key,
+			value: labels![key],
+		};
+		labelsTup.push(l);
+	}
+	if (labelsTup != data.labelData) {
+		data.labelData = labelsTup;
+	}
+};
+const handAnnotations = (labels: { [key: string]: string }) => {
+	const labelsTup = [];
+	for (let key in labels) {
+		const l = {
+			key: key,
+			value: labels![key],
+		};
+		labelsTup.push(l);
+	}
+	if (labelsTup != data.annotationsData) {
+		data.annotationsData = labelsTup;
+	}
+};
+const props = defineProps<{
+	bindData;
+}>();
+
+const emit = defineEmits(['updateData']);
+
+defineExpose({
+	data,
+});
+
+watch(
+	() => props.bindData,
+	(newValue, oldValue) => {
+		// console.log('反向更新数据，', props.bindData.metadata.labels);
+		data.resourceType = props.bindData.resourceType;
+		data.meta = props.bindData.metadata;
+		//处理labels标签
+		// console.log("反向更新数据，",props.bindData.metadata.labels)
+		handleLabels(props.bindData.metadata.labels);
+		handAnnotations(props.bindData.metadata.annotations);
+		// if (props.bindData.metadata.annotations) {
+		// 	data.annotationsData = handleLabels(props.bindData.metadata.annotations);
+		// }
+		data.replicas = props.bindData.replicas;
+		enableEdit.value = true;
+	},
+	{ immediate: true, deep: true }
+);
+
+watch(
+	() => [data.meta, data.replicas],
+	() => {
+		emit('updateData', data); //触发更新数据事件
+	},
+	{ immediate: true, deep: true }
+);
 const types = [
 	{
 		value: 'deployment',
@@ -74,59 +175,6 @@ const types = [
 		name: 'CronJob(定时任务)',
 	},
 ];
-const getLabels = (labels: any) => {
-	data.meta.labels = labels;
-};
-const getAnnotations = (labels: any) => {
-	data.meta.annotations = labels;
-};
-
-const handleLables = (lables: { [key: string]: string }) => {
-  const labelsTup = []
-  Object.keys(lables).forEach((key)=>{
-    labelsTup.push({key:lables[key]})
-  })
-  return labelsTup
-};
-const props = defineProps<{
-	bindData;
-}>();
-
-const emit = defineEmits(['updateData']);
-
-defineExpose({
-	data,
-});
-
-watch(
-	props,
-	(newValue,oldValue) => {
-		console.log('监测到原始code发生变化 了：', props.bindData.metadata.labels);
-		data.resourceType = props.bindData.resourceType;
-		data.meta = props.bindData.metadata;
-		data.replicas = props.bindData.replicas;
-    //处理labels标签
-    if(props.bindData.metadata.labels) {
-      data.labelData = handleLables(props.bindData.metadata.labels)
-    }
-    if(props.bindData.metadata.annotations) {
-      data.annotationsData = handleLables(props.bindData.metadata.annotations)
-    }
-		enableEdit.value = true;
-	},
-	{ immediate: true, deep: true }
-);
-
-watch(
-	data,
-	() => {
-		if (data) {
-			console.log('子组件的data发生改变了。。。', data);
-			emit('updateData', data); //触发更新数据事件
-		}
-	},
-	{ immediate: true, deep: true }
-);
 </script>
 
 <style scoped></style>

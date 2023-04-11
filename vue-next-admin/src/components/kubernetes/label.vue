@@ -1,20 +1,21 @@
 <template>
-		<el-form :key="portIndex" v-for="(item, portIndex) in data.labels" style="display: flex">
-			<el-form-item label="key">
-				<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
-			</el-form-item>
-			<el-form-item label="value" style="margin-left: 10px">
-				<el-input placeholder="value" v-model="item.value" size="small" />
-			</el-form-item>
-			<el-form-item>
-				<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.labels.splice(portIndex, 1)"></el-button>
-			</el-form-item>
-		</el-form>
+	<el-form :key="portIndex" v-for="(item, portIndex) in data.labels" style="display: flex">
+		<el-form-item label="key">
+			<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
+		</el-form-item>
+		<el-form-item label="value" style="margin-left: 10px">
+			<el-input placeholder="value" v-model="item.value" size="small" />
+		</el-form-item>
+		<el-form-item>
+			<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.labels.splice(portIndex, 1)"></el-button>
+		</el-form-item>
+	</el-form>
 </template>
 
 <script setup lang="ts">
 import { RemoveFilled } from '@element-plus/icons-vue';
 import { reactive, watch } from 'vue';
+import {isObjectValueEqual} from "/@/utils/arrayOperation";
 
 interface label {
 	key: string;
@@ -24,38 +25,51 @@ const data = reactive({
 	labels: [] as label[],
 });
 const props = defineProps({
-	labelsData: Array
+	labelData: Array,
 });
+
 const handleLabels = () => {
-    const labelsTup = []
-    Object.keys(data.labels).forEach((key)=>{
-        labelsTup.push({key:data.labels[key]})
-    })
-    return labelsTup
+	const labelsTup = {};
+	for (const k in data.labels) {
+		if (data.labels[k].key != '') {
+			labelsTup[data.labels[k].key] = data.labels[k].value;
+		}
+	}
+	console.log('------------', labelsTup);
+	return labelsTup;
 };
-const emit = defineEmits(['updateLabels'])
+
+const emit = defineEmits(['updateLabels']);
+
+// 监听父组件传递来的数据
 watch(
-	() => props.labelsData,
-	(value,oldValue) => {
-      // console.log("----", value,"000:",oldValue)
-      // data.labels.push({key:'',value:''})
-		if (props.labelsData) {
-        data.labels = props.labelsData;
-			}
-		},{
-        immediate: true
-    }
+	() => props.labelData,
+	() => {
+		if ( props.labelData) {
+			console.log('我收到了父组件传递的lables了并复制给了data,labels。。。', data.labels, 'new:', props.labelData);
+			data.labels = props.labelData;
+		}
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
 );
+
+// 监听表单数据，如果发生变化则传递到父组件
 watch(
-    () => data.labels,
-    (value,oldValue) => {
-        if(data.labels) {
-            const labels = handleLabels()
-            emit('updateLabels',labels)
-        }
-    },{
-        immediate:true
+	() => data.labels,
+	() => {
+		const labels = handleLabels();
+    console.log("@@@@@@@@",labels)
+    if(!isObjectValueEqual(labels,{})) {
+      emit('updateLabels', labels);
     }
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
 );
 </script>
 
