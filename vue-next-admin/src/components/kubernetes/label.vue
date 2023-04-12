@@ -31,9 +31,9 @@ const props = defineProps({
 const handleLabels = () => {
 	const labelsTup = {};
 	for (const k in data.labels) {
-		if (data.labels[k].key != '' && data.labels[k].value != '') {
+		// if (data.labels[k].key != '' && data.labels[k].value != '') {
 			labelsTup[data.labels[k].key] = data.labels[k].value;
-		}
+		// }
 	}
 	return labelsTup;
 };

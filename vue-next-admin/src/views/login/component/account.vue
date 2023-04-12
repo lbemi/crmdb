@@ -61,7 +61,6 @@ import { reactive, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import Cookies from 'js-cookie';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import { initFrontEndControlRoutes } from '/@/router/frontEnd';
@@ -118,7 +117,7 @@ const onSignIn = async () => {
 			Session.set('token', res.data.token);
 			Session.set('userInfo',res.data.user)
 			// 模拟数据，对接接口时，记得删除多余代码及对应依赖的引入。用于 `/src/stores/userInfo.ts` 中不同用户登录判断（模拟数据）
-			Cookies.set('userName', state.ruleForm.user_name);
+			Session.set('userName', state.ruleForm.user_name);
 			if (!themeConfig.value.isRequestRoutes) {
 				// 前端控制路由，2、请注意执行顺序
 				const isNoPower =  await initFrontEndControlRoutes();
@@ -133,7 +132,7 @@ const onSignIn = async () => {
 		})
 		.catch((e) => {
 			ElMessage.error(e.message);
-           
+
 		});
         state.loading.signIn = false;
 	// // 存储 token 到浏览器缓存
