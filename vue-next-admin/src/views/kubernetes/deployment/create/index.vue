@@ -67,7 +67,7 @@ const metaRef = ref<InstanceType<typeof Meta>>();
 const containersRef = ref<InstanceType<typeof Containers>>();
 // 格式化 env
 const data = reactive({
-	active: 0,
+	active: 1,
 	deployment: {
 		apiVersion: 'apps/v1',
 		kind: 'Deployment',
@@ -82,7 +82,7 @@ const data = reactive({
 				},
 			},
 		},
-	} as V1Deployment,
+	},
 	code: '',
 	// 绑定初始值
 	bindMetaData: {
@@ -95,7 +95,9 @@ const data = reactive({
 });
 const extensions = [javascript(), oneDark];
 const getContainers= (containers:Array<V1Container>)=>{
-	data.deployment.spec.template.spec.containers = containers
+  console.log("deployment接受到container数据：",containers)
+	data.deployment.spec.template.spec.containers= containers
+  data.code = yaml.dump(data.deployment);
 }
 const getMeta = (newData) => {
 	console.log('获取到的deployment数据:', newData, data, isObjectValueEqual(data.deployment.metadata, newData.meta));

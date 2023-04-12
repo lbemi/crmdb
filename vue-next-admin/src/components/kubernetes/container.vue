@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<el-form :model="data.container" label-width="120px" label-position="left">
+		<el-form  v-model="data.container" label-width="120px" label-position="left">
 			<el-card>
 				<el-form-item label="容器名称：">
 					<el-input v-model="data.container.name" size="default" style="width: 296px" />
@@ -273,6 +273,7 @@
 import { defineAsyncComponent, reactive, ref, toRefs, watch } from 'vue';
 import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
+import {isObjectValueEqual} from "/@/utils/arrayOperation";
 
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
 const readyRef = ref<InstanceType<typeof HealthCheck>>();
@@ -393,7 +394,7 @@ const data = reactive({
 });
 
 const props = defineProps({
-	container: V1Container,
+	container: {} as V1Container
 });
 
 const emit = defineEmits(['updateContainer']);
@@ -405,10 +406,11 @@ const emit = defineEmits(['updateContainer']);
 watch(
 	() => props.container,
 	() => {
-		if (props.container) {
+		if (!isObjectValueEqual(data.container,props.container)) {
+      console.log('---> container:接受的容器：', props.container);
 			data.container = props.container;
 		}
-		console.log('container:接受的容器：', props.container);
+
 	},
 	{
 		deep: true,
@@ -418,6 +420,7 @@ watch(
 watch(
 	() => data.container,
 	() => {
+    console.log("container 表单发生变化。。。",data.container)
 		emit('updateContainer', data.container);
 	},
 	{
