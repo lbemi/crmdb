@@ -270,7 +270,7 @@
 </template>
 
 <script setup lang="ts">
-import {defineAsyncComponent, reactive, ref, watch} from 'vue';
+import { defineAsyncComponent, reactive, ref, toRefs, watch } from 'vue';
 import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
 
@@ -288,12 +288,12 @@ interface envImp {
 
 // 格式化 env
 const getContainer = () => {
-  //先置空
+	//先置空
 	data.container.env = [];
-  data.container.livenessProbe ={}
-  data.container.startupProbe={}
-  data.container.readinessProbe={}
-  data.container.ports = data.ports;
+	data.container.livenessProbe = {};
+	data.container.startupProbe = {};
+	data.container.readinessProbe = {};
+	data.container.ports = data.ports;
 
 	if (data.liveCheck) {
 		data.container.livenessProbe = livenessRef.value.getData();
@@ -392,6 +392,40 @@ const data = reactive({
 	env: [] as envImp[],
 });
 
+const props = defineProps({
+	container: V1Container,
+});
+
+const emit = defineEmits(['updateContainer']);
+
+// defineExpose({
+// 	getContainer,
+// 	data,
+// });
+watch(
+	() => props.container,
+	() => {
+		if (props.container) {
+			data.container = props.container;
+		}
+		console.log('container:接受的容器：', props.container);
+	},
+	{
+		deep: true,
+		immediate: true,
+	}
+);
+watch(
+	() => data.container,
+	() => {
+		emit('updateContainer', data.container);
+	},
+	{
+		deep: true,
+		immediate: true,
+	}
+);
+
 const imagePullPolicy = [
 	{
 		name: '优先使用本地镜像(ifNotPresent)',
@@ -438,23 +472,6 @@ const protocolType = [
 		value: 'udp',
 	},
 ];
-
-const props = defineProps({
-	container: V1Container
-})
-const emit =defineEmits(['updateContainer'])
-
-defineExpose({
-	getContainer,
-	data,
-});
-
-watch(()=>data.container,()=>{
-	emit('updateContainer',data.container)
-},{
-	deep:true,
-	immediate: true
-})
 </script>
 
 <style scoped lang="scss">

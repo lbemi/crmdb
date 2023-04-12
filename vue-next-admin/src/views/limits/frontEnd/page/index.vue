@@ -24,10 +24,10 @@
 
 <script setup lang="ts" name="limitsFrontEndPage">
 import { onMounted, ref } from 'vue';
-import Cookies from 'js-cookie';
 import { storeToRefs } from 'pinia';
 import { useUserInfo } from '/@/stores/userInfo';
 import { frontEndsResetRoute, setAddRoute, setFilterMenuAndCacheTagsViewRoutes } from '/@/router/frontEnd';
+import {Session} from "/@/utils/storage";
 
 // 定义变量内容
 const storesUserInfo = useUserInfo();
@@ -42,7 +42,7 @@ const initUserAuth = () => {
 const onRadioChange = async () => {
 	// 模拟数据
 	frontEndsResetRoute();
-	Cookies.set('userName', userAuth.value);
+	Session.set('userName', userAuth.value);
 	// 模拟切换不同权限用户
 	await storesUserInfo.setUserInfos();
 	await setAddRoute();
