@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<el-form  v-model="data.container" label-width="120px" label-position="left">
+		<el-form v-model="data.container" label-width="120px" label-position="left">
 			<el-card>
 				<el-form-item label="容器名称：">
 					<el-input v-model="data.container.name" size="default" style="width: 296px" />
@@ -273,7 +273,7 @@
 import { defineAsyncComponent, reactive, ref, toRefs, watch } from 'vue';
 import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
-import {isObjectValueEqual} from "/@/utils/arrayOperation";
+import { isObjectValueEqual } from '/@/utils/arrayOperation';
 
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
 const readyRef = ref<InstanceType<typeof HealthCheck>>();
@@ -362,6 +362,101 @@ const getContainer = () => {
 	return data.container;
 };
 
+const buildEnv = () => {
+	const envData = [] as V1EnvVar[];
+	const envTup = JSON.parse(JSON.stringify(data.env));
+	envTup.forEach((item, index) => {
+		if (item.type === 'custom') {
+			//自定义变量
+			const envVar: V1EnvVar = {
+				name: item.name,
+				value: item.value,
+			};
+			envData[index] = envVar;
+		} else if (item.type === 'fieldRef') {
+			const envVar: V1EnvVar = {
+				name: item.name,
+				valueFrom: {
+					fieldRef: {
+						fieldPath: item.otherValue,
+					},
+				},
+			};
+			envData[index] = envVar;
+		} else if (item.type === 'resourceFieldRef') {
+			const envVar: V1EnvVar = {
+				name: item.name,
+				valueFrom: {
+					resourceFieldRef: {
+						containerName: item.value,
+						resource: item.otherValue,
+					},
+				},
+			};
+			envData[index] = envVar;
+		} else if (item.type === 'configMapKeyRef') {
+			const envVar: V1EnvVar = {
+				name: item.name,
+				valueFrom: {
+					configMapKeyRef: {
+						name: item.value,
+						key: item.otherValue,
+					},
+				},
+			};
+			envData[index] = envVar;
+		} else if (item.type === 'secretKeyRef') {
+			const envVar: V1EnvVar = {
+				name: item.name,
+				valueFrom: {
+					secretKeyRef: {
+						name: item.value,
+						key: item.otherValue,
+					},
+				},
+			};
+			envData[index] = envVar;
+		}
+	});
+
+	if (!isObjectValueEqual(data.env, envData)) {
+		data.container.env = envData;
+	}
+};
+const parseEnv = (envs: Array<V1EnvVar>) => {
+	const envData = [] as envImp[];
+	envs.forEach((env, index) => {
+		envData.push({
+			name: '',
+			value: '',
+			type: '',
+			otherValue: ''
+		})
+		envData[index].name = env.name;
+		if (env.valueFrom) {
+			if (env.valueFrom.fieldRef) envData[index].type = 'fieldRef';
+			if (env.valueFrom.fieldRef?.fieldPath) envData[index].value = env.valueFrom.fieldRef.fieldPath;
+
+			if (env.valueFrom.secretKeyRef) envData[index].type = 'secretKeyRef';
+			if (env.valueFrom.secretKeyRef?.key) envData[index].otherValue = env.valueFrom.secretKeyRef.key;
+			if (env.valueFrom.secretKeyRef?.name) envData[index].value = env.valueFrom.secretKeyRef.name;
+
+			if (env.valueFrom.configMapKeyRef) envData[index].type = 'configMapKeyRef';
+			if (env.valueFrom.configMapKeyRef?.key) envData[index].otherValue = env.valueFrom.configMapKeyRef.key;
+			if (env.valueFrom.configMapKeyRef?.name) envData[index].value = env.valueFrom.configMapKeyRef.name;
+
+			if (env.valueFrom.resourceFieldRef) envData[index].type = 'resourceFieldRef';
+			if (env.valueFrom.resourceFieldRef?.resource) envData[index].otherValue = env.valueFrom.resourceFieldRef.resource;
+			if (env.valueFrom.resourceFieldRef?.containerName) envData[index].value = env.valueFrom.resourceFieldRef.containerName;
+		}
+		if (env.value) {
+			envData[index].value = env.value;
+			envData[index].type = 'custom';
+		}
+	});
+	console.log('解析从COde传递来的的ENV数据', envData);
+	data.env = envData;
+};
 const data = reactive({
 	liveCheck: false,
 	showLiveCheck: true,
@@ -394,7 +489,8 @@ const data = reactive({
 });
 
 const props = defineProps({
-	container: {} as V1Container
+	container: Object<V1Container>,
+	index: Number,
 });
 
 const emit = defineEmits(['updateContainer']);
@@ -406,11 +502,15 @@ const emit = defineEmits(['updateContainer']);
 watch(
 	() => props.container,
 	() => {
-		if (!isObjectValueEqual(data.container,props.container)) {
-      console.log('---> container:接受的容器：', props.container);
+		if (props.container && !isObjectValueEqual(data.container, props.container)) {
+			console.log('---> container:接受的容器：', props.container);
 			data.container = props.container;
+			// if(!isObjectValueEqual(props.container.env,data.container.env)) {
+			console.log('Env发生变化了！！！！！！！！！！！');
+			parseEnv(props.container.env);
+			// }
+			data.ports = props.container.ports;
 		}
-
 	},
 	{
 		deep: true,
@@ -418,17 +518,34 @@ watch(
 	}
 );
 watch(
-	() => data.container,
+	() => [data.container, data.ports],
 	() => {
-    console.log("container 表单发生变化。。。",data.container)
-		emit('updateContainer', data.container);
+		console.log('container 表单发生变化。。。', data.container);
+		if (data.ports) {
+			data.container.ports = data.ports;
+		}
+
+		emit('updateContainer', props.index, data.container);
 	},
 	{
 		deep: true,
 		immediate: true,
 	}
 );
-
+watch(
+	() => data.env,
+	() => {
+		console.log('env 表单发生变化。。。', data.env);
+		if (data.env) {
+			buildEnv();
+		}
+		emit('updateContainer', props.index, data.container);
+	},
+	{
+		deep: true,
+		immediate: true,
+	}
+);
 const imagePullPolicy = [
 	{
 		name: '优先使用本地镜像(ifNotPresent)',
