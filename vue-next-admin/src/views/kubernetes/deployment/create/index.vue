@@ -18,7 +18,7 @@
 								<Meta ref="metaRef" :bindData="data.bindMetaData" @updateData="getMeta" />
 							</div>
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-								<Containers ref="containersRef" :containers="data.deployment.spec?.template.spec?.containers" @updateContainers="getContainers" />
+								<Containers  :containers="data.deployment.spec.template.spec.containers" @updateContainers="getContainers" />
 							</div>
 							<div style="margin-top: 10px" id="2" v-show="data.active === 2">
 								<h1>asdj</h1>
@@ -95,12 +95,11 @@ const data = reactive({
 });
 const extensions = [javascript(), oneDark];
 const getContainers= (containers:Array<V1Container>)=>{
-  console.log("deployment接受到container数据：",containers)
 	data.deployment.spec.template.spec.containers= containers
   data.code = yaml.dump(data.deployment);
 }
 const getMeta = (newData) => {
-	console.log('获取到的deployment数据:', newData, data, isObjectValueEqual(data.deployment.metadata, newData.meta));
+	// console.log('获取到的deployment数据:', newData, data, isObjectValueEqual(data.deployment.metadata, newData.meta));
 	// if (!isObjectValueEqual(data.deployment.metadata,newData.meta )  || data.deployment.spec!.replicas != newData.replicas) {
 	data.deployment.metadata = newData.meta;
 	data.deployment.spec!.replicas = newData.replicas;
@@ -151,6 +150,7 @@ watch(
 				console.log('code变化了，回填数据', newData, 'oldCPde:', oldValue);
 				data.bindMetaData.metadata = newData.metadata;
 				data.bindMetaData.replicas = newData.spec?.replicas!;
+				data.deployment.spec.template.spec.containers = newData.spec.template.spec.containers
 			}
 		}
 		// const code = yaml.dump(data.deployment);

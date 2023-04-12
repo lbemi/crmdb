@@ -1,3 +1,4 @@
+
 <template>
 	<div class="layout-pd">
 		<div>
@@ -8,11 +9,9 @@
 			<!--			</el-tabs>-->
 			<el-tabs v-model="editableTabsValue" type="card" editable class="demo-tabs" @edit="handleTabsEdit">
 				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :label="'容器' + (index + 1)" :name="index" :closable="index != 0">
-					<container :container="item" @updateContainer="getContainer" />
-<!--					{{ item }}-->
+					<container :container="item" :index="index" @updateContainer="getContainer" />
 				</el-tab-pane>
 			</el-tabs>
-<!--      <container  />-->
 		</div>
 	</div>
 </template>
@@ -25,10 +24,9 @@ import type { TabPaneName } from 'element-plus';
 
 const Container = defineAsyncComponent(() => import('./container.vue'));
 
-let tabIndex = 1;
 const editableTabsValue = ref(0);
 // const itemRefs = ref([]);
-// //动态设置ref
+// // //动态设置ref
 // const setItemRef = (el) => {
 // 	if (el) {
 // 		itemRefs.value.push(el);
@@ -44,14 +42,14 @@ const editableTabsValue = ref(0);
 
 const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 'add') => {
 	if (action === 'add') {
-		const newTabName = ++tabIndex;
+		const newTabName = data.containers.length;
 		// editableTabs.value.push({
 		// 	title: '容器' + newTabName,
 		// 	name: newTabName,
 		// 	closeAble: true,
 		// });
 		data.containers.push(data.container);
-		editableTabsValue.value = newTabName-1;
+		editableTabsValue.value = newTabName ;
 		console.log('当前活动页面：', editableTabsValue.value);
 	} else if (action === 'remove') {
 		console.log('我要删除第：', targetName);
@@ -82,7 +80,7 @@ const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 
 		}
 		tabs.forEach((tab, index) => {
 			console.log('我要删除：', index, targetName, activeName);
-			if (index  === targetName) {
+			if (index === targetName) {
 				console.log('我在删除：', index, targetName);
 				tabs.splice(index, 1);
 			}
@@ -120,7 +118,7 @@ const data = reactive({
 	} as V1Container,
 });
 
-const getContainer = (container: V1Container) => {
+const getContainer = (index:number,container: V1Container) => {
 	// console.log("********",itemRefs.value)
 	// data.containers=[]
 	// itemRefs.value.forEach((res,index) =>{
@@ -128,21 +126,24 @@ const getContainer = (container: V1Container) => {
 	// })
 	// return data.containers
 	// const index = parseInt(editableTabsValue.value);
-  // console.log("接受到容器的数据：",container)
-	data.containers[editableTabsValue] = container;
-  console.log("接受到容器的数据：",data.containers)
+	console.log('接受到容器container的数据：', container,"当前活动页面：",editableTabsValue.value,index);
+	if(index === editableTabsValue.value) {
+		data.containers[index] = container;
+		console.log('接受到容器的数据：', data.containers);
+	}
+
 };
 
 const props = defineProps({
-	containers: Array<V1Container>
+	containers: Array<V1Container>,
 });
 
 watch(
-	props.containers,
+		()=>props.containers,
 	() => {
-		// console.log('传递过来的containers：', props.containers);
+		console.log('传递过来的containers：', props.containers);
 		if (props.containers && props.containers.length != 0) {
-      console.log('传递过来的containers：', props.containers);
+			console.log('传递过来的containers：', props.containers);
 			data.containers = props.containers;
 		}
 	},
@@ -156,15 +157,18 @@ const emit = defineEmits(['updateContainers']);
 watch(
 	() => data.containers,
 	() => {
+		console.log('出发更新depliyment Containers，', data.containers);
 		emit('updateContainers', data.containers);
-	},{
-    deep:true,
-      immediate:true
-    }
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
 );
 // defineExpose({
 // 	getContainers,
 // });
+
 </script>
 
 <style scoped lang="scss">
