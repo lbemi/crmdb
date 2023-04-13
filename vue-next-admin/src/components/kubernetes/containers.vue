@@ -96,6 +96,8 @@ const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 
 const data = reactive({
 	containers: [
 		{
+      name: '',
+      imagePullPolicy: 'ifNotPresent',
 			securityContext: {
 				privileged: false,
 			} as V1SecurityContext,
@@ -104,9 +106,12 @@ const data = reactive({
 			startupProbe: {},
 			env: [] as V1EnvVar[],
 			ports: [] as V1ContainerPort,
+      resources: {}
 		} as V1Container,
 	] as V1Container[],
 	container: {
+    name: '',
+    imagePullPolicy: 'ifNotPresent',
 		securityContext: {
 			privileged: false,
 		} as V1SecurityContext,
@@ -115,6 +120,7 @@ const data = reactive({
 		startupProbe: {},
 		env: [] as V1EnvVar[],
 		ports: [] as V1ContainerPort,
+    resources: {}
 	} as V1Container,
 });
 

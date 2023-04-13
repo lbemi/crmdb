@@ -35,7 +35,8 @@ func main() {
 			newJS.Type = "customs"
 		}
 		newJS.Custom = make([]string, 0)
-		newJS.Width = "50"
+		newJS.Width = ""
+		newJS.Show = true
 		newJsons = append(newJsons, newJS)
 	}
 	//fmt.Println(newJsons)

@@ -18,4 +18,5 @@ type NewJS struct {
 	Width  string   `json:"width"`
 	Align  string   `json:"align"`
 	Order  string   `json:"order"`
+	Show   bool     `json:"show"`
 }
