@@ -26,14 +26,14 @@
 						<el-icon size="12px" color="#00bb00"><InfoFilled /></el-icon>建议根据实际使用情况设置，防止由于资源约束而无法调度或引发内存不足(OOM)错误
 					</div>
 				</el-form-item>
-				<el-form-item label="资源限制：">
+				<el-form-item label="资源限制：" v-if="data.container.resources">
 					<div style="height: 28px">
 						<span>CPU</span>
-						<el-input placeholder="如：0.5" v-model.number="data.require.cpu" size="small" style="width: 80px" />
+						<el-input placeholder="如：0.5" v-model.number="data.container.resources.limits.cpu" size="small" style="width: 80px" />
 						<span> Core</span>
 						<el-divider direction="vertical" />
 						<a>内存</a>
-						<el-input placeholder="如：0.5" v-model.number="data.require.memory" size="small" style="width: 80px" /><span> MiB</span>
+						<el-input placeholder="如：0.5" v-model.number="data.container.resources.limits.memory" size="small" style="width: 80px" /><span> MiB</span>
 					</div>
 				</el-form-item>
 				<el-form-item>
@@ -76,7 +76,7 @@
 							特权容器：
 						</el-tooltip>
 					</template>
-					<el-checkbox v-model="data.container.securityContext!.privileged" />
+					<el-checkbox v-model="data.container.securityContext.privileged" />
 				</el-form-item>
 			</el-card>
 			<el-card>
@@ -191,7 +191,7 @@
 					>
 				</el-form-item>
 				<el-form-item v-if="data.liveCheck && data.showLiveCheck">
-					<HealthCheck ref="livenessRef" />
+					<HealthCheck  :checkData="data.container.livenessProbe" @updateCheckData="getLivenessData"/>
 				</el-form-item>
 				<el-form-item label="就绪检查">
 					<template #label>
@@ -224,7 +224,7 @@
 					>
 				</el-form-item>
 				<el-form-item v-if="data.readyCheck && data.showReadyCheck">
-					<HealthCheck ref="readyRef" />
+					<HealthCheck   :checkData="data.container.readinessProbe" @updateCheckData="getReadinessData"/>
 				</el-form-item>
 				<el-form-item label="启动探测">
 					<template #label>
@@ -257,7 +257,7 @@
 					>
 				</el-form-item>
 				<el-form-item v-if="data.startCheck && data.showStartCheck">
-					<HealthCheck ref="startRef" />
+					<HealthCheck :checkData="data.container.startupProbe" @updateCheckData="getStartupData" />
 				</el-form-item>
 			</el-card>
 			<el-card>
@@ -271,14 +271,17 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, reactive, ref, toRefs, watch } from 'vue';
-import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
+import {
+  V1Container,
+  V1ContainerPort,
+  V1EnvVar,
+  V1ResourceRequirements,
+  V1SecurityContext
+} from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
-const readyRef = ref<InstanceType<typeof HealthCheck>>();
-const livenessRef = ref<InstanceType<typeof HealthCheck>>();
-const startRef = ref<InstanceType<typeof HealthCheck>>();
 
 interface envImp {
 	name: string;
@@ -286,81 +289,22 @@ interface envImp {
 	otherValue: string;
 	type: string;
 }
-
-// 格式化 env
-const getContainer = () => {
-	//先置空
-	data.container.env = [];
-	data.container.livenessProbe = {};
-	data.container.startupProbe = {};
-	data.container.readinessProbe = {};
-	data.container.ports = data.ports;
-
-	if (data.liveCheck) {
-		data.container.livenessProbe = livenessRef.value.getData();
-	}
-	if (data.startCheck) {
-		data.container.startupProbe = startRef.value.getData();
-	}
-	if (data.readyCheck) {
-		data.container.readinessProbe = readyRef.value.getData();
-	}
-	data.env.forEach((item, index) => {
-		if (item.type === 'custom') {
-			//自定义变量
-			const envVar: V1EnvVar = {
-				name: item.name,
-				value: item.value,
-			};
-			data.container.env![index] = envVar;
-		} else if (item.type === 'fieldRef') {
-			const envVar: V1EnvVar = {
-				name: item.name,
-				valueFrom: {
-					fieldRef: {
-						fieldPath: item.otherValue,
-					},
-				},
-			};
-			data.container.env![index] = envVar;
-		} else if (item.type === 'resourceFieldRef') {
-			const envVar: V1EnvVar = {
-				name: item.name,
-				valueFrom: {
-					resourceFieldRef: {
-						containerName: item.value,
-						resource: item.otherValue,
-					},
-				},
-			};
-			data.container.env![index] = envVar;
-		} else if (item.type === 'configMapKeyRef') {
-			const envVar: V1EnvVar = {
-				name: item.name,
-				valueFrom: {
-					configMapKeyRef: {
-						name: item.value,
-						key: item.otherValue,
-					},
-				},
-			};
-			data.container.env![index] = envVar;
-		} else if (item.type === 'secretKeyRef') {
-			const envVar: V1EnvVar = {
-				name: item.name,
-				valueFrom: {
-					secretKeyRef: {
-						name: item.value,
-						key: item.otherValue,
-					},
-				},
-			};
-			data.container.env![index] = envVar;
-		}
-	});
-
-	return data.container;
-};
+// 更新存活检查数据
+const getLivenessData = (liveData: {}) =>{
+  if(data.liveCheck) {
+    data.container.livenessProbe = liveData
+  }
+}
+const getReadinessData = (readData: {}) =>{
+  if(data.readyCheck) {
+    data.container.readinessProbe = readData
+  }
+}
+const getStartupData = (startData: {}) =>{
+  if(data.startCheck) {
+    data.container.startupProbe = startData
+  }
+}
 
 const buildEnv = () => {
 	const envData = [] as V1EnvVar[];
@@ -466,6 +410,8 @@ const data = reactive({
 	showStartCheck: true,
 	containers: [] as V1Container[],
 	container: {
+    name: '',
+    imagePullPolicy: 'ifNotPresent',
 		securityContext: {
 			privileged: false,
 		} as V1SecurityContext,
@@ -474,6 +420,16 @@ const data = reactive({
 		startupProbe: {},
 		env: [] as V1EnvVar[],
 		ports: [] as V1ContainerPort,
+    resources: {
+      limits: {
+        cpu: 0,
+        memory: 0
+      },
+      requests: {
+        cpu: 0,
+        memory: 0
+      }
+    } as V1ResourceRequirements
 	} as V1Container,
 	limit: {
 		cpu: 0,
@@ -507,7 +463,9 @@ watch(
 			data.container = props.container;
 			// if(!isObjectValueEqual(props.container.env,data.container.env)) {
 			console.log('Env发生变化了！！！！！！！！！！！');
-			parseEnv(props.container.env);
+      if(props.container.env && props.container.env.length !=0){
+        parseEnv(props.container.env);
+      }
 			// }
 			data.ports = props.container.ports;
 		}
@@ -518,12 +476,28 @@ watch(
 	}
 );
 watch(
-	() => [data.container, data.ports],
+	() => [data.container, data.ports,data.liveCheck,data.readyCheck,data.startCheck],
 	() => {
 		console.log('container 表单发生变化。。。', data.container);
-		if (data.ports) {
+		if (data.ports && data.ports.length !=0) {
 			data.container.ports = data.ports;
-		}
+		} else  {
+      delete data.container.ports
+    }
+
+    if(!data.container.securityContext) {
+      delete data.container.securityContext
+    }
+
+    if(!data.liveCheck) {
+      delete data.container.livenessProbe
+    }
+    if(!data.startCheck) {
+      delete data.container.startupProbe
+    }
+    if(!data.readyCheck) {
+      delete data.container.readinessProbe
+    }
 
 		emit('updateContainer', props.index, data.container);
 	},
@@ -536,9 +510,11 @@ watch(
 	() => data.env,
 	() => {
 		console.log('env 表单发生变化。。。', data.env);
-		if (data.env) {
+		if (data.env && data.env.length !=0) {
 			buildEnv();
-		}
+		} else {
+      delete data.container.env
+    }
 		emit('updateContainer', props.index, data.container);
 	},
 	{

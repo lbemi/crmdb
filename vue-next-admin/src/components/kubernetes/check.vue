@@ -1,81 +1,98 @@
 <template>
 	<div>
-		<el-tabs v-model="activeName" @tabClick="handleEdit">
-			<el-tab-pane label="Http模式" name="first">
-				<el-form :model="data.checkData.httpGet" label-width="120px">
+		<el-tabs v-model="activeName">
+			<el-tab-pane label="Http模式" name="httpGet">
+				<el-form :model="data.probe.httpGet" label-width="120px" v-if="data.probe.httpGet">
+					<el-form-item label="请求方式" prop="scheme">
+						<el-select v-model="data.probe.httpGet.scheme">
+							<el-option v-for="item in schemeType" :label="item.label" :key="item.label" :value="item.value" />
+						</el-select>
+					</el-form-item>
 					<el-form-item label="路径">
-						<el-input v-model="data.checkData.httpGet!.path" size="default" style="width: 200px" />
+						<el-input v-model="data.probe.httpGet.path" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="端口">
-						<el-input v-model="data.checkData.httpGet!.port" size="default" style="width: 200px" />
+						<el-input v-model.number="data.probe.httpGet.port" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="Http头">
-						<el-input v-model="data.checkData.httpGet!.httpHeaders![0].name" placeholder="key" size="default" style="width: 100px" />
-						<el-input
-							v-model="data.checkData.httpGet!.httpHeaders![0].value"
-							placeholder="value"
-							size="default"
-							style="width: 100px; margin-left: 5px"
-						/>
+						<el-button
+							:icon="CirclePlusFilled"
+							type="primary"
+							size="small"
+							text
+							style="padding-left: 0"
+							@click="data.probe.httpGet?.httpHeaders.push({ name: '', value: '' })"
+							>新增</el-button
+						>
 					</el-form-item>
+					<el-form-item :key="index" v-for="(item, index) in data.probe.httpGet?.httpHeaders">
+						<template #label> </template>
+						<el-input v-model="item.name" placeholder="key" size="small" style="width: 100px" />
+						<el-input v-model="item.value" placeholder="value" size="small" style="width: 100px; margin-left: 5px" />
+						<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.probe.httpGet?.httpHeaders.splice(index, 1)"></el-button>
+					</el-form-item>
+
 					<el-form-item label="延迟探测时间(s)">
-						<el-input-number v-model="data.checkData.initialDelaySeconds" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.initialDelaySeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="执行探测频率(s)">
-						<el-input-number v-model="data.checkData.periodSeconds" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.periodSeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="超时时间(s)">
-						<el-input-number v-model="data.checkData.timeoutSeconds" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.timeoutSeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="健康阀值(s)">
-						<el-input-number v-model="data.checkData.successThreshold" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.successThreshold" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="不健康阀值(s)">
-						<el-input-number v-model="data.checkData.failureThreshold" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.failureThreshold" size="default" style="width: 200px" />
 					</el-form-item>
 				</el-form>
 			</el-tab-pane>
-			<el-tab-pane label="TCP模式" name="second">
-				<el-form :model="data.checkData" label-width="120px">
+			<el-tab-pane label="TCP模式" name="tcpSocket">
+				<el-form :model="data.probe.tcpSocket" label-width="120px" v-if="data.probe.tcpSocket">
+					<el-form-item label="请求地址">
+						<el-input v-model="data.probe.tcpSocket.host" size="default" style="width: 200px" />
+					</el-form-item>
 					<el-form-item label="端口">
-						<el-input v-model="data.checkData.tcpSocket!.port" size="default" style="width: 200px" />
+						<el-input v-model="data.probe.tcpSocket.port" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="延迟探测时间(s)">
-						<el-input-number v-model="data.checkData.initialDelaySeconds" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.initialDelaySeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="执行探测频率(s)">
-						<el-input-number v-model="data.checkData.periodSeconds" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.periodSeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="超时时间(s)">
-						<el-input-number v-model="data.checkData.timeoutSeconds" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.timeoutSeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="健康阀值(s)">
-						<el-input-number v-model="data.checkData.successThreshold" size="default" style="width: 200px" disabled />
+						<el-input-number v-model="data.probe.successThreshold" size="default" style="width: 200px" disabled />
 					</el-form-item>
 					<el-form-item label="不健康阀值(s)">
-						<el-input-number v-model="data.checkData.failureThreshold" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.failureThreshold" size="default" style="width: 200px" />
 					</el-form-item>
 				</el-form>
 			</el-tab-pane>
-			<el-tab-pane label="Exec模式" name="third">
-				<el-form :model="data.checkData.exec" label-width="120px">
+			<el-tab-pane label="Exec模式" name="exec">
+				<el-form :model="data.probe.exec" label-width="120px" v-if="data.probe.exec">
 					<el-form-item label="命令">
-						<el-input v-model="data.checkData.exec!.command" size="default" style="width: 200px" />
+						<el-input v-model="data.probe.exec.command" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="延迟探测时间(s)">
-						<el-input-number v-model="data.checkData.initialDelaySeconds" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.initialDelaySeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="执行探测频率(s)">
-						<el-input-number v-model="data.checkData.periodSeconds" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.periodSeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="超时时间(s)">
-						<el-input-number v-model="data.checkData.timeoutSeconds" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.timeoutSeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="健康阀值(s)">
-						<el-input-number v-model="data.checkData.successThreshold" size="default" style="width: 200px" disabled />
+						<el-input-number v-model="data.probe.successThreshold" size="default" style="width: 200px" disabled />
 					</el-form-item>
 					<el-form-item label="不健康阀值(s)">
-						<el-input-number v-model="data.checkData.failureThreshold" size="default" style="width: 200px" />
+						<el-input-number v-model="data.probe.failureThreshold" size="default" style="width: 200px" />
 					</el-form-item>
 				</el-form>
 			</el-tab-pane>
@@ -84,21 +101,25 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { V1HTTPGetAction, V1Probe, V1TCPSocketAction } from '@kubernetes/client-node';
+import { reactive, ref, watch } from 'vue';
+import { V1ExecAction, V1GRPCAction, V1HTTPGetAction, V1HTTPHeader, V1Probe, V1TCPSocketAction } from '@kubernetes/client-node';
+import { isObjectValueEqual } from '/@/utils/arrayOperation';
+import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
+import {deepClone} from "/@/utils/other";
 
 const data = reactive({
-	checkData: {
+	probe: {
 		httpGet: {
-			httpHeaders: [
-				{
-					name: '',
-					value: '',
-				},
-			],
+			httpHeaders: [],
+			scheme: 'HTTP',
 		},
-		tcpSocket: {},
-		exec: {},
+		tcpSocket: {
+			host: '',
+			port: 0,
+		},
+		exec: {
+			command: '',
+		},
 		successThreshold: 1,
 		initialDelaySeconds: 3,
 		periodSeconds: 10,
@@ -106,55 +127,140 @@ const data = reactive({
 		failureThreshold: 3,
 	} as V1Probe,
 });
-const activeName = ref('first');
-const handleEdit = () => {
-	if (activeName.value === 'first') {
-		data.checkData.exec = {};
-		data.checkData.tcpSocket = {} as V1TCPSocketAction;
-		data.checkData.initialDelaySeconds = 3;
-		data.checkData.periodSeconds = 10;
-		data.checkData.timeoutSeconds = 1;
-		data.checkData.failureThreshold = 3;
-	} else if (activeName.value === 'second') {
-		data.checkData.exec = {};
-		data.checkData.httpGet = {
-			httpHeaders: [
-				{
-					name: '',
-					value: '',
-				},
-			],
-		} as V1HTTPGetAction;
-		data.checkData.initialDelaySeconds = 15;
-		data.checkData.periodSeconds = 10;
-		data.checkData.timeoutSeconds = 1;
-		data.checkData.failureThreshold = 3;
-	} else if (activeName.value === 'third') {
-		data.checkData.tcpSocket = {} as V1TCPSocketAction;
-		data.checkData.httpGet = {
-			httpHeaders: [
-				{
-					name: '',
-					value: '',
-				},
-			],
-		} as V1HTTPGetAction;
-		data.checkData.initialDelaySeconds = 5;
-		data.checkData.periodSeconds = 10;
-		data.checkData.timeoutSeconds = 1;
-		data.checkData.failureThreshold = 3;
-	}
-};
-const getData = () => {
-	if (activeName.value != 'first') {
-		data.checkData.httpGet = {} as V1TCPSocketAction;
-	}
-	return data.checkData;
-};
-defineExpose({
-	data,
-	getData,
+const activeName = ref('httpGet');
+// const handleEdit = () => {
+// 	switch (activeName.value) {
+// 		case 'httpGet': {
+// 			// delete data.probe.tcpSo
+// 			if (!data.probe.httpGet) {
+// 				data.probe.httpGet = {
+// 					scheme: 'HTTP',
+// 					httpHeaders: [],
+// 				} as V1HTTPGetAction;
+// 				data.probe.initialDelaySeconds = 3;
+// 				data.probe.periodSeconds = 10;
+// 				data.probe.timeoutSeconds = 1;
+// 				data.probe.failureThreshold = 3;
+// 			}
+//
+// 			break;
+// 		}
+// 		case 'tcpSocket': {
+//       console.log("&&&&&&&&&&&&&",data.probe)
+//       if(!data.probe.tcpSocket) {
+//         data.probe.tcpSocket = {
+//           host: '',
+//           port: 0,
+//         };
+//         data.probe.initialDelaySeconds = 15;
+//         data.probe.periodSeconds = 10;
+//         data.probe.timeoutSeconds = 1;
+//         data.probe.failureThreshold = 3;
+//       }
+//
+// 			break;
+// 		}
+// 		case 'exec': {
+//       if(!data.probe.exec) {
+//         data.probe.exec= {
+//           command: ""
+//         } as V1ExecAction;
+//         data.probe.initialDelaySeconds = 5;
+//         data.probe.periodSeconds = 10;
+//         data.probe.timeoutSeconds = 1;
+//         data.probe.failureThreshold = 3;
+//       }
+//
+// 			break;
+// 		}
+// 	}
+// };
+// const getData = () => {
+// 	if (activeName.value != 'httpGet') {
+// 		probe.httpGet = {} as V1HTTPGetAction;
+// 	}
+// 	return probe;
+// };
+const props = defineProps({
+	checkData: Object<V1Probe>,
 });
+
+watch(
+	() => props.checkData,
+	() => {
+		// 数据不同则更新
+		if (props.checkData && Object.keys(props.checkData).length != 0 && !isObjectValueEqual(props.checkData, data.probe)) {
+			console.log('$$$$$$$', props.checkData);
+      const dataCopy = deepClone(props.checkData)
+			if (dataCopy.httpGet && !isObjectValueEqual(dataCopy.httpGet,data.probe.httpGet)) {
+				data.probe.httpGet = dataCopy.httpGet;
+			} else if (dataCopy.tcpSocket &&!isObjectValueEqual(dataCopy.tcpSocket,data.probe.tcpSocket)) {
+				data.probe.tcpSocket = dataCopy.tcpSocket;
+			} else if (dataCopy.exec && !isObjectValueEqual(dataCopy.exec,data.probe.exec)) {
+				data.probe.exec = dataCopy.exec;
+			}
+      if(dataCopy.failureThreshold != data.probe.failureThreshold) {
+        data.probe.failureThreshold = dataCopy.failureThreshold
+      }
+      if(dataCopy.initialDelaySeconds != data.probe.initialDelaySeconds) {
+        data.probe.initialDelaySeconds = dataCopy.initialDelaySeconds
+      }
+      if(dataCopy.periodSeconds != data.probe.periodSeconds) {
+        data.probe.periodSeconds = dataCopy.periodSeconds
+      }
+      if(dataCopy.successThreshold != data.probe.successThreshold) {
+        data.probe.successThreshold = dataCopy.successThreshold
+      }
+      if(dataCopy.timeoutSeconds != data.probe.timeoutSeconds) {
+        data.probe.timeoutSeconds = dataCopy.timeoutSeconds
+      }
+		}
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
+const emit = defineEmits(['updateCheckData']);
+
+watch(
+	() => [data.probe, activeName],
+	() => {
+		const copyData = JSON.parse(JSON.stringify(data));
+		switch (activeName.value) {
+			case 'httpGet': {
+				delete copyData.probe.tcpSocket;
+				delete copyData.probe.exec;
+				break;
+			}
+			case 'tcpSocket': {
+				delete copyData.probe.httpGet;
+				delete copyData.probe.exec;
+				break;
+			}
+			case 'exec': {
+				delete copyData.probe.httpGet;
+				delete copyData.probe.tcpSocket;
+				break;
+			}
+		}
+		emit('updateCheckData', copyData.probe);
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
+const schemeType = [
+	{
+		label: 'HTTP',
+		value: 'HTTP',
+	},
+	{
+		label: 'HTTPS',
+		value: 'HTTPS',
+	},
+];
 </script>
 
 <style scoped></style>
