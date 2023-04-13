@@ -21,6 +21,7 @@ import { defineAsyncComponent, reactive, watch } from 'vue';
 import { ref } from 'vue-demi';
 import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
 import type { TabPaneName } from 'element-plus';
+import {isObjectValueEqual} from "/@/utils/arrayOperation";
 
 const Container = defineAsyncComponent(() => import('./container.vue'));
 
@@ -99,7 +100,7 @@ const data = reactive({
       name: '',
       imagePullPolicy: 'ifNotPresent',
 			securityContext: {
-				privileged: false,
+				// privileged: false,
 			} as V1SecurityContext,
 			livenessProbe: {},
 			readinessProbe: {},
@@ -113,7 +114,7 @@ const data = reactive({
     name: '',
     imagePullPolicy: 'ifNotPresent',
 		securityContext: {
-			privileged: false,
+			// privileged: false,
 		} as V1SecurityContext,
 		livenessProbe: {},
 		readinessProbe: {},
@@ -132,9 +133,17 @@ const getContainer = (index:number,container: V1Container) => {
 	// })
 	// return data.containers
 	// const index = parseInt(editableTabsValue.value);
-	console.log('接受到容器container的数据：', container,"当前活动页面：",editableTabsValue.value,index);
 	if(index === editableTabsValue.value) {
+		// if (isObjectValueEqual(container.resources?.limits,{cpu: '', memory: ''}) ) {
+		// 	console.log("删除了limits")
+		// 	delete container.resources?.limits
+		// }
+		// if (isObjectValueEqual(container.resources?.requests,{cpu: '', memory: ''}) ) {
+		// 	console.log("删除了limits")
+		// 	delete container.resources?.requests
+		// }
 		data.containers[index] = container;
+
 		console.log('接受到容器的数据：', data.containers);
 	}
 
@@ -147,9 +156,7 @@ const props = defineProps({
 watch(
 		()=>props.containers,
 	() => {
-		console.log('传递过来的containers：', props.containers);
 		if (props.containers && props.containers.length != 0) {
-			console.log('传递过来的containers：', props.containers);
 			data.containers = props.containers;
 		}
 	},
@@ -163,7 +170,6 @@ const emit = defineEmits(['updateContainers']);
 watch(
 	() => data.containers,
 	() => {
-		console.log('出发更新depliyment Containers，', data.containers);
 		emit('updateContainers', data.containers);
 	},
 	{
