@@ -22,6 +22,8 @@ export default {
 		k8sDeployment: 'Deployment',
 		k8sDeploymentDetail: '详情',
 		deploymentCreate: '创建deployment',
+		grafana: 'Grafana',
+		kibana: 'Kibana',
 		podShell:'pod日志',
 		k8sNode: 'Node',
 		k8sPod: 'Pod',
