@@ -61,8 +61,8 @@ import { ref } from 'vue-demi';
 import { CirclePlusFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 interface label {
-  key: string;
-  value: string;
+	key: string;
+	value: string;
 }
 const Label = defineAsyncComponent(() => import('/@/components/kubernetes/label.vue'));
 
@@ -70,7 +70,7 @@ const k8sStore = kubernetesInfo();
 const enableEdit = ref(false);
 // const tableData = ref([]);
 const data = reactive({
-	labelData: [{'app':''}] as  label[],
+	labelData: [{ app: '' }] as label[],
 	annotationsData: [],
 	replicas: 1,
 	resourceType: 'deployment',
@@ -79,7 +79,7 @@ const data = reactive({
 	} as V1ObjectMeta,
 });
 
-const handleLabel = (labels:any) => {
+const handleLabel = (labels: any) => {
 	const labelsTup = {};
 	for (const k in labels) {
 		// if (data.labels[k].key != '' && data.labels[k].value != '') {
@@ -90,9 +90,9 @@ const handleLabel = (labels:any) => {
 };
 
 const getLabels = (labels: any) => {
-		if (!isObjectValueEqual(data.meta.labels, labels)) {
-			data.meta.labels = labels;
-		}
+	if (!isObjectValueEqual(data.meta.labels, labels)) {
+		data.meta.labels = labels;
+	}
 };
 
 const getAnnotations = (labels: any) => {
@@ -102,7 +102,7 @@ const getAnnotations = (labels: any) => {
 };
 
 const handleLabels = (label: { [key: string]: string }) => {
-	const labels = JSON.parse(JSON.stringify(label))
+	const labels = JSON.parse(JSON.stringify(label));
 	const labelsTup = [];
 	for (let key in labels) {
 		const l = {
@@ -144,7 +144,7 @@ watch(
 		data.resourceType = props.bindData.resourceType;
 		data.meta = JSON.parse(JSON.stringify(props.bindData.metadata));
 		//处理labels标签
-		if(props.bindData.metadata.labels) {
+		if (props.bindData.metadata.labels) {
 			handleLabels(props.bindData.metadata.labels);
 		}
 		handAnnotations(props.bindData.metadata.annotations);
@@ -157,10 +157,8 @@ watch(
 watch(
 	() => [data.meta, data.replicas],
 	() => {
-
-		if(data.meta.name ) {
-			if(data.meta.labels)
-			data.meta.labels['app']= data.meta.name
+		if (data.meta.name) {
+			if (data.meta.labels) data.meta.labels['app'] = data.meta.name;
 		}
 
 		emit('updateData', data); //触发更新数据事件
