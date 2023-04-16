@@ -273,8 +273,72 @@
 				</el-form-item>
 			</el-card>
 			<el-card>
-				<el-form-item label="生命周期：">
-					<el-input v-model="data.container.image" size="default" style="width: 296px" />
+				<el-form-item label="生命周期配置" />
+				<el-form-item label="启动前：">
+					<template #label>
+						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start" raw-content>
+							启动前：
+						</el-tooltip>
+					</template>
+					<el-checkbox v-model="data.lifePostStartSet" label="开启" size="small" />
+					<el-button
+						v-if="data.lifeShow"
+						type="info"
+						v-show="data.lifePostStartSet"
+						text
+						:icon="CaretTop"
+						@click="data.lifeShow = !data.lifeShow"
+						size="small"
+						style="margin-left: 30px"
+						>隐藏</el-button
+					>
+					<el-button
+						v-else
+						type="info"
+						v-show="data.lifePostStartSet"
+						text
+						:icon="CaretBottom"
+						@click="data.lifeShow = !data.lifeShow"
+						size="small"
+						style="margin-left: 30px"
+						>展开</el-button
+					>
+				</el-form-item>
+				<el-form-item >
+					<LifeSet v-show="data.lifePostStartSet && data.lifeShow" :lifeData="data.container.lifecycle?.postStart" @updateLifeData="getPostStart" />
+				</el-form-item>
+				<el-form-item label="停止前：">
+					<template #label>
+						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start" raw-content>
+							停止前：
+						</el-tooltip>
+					</template>
+					<el-checkbox v-model="data.lifePreStopSet" label="开启" size="small" />
+					<el-button
+							v-if="data.lifePreShow"
+							type="info"
+							v-show="data.lifePreStopSet"
+							text
+							:icon="CaretTop"
+							@click="data.lifePreShow = !data.lifePreShow"
+							size="small"
+							style="margin-left: 30px"
+					>隐藏</el-button
+					>
+					<el-button
+							v-else
+							type="info"
+							v-show="data.lifePreStopSet"
+							text
+							:icon="CaretBottom"
+							@click="data.lifePreShow = !data.lifePreShow"
+							size="small"
+							style="margin-left: 30px"
+					>展开</el-button
+					>
+				</el-form-item>
+				<el-form-item >
+					<LifeSet v-show="data.lifePreStopSet && data.lifePreShow" :lifeData="data.container.lifecycle?.preStop" @updateLifeData="getPreStop" />
 				</el-form-item>
 			</el-card>
 		</el-form>
@@ -283,17 +347,93 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, reactive, ref, toRefs, watch } from 'vue';
-import { V1Container, V1ContainerPort, V1EnvVar, V1ResourceRequirements, V1SecurityContext } from '@kubernetes/client-node';
+import {
+	V1Container,
+	V1ContainerPort,
+	V1EnvVar,
+	V1Lifecycle,
+	V1ResourceRequirements,
+	V1SecurityContext
+} from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, Delete, Edit, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
+import {V1LifecycleHandler} from "@kubernetes/client-node/dist/gen/model/v1LifecycleHandler";
 
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
-
+const LifeSet = defineAsyncComponent(() => import('./life.vue'));
 interface envImp {
 	name: string;
 	value: string;
 	otherValue: string;
 	type: string;
+}
+
+const data = reactive({
+	lifePostStartSet: false,
+	lifePreStopSet: false,
+	lifePreShow: true,
+	lifeShow: true,
+	resourceHasSet: false,
+	liveCheck: false,
+	showLiveCheck: true,
+	readyCheck: false,
+	showReadyCheck: true,
+	startCheck: false,
+	showStartCheck: true,
+	resourceSet: false,
+	containers: [] as V1Container[],
+	container: {
+		name: '',
+		imagePullPolicy: 'ifNotPresent',
+		securityContext: {
+			privileged: false,
+		} as V1SecurityContext,
+		livenessProbe: {},
+		readinessProbe: {},
+		startupProbe: {},
+		env: [] as V1EnvVar[],
+		ports: [] as V1ContainerPort,
+		resources: {
+			limits: {
+				cpu: '',
+				memory: '',
+			},
+			requests: {
+				cpu: '',
+				memory: '',
+			},
+		},
+		// lifecycle: {
+		// 	postStart: {} as V1LifecycleHandler,
+		// 	preStop: {} as V1LifecycleHandler
+		// } as V1Lifecycle,
+	} as V1Container,
+	limit: {
+		cpu: '',
+		memory: 0,
+	},
+	require: {
+		cpu: 0.5,
+		memory: 500,
+	},
+
+	ports: [] as V1ContainerPort[],
+	env: [] as envImp[],
+});
+
+const getPostStart = (postStart: V1LifecycleHandler) => {
+	if(data.lifePostStartSet) {
+			data.container.lifecycle!.postStart = postStart
+	} else {
+		delete data.container.lifecycle?.postStart
+	}
+}
+const getPreStop = (preStop: V1LifecycleHandler) => {
+	if(data.lifePreStopSet) {
+		data.container.lifecycle!.preStop = preStop
+	} else {
+		delete data.container.lifecycle?.preStop
+	}
 }
 // 更新存活检查数据
 const getLivenessData = (liveData: {}) => {
@@ -426,51 +566,6 @@ const parseEnv = (envs: Array<V1EnvVar>) => {
 	console.log('解析从COde传递来的的ENV数据', envData);
 	data.env = envData;
 };
-const data = reactive({
-	resourceHasSet: false,
-	liveCheck: false,
-	showLiveCheck: true,
-	readyCheck: false,
-	showReadyCheck: true,
-	startCheck: false,
-	showStartCheck: true,
-	resourceSet: false,
-	containers: [] as V1Container[],
-	container: {
-		name: '',
-		imagePullPolicy: 'ifNotPresent',
-		securityContext: {
-			privileged: false,
-		} as V1SecurityContext,
-		livenessProbe: {},
-		readinessProbe: {},
-		startupProbe: {},
-		env: [] as V1EnvVar[],
-		ports: [] as V1ContainerPort,
-		resources: {
-			limits: {
-				cpu: '',
-				memory: '',
-			},
-			requests: {
-				cpu: '',
-				memory: '',
-			},
-		},
-	} as V1Container,
-	limit: {
-		cpu: '',
-		memory: 0,
-	},
-	require: {
-		cpu: 0.5,
-		memory: 500,
-	},
-
-	ports: [] as V1ContainerPort[],
-	env: [] as envImp[],
-});
-
 const props = defineProps({
 	container: Object<V1Container>,
 	index: Number,
@@ -483,6 +578,9 @@ watch(
 	() => {
 		if (props.container && !isObjectValueEqual(data.container, props.container)) {
 			data.container = props.container;
+			if(!data.container.lifecycle) {
+				data.container.lifecycle ={}
+			}
 			// if(!isObjectValueEqual(props.container.env,data.container.env)) {
 			if (props.container.env && props.container.env.length != 0) {
 				parseEnv(props.container.env);
@@ -511,7 +609,7 @@ watch(
 	}
 );
 watch(
-	() => [data.container, data.ports, data.liveCheck, data.readyCheck, data.startCheck, data.resourceSet],
+	() => [data.container, data.ports, data.liveCheck, data.readyCheck, data.startCheck, data.resourceSet, data.lifePostStartSet],
 	() => {
 		// if(data.container.resources?.requests){
 		// 	data.container.resources?.requests?.limits?.memory +='Mi'
@@ -527,6 +625,12 @@ watch(
 			delete data.container.securityContext;
 		}
 
+		if (!data.lifePostStartSet) {
+			delete data.container.lifecycle?.postStart;
+		}
+		if (!data.lifePreStopSet) {
+			delete data.container.lifecycle?.preStop;
+		}
 		if (!data.liveCheck) {
 			delete data.container.livenessProbe;
 		}
@@ -548,6 +652,8 @@ watch(
 				},
 			};
 			data.resourceHasSet = true;
+		} else {
+			delete  data.container.resources
 		}
 
 		emit('updateContainer', props.index, data.container);

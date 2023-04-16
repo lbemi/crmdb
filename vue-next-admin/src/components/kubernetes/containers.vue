@@ -126,25 +126,8 @@ const data = reactive({
 });
 
 const getContainer = (index:number,container: V1Container) => {
-	// console.log("********",itemRefs.value)
-	// data.containers=[]
-	// itemRefs.value.forEach((res,index) =>{
-	// 	data.containers[index] = res.getContainer()
-	// })
-	// return data.containers
-	// const index = parseInt(editableTabsValue.value);
 	if(index === editableTabsValue.value) {
-		// if (isObjectValueEqual(container.resources?.limits,{cpu: '', memory: ''}) ) {
-		// 	console.log("删除了limits")
-		// 	delete container.resources?.limits
-		// }
-		// if (isObjectValueEqual(container.resources?.requests,{cpu: '', memory: ''}) ) {
-		// 	console.log("删除了limits")
-		// 	delete container.resources?.requests
-		// }
 		data.containers[index] = container;
-
-		console.log('接受到容器的数据：', data.containers);
 	}
 
 };
@@ -177,9 +160,6 @@ watch(
 		deep: true,
 	}
 );
-// defineExpose({
-// 	getContainers,
-// });
 
 </script>
 
