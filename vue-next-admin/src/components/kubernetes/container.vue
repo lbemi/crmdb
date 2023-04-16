@@ -17,9 +17,7 @@
 					<el-button :icon="Edit" type="primary" size="small" text style="padding-left: 0" v-if="!data.resourceSet" @click="setResource"
 						>配置</el-button
 					>
-					<el-button :icon="Delete" type="primary" size="small" text v-else style="padding-left: 0" @click="cancelResource"
-						>取消配置</el-button
-					>
+					<el-button :icon="Delete" type="primary" size="small" text v-else style="padding-left: 0" @click="cancelResource">取消配置</el-button>
 				</el-form-item>
 				<el-form-item v-if="data.container.resources?.requests && data.resourceSet">
 					<div style="height: 28px">
@@ -304,7 +302,7 @@
 						>展开</el-button
 					>
 				</el-form-item>
-				<el-form-item >
+				<el-form-item>
 					<LifeSet v-show="data.lifePostStartSet && data.lifeShow" :lifeData="data.container.lifecycle?.postStart" @updateLifeData="getPostStart" />
 				</el-form-item>
 				<el-form-item label="停止前：">
@@ -315,29 +313,29 @@
 					</template>
 					<el-checkbox v-model="data.lifePreStopSet" label="开启" size="small" />
 					<el-button
-							v-if="data.lifePreShow"
-							type="info"
-							v-show="data.lifePreStopSet"
-							text
-							:icon="CaretTop"
-							@click="data.lifePreShow = !data.lifePreShow"
-							size="small"
-							style="margin-left: 30px"
-					>隐藏</el-button
+						v-if="data.lifePreShow"
+						type="info"
+						v-show="data.lifePreStopSet"
+						text
+						:icon="CaretTop"
+						@click="data.lifePreShow = !data.lifePreShow"
+						size="small"
+						style="margin-left: 30px"
+						>隐藏</el-button
 					>
 					<el-button
-							v-else
-							type="info"
-							v-show="data.lifePreStopSet"
-							text
-							:icon="CaretBottom"
-							@click="data.lifePreShow = !data.lifePreShow"
-							size="small"
-							style="margin-left: 30px"
-					>展开</el-button
+						v-else
+						type="info"
+						v-show="data.lifePreStopSet"
+						text
+						:icon="CaretBottom"
+						@click="data.lifePreShow = !data.lifePreShow"
+						size="small"
+						style="margin-left: 30px"
+						>展开</el-button
 					>
 				</el-form-item>
-				<el-form-item >
+				<el-form-item>
 					<LifeSet v-show="data.lifePreStopSet && data.lifePreShow" :lifeData="data.container.lifecycle?.preStop" @updateLifeData="getPreStop" />
 				</el-form-item>
 			</el-card>
@@ -346,16 +344,11 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, reactive,  watch } from 'vue';
-import {
-	V1Container,
-	V1ContainerPort,
-	V1EnvVar,
-	V1SecurityContext
-} from '@kubernetes/client-node';
+import { defineAsyncComponent, reactive, watch } from 'vue';
+import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, Delete, Edit, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
-import {V1LifecycleHandler} from "@kubernetes/client-node/dist/gen/model/v1LifecycleHandler";
+import { V1LifecycleHandler } from '@kubernetes/client-node/dist/gen/model/v1LifecycleHandler';
 
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
 const LifeSet = defineAsyncComponent(() => import('./life.vue'));
@@ -417,19 +410,19 @@ const data = reactive({
 });
 
 const getPostStart = (postStart: V1LifecycleHandler) => {
-	if(data.lifePostStartSet) {
-			data.container.lifecycle!.postStart = postStart
+	if (data.lifePostStartSet) {
+		data.container.lifecycle!.postStart = postStart;
 	} else {
-		delete data.container.lifecycle?.postStart
+		delete data.container.lifecycle?.postStart;
 	}
-}
+};
 const getPreStop = (preStop: V1LifecycleHandler) => {
-	if(data.lifePreStopSet) {
-		data.container.lifecycle!.preStop = preStop
+	if (data.lifePreStopSet) {
+		data.container.lifecycle!.preStop = preStop;
 	} else {
-		delete data.container.lifecycle?.preStop
+		delete data.container.lifecycle?.preStop;
 	}
-}
+};
 // 更新存活检查数据
 const getLivenessData = (liveData: {}) => {
 	if (data.liveCheck) {
@@ -573,29 +566,15 @@ watch(
 	() => {
 		if (props.container && !isObjectValueEqual(data.container, props.container)) {
 			data.container = props.container;
-			if(!data.container.lifecycle) {
-				data.container.lifecycle ={}
+			if (!data.container.lifecycle) {
+				data.container.lifecycle = {};
 			}
-			// if(!isObjectValueEqual(props.container.env,data.container.env)) {
+
 			if (props.container.env && props.container.env.length != 0) {
 				parseEnv(props.container.env);
 			}
 			// }
 			data.ports = props.container.ports;
-			console.log('props-container: ', props.container.resources);
-			// if (isObjectValueEqual(data.container.resources, {})) {
-			// 	console.log('props-c重新初始化。。。。: ', props.container.resources);
-			// 	data.container.resources = {
-			// 		limits: {
-			// 			cpu: '',
-			// 			memory: '',
-			// 		},
-			// 		requests: {
-			// 			cpu: '',
-			// 			memory: '',
-			// 		},
-			// 	};
-			// }
 		}
 	},
 	{
@@ -606,9 +585,6 @@ watch(
 watch(
 	() => [data.container, data.ports, data.liveCheck, data.readyCheck, data.startCheck, data.resourceSet, data.lifePostStartSet],
 	() => {
-		// if(data.container.resources?.requests){
-		// 	data.container.resources?.requests?.limits?.memory +='Mi'
-		// }
 		console.log('container 表单发生变化。。。', data.container);
 		if (data.ports && data.ports.length != 0) {
 			data.container.ports = data.ports;
