@@ -8,13 +8,13 @@
 					style="max-width: 180px"
 					class="m-2"
 					placeholder="Select"
-					size="default"
+					size="small"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
 				</el-select>
-				<el-button type="primary" size="default" class="ml10" @click="createDeployment">创建Deployment</el-button>
-				<el-button type="danger" size="default" class="ml10" :disabled="data.selectData.length == 0" @click="deleteDeployments(data.selectData)"
+				<el-button type="primary" size="small" class="ml10" @click="createDeployment">创建</el-button>
+				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" @click="deleteDeployments(data.selectData)"
 					>批量删除</el-button
 				>
 			</div>

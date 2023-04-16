@@ -17,7 +17,7 @@
 					<el-button :icon="Edit" type="primary" size="small" text style="padding-left: 0" v-if="!data.resourceSet" @click="setResource"
 						>配置</el-button
 					>
-					<el-button :icon="Delete" type="primary" size="small" text v-else-if="data.resourceSet" style="padding-left: 0" @click="cancelResource"
+					<el-button :icon="Delete" type="primary" size="small" text v-else style="padding-left: 0" @click="cancelResource"
 						>取消配置</el-button
 					>
 				</el-form-item>
@@ -346,13 +346,11 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, reactive, ref, toRefs, watch } from 'vue';
+import { defineAsyncComponent, reactive,  watch } from 'vue';
 import {
 	V1Container,
 	V1ContainerPort,
 	V1EnvVar,
-	V1Lifecycle,
-	V1ResourceRequirements,
 	V1SecurityContext
 } from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, Delete, Edit, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
@@ -388,6 +386,7 @@ const data = reactive({
 		securityContext: {
 			privileged: false,
 		} as V1SecurityContext,
+
 		livenessProbe: {},
 		readinessProbe: {},
 		startupProbe: {},
@@ -403,10 +402,6 @@ const data = reactive({
 				memory: '',
 			},
 		},
-		// lifecycle: {
-		// 	postStart: {} as V1LifecycleHandler,
-		// 	preStop: {} as V1LifecycleHandler
-		// } as V1Lifecycle,
 	} as V1Container,
 	limit: {
 		cpu: '',
@@ -652,8 +647,6 @@ watch(
 				},
 			};
 			data.resourceHasSet = true;
-		} else {
-			delete  data.container.resources
 		}
 
 		emit('updateContainer', props.index, data.container);
@@ -681,7 +674,7 @@ watch(
 const imagePullPolicy = [
 	{
 		name: '优先使用本地镜像(ifNotPresent)',
-		value: 'ifNotPresent',
+		value: 'IfNotPresent',
 	},
 	{
 		name: '总是拉取镜像(Always)',
@@ -717,11 +710,11 @@ const envType = [
 const protocolType = [
 	{
 		type: 'tcp',
-		value: 'tcp',
+		value: 'TCP',
 	},
 	{
 		type: 'udp',
-		value: 'udp',
+		value: 'UDP',
 	},
 ];
 </script>

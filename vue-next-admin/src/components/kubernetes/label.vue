@@ -17,6 +17,7 @@
 <script setup lang="ts">
 import { RemoveFilled } from '@element-plus/icons-vue';
 import { reactive, watch } from 'vue';
+import {isObjectValueEqual} from "/@/utils/arrayOperation";
 
 interface label {
 	key: string;
@@ -61,11 +62,10 @@ watch(
 watch(
 	() => data.labels,
 	() => {
-		// const labels = handleLabels();
-    // if(!isObjectValueEqual(labels,{'':''})) {
-    //   emit('updateLabels', labels);
-    // }
-		emit('updateLabels', data.labels);
+		const labels = handleLabels();
+    if(!isObjectValueEqual(labels,{'':''})) {
+      emit('updateLabels', labels);
+    }
 	},
 	{
 		immediate: true,
