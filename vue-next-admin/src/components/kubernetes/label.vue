@@ -1,28 +1,31 @@
 <template>
-	<el-form :key="portIndex" v-for="(item, portIndex) in data.labels" style="display: flex">
-		<el-form-item label="key">
-			<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
-		</el-form-item>
-		<el-form-item label="value" style="margin-left: 10px">
-			<el-input placeholder="value" v-model="item.value" size="small" />
-		</el-form-item>
-		<el-form-item>
-			<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.labels.splice(portIndex, 1)"></el-button>
-		</el-form-item>
-	</el-form>
+		<el-form :key="portIndex" v-for="(item, portIndex) in data.labels"  >
+			<div v-if="item.key !== 'app'" style="display: flex">
+				<el-form-item label="key" >
+					<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
+				</el-form-item>
+				<el-form-item label="value" style="margin-left: 10px" >
+					<el-input placeholder="value" v-model="item.value" size="small" />
+				</el-form-item>
+				<el-form-item>
+					<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.labels.splice(portIndex, 1)"></el-button>
+				</el-form-item>
+			</div>
+		</el-form>
 </template>
 
 <script setup lang="ts">
 import { RemoveFilled } from '@element-plus/icons-vue';
 import { reactive, watch } from 'vue';
-import {isObjectValueEqual} from "/@/utils/arrayOperation";
 
 interface label {
 	key: string;
 	value: string;
 }
 const data = reactive({
-	labels: [] as label[],
+	labels: [
+
+	] as label[],
 });
 const props = defineProps({
 	labelData: Array,
@@ -45,7 +48,7 @@ watch(
 	() => props.labelData,
 	() => {
 		if ( props.labelData) {
-			data.labels = props.labelData;
+			data.labels = JSON.parse(JSON.stringify(props.labelData));
 		}
 	},
 	{
@@ -58,10 +61,11 @@ watch(
 watch(
 	() => data.labels,
 	() => {
-		const labels = handleLabels();
-    if(!isObjectValueEqual(labels,{})) {
-      emit('updateLabels', labels);
-    }
+		// const labels = handleLabels();
+    // if(!isObjectValueEqual(labels,{'':''})) {
+    //   emit('updateLabels', labels);
+    // }
+		emit('updateLabels', data.labels);
 	},
 	{
 		immediate: true,

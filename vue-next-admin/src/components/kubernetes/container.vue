@@ -191,7 +191,7 @@
 						>隐藏</el-button
 					>
 					<el-button
-						v-else="data.showLiveCheck"
+						v-else
 						type="info"
 						v-show="data.liveCheck"
 						text
@@ -202,7 +202,7 @@
 						>展开</el-button
 					>
 				</el-form-item>
-				<el-form-item v-if="data.liveCheck && data.showLiveCheck">
+				<el-form-item v-show="data.liveCheck && data.showLiveCheck">
 					<HealthCheck :checkData="data.container.livenessProbe" @updateCheckData="getLivenessData" />
 				</el-form-item>
 				<el-form-item label="就绪检查">
@@ -235,7 +235,7 @@
 						>展开</el-button
 					>
 				</el-form-item>
-				<el-form-item v-if="data.readyCheck && data.showReadyCheck">
+				<el-form-item v-show="data.readyCheck && data.showReadyCheck">
 					<HealthCheck :checkData="data.container.readinessProbe" @updateCheckData="getReadinessData" />
 				</el-form-item>
 				<el-form-item label="启动探测">
@@ -268,7 +268,7 @@
 						>展开</el-button
 					>
 				</el-form-item>
-				<el-form-item v-if="data.startCheck && data.showStartCheck">
+				<el-form-item v-show="data.startCheck && data.showStartCheck">
 					<HealthCheck :checkData="data.container.startupProbe" @updateCheckData="getStartupData" />
 				</el-form-item>
 			</el-card>
