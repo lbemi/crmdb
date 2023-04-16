@@ -89,14 +89,10 @@ const handleLabel = (labels:any) => {
 	return labelsTup;
 };
 
-const getLabels = (labelData: any) => {
-	const labels = handleLabel(labelData);
-	if(!isObjectValueEqual(labels,{'':''})) {
+const getLabels = (labels: any) => {
 		if (!isObjectValueEqual(data.meta.labels, labels)) {
 			data.meta.labels = labels;
 		}
-	}
-
 };
 
 const getAnnotations = (labels: any) => {

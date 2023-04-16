@@ -59,7 +59,15 @@ import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
 import {V1Container, V1Deployment, V1DeploymentSpec, V1LabelSelector} from '@kubernetes/client-node';
 import yaml from 'js-yaml';
-
+import {useDeploymentApi} from "/@/api/kubernetes/deployment";
+import {kubernetesInfo} from "/@/stores/kubernetes";
+import {ElMessage} from "element-plus";
+import router from "/@/router";
+import {isObjectValueEqual} from "/@/utils/arrayOperation";
+import {useRoute} from "vue-router";
+import mittBus from '/@/utils/mitt';
+const kubeInfo = kubernetesInfo();
+const deployApi = useDeploymentApi();
 
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
@@ -75,9 +83,14 @@ const data = reactive({
 			namespace: 'default',
 		},
 		spec: {
-			selector: {},
+			selector: {
+				matchLabels: {}
+			},
 			replicas: 1,
 			template: {
+				metadata: {
+					labels: {}
+				},
 				spec: {
 					containers: [],
 				},
@@ -104,8 +117,10 @@ const getMeta = (newData) => {
 	// console.log('获取到的deployment数据:', newData, data, isObjectValueEqual(data.deployment.metadata, newData.meta));
 	// if (!isObjectValueEqual(data.deployment.metadata,newData.meta )  || data.deployment.spec!.replicas != newData.replicas) {
 	const dep = JSON.parse(JSON.stringify(newData))
+	const metaLables = JSON.parse(JSON.stringify(newData))
 	data.deployment.metadata = newData.meta;
-	data.deployment.spec.selector = dep.meta.labels;
+	data.deployment.spec.selector.matchLabels = dep.meta.labels;
+	data.deployment.spec.template.metadata.labels =metaLables.meta.labels;
 	data.deployment.spec!.replicas = newData.replicas;
 	data.code = yaml.dump(data.deployment);
 	// }
@@ -120,8 +135,24 @@ const next = () => {
 	// data.code = yaml.dump(data.deployment);
 	if (data.active++ > 2) data.active = 0;
 };
+
+// 定义变量内容
+const route = useRoute();
+
+
 const confirm = () => {
-	data.code = yaml.dump(data.deployment);
+	// data.code = yaml.dump(data.deployment);
+	deployApi.createDeployment({'cloud': kubeInfo.state.activeCluster},data.deployment).then(()=>{
+		router.push({
+			name: 'k8sDeployment'
+		})
+		mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));
+
+		ElMessage.success("创建成功")
+	}).catch((e)=>{
+		ElMessage.error(e.message)
+	})
+
 };
 
 watch(
@@ -144,9 +175,7 @@ watch(
 		deep: true,
 	}
 );
-onMounted(() => {
-	// data.code = yaml.dump(data.deployment);
-});
+
 </script>
 
 <style scoped lang="scss">

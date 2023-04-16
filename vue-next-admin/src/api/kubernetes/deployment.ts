@@ -9,6 +9,14 @@ export function useDeploymentApi() {
 				params: param,
 			});
 		},
+		createDeployment: (param: any, data: any) => {
+			return request({
+				url: '/deployment',
+				method: 'post',
+				params: param,
+				data: data
+			});
+		},
 		updateLabel: (param: any, data: any) => {
 			return request({
 				url: '/node',

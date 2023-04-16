@@ -98,7 +98,7 @@ const data = reactive({
 	containers: [
 		{
       name: '',
-      imagePullPolicy: 'ifNotPresent',
+      imagePullPolicy: 'IfNotPresent',
 			securityContext: {
 				// privileged: false,
 			} as V1SecurityContext,
@@ -112,7 +112,7 @@ const data = reactive({
 	] as V1Container[],
 	container: {
     name: '',
-    imagePullPolicy: 'ifNotPresent',
+    imagePullPolicy: 'IfNotPresent',
 		securityContext: {
 			// privileged: false,
 		} as V1SecurityContext,
