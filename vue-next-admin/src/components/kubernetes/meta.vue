@@ -70,7 +70,7 @@ const k8sStore = kubernetesInfo();
 const enableEdit = ref(false);
 // const tableData = ref([]);
 const data = reactive({
-	labelData: [] as  label[],
+	labelData: [{'app':''}] as  label[],
 	annotationsData: [],
 	replicas: 1,
 	resourceType: 'deployment',
@@ -79,10 +79,24 @@ const data = reactive({
 	} as V1ObjectMeta,
 });
 
-const getLabels = (labels: any) => {
-	if (!isObjectValueEqual(data.meta.labels, labels)) {
-		data.meta.labels = labels;
+const handleLabel = (labels:any) => {
+	const labelsTup = {};
+	for (const k in labels) {
+		// if (data.labels[k].key != '' && data.labels[k].value != '') {
+		labelsTup[labels[k].key] = labels[k].value;
+		// }
 	}
+	return labelsTup;
+};
+
+const getLabels = (labelData: any) => {
+	const labels = handleLabel(labelData);
+	if(!isObjectValueEqual(labels,{'':''})) {
+		if (!isObjectValueEqual(data.meta.labels, labels)) {
+			data.meta.labels = labels;
+		}
+	}
+
 };
 
 const getAnnotations = (labels: any) => {
@@ -91,7 +105,8 @@ const getAnnotations = (labels: any) => {
 	}
 };
 
-const handleLabels = (labels: { [key: string]: string }) => {
+const handleLabels = (label: { [key: string]: string }) => {
+	const labels = JSON.parse(JSON.stringify(label))
 	const labelsTup = [];
 	for (let key in labels) {
 		const l = {
@@ -131,9 +146,11 @@ watch(
 	() => props.bindData,
 	() => {
 		data.resourceType = props.bindData.resourceType;
-		data.meta = props.bindData.metadata;
+		data.meta = JSON.parse(JSON.stringify(props.bindData.metadata));
 		//处理labels标签
-		handleLabels(props.bindData.metadata.labels);
+		if(props.bindData.metadata.labels) {
+			handleLabels(props.bindData.metadata.labels);
+		}
 		handAnnotations(props.bindData.metadata.annotations);
 		data.replicas = props.bindData.replicas;
 		enableEdit.value = true;
@@ -144,8 +161,15 @@ watch(
 watch(
 	() => [data.meta, data.replicas],
 	() => {
+
+		if(data.meta.name ) {
+			if(data.meta.labels)
+			data.meta.labels['app']= data.meta.name
+		}
+
 		emit('updateData', data); //触发更新数据事件
 	},
+
 	{ immediate: true, deep: true }
 );
 const types = [

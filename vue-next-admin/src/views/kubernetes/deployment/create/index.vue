@@ -18,7 +18,7 @@
 								<Meta ref="metaRef" :bindData="data.bindMetaData" @updateData="getMeta" />
 							</div>
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-								<Containers  :containers="data.deployment.spec.template.spec.containers" @updateContainers="getContainers" />
+								<Containers :containers="data.deployment.spec.template.spec.containers" @updateContainers="getContainers" />
 							</div>
 							<div style="margin-top: 10px" id="2" v-show="data.active === 2">
 								<h1>asdj</h1>
@@ -57,14 +57,13 @@ import { ref } from 'vue-demi';
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
-import {V1Container, V1Deployment, V1DeploymentSpec} from '@kubernetes/client-node';
+import {V1Container, V1Deployment, V1DeploymentSpec, V1LabelSelector} from '@kubernetes/client-node';
 import yaml from 'js-yaml';
-import { isObjectValueEqual } from '/@/utils/arrayOperation';
+
 
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
 const metaRef = ref<InstanceType<typeof Meta>>();
-const containersRef = ref<InstanceType<typeof Containers>>();
 // 格式化 env
 const data = reactive({
 	active: 1,
@@ -72,9 +71,11 @@ const data = reactive({
 		apiVersion: 'apps/v1',
 		kind: 'Deployment',
 		metadata: {
+			name: '',
 			namespace: 'default',
 		},
 		spec: {
+			selector: {},
 			replicas: 1,
 			template: {
 				spec: {
@@ -88,20 +89,23 @@ const data = reactive({
 	bindMetaData: {
 		metadata: {
 			namespace: 'default',
+			labels:[{'app': ''}],
 		} as V1DeploymentSpec,
 		replicas: 1,
 		resourceType: 'deployment',
 	},
 });
 const extensions = [javascript(), oneDark];
-const getContainers= (containers:Array<V1Container>)=>{
-	data.deployment.spec.template.spec.containers= containers
-  data.code = yaml.dump(data.deployment);
-}
+const getContainers = (containers: Array<V1Container>) => {
+	data.deployment.spec.template.spec.containers = containers;
+	data.code = yaml.dump(data.deployment);
+};
 const getMeta = (newData) => {
 	// console.log('获取到的deployment数据:', newData, data, isObjectValueEqual(data.deployment.metadata, newData.meta));
 	// if (!isObjectValueEqual(data.deployment.metadata,newData.meta )  || data.deployment.spec!.replicas != newData.replicas) {
+	const dep = JSON.parse(JSON.stringify(newData))
 	data.deployment.metadata = newData.meta;
+	data.deployment.spec.selector = dep.meta.labels;
 	data.deployment.spec!.replicas = newData.replicas;
 	data.code = yaml.dump(data.deployment);
 	// }
@@ -117,29 +121,9 @@ const next = () => {
 	if (data.active++ > 2) data.active = 0;
 };
 const confirm = () => {
-	// data.deployment.metadata = metaRef.value.data.meta;
-	// data.deployment.spec!.template.spec!.containers = containersRef.value.getContainers();
-	// data.deployment.spec!.replicas = metaRef.value.data.replicas;
-	// console.log('获取到的deployment数据：', data.deployment);
 	data.code = yaml.dump(data.deployment);
 };
-// 监控deployment表单，如果发生改变，则重新渲染code编辑器
-// watch(
-//     () => data.deployment,
-//     (value,oldValue) => {
-//       console.log("deployment 新老数据：",value, "老的:",oldValue, "原始数据：",data.deployment)
-//
-//       if(value != oldValue) {
-//         console.log("重新渲染code编辑器：")
-//         data.code = yaml.dump(data.deployment);
-//       }
-//     },
-//     {
-//       immediate: true,
-//       deep: true,
-//     }
-// );
-// 监控code编辑器，如果发生改变，回填数据到表单中
+
 watch(
 	() => data.code,
 	(newValue, oldValue) => {
@@ -150,17 +134,10 @@ watch(
 				console.log('code变化了，回填数据', newData, 'oldCPde:', oldValue);
 				data.bindMetaData.metadata = newData.metadata;
 				data.bindMetaData.replicas = newData.spec?.replicas!;
-				data.deployment.spec.template.spec.containers = newData.spec.template.spec.containers
+				data.deployment.spec.template.spec.containers = newData.spec.template.spec.containers;
 			}
 		}
-		// const code = yaml.dump(data.deployment);
-		// if (newValue === code) {
-		// 	return;
-		// }
-		// const newData = yaml.load(newValue);
-		// console.log('监测code变化了', newData);
-		// data.bindMetaData.metadata = newData.metadata;
-		// data.bindMetaData.replicas = newData.spec.replicas;
+
 	},
 	{
 		immediate: true,

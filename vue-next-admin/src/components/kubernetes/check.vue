@@ -2,7 +2,7 @@
 	<div>
 		<el-tabs v-model="activeName">
 			<el-tab-pane label="Http模式" name="httpGet">
-				<el-form :model="data.probe.httpGet" label-width="120px" v-if="data.probe.httpGet">
+				<el-form :model="data.probe.httpGet" label-width="120px" v-show="data.probe.httpGet">
 					<el-form-item label="请求方式" prop="scheme">
 						<el-select v-model="data.probe.httpGet.scheme">
 							<el-option v-for="item in schemeType" :label="item.label" :key="item.label" :value="item.value" />
@@ -21,7 +21,7 @@
 							size="small"
 							text
 							style="padding-left: 0"
-							@click="data.probe.httpGet?.httpHeaders.push({ name: '', value: '' })"
+							@click="data.probe.httpGet.httpHeaders?.push({ name: '', value: '' })"
 							>新增</el-button
 						>
 					</el-form-item>
@@ -50,9 +50,9 @@
 				</el-form>
 			</el-tab-pane>
 			<el-tab-pane label="TCP模式" name="tcpSocket">
-				<el-form :model="data.probe.tcpSocket" label-width="120px" v-if="data.probe.tcpSocket">
+				<el-form :model="data.probe.tcpSocket" label-width="120px" v-show="data.probe.tcpSocket">
 					<el-form-item label="请求地址">
-						<el-input v-model="data.probe.tcpSocket.host" size="default" style="width: 200px" />
+						<el-input v-model="data.probe.tcpSocket.host" placeholder="一般不填写，默认为空" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="端口">
 						<el-input v-model="data.probe.tcpSocket.port" size="default" style="width: 200px" />
@@ -75,7 +75,7 @@
 				</el-form>
 			</el-tab-pane>
 			<el-tab-pane label="Exec模式" name="exec">
-				<el-form :model="data.probe.exec" label-width="120px" v-if="data.probe.exec">
+				<el-form :model="data.probe.exec" label-width="120px" v-show="data.probe.exec">
 					<el-form-item label="命令">
 						<el-input v-model="data.probe.exec.command" size="default" style="width: 200px" />
 					</el-form-item>
@@ -128,59 +128,6 @@ const data = reactive({
 	} as V1Probe,
 });
 const activeName = ref('httpGet');
-// const handleEdit = () => {
-// 	switch (activeName.value) {
-// 		case 'httpGet': {
-// 			// delete data.probe.tcpSo
-// 			if (!data.probe.httpGet) {
-// 				data.probe.httpGet = {
-// 					scheme: 'HTTP',
-// 					httpHeaders: [],
-// 				} as V1HTTPGetAction;
-// 				data.probe.initialDelaySeconds = 3;
-// 				data.probe.periodSeconds = 10;
-// 				data.probe.timeoutSeconds = 1;
-// 				data.probe.failureThreshold = 3;
-// 			}
-//
-// 			break;
-// 		}
-// 		case 'tcpSocket': {
-//       console.log("&&&&&&&&&&&&&",data.probe)
-//       if(!data.probe.tcpSocket) {
-//         data.probe.tcpSocket = {
-//           host: '',
-//           port: 0,
-//         };
-//         data.probe.initialDelaySeconds = 15;
-//         data.probe.periodSeconds = 10;
-//         data.probe.timeoutSeconds = 1;
-//         data.probe.failureThreshold = 3;
-//       }
-//
-// 			break;
-// 		}
-// 		case 'exec': {
-//       if(!data.probe.exec) {
-//         data.probe.exec= {
-//           command: ""
-//         } as V1ExecAction;
-//         data.probe.initialDelaySeconds = 5;
-//         data.probe.periodSeconds = 10;
-//         data.probe.timeoutSeconds = 1;
-//         data.probe.failureThreshold = 3;
-//       }
-//
-// 			break;
-// 		}
-// 	}
-// };
-// const getData = () => {
-// 	if (activeName.value != 'httpGet') {
-// 		probe.httpGet = {} as V1HTTPGetAction;
-// 	}
-// 	return probe;
-// };
 const props = defineProps({
 	checkData: Object<V1Probe>,
 });
