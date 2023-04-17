@@ -102,7 +102,7 @@ const data = reactive({
 	bindMetaData: {
 		metadata: {
 			namespace: 'default',
-			labels:[{'app': ''}],
+			labels:{'app': ''},
 		} as V1DeploymentSpec,
 		replicas: 1,
 		resourceType: 'deployment',
@@ -117,10 +117,10 @@ const getMeta = (newData) => {
 	// console.log('获取到的deployment数据:', newData, data, isObjectValueEqual(data.deployment.metadata, newData.meta));
 	// if (!isObjectValueEqual(data.deployment.metadata,newData.meta )  || data.deployment.spec!.replicas != newData.replicas) {
 	const dep = JSON.parse(JSON.stringify(newData))
-	const metaLables = JSON.parse(JSON.stringify(newData))
+	const metaLabels = JSON.parse(JSON.stringify(newData))
 	data.deployment.metadata = newData.meta;
 	data.deployment.spec.selector.matchLabels = dep.meta.labels;
-	data.deployment.spec.template.metadata.labels =metaLables.meta.labels;
+	data.deployment.spec.template.metadata.labels =metaLabels.meta.labels;
 	data.deployment.spec!.replicas = newData.replicas;
 	data.code = yaml.dump(data.deployment);
 	// }
