@@ -79,16 +79,6 @@ const data = reactive({
 	} as V1ObjectMeta,
 });
 
-const handleLabel = (labels: any) => {
-	const labelsTup = {};
-	for (const k in labels) {
-		// if (data.labels[k].key != '' && data.labels[k].value != '') {
-		labelsTup[labels[k].key] = labels[k].value;
-		// }
-	}
-	return labelsTup;
-};
-
 const getLabels = (labels: any) => {
 	if (!isObjectValueEqual(data.meta.labels, labels)) {
 		data.meta.labels = labels;
