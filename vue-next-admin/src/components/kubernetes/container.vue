@@ -91,15 +91,7 @@
 			</el-card>
 			<el-card>
 				<el-form-item label="端口设置：">
-					<el-button
-						:icon="CirclePlusFilled"
-						type="primary"
-						size="small"
-						text
-						style="padding-left: 0"
-						@click="data.ports.push({ name: '', containerPort: 0 })"
-						>新增</el-button
-					>
+					<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0" @click="pushPort">新增</el-button>
 				</el-form-item>
 				<el-form-item>
 					<div>
@@ -339,6 +331,7 @@
 					<LifeSet v-show="data.lifePreStopSet && data.lifePreShow" :lifeData="data.container.lifecycle?.preStop" @updateLifeData="getPreStop" />
 				</el-form-item>
 			</el-card>
+			<CommandSet :args="data.container.args" :commands="data.container.command" @updateCommand="getCommand" />
 		</el-form>
 	</div>
 </template>
@@ -349,9 +342,13 @@ import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kube
 import { CaretBottom, CaretTop, CirclePlusFilled, Delete, Edit, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { V1LifecycleHandler } from '@kubernetes/client-node/dist/gen/model/v1LifecycleHandler';
+import jsPlumb from 'jsplumb';
+import uuid = jsPlumb.jsPlumbUtil.uuid;
 
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
 const LifeSet = defineAsyncComponent(() => import('./life.vue'));
+const CommandSet = defineAsyncComponent(() => import('./startCommand.vue'));
+
 interface envImp {
 	name: string;
 	value: string;
@@ -409,6 +406,10 @@ const data = reactive({
 	env: [] as envImp[],
 });
 
+const getCommand = (c: any) => {
+	data.container.command = c.commands;
+	data.container.args = c.args;
+};
 const getPostStart = (postStart: V1LifecycleHandler) => {
 	if (data.lifePostStartSet) {
 		data.container.lifecycle!.postStart = postStart;
@@ -453,6 +454,11 @@ const setResource = () => {
 	};
 	data.resourceHasSet = true;
 };
+const pushPort = () => {
+	const name = uuid().toString().split('-')[1];
+	data.ports.push({ name: 'p-' + name, containerPort: 80, protocol: 'TCP' });
+};
+
 const cancelResource = () => {
 	data.resourceSet = false;
 	delete data.container.resources?.limits;
