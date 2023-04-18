@@ -126,7 +126,7 @@
 						>新增</el-button
 					>
 				</el-form-item>
-				<el-form-item>
+				<el-form-item label-width="45">
 					<el-table
 						:data="data.env"
 						style="width: 100%; font-size: 10px"
@@ -331,7 +331,12 @@
 					<LifeSet v-show="data.lifePreStopSet && data.lifePreShow" :lifeData="data.container.lifecycle?.preStop" @updateLifeData="getPreStop" />
 				</el-form-item>
 			</el-card>
-			<CommandSet :args="data.container.args" :commands="data.container.command" @updateCommand="getCommand" />
+			<el-card>
+				<CommandSet :args="data.container.args" :commands="data.container.command" @updateCommand="getCommand" />
+			</el-card>
+      <el-card>
+        <Volume/>
+      </el-card>
 		</el-form>
 	</div>
 </template>
@@ -348,7 +353,7 @@ import uuid = jsPlumb.jsPlumbUtil.uuid;
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
 const LifeSet = defineAsyncComponent(() => import('./life.vue'));
 const CommandSet = defineAsyncComponent(() => import('./startCommand.vue'));
-
+const Volume = defineAsyncComponent(()=> import('./volume.vue'))
 interface envImp {
 	name: string;
 	value: string;
@@ -722,4 +727,5 @@ const protocolType = [
 .el-card {
 	margin-bottom: 3px;
 }
+
 </style>

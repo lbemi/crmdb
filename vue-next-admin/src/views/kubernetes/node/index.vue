@@ -99,7 +99,7 @@
 									</el-tag>
 								</div>
 							</template>
-							<SvgIcon iconName="icon-biaoqian" className="icon-1-4em" />
+              <el-icon><List /></el-icon>
 						</el-tooltip>
 					</template>
 				</el-table-column>
@@ -151,7 +151,7 @@
 
 <script setup lang="ts" name="k8sNode">
 import { reactive, onMounted, defineAsyncComponent } from 'vue';
-import { InfoFilled, CaretBottom } from '@element-plus/icons-vue';
+import {InfoFilled, CaretBottom, List} from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { V1Node } from '@kubernetes/client-node';
 import { useNodeApi } from '/@/api/kubernetes/node';

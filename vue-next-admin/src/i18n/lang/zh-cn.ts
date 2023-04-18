@@ -1,6 +1,5 @@
 // 定义内容
 export default {
-
 	router: {
 		home: '首页',
 		system: '系统设置',
@@ -9,7 +8,7 @@ export default {
 		systemUser: '用户管理',
 		systemDept: '部门管理',
 		systemDic: '字典管理',
-        systemApi: 'API管理',
+		systemApi: 'API管理',
 		limits: '权限管理',
 		limitsFrontEnd: '前端控制',
 		limitsFrontEndPage: '页面权限',
@@ -22,9 +21,13 @@ export default {
 		k8sDeployment: 'Deployment',
 		k8sDeploymentDetail: '详情',
 		deploymentCreate: '创建deployment',
+		monitor: '监控大盘',
+		monitorHost: '主机监控',
+		monitorSSL: 'SSL证书监控',
+		monitorAliyunVistor: '流量访问看板',
 		grafana: 'Grafana',
 		kibana: 'Kibana',
-		podShell:'pod日志',
+		podShell: 'pod日志',
 		k8sNode: 'Node',
 		k8sPod: 'Pod',
 		podLog: '日志',
