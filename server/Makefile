@@ -3,7 +3,6 @@
 tag = v0.1
 releaseName = crmdb
 image = registry.cn-hangzhou.aliyuncs.com/lbemi/crmdb
-dockerhubUser = lei@1996262755539687
 
 ALL: run
 
@@ -17,7 +16,7 @@ image:
 	docker build -t ${image}:$(tag) .
 
 push: image
-	docker push $(dockerhubUser)/$(releaseName):$(tag)
+	docker push  ${image}:$(tag)
 
 clean:
 	-rm -f ./$(releaseName)
