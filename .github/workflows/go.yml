@@ -21,7 +21,7 @@ jobs:
       with:
         go-version: 1.19
     - name: Login Docker
-      run: docker login -u ${{ secrets.DOKCER_USER }}  -p ${{ secrets.DOKCER_PASSWORD }} registry.cn-hangzhou.aliyuncs.com
+      run: echo ${{ secrets.DOKCER_PASSWORD }} | docker login -u ${{ secrets.DOKCER_USER }}  --password-stdin registry.cn-hangzhou.aliyuncs.com
     - name: Build
       run: cd ./server && make build
     - name: Push
