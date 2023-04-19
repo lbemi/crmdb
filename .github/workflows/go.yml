@@ -15,13 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-
+    
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
         go-version: 1.19
-
+    - name: Login Docker
+      run: docker login -u ${{ secrets.DOKCER_USER }}  -p ${{ secrets.DOKCER_PASSWORD }} registry.cn-hangzhou.aliyuncs.com
     - name: Build
-      run: cd ./server && go mod tidy && go build ./cmd/main.go
-
+      run: cd ./server make build
+    - name: Push
+      run: cd ./server make push
  
