@@ -22,6 +22,6 @@ jobs:
         go-version: 1.19
 
     - name: Build
-      run: cd ./server && go mod tidy && go build -v ./cmd/
+      run: cd ./server && go mod tidy && go build ./cmd/main.go
 
  
