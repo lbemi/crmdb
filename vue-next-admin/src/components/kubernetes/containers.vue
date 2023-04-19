@@ -1,12 +1,6 @@
-
 <template>
 	<div class="layout-pd">
 		<div>
-			<!--			<el-tabs v-model="editableTabsValue" type="card" editable class="demo-tabs" @edit="handleTabsEdit">-->
-			<!--				<el-tab-pane v-for="(item,index) in editableTabs" :key="index" :label="item.title" :name="item.name" :closable='item.closeAble'>-->
-			<!--					<container :ref="setItemRef" :container="data.containers[index]" @updateContainer='getContainer' />-->
-			<!--				</el-tab-pane>-->
-			<!--			</el-tabs>-->
 			<el-tabs v-model="editableTabsValue" type="card" editable class="demo-tabs" @edit="handleTabsEdit">
 				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :label="'容器' + (index + 1)" :name="index" :closable="index != 0">
 					<container :container="item" :index="index" @updateContainer="getContainer" />
@@ -21,7 +15,6 @@ import { defineAsyncComponent, reactive, watch } from 'vue';
 import { ref } from 'vue-demi';
 import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
 import type { TabPaneName } from 'element-plus';
-import {isObjectValueEqual} from "/@/utils/arrayOperation";
 
 const Container = defineAsyncComponent(() => import('./container.vue'));
 
@@ -44,13 +37,9 @@ const editableTabsValue = ref(0);
 const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 'add') => {
 	if (action === 'add') {
 		const newTabName = data.containers.length;
-		// editableTabs.value.push({
-		// 	title: '容器' + newTabName,
-		// 	name: newTabName,
-		// 	closeAble: true,
-		// });
+
 		data.containers.push(data.container);
-		editableTabsValue.value = newTabName ;
+		editableTabsValue.value = newTabName;
 		console.log('当前活动页面：', editableTabsValue.value);
 	} else if (action === 'remove') {
 		console.log('我要删除第：', targetName);
@@ -97,8 +86,8 @@ const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 
 const data = reactive({
 	containers: [
 		{
-      name: '',
-      imagePullPolicy: 'IfNotPresent',
+			name: '',
+			imagePullPolicy: 'IfNotPresent',
 			securityContext: {
 				// privileged: false,
 			} as V1SecurityContext,
@@ -107,12 +96,12 @@ const data = reactive({
 			startupProbe: {},
 			env: [] as V1EnvVar[],
 			ports: [] as V1ContainerPort,
-      resources: {}
+			resources: {},
 		} as V1Container,
 	] as V1Container[],
 	container: {
-    name: '',
-    imagePullPolicy: 'IfNotPresent',
+		name: '',
+		imagePullPolicy: 'IfNotPresent',
 		securityContext: {
 			// privileged: false,
 		} as V1SecurityContext,
@@ -121,15 +110,18 @@ const data = reactive({
 		startupProbe: {},
 		env: [] as V1EnvVar[],
 		ports: [] as V1ContainerPort,
-    resources: {}
+		resources: {},
 	} as V1Container,
 });
 
-const getContainer = (index:number,container: V1Container) => {
-	if(index === editableTabsValue.value) {
+const getContainer = (index: number, container: V1Container) => {
+	if (index === editableTabsValue.value) {
+		// // FIXME  初始化container name
+		// if (data.containers[index].name === '' && k8sStore.state.creatDeployment.name && k8sStore.state.creatDeployment.name != '') {
+		// 	data.containers[index].name = k8sStore.state.creatDeployment.name + '-pod';
+		// }
 		data.containers[index] = container;
 	}
-
 };
 
 const props = defineProps({
@@ -137,7 +129,7 @@ const props = defineProps({
 });
 
 watch(
-		()=>props.containers,
+	() => props.containers,
 	() => {
 		if (props.containers && props.containers.length != 0) {
 			data.containers = props.containers;
@@ -160,7 +152,6 @@ watch(
 		deep: true,
 	}
 );
-
 </script>
 
 <style scoped lang="scss">

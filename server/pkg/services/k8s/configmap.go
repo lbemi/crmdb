@@ -65,3 +65,24 @@ func (s *configMap) Update(ctx context.Context, configMap *v1.ConfigMap) (*v1.Co
 func newConfigMap(client *store.Clients, namespace string) *configMap {
 	return &configMap{client: client, ns: namespace}
 }
+
+type ConfigMapHandler struct {
+	client      *store.Clients
+	clusterName string
+}
+
+func NewConfigMapHandler(client *store.Clients, clusterName string) *ConfigMapHandler {
+	return &ConfigMapHandler{client: client, clusterName: clusterName}
+}
+
+func (c *ConfigMapHandler) OnAdd(obj interface{}) {
+	//TODO implement me
+}
+
+func (c *ConfigMapHandler) OnUpdate(oldObj, newObj interface{}) {
+	//TODO implement me
+}
+
+func (c *ConfigMapHandler) OnDelete(obj interface{}) {
+	//TODO implement me
+}

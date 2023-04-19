@@ -54,17 +54,19 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, reactive, watch } from 'vue';
+import { defineAsyncComponent, onMounted, reactive, watch } from 'vue';
 import { V1ObjectMeta } from '@kubernetes/client-node';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { ref } from 'vue-demi';
 import { CirclePlusFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
+
+const Label = defineAsyncComponent(() => import('/@/components/kubernetes/label.vue'));
+
 interface label {
 	key: string;
 	value: string;
 }
-const Label = defineAsyncComponent(() => import('/@/components/kubernetes/label.vue'));
 
 const k8sStore = kubernetesInfo();
 const enableEdit = ref(false);
@@ -148,14 +150,18 @@ watch(
 	() => [data.meta, data.replicas],
 	() => {
 		if (data.meta.name) {
+			// k8sStore.state.creatDeployment.name = data.meta.name;
 			if (data.meta.labels) data.meta.labels['app'] = data.meta.name;
 		}
-
+		if (data.meta.namespace) {
+			k8sStore.state.creatDeployment.namespace = data.meta.namespace;
+		}
 		emit('updateData', data); //触发更新数据事件
 	},
 
 	{ immediate: true, deep: true }
 );
+
 const types = [
 	{
 		value: 'deployment',

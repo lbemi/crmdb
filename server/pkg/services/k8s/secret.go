@@ -65,3 +65,22 @@ func (s *secret) Update(ctx context.Context, secret *v1.Secret) (*v1.Secret, err
 func newSecret(client *store.Clients, namespace string) *secret {
 	return &secret{client: client, ns: namespace}
 }
+
+type SecretHandle struct {
+}
+
+func NewSecretHandle() *SecretHandle {
+	return &SecretHandle{}
+}
+
+func (s *SecretHandle) OnAdd(obj interface{}) {
+	//TODO implement me
+}
+
+func (s *SecretHandle) OnUpdate(oldObj, newObj interface{}) {
+	//TODO implement me
+}
+
+func (s *SecretHandle) OnDelete(obj interface{}) {
+	//TODO implement me
+}
