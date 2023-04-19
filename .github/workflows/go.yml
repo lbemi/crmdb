@@ -20,8 +20,9 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: 1.19
-    - name: Login Docker
-      run: echo ${{ secrets.DOKCER_PASSWORD }} | docker login -u ${{ secrets.DOKCER_USER }}  --password-stdin registry.cn-hangzhou.aliyuncs.com
+    - name: Login to Docker registry
+      run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOKCER_USER }} --password-stdin registry.cn-hangzhou.aliyuncs.com
+
     - name: Build
       run: cd ./server && make build
     - name: Push
