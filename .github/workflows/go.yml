@@ -23,7 +23,7 @@ jobs:
     - name: Login Docker
       run: docker login -u ${{ secrets.DOKCER_USER }}  -p ${{ secrets.DOKCER_PASSWORD }} registry.cn-hangzhou.aliyuncs.com
     - name: Build
-      run: cd ./server make build
+      run: cd ./server && make build
     - name: Push
-      run: cd ./server make push
+      run: cd ./server && make push
  
