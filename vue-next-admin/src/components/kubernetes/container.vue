@@ -342,21 +342,19 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, reactive, watch } from 'vue';
+import { defineAsyncComponent, reactive, watch } from 'vue';
 import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, Delete, Edit, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { V1LifecycleHandler } from '@kubernetes/client-node/dist/gen/model/v1LifecycleHandler';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
-import { kubernetesInfo } from '/@/stores/kubernetes';
 
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
 const LifeSet = defineAsyncComponent(() => import('./life.vue'));
 const CommandSet = defineAsyncComponent(() => import('./startCommand.vue'));
 const Volume = defineAsyncComponent(() => import('./volume.vue'));
 
-const k8sStore = kubernetesInfo();
 interface envImp {
 	name: string;
 	value: string;
@@ -603,7 +601,6 @@ watch(
 		// if (data.container.name != k8sStore.state.creatDeployment.name) {
 		// 	data.container.name = k8sStore.state.creatDeployment.name;
 		// }
-		console.log('container 表单发生变化。。。', data.container);
 		if (data.ports && data.ports.length != 0) {
 			data.container.ports = data.ports;
 		} else {
