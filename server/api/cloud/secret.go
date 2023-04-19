@@ -45,13 +45,16 @@ func ListSecrets(c *gin.Context) {
 	// 处理分页
 	var pageQuery types.PageQuery
 	pageQuery.Total = len(secretList)
-
-	if pageQuery.Total <= limit {
+	if limit == 0 && page == 0 {
 		pageQuery.Data = secretList
-	} else if page*limit >= pageQuery.Total {
-		pageQuery.Data = secretList[(page-1)*limit : pageQuery.Total]
 	} else {
-		pageQuery.Data = secretList[(page-1)*limit : page*limit]
+		if pageQuery.Total <= limit {
+			pageQuery.Data = secretList
+		} else if page*limit >= pageQuery.Total {
+			pageQuery.Data = secretList[(page-1)*limit : pageQuery.Total]
+		} else {
+			pageQuery.Data = secretList[(page-1)*limit : page*limit]
+		}
 	}
 
 	response.Success(c, response.StatusOK, pageQuery)

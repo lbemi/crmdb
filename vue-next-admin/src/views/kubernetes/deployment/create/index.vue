@@ -11,11 +11,11 @@
 				</el-steps>
 			</div>
 			<el-row>
-				<el-col :span="13">
+				<el-col :span="15">
 					<el-card style="padding-left: 20px; margin-top: 15px">
 						<div>
 							<div style="margin-top: 10px" id="0" v-show="data.active === 0">
-								<Meta ref="metaRef" :bindData="data.bindMetaData" @updateData="getMeta" />
+								<Meta :bindData="data.bindMetaData" @updateData="getMeta" />
 							</div>
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
 								<Containers :containers="data.deployment.spec.template.spec.containers" @updateContainers="getContainers" />
@@ -26,11 +26,13 @@
 						</div>
 					</el-card>
 				</el-col>
-				<el-col :span="1" />
+				<!--				<el-col :span="1" />-->
 				<el-col :span="7">
-					<codemirror v-model="data.code" style="height: 100%; margin-top: 15px" :autofocus="true" :tabSize="2" :extensions="extensions" />
+					<el-card style="margin-top: 15px; height: 99%">
+						<codemirror v-model="data.code" style="margin-top: 15px" :autofocus="true" :tabSize="2" :extensions="extensions" />
+					</el-card>
 				</el-col>
-				<el-col :span="3" style="margin-left: 20px">
+				<el-col :span="2" style="margin-left: 20px">
 					<div class="btn">
 						<div>
 							<el-link type="primary" :underline="false" @click="jumpTo(0)" class="men">基础信息</el-link>
@@ -57,21 +59,20 @@ import { ref } from 'vue-demi';
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
-import {V1Container, V1Deployment, V1DeploymentSpec, V1LabelSelector} from '@kubernetes/client-node';
+import { V1Container, V1Deployment, V1DeploymentSpec, V1LabelSelector } from '@kubernetes/client-node';
 import yaml from 'js-yaml';
-import {useDeploymentApi} from "/@/api/kubernetes/deployment";
-import {kubernetesInfo} from "/@/stores/kubernetes";
-import {ElMessage} from "element-plus";
-import router from "/@/router";
-import {isObjectValueEqual} from "/@/utils/arrayOperation";
-import {useRoute} from "vue-router";
+import { useDeploymentApi } from '/@/api/kubernetes/deployment';
+import { kubernetesInfo } from '/@/stores/kubernetes';
+import { ElMessage } from 'element-plus';
+import router from '/@/router';
+import { useRoute } from 'vue-router';
 import mittBus from '/@/utils/mitt';
+import { deepClone } from '/@/utils/other';
 const kubeInfo = kubernetesInfo();
 const deployApi = useDeploymentApi();
 
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
-const metaRef = ref<InstanceType<typeof Meta>>();
 // 格式化 env
 const data = reactive({
 	active: 1,
@@ -84,12 +85,12 @@ const data = reactive({
 		},
 		spec: {
 			selector: {
-				matchLabels: {}
+				matchLabels: {},
 			},
 			replicas: 1,
 			template: {
 				metadata: {
-					labels: {}
+					labels: {},
 				},
 				spec: {
 					containers: [],
@@ -102,7 +103,7 @@ const data = reactive({
 	bindMetaData: {
 		metadata: {
 			namespace: 'default',
-			labels:{'app': ''},
+			labels: { app: '' },
 		} as V1DeploymentSpec,
 		replicas: 1,
 		resourceType: 'deployment',
@@ -116,11 +117,11 @@ const getContainers = (containers: Array<V1Container>) => {
 const getMeta = (newData) => {
 	// console.log('获取到的deployment数据:', newData, data, isObjectValueEqual(data.deployment.metadata, newData.meta));
 	// if (!isObjectValueEqual(data.deployment.metadata,newData.meta )  || data.deployment.spec!.replicas != newData.replicas) {
-	const dep = JSON.parse(JSON.stringify(newData))
-	const metaLabels = JSON.parse(JSON.stringify(newData))
+	const dep = deepClone(newData);
+	const metaLabels = deepClone(newData);
 	data.deployment.metadata = newData.meta;
 	data.deployment.spec.selector.matchLabels = dep.meta.labels;
-	data.deployment.spec.template.metadata.labels =metaLabels.meta.labels;
+	data.deployment.spec.template.metadata.labels = metaLabels.meta.labels;
 	data.deployment.spec!.replicas = newData.replicas;
 	data.code = yaml.dump(data.deployment);
 	// }
@@ -139,20 +140,21 @@ const next = () => {
 // 定义变量内容
 const route = useRoute();
 
-
 const confirm = () => {
 	// data.code = yaml.dump(data.deployment);
-	deployApi.createDeployment({'cloud': kubeInfo.state.activeCluster},data.deployment).then(()=>{
-		router.push({
-			name: 'k8sDeployment'
+	deployApi
+		.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployment)
+		.then(() => {
+			router.push({
+				name: 'k8sDeployment',
+			});
+			mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));
+
+			ElMessage.success('创建成功');
 		})
-		mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));
-
-		ElMessage.success("创建成功")
-	}).catch((e)=>{
-		ElMessage.error(e.message)
-	})
-
+		.catch((e) => {
+			ElMessage.error(e.message);
+		});
 };
 
 watch(
@@ -168,14 +170,12 @@ watch(
 				data.deployment.spec.template.spec.containers = newData.spec.template.spec.containers;
 			}
 		}
-
 	},
 	{
 		immediate: true,
 		deep: true,
 	}
 );
-
 </script>
 
 <style scoped lang="scss">

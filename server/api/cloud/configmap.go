@@ -41,16 +41,20 @@ func ListConfigMaps(c *gin.Context) {
 		return
 	}
 
-	// 处理分页
+	// 处理分页 FIXME 待优化
 	var pageQuery types.PageQuery
 	pageQuery.Total = len(configMapList)
 
-	if pageQuery.Total <= limit {
+	if limit == 0 && page == 0 {
 		pageQuery.Data = configMapList
-	} else if page*limit >= pageQuery.Total {
-		pageQuery.Data = configMapList[(page-1)*limit : pageQuery.Total]
 	} else {
-		pageQuery.Data = configMapList[(page-1)*limit : page*limit]
+		if pageQuery.Total <= limit {
+			pageQuery.Data = configMapList
+		} else if page*limit >= pageQuery.Total {
+			pageQuery.Data = configMapList[(page-1)*limit : pageQuery.Total]
+		} else {
+			pageQuery.Data = configMapList[(page-1)*limit : page*limit]
+		}
 	}
 
 	response.Success(c, response.StatusOK, pageQuery)

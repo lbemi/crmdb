@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<el-form v-model="data.container" label-width="120px" label-position="left">
+		<el-form v-model="data.container" label-width="100px" label-position="left">
 			<el-card>
 				<el-form-item label="容器名称：">
 					<el-input v-model="data.container.name" size="default" style="width: 296px" />
@@ -214,7 +214,7 @@
 						>隐藏</el-button
 					>
 					<el-button
-						v-else="data.showReadyCheck"
+						v-else
 						type="info"
 						v-show="data.readyCheck"
 						text
@@ -334,26 +334,29 @@
 			<el-card>
 				<CommandSet :args="data.container.args" :commands="data.container.command" @updateCommand="getCommand" />
 			</el-card>
-      <el-card>
-        <Volume/>
-      </el-card>
+			<el-card>
+				<Volume />
+			</el-card>
 		</el-form>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, reactive, watch } from 'vue';
+import { defineAsyncComponent, onMounted, reactive, watch } from 'vue';
 import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, Delete, Edit, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { V1LifecycleHandler } from '@kubernetes/client-node/dist/gen/model/v1LifecycleHandler';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
+import { kubernetesInfo } from '/@/stores/kubernetes';
 
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
 const LifeSet = defineAsyncComponent(() => import('./life.vue'));
 const CommandSet = defineAsyncComponent(() => import('./startCommand.vue'));
-const Volume = defineAsyncComponent(()=> import('./volume.vue'))
+const Volume = defineAsyncComponent(() => import('./volume.vue'));
+
+const k8sStore = kubernetesInfo();
 interface envImp {
 	name: string;
 	value: string;
@@ -593,9 +596,13 @@ watch(
 		immediate: true,
 	}
 );
+
 watch(
 	() => [data.container, data.ports, data.liveCheck, data.readyCheck, data.startCheck, data.resourceSet, data.lifePostStartSet],
 	() => {
+		// if (data.container.name != k8sStore.state.creatDeployment.name) {
+		// 	data.container.name = k8sStore.state.creatDeployment.name;
+		// }
 		console.log('container 表单发生变化。。。', data.container);
 		if (data.ports && data.ports.length != 0) {
 			data.container.ports = data.ports;
@@ -727,5 +734,4 @@ const protocolType = [
 .el-card {
 	margin-bottom: 3px;
 }
-
 </style>
