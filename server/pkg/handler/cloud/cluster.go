@@ -43,6 +43,7 @@ type ICluster interface {
 	kubernetes.IngressesGetter
 	kubernetes.EventGetter
 	kubernetes.ReplicasetGetter
+	kubernetes.PersistentVolumeClaimGetter
 }
 
 type cluster struct {
@@ -141,6 +142,13 @@ func (c *cluster) Replicaset(namespace string) kubernetes.ReplicasetImp {
 		namespace = ""
 	}
 	return kubernetes.NewReplicaset(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+}
+
+func (c *cluster) PersistentVolumeClaim(namespace string) kubernetes.PersistentVolumeClaimImp {
+	if namespace == "all" {
+		namespace = ""
+	}
+	return kubernetes.NewPersistentVolumeClaim(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 
 func (c *cluster) Create(ctx context.Context, config *form.ClusterReq) error {

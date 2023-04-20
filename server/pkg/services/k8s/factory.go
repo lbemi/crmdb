@@ -17,6 +17,7 @@ type FactoryImp interface {
 	Secret() SecretImp
 	Service() ServiceImp
 	StatefulSet() StatefulSetImp
+	PersistentVolumeClaim() PersistentVolumeClaimImp
 }
 
 type Factory struct {
@@ -24,52 +25,56 @@ type Factory struct {
 	namespace string
 }
 
-func (k *Factory) Deployment() DeploymentImp {
-	return newDeployment(k.client, k.namespace)
+func (f *Factory) Deployment() DeploymentImp {
+	return newDeployment(f.client, f.namespace)
 }
 
-func (k *Factory) ConfigMap() ConfigMapImp {
-	return newConfigMap(k.client, k.namespace)
+func (f *Factory) ConfigMap() ConfigMapImp {
+	return newConfigMap(f.client, f.namespace)
 }
 
-func (k *Factory) CronJob() CronJobImp {
-	return newCronJob(k.client, k.namespace)
+func (f *Factory) CronJob() CronJobImp {
+	return newCronJob(f.client, f.namespace)
 }
 
-func (k *Factory) DaemonSet() DaemonSetImp {
-	return newDaemonSet(k.client, k.namespace)
+func (f *Factory) DaemonSet() DaemonSetImp {
+	return newDaemonSet(f.client, f.namespace)
 }
-func (k *Factory) Event() EventImp {
-	return newEvent(k.client, k.namespace)
+func (f *Factory) Event() EventImp {
+	return newEvent(f.client, f.namespace)
 }
-func (k *Factory) Ingress() IngressesImp {
-	return newIngress(k.client, k.namespace)
+func (f *Factory) Ingress() IngressesImp {
+	return newIngress(f.client, f.namespace)
 }
-func (k *Factory) Job() JobImp {
-	return newJob(k.client, k.namespace)
+func (f *Factory) Job() JobImp {
+	return newJob(f.client, f.namespace)
 }
-func (k *Factory) Namespace() NamespaceImp {
-	return newNamespace(k.client)
+func (f *Factory) Namespace() NamespaceImp {
+	return newNamespace(f.client)
 }
-func (k *Factory) Node() NodeImp {
-	return newNode(k.client)
+func (f *Factory) Node() NodeImp {
+	return newNode(f.client)
 }
-func (k *Factory) Pod() PodImp {
-	return newPod(k.client, k.namespace)
-}
-
-func (k *Factory) Replicaset() ReplicasetImp {
-	return newReplicaset(k.client, k.namespace)
-}
-func (k *Factory) Secret() SecretImp {
-	return newSecret(k.client, k.namespace)
-}
-func (k *Factory) Service() ServiceImp {
-	return newService(k.client, k.namespace)
+func (f *Factory) Pod() PodImp {
+	return newPod(f.client, f.namespace)
 }
 
-func (k *Factory) StatefulSet() StatefulSetImp {
-	return newStatefulSet(k.client, k.namespace)
+func (f *Factory) Replicaset() ReplicasetImp {
+	return newReplicaset(f.client, f.namespace)
+}
+func (f *Factory) Secret() SecretImp {
+	return newSecret(f.client, f.namespace)
+}
+func (f *Factory) Service() ServiceImp {
+	return newService(f.client, f.namespace)
+}
+
+func (f *Factory) StatefulSet() StatefulSetImp {
+	return newStatefulSet(f.client, f.namespace)
+}
+
+func (f *Factory) PersistentVolumeClaim() PersistentVolumeClaimImp {
+	return newPersistentVolumeClaim(f.client, f.namespace)
 }
 func NewK8sFactory(client *store.Clients, namespace string) *Factory {
 	return &Factory{client: client, namespace: namespace}

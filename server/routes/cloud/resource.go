@@ -143,4 +143,14 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		event.GET("/:namespace", cloud.ListEvents)
 		event.GET("/:namespace/:name", cloud.GetEvent)
 	}
+
+	//  persistentVolumeClaim资源路由
+	persistentVolumeClaim := group.Group("/pvc")
+	{
+		persistentVolumeClaim.GET("/:namespace", cloud.ListPersistentVolumeClaim)
+		persistentVolumeClaim.GET("/:namespace/:name", cloud.GetPersistentVolumeClaim)
+		persistentVolumeClaim.POST("", cloud.CreatePersistentVolumeClaim)
+		persistentVolumeClaim.PUT("", cloud.UpdatePersistentVolumeClaim)
+		persistentVolumeClaim.DELETE("/:namespace/:name", cloud.DeletePersistentVolumeClaim)
+	}
 }
