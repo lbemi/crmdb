@@ -49,7 +49,7 @@
 						<el-input v-model="scope.row.name" size="small" />
 					</template>
 				</el-table-column>
-				<el-table-column prop="" label="挂载源" width="250">
+				<el-table-column prop="" label="挂载源" width="200">
 					<template #default="scope">
 						<el-input v-model="scope.row.hostPath.path" size="small" placeholder="主机路径：/tmp" v-show="scope.row.type === 'hostPath'" />
 						<div v-show="scope.row.type === 'persistentVolumeClaim'" style="display: flex">
@@ -68,7 +68,7 @@
 								<el-option v-for="item in data.configMapData" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
 							</el-select>
 							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
-								<el-tooltip placement="top" effect="dark">
+								<el-tooltip placement="top" effect="light">
 									<template #content>
 										<div
 											v-for="(item, index) in scope.row.configMap.items"
@@ -167,8 +167,16 @@
 <script setup lang="ts">
 import { CaretBottom, CaretTop, CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { defineAsyncComponent, reactive, ref, watch } from 'vue';
-import { deepClone } from '/@/utils/other';
-import { V1ConfigMap, V1HostPathVolumeSource, V1PersistentVolumeClaimVolumeSource, V1Secret, V1Volume, V1VolumeMount } from '@kubernetes/client-node';
+import {
+	V1ConfigMap,
+	V1Deployment,
+	V1EmptyDirVolumeSource,
+	V1HostPathVolumeSource,
+	V1PersistentVolumeClaimVolumeSource,
+	V1Secret,
+	V1Volume,
+	V1VolumeMount,
+} from '@kubernetes/client-node';
 import { V1SecretVolumeSource } from '@kubernetes/client-node/dist/gen/model/v1SecretVolumeSource';
 import { V1ConfigMapVolumeSource } from '@kubernetes/client-node/dist/gen/model/v1ConfigMapVolumeSource';
 import jsPlumb from 'jsplumb';
@@ -178,7 +186,8 @@ import { useConfigMapApi } from '/@/api/kubernetes/configMap';
 import { useSecretApi } from '/@/api/kubernetes/secret';
 import { V1KeyToPath } from '@kubernetes/client-node/dist/gen/model/v1KeyToPath';
 import { usePVCApi } from '/@/api/kubernetes/persitentVolumeClaim';
-import { interceptors } from 'axios';
+import mittBus from '/@/utils/mitt';
+import { isObjectValueEqual } from '/@/utils/arrayOperation';
 
 const k8sStore = kubernetesInfo();
 const configMapApi = useConfigMapApi();
@@ -217,6 +226,7 @@ const data = reactive({
 	],
 	volumeData: [],
 	pvcdata: [],
+	tmpVolumes: [] as V1Volume[],
 	volumes: [] as V1Volume[],
 	volumeMount: [] as V1VolumeMount[],
 	configMapData: [] as V1ConfigMap[],
@@ -326,6 +336,9 @@ const handleVolumeData = () => {
 			case 'persistentVolumeClaim':
 				tmpVolume[index].persistentVolumeClaim = item.persistentVolumeClaim;
 				break;
+			case 'tmp':
+				tmpVolume[index].emptyDir = item.emptyDir;
+				break;
 		}
 	});
 	data.volumeMount = tempVolumeMount;
@@ -339,13 +352,11 @@ const handleSet = () => {
 		keySetShow: false,
 		type: 'hostPath',
 		name: name,
-		mountSource: {},
-		containerPath: '',
-		subPath: '',
 		hostPath: {} as V1HostPathVolumeSource,
 		secret: {} as V1SecretVolumeSource,
 		configMap: {} as V1ConfigMapVolumeSource,
 		persistentVolumeClaim: {} as V1PersistentVolumeClaimVolumeSource,
+		emptyDir: {} as V1EmptyDirVolumeSource,
 		volumeMountData: {
 			name: name,
 			mountPath: '',
@@ -353,32 +364,62 @@ const handleSet = () => {
 		} as V1VolumeMount,
 	});
 };
-// const props = defineProps({
-//
-// });
+mittBus.on('updateDeployment', (volumes: any) => {
+	console.log('*************////', volumes);
+	if (data.volumes != volumes) {
+		console.log('--------------------', volumes);
+		data.tmpVolumes = volumes;
+	}
+});
+const props = defineProps({
+	volumeMount: Array,
+});
+const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
+	const tmpVolumeMount = [];
+	volumeMount.forEach((item) => {
+		data.tmpVolumes.forEach((v) => {
+			if (item.name === v.name) {
+				tmpVolumeMount.push({
+					name: item.name,
+					type: 'tmp',
+					emptyDir: v.emptyDir,
+					secret: v.secret,
+					configMap: v.configMap,
+					persistentVolumeClaim: v.persistentVolumeClaim,
+					hostPath: v.hostPath,
+					volumeMountData: {
+						name: item.name,
+						mountPath: item.mountPath,
+						subPath: item.subPath,
+					} as V1VolumeMount,
+				});
+			}
+		});
+	});
+	console.log('#$^^^^^%%%%%%%%%%%%%%%%%', tmpVolumeMount, volumeMount, data.tmpVolumes);
+	data.volumeData = tmpVolumeMount;
+};
+watch(
+	() => [props.volumeMount, data.tmpVolumes],
+	() => {
+		if (props.volumeMount && !isObjectValueEqual(props.volumeMount, data.volumeMount)) {
+			parseVolumeMount(props.volumeMount);
+		}
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
 
-// watch(
-//     () => [props.args, props.commands],
-//     () => {
-//       if (props.args) {
-//         data.args = handleArr(props.args);
-//       }
-//       if (props.commands) {
-//         data.commands = handleArr(props.commands);
-//       }
-//     },
-//     {
-//       immediate: true,
-//       deep: true,
-//     }
-// );
 const emit = defineEmits(['updateVolume']);
 watch(
 	() => [data.volumeData],
 	() => {
 		handleVolumeData();
 		console.log(data);
-		// emit('updateVolume', data.volumes);
+		emit('updateVolume', data.volumes, data.volumeMount);
+		mittBus.emit('updateVolumes', data.volumes);
 	},
 	{
 		immediate: true,

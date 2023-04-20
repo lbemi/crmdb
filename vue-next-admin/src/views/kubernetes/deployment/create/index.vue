@@ -94,6 +94,7 @@ const data = reactive({
 				},
 				spec: {
 					containers: [],
+					volumes: {},
 				},
 			},
 		},
@@ -139,7 +140,9 @@ const next = () => {
 
 // 定义变量内容
 const route = useRoute();
-
+mittBus.on('updateVolumes', (res) => {
+	data.deployment.spec.template.spec.volumes = res;
+});
 const confirm = () => {
 	// data.code = yaml.dump(data.deployment);
 	deployApi
@@ -168,6 +171,7 @@ watch(
 				data.bindMetaData.metadata = newData.metadata;
 				data.bindMetaData.replicas = newData.spec?.replicas!;
 				data.deployment.spec.template.spec.containers = newData.spec.template.spec.containers;
+				mittBus.emit('updateDeployment', newData.spec.template.spec.volumes);
 			}
 		}
 	},

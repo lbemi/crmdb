@@ -335,7 +335,7 @@
 				<CommandSet :args="data.container.args" :commands="data.container.command" @updateCommand="getCommand" />
 			</el-card>
 			<el-card>
-				<Volume />
+				<Volume :volumeMount="data.container.volumeMounts" @updateVolume="getVolume" />
 			</el-card>
 		</el-form>
 	</div>
@@ -343,7 +343,7 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, reactive, watch } from 'vue';
-import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
+import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext, V1Volume } from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, Delete, Edit, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { V1LifecycleHandler } from '@kubernetes/client-node/dist/gen/model/v1LifecycleHandler';
@@ -376,6 +376,7 @@ const data = reactive({
 	showStartCheck: true,
 	resourceSet: false,
 	containers: [] as V1Container[],
+	volumes: [] as V1Volume[],
 	container: {
 		name: '',
 		imagePullPolicy: 'ifNotPresent',
@@ -412,6 +413,10 @@ const data = reactive({
 	env: [] as envImp[],
 });
 
+const getVolume = (volumes: any, volumeMounts: any) => {
+	data.container.volumeMounts = volumeMounts;
+	data.volumes = volumes;
+};
 const getCommand = (c: any) => {
 	data.container.command = c.commands;
 	data.container.args = c.args;
