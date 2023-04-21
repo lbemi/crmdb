@@ -23,6 +23,8 @@ declare type MittType<T = any> = {
 	openShareTagsView?: string;
 	onTagsViewRefreshRouterView?: T;
 	onCurrentContextmenuClick?: T;
+	updateDeployment: T;
+	updateVolumes: T;
 };
 
 // mitt 参数类型定义

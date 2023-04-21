@@ -335,7 +335,7 @@
 				<CommandSet :args="data.container.args" :commands="data.container.command" @updateCommand="getCommand" />
 			</el-card>
 			<el-card>
-				<Volume :volumeMount="data.container.volumeMounts" @updateVolume="getVolume" />
+				<VolumeMount :volumeMounts="data.container.volumeMounts" @updateVolume="getVolumeMount" />
 			</el-card>
 		</el-form>
 	</div>
@@ -343,17 +343,18 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, reactive, watch } from 'vue';
-import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext, V1Volume } from '@kubernetes/client-node';
+import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext, V1Volume, V1VolumeMount } from '@kubernetes/client-node';
 import { CaretBottom, CaretTop, CirclePlusFilled, Delete, Edit, InfoFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { V1LifecycleHandler } from '@kubernetes/client-node/dist/gen/model/v1LifecycleHandler';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
+import { deepClone } from '/@/utils/other';
 
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
 const LifeSet = defineAsyncComponent(() => import('./life.vue'));
 const CommandSet = defineAsyncComponent(() => import('./startCommand.vue'));
-const Volume = defineAsyncComponent(() => import('./volume.vue'));
+const VolumeMount = defineAsyncComponent(() => import('./volume.vue'));
 
 interface envImp {
 	name: string;
@@ -376,7 +377,6 @@ const data = reactive({
 	showStartCheck: true,
 	resourceSet: false,
 	containers: [] as V1Container[],
-	volumes: [] as V1Volume[],
 	container: {
 		name: '',
 		imagePullPolicy: 'ifNotPresent',
@@ -413,9 +413,9 @@ const data = reactive({
 	env: [] as envImp[],
 });
 
-const getVolume = (volumes: any, volumeMounts: any) => {
+const getVolumeMount = (volumeMounts: any) => {
 	data.container.volumeMounts = volumeMounts;
-	data.volumes = volumes;
+	console.log('>>>>>>>>>>volumeMounts', volumeMounts, data.container.volumeMounts);
 };
 const getCommand = (c: any) => {
 	data.container.command = c.commands;
@@ -582,16 +582,22 @@ watch(
 	() => props.container,
 	() => {
 		if (props.container && !isObjectValueEqual(data.container, props.container)) {
-			data.container = props.container;
+			console.log('YYYYYYYYYYYYY', props.container);
+			const copyData = deepClone(props.container) as V1Container;
+			if (!data.container.volumeMounts) {
+				data.container.volumeMounts = [] as V1VolumeMount[];
+			}
+
 			if (!data.container.lifecycle) {
 				data.container.lifecycle = {};
 			}
 
-			if (props.container.env && props.container.env.length != 0) {
-				parseEnv(props.container.env);
+			if (copyData.env && copyData.env.length != 0) {
+				parseEnv(copyData.env);
 			}
 			// }
-			data.ports = props.container.ports;
+			data.container = copyData;
+			if (copyData.ports) data.ports = copyData.ports;
 		}
 	},
 	{
@@ -603,6 +609,7 @@ watch(
 watch(
 	() => [data.container, data.ports, data.liveCheck, data.readyCheck, data.startCheck, data.resourceSet, data.lifePostStartSet],
 	() => {
+		console.log('1.触发updateContainer，>>>>>', data.container);
 		// if (data.container.name != k8sStore.state.creatDeployment.name) {
 		// 	data.container.name = k8sStore.state.creatDeployment.name;
 		// }

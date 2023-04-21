@@ -15,24 +15,12 @@ import { defineAsyncComponent, reactive, watch } from 'vue';
 import { ref } from 'vue-demi';
 import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
 import type { TabPaneName } from 'element-plus';
+import { isObjectValueEqual } from '/@/utils/arrayOperation';
+import { deepClone } from '/@/utils/other';
 
 const Container = defineAsyncComponent(() => import('./container.vue'));
 
 const editableTabsValue = ref(0);
-// const itemRefs = ref([]);
-// // //动态设置ref
-// const setItemRef = (el) => {
-// 	if (el) {
-// 		itemRefs.value.push(el);
-// 	}
-// };
-// const editableTabs = ref([
-// 	{
-// 		title: '容器' + tabIndex,
-// 		name: '1',
-// 		closeAble: false,
-// 	},
-// ]);
 
 const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 'add') => {
 	if (action === 'add') {
@@ -40,46 +28,22 @@ const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 
 
 		data.containers.push(data.container);
 		editableTabsValue.value = newTabName;
-		console.log('当前活动页面：', editableTabsValue.value);
 	} else if (action === 'remove') {
-		console.log('我要删除第：', targetName);
 		if (targetName === 0) {
 			return;
 		}
 		const tabs = data.containers;
 		let activeName = editableTabsValue.value;
 		if (activeName === targetName) {
-			// tabs.forEach((tab, index) => {
-			// 	if ((index + 1) === targetName) {
-			//
-			// 		// const nextTab = tabs[index + 1] || tabs[index - 1];
-			// 		let nextTab = 0;
-			// 		if (tabs[index + 2]) {
-			// 			nextTab = index + 1 ;
-			// 		} else if (tabs[index - 1]) {
-			// 			nextTab = index - 1 ;
-			// 		}
-			// 		// itemRefs.value.splice(index, 1);
-			// 		if (nextTab) {
-			// 			activeName = nextTab;
-			// 		}
-			// 	}
-
-			// });
 			activeName = activeName - 1;
 		}
 		tabs.forEach((tab, index) => {
-			console.log('我要删除：', index, targetName, activeName);
 			if (index === targetName) {
-				console.log('我在删除：', index, targetName);
 				tabs.splice(index, 1);
 			}
 		});
 		data.containers = tabs;
 		editableTabsValue.value = activeName;
-		console.log(editableTabsValue.value);
-		// data.containers = tabs.filter((tab,index) => (index+1) !== targetName);
-		// data.containers = tabs.splice(activeName,1);
 	}
 };
 
@@ -115,12 +79,13 @@ const data = reactive({
 });
 
 const getContainer = (index: number, container: V1Container) => {
+	console.log('&&&&&&&&&&&&&&&&&container&&&&--------', container, data.containers[index], isObjectValueEqual(data.containers[index], container));
 	if (index === editableTabsValue.value) {
 		// // FIXME  初始化container name
-		// if (data.containers[index].name === '' && k8sStore.state.creatDeployment.name && k8sStore.state.creatDeployment.name != '') {
-		// 	data.containers[index].name = k8sStore.state.creatDeployment.name + '-pod';
-		// }
+		// if (!isObjectValueEqual(data.containers[index], container)) {
+		console.log('2.&&&&&&&&&&&&&&&&&container&&&&&&&&&', container);
 		data.containers[index] = container;
+		// }
 	}
 };
 
@@ -131,8 +96,9 @@ const props = defineProps({
 watch(
 	() => props.containers,
 	() => {
-		if (props.containers && props.containers.length != 0) {
-			data.containers = props.containers;
+		if (props.containers && props.containers.length != 0 && !isObjectValueEqual(data.containers, props.containers)) {
+			console.log('a.ZZZZZZZZZZZZZZZZZJHGDKJAGSKDBKJASD', props.containers);
+			data.containers = deepClone(props.containers) as V1Container[];
 		}
 	},
 	{
@@ -143,8 +109,9 @@ watch(
 const emit = defineEmits(['updateContainers']);
 
 watch(
-	() => data.containers,
+	() => [...data.containers],
 	() => {
+		console.log('3.containers jiesho;;;;;;', data.containers);
 		emit('updateContainers', data.containers);
 	},
 	{

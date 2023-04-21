@@ -53,13 +53,12 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, reactive, watch } from 'vue';
+import { defineAsyncComponent, reactive, watch } from 'vue';
 
-import { ref } from 'vue-demi';
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { V1Container, V1Deployment, V1DeploymentSpec, V1LabelSelector } from '@kubernetes/client-node';
+import { V1Container, V1DeploymentSpec } from '@kubernetes/client-node';
 import yaml from 'js-yaml';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { kubernetesInfo } from '/@/stores/kubernetes';
@@ -68,6 +67,7 @@ import router from '/@/router';
 import { useRoute } from 'vue-router';
 import mittBus from '/@/utils/mitt';
 import { deepClone } from '/@/utils/other';
+import { isObjectValueEqual } from '/@/utils/arrayOperation';
 const kubeInfo = kubernetesInfo();
 const deployApi = useDeploymentApi();
 
@@ -75,6 +75,7 @@ const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vu
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
 // 格式化 env
 const data = reactive({
+	loadCode: false,
 	active: 1,
 	deployment: {
 		apiVersion: 'apps/v1',
@@ -113,19 +114,18 @@ const data = reactive({
 const extensions = [javascript(), oneDark];
 const getContainers = (containers: Array<V1Container>) => {
 	data.deployment.spec.template.spec.containers = containers;
-	data.code = yaml.dump(data.deployment);
+	console.log('接收到容器发生变化。。。。。', containers);
+	updateCodeMirror();
 };
+
 const getMeta = (newData) => {
-	// console.log('获取到的deployment数据:', newData, data, isObjectValueEqual(data.deployment.metadata, newData.meta));
-	// if (!isObjectValueEqual(data.deployment.metadata,newData.meta )  || data.deployment.spec!.replicas != newData.replicas) {
 	const dep = deepClone(newData);
 	const metaLabels = deepClone(newData);
 	data.deployment.metadata = newData.meta;
 	data.deployment.spec.selector.matchLabels = dep.meta.labels;
 	data.deployment.spec.template.metadata.labels = metaLabels.meta.labels;
 	data.deployment.spec!.replicas = newData.replicas;
-	data.code = yaml.dump(data.deployment);
-	// }
+	updateCodeMirror();
 };
 const jumpTo = (id) => {
 	data.active = id;
@@ -142,7 +142,9 @@ const next = () => {
 const route = useRoute();
 mittBus.on('updateVolumes', (res) => {
 	data.deployment.spec.template.spec.volumes = res;
+	updateCodeMirror();
 });
+
 const confirm = () => {
 	// data.code = yaml.dump(data.deployment);
 	deployApi
@@ -159,19 +161,29 @@ const confirm = () => {
 			ElMessage.error(e.message);
 		});
 };
+const updateCodeMirror = () => {
+	data.loadCode = true;
+	data.code = yaml.dump(data.deployment);
+	setTimeout(() => {
+		data.loadCode = false;
+	}, 200);
+};
 
 watch(
 	() => data.code,
 	(newValue, oldValue) => {
 		// console.log("Code ----新的：",newValue, "老的:",oldValue)
-		if (newValue) {
+		if (newValue && !data.loadCode) {
 			if (newValue != oldValue) {
 				const newData = yaml.load(newValue);
-				console.log('code变化了，回填数据', newData, 'oldCPde:', oldValue);
+				console.log('code变化了，回填数据', newValue, 'oldCPde:', oldValue);
 				data.bindMetaData.metadata = newData.metadata;
 				data.bindMetaData.replicas = newData.spec?.replicas!;
-				data.deployment.spec.template.spec.containers = newData.spec.template.spec.containers;
-				mittBus.emit('updateDeployment', newData.spec.template.spec.volumes);
+				data.deployment = newData;
+				console.log('^^^^^^^^^^^^^^^^^^^^^^', data.deployment);
+				if (!isObjectValueEqual(data.deployment.spec.template.spec.volumes, newData.spec.template.spec.volumes)) {
+					mittBus.emit('updateDeployment', newData.spec.template.spec.volumes);
+				}
 			}
 		}
 	},

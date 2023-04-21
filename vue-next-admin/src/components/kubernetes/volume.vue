@@ -166,10 +166,9 @@
 
 <script setup lang="ts">
 import { CaretBottom, CaretTop, CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { defineAsyncComponent, reactive, ref, watch } from 'vue';
+import { onUnmounted, reactive, ref, watch } from 'vue';
 import {
 	V1ConfigMap,
-	V1Deployment,
 	V1EmptyDirVolumeSource,
 	V1HostPathVolumeSource,
 	V1PersistentVolumeClaimVolumeSource,
@@ -365,14 +364,16 @@ const handleSet = () => {
 	});
 };
 mittBus.on('updateDeployment', (volumes: any) => {
-	console.log('*************////', volumes);
-	if (data.volumes != volumes) {
-		console.log('--------------------', volumes);
+	if (!isObjectValueEqual(volumes, data.volumes)) {
+		console.log('--------------------', volumes, data.volumes, isObjectValueEqual(volumes, data.volumes));
 		data.tmpVolumes = volumes;
 	}
 });
+onUnmounted(() => {
+	mittBus.off('updateDeployment', () => {});
+});
 const props = defineProps({
-	volumeMount: Array,
+	volumeMounts: Array,
 });
 const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
 	const tmpVolumeMount = [];
@@ -397,13 +398,14 @@ const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
 		});
 	});
 	console.log('#$^^^^^%%%%%%%%%%%%%%%%%', tmpVolumeMount, volumeMount, data.tmpVolumes);
-	data.volumeData = tmpVolumeMount;
+	if (!isObjectValueEqual(data.volumeData, tmpVolumeMount)) data.volumeData = tmpVolumeMount;
 };
 watch(
-	() => [props.volumeMount, data.tmpVolumes],
+	() => [props.volumeMounts, data.tmpVolumes],
 	() => {
-		if (props.volumeMount && !isObjectValueEqual(props.volumeMount, data.volumeMount)) {
-			parseVolumeMount(props.volumeMount);
+		console.log('XXXxxxxxxxxx', props.volumeMounts);
+		if (props.volumeMounts) {
+			parseVolumeMount(props.volumeMounts);
 		}
 	},
 	{
@@ -416,9 +418,9 @@ const emit = defineEmits(['updateVolume']);
 watch(
 	() => [data.volumeData],
 	() => {
+		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', data.volumeData);
 		handleVolumeData();
-		console.log(data);
-		emit('updateVolume', data.volumes, data.volumeMount);
+		emit('updateVolume', data.volumeMount);
 		mittBus.emit('updateVolumes', data.volumes);
 	},
 	{

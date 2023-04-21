@@ -60,6 +60,7 @@ import { kubernetesInfo } from '/@/stores/kubernetes';
 import { ref } from 'vue-demi';
 import { CirclePlusFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
+import { deepClone } from '/@/utils/other';
 
 const Label = defineAsyncComponent(() => import('/@/components/kubernetes/label.vue'));
 
@@ -134,7 +135,7 @@ watch(
 	() => props.bindData,
 	() => {
 		data.resourceType = props.bindData.resourceType;
-		data.meta = JSON.parse(JSON.stringify(props.bindData.metadata));
+		data.meta = deepClone(props.bindData.metadata) as V1ObjectMeta;
 		//处理labels标签
 		if (props.bindData.metadata.labels) {
 			handleLabels(props.bindData.metadata.labels);
