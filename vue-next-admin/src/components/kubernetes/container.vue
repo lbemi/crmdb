@@ -383,22 +383,21 @@ const data = reactive({
 		securityContext: {
 			privileged: false,
 		} as V1SecurityContext,
-
-		livenessProbe: {},
-		readinessProbe: {},
-		startupProbe: {},
-		env: [] as V1EnvVar[],
-		ports: [] as V1ContainerPort,
-		resources: {
-			limits: {
-				cpu: '',
-				memory: '',
-			},
-			requests: {
-				cpu: '',
-				memory: '',
-			},
-		},
+		// livenessProbe: {},
+		// readinessProbe: {},
+		// startupProbe: {},
+		// env: [] as V1EnvVar[],
+		// ports: [] as V1ContainerPort,
+		// resources: {
+		// 	limits: {
+		// 		cpu: '',
+		// 		memory: '',
+		// 	},
+		// 	requests: {
+		// 		cpu: '',
+		// 		memory: '',
+		// 	},
+		// },
 	} as V1Container,
 	limit: {
 		cpu: '',
@@ -422,8 +421,10 @@ const getCommand = (c: any) => {
 	data.container.args = c.args;
 };
 const getPostStart = (postStart: V1LifecycleHandler) => {
-	if (data.lifePostStartSet) {
-		data.container.lifecycle!.postStart = postStart;
+	if (data.lifePostStartSet && data.container.lifecycle) {
+        console.log("kdsjhfjhkasgdfjkhsdjkfhsdjfsdhjfashjdfasjfgsajhfgsdjhfgsjfdgk");
+        
+		data.container.lifecycle.postStart = postStart;
 	} else {
 		delete data.container.lifecycle?.postStart;
 	}
@@ -572,7 +573,7 @@ const parseEnv = (envs: Array<V1EnvVar>) => {
 	data.env = envData;
 };
 const props = defineProps({
-	container: Object<V1Container>,
+	container: Object,
 	index: Number,
 });
 

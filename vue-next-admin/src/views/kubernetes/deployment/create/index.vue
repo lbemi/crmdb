@@ -54,11 +54,10 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, reactive, watch } from 'vue';
-
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { V1Container, V1DeploymentSpec } from '@kubernetes/client-node';
+import { V1Container, V1Deployment, V1ObjectMeta } from '@kubernetes/client-node';
 import yaml from 'js-yaml';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { kubernetesInfo } from '/@/stores/kubernetes';
@@ -106,7 +105,7 @@ const data = reactive({
 		metadata: {
 			namespace: 'default',
 			labels: { app: '' },
-		} as V1DeploymentSpec,
+		} as V1ObjectMeta,
 		replicas: 1,
 		resourceType: 'deployment',
 	},
@@ -118,7 +117,7 @@ const getContainers = (containers: Array<V1Container>) => {
 	updateCodeMirror();
 };
 
-const getMeta = (newData) => {
+const getMeta = (newData: any) => {
 	const dep = deepClone(newData);
 	const metaLabels = deepClone(newData);
 	data.deployment.metadata = newData.meta;
@@ -127,9 +126,11 @@ const getMeta = (newData) => {
 	data.deployment.spec!.replicas = newData.replicas;
 	updateCodeMirror();
 };
-const jumpTo = (id) => {
+const jumpTo = (id: number) => {
 	data.active = id;
-	document.getElementById(id).scrollIntoView(true);
+	if (document.getElementById(id + '') != null) {
+		document.getElementById(id + '').scrollIntoView(true);
+	}
 };
 const next = () => {
 	// data.deployment.metadata = metaRef.value.data.meta;
@@ -175,14 +176,16 @@ watch(
 		// console.log("Code ----新的：",newValue, "老的:",oldValue)
 		if (newValue && !data.loadCode) {
 			if (newValue != oldValue) {
-				const newData = yaml.load(newValue);
-				console.log('code变化了，回填数据', newValue, 'oldCPde:', oldValue);
-				data.bindMetaData.metadata = newData.metadata;
-				data.bindMetaData.replicas = newData.spec?.replicas!;
-				data.deployment = newData;
-				console.log('^^^^^^^^^^^^^^^^^^^^^^', data.deployment);
-				if (!isObjectValueEqual(data.deployment.spec.template.spec.volumes, newData.spec.template.spec.volumes)) {
-					mittBus.emit('updateDeployment', newData.spec.template.spec.volumes);
+				const newData = yaml.load(newValue) as V1Deployment;
+				if (typeof newData === 'object' && newData != null) {
+					console.log('code变化了，回填数据', newValue, 'oldCPde:', oldValue);
+					data.bindMetaData.metadata = newData.metadata;
+					data.bindMetaData.replicas = newData.spec?.replicas!;
+					data.deployment = newData;
+					console.log('^^^^^^^^^^^^^^^^^^^^^^', data.deployment);
+					if (!isObjectValueEqual(data.deployment.spec.template.spec.volumes, newData.spec.template.spec.volumes)) {
+						mittBus.emit('updateDeployment', newData.spec.template.spec.volumes);
+					}
 				}
 			}
 		}
