@@ -18,7 +18,7 @@
 								<Meta :bindData="data.bindMetaData" @updateData="getMeta" />
 							</div>
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-								<Containers :containers="data.deployment.spec.template.spec.containers" @updateContainers="getContainers" />
+								<!-- <Containers :containers="data.deployment.spec?.template.spec?.containers" @updateContainers="getContainers" /> -->
 							</div>
 							<div style="margin-top: 10px" id="2" v-show="data.active === 2">
 								<h1>asdj</h1>
@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, reactive, watch } from 'vue';
+import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref, watch } from 'vue';
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -67,83 +67,115 @@ import { useRoute } from 'vue-router';
 import mittBus from '/@/utils/mitt';
 import { deepClone } from '/@/utils/other';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
+import { CreateK8SBindData, CreateK8SMetaData } from '/@/types/kubernetes/custom';
+import type { FormInstance } from 'element-plus';
+
 const kubeInfo = kubernetesInfo();
 const deployApi = useDeploymentApi();
 
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
-// 格式化 env
+const metaRef = ref<FormInstance>();
 const data = reactive({
 	loadCode: false,
-	active: 1,
-	deployment: {
+	active: 0,
+	//初始化deployment
+	deployment: <V1Deployment>{
 		apiVersion: 'apps/v1',
 		kind: 'Deployment',
 		metadata: {
-			name: '',
+			// name: '',
 			namespace: 'default',
 		},
 		spec: {
+			replicas: 1,
 			selector: {
 				matchLabels: {},
 			},
-			replicas: 1,
 			template: {
 				metadata: {
 					labels: {},
 				},
 				spec: {
+					serviceAccount: 'default',
 					containers: [],
-					volumes: {},
+					// volumes: [],
+				},
+			},
+			strategy: {
+				type: 'RollingUpdate',
+				rollingUpdate: {
+					maxUnavailable: '25%',
+					maxSurge: '25%',
 				},
 			},
 		},
 	},
 	code: '',
 	// 绑定初始值
-	bindMetaData: {
-		metadata: {
-			namespace: 'default',
-			labels: { app: '' },
-		} as V1ObjectMeta,
-		replicas: 1,
+	bindMetaData: <CreateK8SBindData>{
 		resourceType: 'deployment',
 	},
 });
 const extensions = [javascript(), oneDark];
 const getContainers = (containers: Array<V1Container>) => {
-	data.deployment.spec.template.spec.containers = containers;
-	console.log('接收到容器发生变化。。。。。', containers);
-	updateCodeMirror();
+	// data.deployment.spec!.template.spec!.containers = containers;
+	// console.log('接收到容器发生变化。。。。。', containers);
+	// updateCodeMirror();
 };
 
-const getMeta = (newData: any) => {
+const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
+	metaRef.value = metaRefs;
 	const dep = deepClone(newData);
 	const metaLabels = deepClone(newData);
 	data.deployment.metadata = newData.meta;
-	data.deployment.spec.selector.matchLabels = dep.meta.labels;
-	data.deployment.spec.template.metadata.labels = metaLabels.meta.labels;
+	//更新labels
+	if (dep.meta.name) data.deployment.metadata!.labels!.app = dep.meta.name;
+	//更新selector.matchLabels
+	data.deployment.spec!.selector.matchLabels = dep.meta.labels;
+	data.deployment.spec!.template.metadata!.labels = metaLabels.meta.labels;
 	data.deployment.spec!.replicas = newData.replicas;
 	updateCodeMirror();
 };
+const nextStep = (formEl: FormInstance | undefined) => {
+	console.log(formEl);
+	if (!formEl) {
+		ElMessage.error('请输入必填项');
+		return;
+	}
+	formEl.validate((valid, fields) => {
+		if (valid) {
+			if (data.active++ > 2) data.active = 0;
+		} else {
+			ElMessage.error('请输检查字段');
+		}
+	});
+};
 const jumpTo = (id: number) => {
 	data.active = id;
-	if (document.getElementById(id + '') != null) {
-		document.getElementById(id + '').scrollIntoView(true);
-	}
+
+	document.getElementById(id + '')!.scrollIntoView(true);
 };
 const next = () => {
 	// data.deployment.metadata = metaRef.value.data.meta;
 	// data.deployment.spec!.replicas = metaRef.value.data.replicas;
 	// data.code = yaml.dump(data.deployment);
-	if (data.active++ > 2) data.active = 0;
+	nextStep(metaRef.value);
+	// if (data.active === 0) {
+	// 	if (nextStep(metaRef.value)) {
+	// 		data.active += 1;
+	// if (data.active++ > 2) data.active = 0;
+	// 	}
+	// }
+
+	// if (data.active++ > 2) data.active = 0;
 };
 
 // 定义变量内容
 const route = useRoute();
 mittBus.on('updateVolumes', (res) => {
-	data.deployment.spec.template.spec.volumes = res;
-	updateCodeMirror();
+	// data.deployment.spec!.template.spec!.volumes = res;
+	// updateCodeMirror();
 });
 
 const confirm = () => {
@@ -167,34 +199,41 @@ const updateCodeMirror = () => {
 	data.code = yaml.dump(data.deployment);
 	setTimeout(() => {
 		data.loadCode = false;
-	}, 200);
+	}, 1);
 };
-
 watch(
 	() => data.code,
 	(newValue, oldValue) => {
-		// console.log("Code ----新的：",newValue, "老的:",oldValue)
 		if (newValue && !data.loadCode) {
 			if (newValue != oldValue) {
 				const newData = yaml.load(newValue) as V1Deployment;
 				if (typeof newData === 'object' && newData != null) {
 					console.log('code变化了，回填数据', newValue, 'oldCPde:', oldValue);
-					data.bindMetaData.metadata = newData.metadata;
+					data.bindMetaData.metadata = newData.metadata!;
 					data.bindMetaData.replicas = newData.spec?.replicas!;
 					data.deployment = newData;
 					console.log('^^^^^^^^^^^^^^^^^^^^^^', data.deployment);
-					if (!isObjectValueEqual(data.deployment.spec.template.spec.volumes, newData.spec.template.spec.volumes)) {
-						mittBus.emit('updateDeployment', newData.spec.template.spec.volumes);
+					if (!isObjectValueEqual(data.deployment.spec!.template.spec!.volumes, newData.spec!.template.spec!.volumes)) {
+						mittBus.emit('updateDeployment', newData.spec!.template.spec!.volumes);
 					}
+					//重新更新一下关联字段，并更新cide
+					data.deployment.metadata!.labels!.app = newData.metadata!.name!
+					data.deployment.spec!.selector.matchLabels = deepClone(newData).metadata!.labels;
+					data.deployment.spec!.template.metadata!.labels = deepClone(newData).metadata!.labels;
+					updateCodeMirror()
+
 				}
 			}
 		}
 	},
 	{
-		immediate: true,
 		deep: true,
 	}
 );
+
+onBeforeMount(() => {
+	updateCodeMirror();
+});
 </script>
 
 <style scoped lang="scss">

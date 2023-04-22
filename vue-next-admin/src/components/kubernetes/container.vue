@@ -383,6 +383,7 @@ const data = reactive({
 		securityContext: {
 			privileged: false,
 		} as V1SecurityContext,
+		lifecycle: {},
 		// livenessProbe: {},
 		// readinessProbe: {},
 		// startupProbe: {},
@@ -421,10 +422,12 @@ const getCommand = (c: any) => {
 	data.container.args = c.args;
 };
 const getPostStart = (postStart: V1LifecycleHandler) => {
-	if (data.lifePostStartSet && data.container.lifecycle) {
-        console.log("kdsjhfjhkasgdfjkhsdjkfhsdjfsdhjfashjdfasjfgsajhfgsdjhfgsjfdgk");
-        
-		data.container.lifecycle.postStart = postStart;
+	console.log('getPostStart------', postStart);
+
+	if (data.lifePostStartSet) {
+		console.log('kdsjhfjhkasgdfjkhsdjkfhsdjfsdhjfashjdfasjfgsajhfgsdjhfgsjfdgk');
+
+		data.container.lifecycle!.postStart = postStart;
 	} else {
 		delete data.container.lifecycle?.postStart;
 	}
@@ -480,7 +483,7 @@ const cancelResource = () => {
 const buildEnv = () => {
 	const envData = [] as V1EnvVar[];
 	const envTup = JSON.parse(JSON.stringify(data.env));
-	envTup.forEach((item, index) => {
+	envTup.forEach((item: any, index: number) => {
 		if (item.type === 'custom') {
 			//自定义变量
 			const envVar: V1EnvVar = {

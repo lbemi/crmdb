@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { reactive } from 'vue';
-import { V1Deployment } from '@kubernetes/client-node';
+import { V1Deployment, V1Namespace } from '@kubernetes/client-node';
 
 /**
  * k8s集群信息
@@ -14,7 +14,7 @@ export const kubernetesInfo = defineStore(
 			activeNamespace: 'default',
 			activeDeployment: {} as V1Deployment,
 			clusters: [],
-			namespace: [],
+			namespace: [] as V1Namespace[],
 			creatDeployment: {
 				namespace: '',
 				name: '',
