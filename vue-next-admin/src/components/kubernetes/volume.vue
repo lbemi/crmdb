@@ -38,9 +38,10 @@
 			>
 				<el-table-column prop="" label="类型" width="130">
 					<template #default="scope">
-						<el-select v-model="scope.row.type" size="small">
+						<el-select v-model="scope.row.type" size="small" @change="handleTypeChange">
 							<el-option v-for="item in data.typeList" :key="item.value" :label="item.label" :value="item.value" />
 						</el-select>
+						{{ scope.row.type }}
 					</template>
 				</el-table-column>
 
@@ -51,13 +52,12 @@
 				</el-table-column>
 				<el-table-column prop="" label="挂载源" width="200">
 					<template #default="scope">
-						{{ scope.row.type }}
 						<el-input
 							v-if="scope.row.type === 'hostPath' && scope.row.hostPath"
 							v-model="scope.row.hostPath.path"
 							size="small"
 							placeholder="主机路径：/tmp"
-						/>
+						/>{{ scope.row.type }}
 						<div v-if="scope.row.type === 'persistentVolumeClaim'" style="display: flex">
 							<el-select v-model="scope.row.persistentVolumeClaim.name" size="small" :loading="data.loading" @click="getPvc" show-overflow-tooltip>
 								<el-option v-for="item in data.pvcdata" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name" />
@@ -110,7 +110,6 @@
 							</el-button>
 						</div>
 						<span v-if="scope.row.type === 'tmp'">临时目录</span>
-						<!-- <el-input v-model="scope.row.hostPath.path" size="small" placeholder="主机路径：/tmp" v-if="scope.row.type === 'tmp'" /> -->
 					</template>
 				</el-table-column>
 				<el-table-column prop="mountPath" label="容器挂载路径" width="150">
@@ -184,6 +183,7 @@ import { usePVCApi } from '/@/api/kubernetes/persitentVolumeClaim';
 import mittBus from '/@/utils/mitt';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { CreateK8SVolumentData } from '/@/types/kubernetes/custom';
+import { IterMode } from '@lezer/common';
 
 const k8sStore = kubernetesInfo();
 const configMapApi = useConfigMapApi();
@@ -366,6 +366,14 @@ const handleSet = () => {
 	} as CreateK8SVolumentData);
 };
 
+const handleTypeChange = (type: string) => {
+	console.log(type);
+	// switch(type){
+	// 	case 'hostPth': {
+	// 		data.volumeData.
+	// 	}
+	// }
+};
 mittBus.on('updateDeploymentVolumes', (volumes: any) => {
 	// if (!isObjectValueEqual(volumes, data.volumes)) {
 	// 	data.loadFromParent = true;
@@ -391,10 +399,27 @@ const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
 	const tmpVolumeMount = [] as Array<CreateK8SVolumentData>;
 	volumeMount.forEach((item: V1VolumeMount) => {
 		data.tmpVolumes.forEach((v: V1Volume) => {
+			let volumeType = '';
+			if (v.hostPath) {
+				volumeType = 'hostPath';
+			}
+			if (v.secret) {
+				volumeType = 'secret';
+			}
+			if (v.configMap) {
+				volumeType = 'configMap';
+			}
+			if (v.emptyDir) {
+				volumeType = 'tmp';
+			}
+			if (v.persistentVolumeClaim) {
+				volumeType = 'persistentVolumeClaim';
+			}
+
 			if (item.name === v.name) {
 				tmpVolumeMount.push({
 					name: item.name,
-					type: 'hostPath',
+					type: volumeType,
 					emptyDir: v.emptyDir,
 					secret: v.secret,
 					configMap: v.configMap,
