@@ -152,7 +152,7 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, reactive, watch } from 'vue';
-import { V1Container, V1ContainerPort, V1EnvVar, V1Lifecycle, V1Probe, V1SecurityContext, V1Volume, V1VolumeMount } from '@kubernetes/client-node';
+import { V1Container, V1ContainerPort, V1EnvVar, V1Lifecycle, V1Probe, V1VolumeMount } from '@kubernetes/client-node';
 import { Delete, Edit, InfoFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { V1LifecycleHandler } from '@kubernetes/client-node/dist/gen/model/v1LifecycleHandler';
@@ -253,7 +253,7 @@ const getCommand = (c: any) => {
 };
 
 const getVolumeMount = (volumeMounts: any) => {
-	// data.container.volumeMounts = volumeMounts;
+	data.container.volumeMounts = volumeMounts;
 	// console.log('>>>>>>>>>>volumeMounts', volumeMounts, data.container.volumeMounts);
 };
 

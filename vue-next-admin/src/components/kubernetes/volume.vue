@@ -51,13 +51,19 @@
 				</el-table-column>
 				<el-table-column prop="" label="挂载源" width="200">
 					<template #default="scope">
-						<el-input v-model="scope.row.hostPath.path" size="small" placeholder="主机路径：/tmp" v-show="scope.row.type === 'hostPath'" />
-						<div v-show="scope.row.type === 'persistentVolumeClaim'" style="display: flex">
+						{{ scope.row.type }}
+						<el-input
+							v-if="scope.row.type === 'hostPath' && scope.row.hostPath"
+							v-model="scope.row.hostPath.path"
+							size="small"
+							placeholder="主机路径：/tmp"
+						/>
+						<div v-if="scope.row.type === 'persistentVolumeClaim'" style="display: flex">
 							<el-select v-model="scope.row.persistentVolumeClaim.name" size="small" :loading="data.loading" @click="getPvc" show-overflow-tooltip>
-								<el-option v-for="item in data.pvcdata" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
+								<el-option v-for="item in data.pvcdata" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name" />
 							</el-select>
 						</div>
-						<div v-show="scope.row.type === 'configMap'" style="display: flex">
+						<div v-if="scope.row.type === 'configMap'" style="display: flex">
 							<el-select
 								v-model="scope.row.configMap.name"
 								size="small"
@@ -65,7 +71,7 @@
 								@click="getConfigMap(scope.row)"
 								show-overflow-tooltip
 							>
-								<el-option v-for="item in data.configMapData" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
+								<el-option v-for="item in data.configMapData" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name" />
 							</el-select>
 							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
 								<el-tooltip placement="top" effect="light">
@@ -83,9 +89,9 @@
 								</el-tooltip>
 							</el-button>
 						</div>
-						<div v-show="scope.row.type === 'secret'" style="display: flex">
+						<div v-if="scope.row.type === 'secret'" style="display: flex">
 							<el-select v-model="scope.row.secret.secretName" size="small" :loading="data.loading" @click="getSecret" show-overflow-tooltip>
-								<el-option v-for="item in data.secretData" :key="item.metadata.uid" :label="item.metadata.name" :value="item.metadata.name" />
+								<el-option v-for="item in data.secretData" :key="item.metadata!.uid" :label="item.metadata!.name" :value="item.metadata!.name" />
 							</el-select>
 							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
 								<el-tooltip placement="top" effect="dark">
@@ -103,8 +109,8 @@
 								</el-tooltip>
 							</el-button>
 						</div>
-						<span v-show="scope.row.type === 'tmp'">临时目录</span>
-						<el-input v-model="scope.row.hostPath.path" size="small" placeholder="主机路径：/tmp" v-show="scope.row.type === ' '" />
+						<span v-if="scope.row.type === 'tmp'">临时目录</span>
+						<!-- <el-input v-model="scope.row.hostPath.path" size="small" placeholder="主机路径：/tmp" v-if="scope.row.type === 'tmp'" /> -->
 					</template>
 				</el-table-column>
 				<el-table-column prop="mountPath" label="容器挂载路径" width="150">
@@ -167,7 +173,7 @@
 <script setup lang="ts">
 import { CaretBottom, CaretTop, CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { onUnmounted, reactive, ref, watch } from 'vue';
-import { V1ConfigMap, V1Secret, V1Volume, V1VolumeMount } from '@kubernetes/client-node';
+import { V1ConfigMap, V1PersistentVolumeClaim, V1Secret, V1Volume, V1VolumeMount } from '@kubernetes/client-node';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
 import { kubernetesInfo } from '/@/stores/kubernetes';
@@ -216,7 +222,7 @@ const data = reactive({
 		},
 	],
 	volumeData: [] as Array<CreateK8SVolumentData>,
-	pvcdata: [],
+	pvcdata: [] as V1PersistentVolumeClaim[],
 	tmpVolumes: [] as V1Volume[],
 	volumes: [] as V1Volume[],
 	volumeMount: [] as V1VolumeMount[],
@@ -292,9 +298,9 @@ const handleClose = () => {
 };
 const handleConfirm = () => {
 	if (data.tmpData.type === 'configMap') {
-		data.volumeData[data.index].configMap.items = data.items;
+		data.volumeData[data.index].configMap!.items = data.items;
 	} else if (data.tmpData.type === 'secret') {
-		data.volumeData[data.index].secret.items = data.items;
+		data.volumeData[data.index].secret!.items = data.items;
 	}
 	handleClose();
 };
@@ -333,6 +339,7 @@ const handleVolumeData = () => {
 		}
 	});
 	data.volumeMount = tempVolumeMount;
+	data.tmpVolumes = tmpVolume;
 	data.volumes = tmpVolume;
 };
 const handleSet = () => {
@@ -342,10 +349,14 @@ const handleSet = () => {
 		keySetShow: false,
 		type: 'hostPath',
 		name: name,
-		hostPath: {},
+		hostPath: {
+			path: '',
+		},
 		secret: {},
 		configMap: {},
-		persistentVolumeClaim: {},
+		persistentVolumeClaim: {
+			claimName: '',
+		},
 		emptyDir: {},
 		volumeMountData: {
 			name: name,
@@ -354,16 +365,17 @@ const handleSet = () => {
 		},
 	} as CreateK8SVolumentData);
 };
+
 mittBus.on('updateDeploymentVolumes', (volumes: any) => {
-	if (!isObjectValueEqual(volumes, data.volumes)) {
-		data.loadFromParent = true;
-		console.log('--------------------', volumes);
-		data.tmpVolumes = volumes;
-		parseVolumeMount(data.volumeMount);
-		setTimeout(() => {
-			data.loadFromParent = false;
-		}, 100);
-	}
+	// if (!isObjectValueEqual(volumes, data.volumes)) {
+	// 	data.loadFromParent = true;
+	// 	console.log('--------------------', volumes);
+	// 	data.tmpVolumes = volumes;
+	// 	parseVolumeMount(data.volumeMount);
+	// 	setTimeout(() => {
+	// 		data.loadFromParent = false;
+	// 	}, 100);
+	// }
 });
 
 onUnmounted(() => {
@@ -376,13 +388,13 @@ const props = defineProps({
 });
 
 const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
-	const tmpVolumeMount = [] as any;
-	volumeMount.forEach((item) => {
-		data.tmpVolumes.forEach((v) => {
+	const tmpVolumeMount = [] as Array<CreateK8SVolumentData>;
+	volumeMount.forEach((item: V1VolumeMount) => {
+		data.tmpVolumes.forEach((v: V1Volume) => {
 			if (item.name === v.name) {
 				tmpVolumeMount.push({
 					name: item.name,
-					type: 'tmp',
+					type: 'hostPath',
 					emptyDir: v.emptyDir,
 					secret: v.secret,
 					configMap: v.configMap,
@@ -403,8 +415,10 @@ const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
 watch(
 	() => [props.volumeMounts, data.tmpVolumes],
 	() => {
-		if (props.volumeMounts) {
+		if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0) {
 			data.loadFromParent = true;
+			console.log('更新。。。。。。', props.volumeMounts);
+
 			parseVolumeMount(props.volumeMounts);
 			setTimeout(() => {
 				data.loadFromParent = false;

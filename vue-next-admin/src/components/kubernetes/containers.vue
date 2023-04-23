@@ -87,7 +87,7 @@ const getContainer = (index: number, container: V1Container) => {
 	if (index === editableTabsValue.value) {
 		// // FIXME  初始化container name
 		// if (!isObjectValueEqual(data.containers[index], container)) {
-		console.log('2.&&&&&&&&&&&&&&&&&container&&&&&&&&&', container);
+		console.log('2.接收container----->containers', container);
 		data.containers[index] = deepClone(container) as V1Container;
 
 		// }
