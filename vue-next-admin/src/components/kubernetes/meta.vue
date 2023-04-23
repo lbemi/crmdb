@@ -28,13 +28,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, reactive, watch } from 'vue';
+import { computed, defineAsyncComponent, reactive, watch } from 'vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { ref } from 'vue-demi';
-import { CirclePlusFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { deepClone } from '/@/utils/other';
-import { CreateK8SBindData, CreateK8SLabel, CreateK8SMetaData } from '/@/types/kubernetes/custom';
+import { CreateK8SBindData, CreateK8SMetaData } from '/@/types/kubernetes/custom';
 import type { FormInstance, FormRules } from 'element-plus';
 
 const Label = defineAsyncComponent(() => import('/@/components/kubernetes/label.vue'));
@@ -130,10 +129,8 @@ const props = defineProps<{
 watch(
 	() => props.bindData,
 	() => {
-		console.log('****', data.meta, props.bindData);
 		if (props.bindData) {
 			data.loadFromParent = true;
-
 			if (props.bindData.metadata) {
 				data.meta = deepClone(props.bindData.metadata);
 			}
@@ -153,7 +150,7 @@ watch(
 			}
 
 			setTimeout(() => {
-				//延迟一下，不然会出发循环更新
+				//延迟一下，不然会触发循环更新
 				data.loadFromParent = false;
 			}, 1);
 		}

@@ -167,17 +167,7 @@
 <script setup lang="ts">
 import { CaretBottom, CaretTop, CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { onUnmounted, reactive, ref, watch } from 'vue';
-import {
-	V1ConfigMap,
-	V1EmptyDirVolumeSource,
-	V1HostPathVolumeSource,
-	V1PersistentVolumeClaimVolumeSource,
-	V1Secret,
-	V1Volume,
-	V1VolumeMount,
-} from '@kubernetes/client-node';
-import { V1SecretVolumeSource } from '@kubernetes/client-node/dist/gen/model/v1SecretVolumeSource';
-import { V1ConfigMapVolumeSource } from '@kubernetes/client-node/dist/gen/model/v1ConfigMapVolumeSource';
+import { V1ConfigMap, V1Secret, V1Volume, V1VolumeMount } from '@kubernetes/client-node';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
 import { kubernetesInfo } from '/@/stores/kubernetes';
@@ -187,6 +177,7 @@ import { V1KeyToPath } from '@kubernetes/client-node/dist/gen/model/v1KeyToPath'
 import { usePVCApi } from '/@/api/kubernetes/persitentVolumeClaim';
 import mittBus from '/@/utils/mitt';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
+import { CreateK8SVolumentData } from '/@/types/kubernetes/custom';
 
 const k8sStore = kubernetesInfo();
 const configMapApi = useConfigMapApi();
@@ -196,9 +187,10 @@ const dialogFormVisible = ref(false);
 const dialogRef = ref();
 
 const data = reactive({
-	tmpData: {},
+	loadFromParent: false,
+	tmpData: {} as any,
 	index: 0,
-	keyValData: {},
+	keyValData: {} as { [key: string]: string } | undefined,
 	set: false,
 	show: true,
 	typeList: [
@@ -223,7 +215,7 @@ const data = reactive({
 			value: 'persistentVolumeClaim',
 		},
 	],
-	volumeData: [],
+	volumeData: [] as Array<CreateK8SVolumentData>,
 	pvcdata: [],
 	tmpVolumes: [] as V1Volume[],
 	volumes: [] as V1Volume[],
@@ -267,7 +259,7 @@ const openDialog = (config: any, index: number) => {
 		}
 		dialogFormVisible.value = true;
 		if (dialogFormVisible.value) {
-			data.configMapData.forEach((item) => {
+			data.configMapData.forEach((item: V1ConfigMap) => {
 				if (item.metadata?.name === config.configMap.name) {
 					data.keyValData = item.data;
 				}
@@ -311,7 +303,7 @@ const handleVolumeData = () => {
 	const tmpVolume = [] as V1Volume[];
 	const tempVolumeMount = [] as V1VolumeMount[];
 
-	data.volumeData.forEach((item, index) => {
+	data.volumeData.forEach((item: any, index: number) => {
 		if (tempVolumeMount.length === index) {
 			tempVolumeMount.push({} as V1VolumeMount);
 		}
@@ -344,39 +336,47 @@ const handleVolumeData = () => {
 	data.volumes = tmpVolume;
 };
 const handleSet = () => {
-	// data.set = !data.set;
 	const name = 'volume-' + uuid().toString().split('-')[1];
 	data.volumeData.push({
 		keySet: false,
 		keySetShow: false,
 		type: 'hostPath',
 		name: name,
-		hostPath: {} as V1HostPathVolumeSource,
-		secret: {} as V1SecretVolumeSource,
-		configMap: {} as V1ConfigMapVolumeSource,
-		persistentVolumeClaim: {} as V1PersistentVolumeClaimVolumeSource,
-		emptyDir: {} as V1EmptyDirVolumeSource,
+		hostPath: {},
+		secret: {},
+		configMap: {},
+		persistentVolumeClaim: {},
+		emptyDir: {},
 		volumeMountData: {
 			name: name,
 			mountPath: '',
 			subPath: '',
-		} as V1VolumeMount,
-	});
+		},
+	} as CreateK8SVolumentData);
 };
-mittBus.on('updateDeployment', (volumes: any) => {
+mittBus.on('updateDeploymentVolumes', (volumes: any) => {
 	if (!isObjectValueEqual(volumes, data.volumes)) {
-		console.log('--------------------', volumes, data.volumes, isObjectValueEqual(volumes, data.volumes));
+		data.loadFromParent = true;
+		console.log('--------------------', volumes);
 		data.tmpVolumes = volumes;
+		parseVolumeMount(data.volumeMount);
+		setTimeout(() => {
+			data.loadFromParent = false;
+		}, 100);
 	}
 });
+
 onUnmounted(() => {
-	mittBus.off('updateDeployment', () => {});
+	//卸载
+	mittBus.off('updateDeploymentVolumes', () => {});
 });
+
 const props = defineProps({
-	volumeMounts: Array,
+	volumeMounts: Array<V1VolumeMount>,
 });
+
 const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
-	const tmpVolumeMount = [];
+	const tmpVolumeMount = [] as any;
 	volumeMount.forEach((item) => {
 		data.tmpVolumes.forEach((v) => {
 			if (item.name === v.name) {
@@ -403,9 +403,12 @@ const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
 watch(
 	() => [props.volumeMounts, data.tmpVolumes],
 	() => {
-		console.log('XXXxxxxxxxxx', props.volumeMounts);
 		if (props.volumeMounts) {
+			data.loadFromParent = true;
 			parseVolumeMount(props.volumeMounts);
+			setTimeout(() => {
+				data.loadFromParent = false;
+			}, 100);
 		}
 	},
 	{
@@ -414,14 +417,16 @@ watch(
 	}
 );
 
-const emit = defineEmits(['updateVolume']);
+const emit = defineEmits(['updateVolumeMount']);
 watch(
 	() => [data.volumeData],
 	() => {
-		console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', data.volumeData);
-		handleVolumeData();
-		emit('updateVolume', data.volumeMount);
-		mittBus.emit('updateVolumes', data.volumes);
+		if (!data.loadFromParent) {
+			console.log('触发更新volume--->', data.volumeData);
+			handleVolumeData();
+			emit('updateVolumeMount', data.volumeMount);
+			mittBus.emit('updateVolumes', data.volumes);
+		}
 	},
 	{
 		immediate: true,

@@ -24,15 +24,7 @@
 				style="margin-left: 30px"
 				>隐藏</el-button
 			>
-			<el-button
-				v-else
-				type="info"
-				v-show="data.set"
-				text
-				:icon="CaretBottom"
-				@click="data.show = !data.show"
-				size="small"
-				style="margin-left: 30px"
+			<el-button v-else type="info" v-show="data.set" text :icon="CaretBottom" @click="data.show = !data.show" size="small" style="margin-left: 30px"
 				>展开</el-button
 			>
 		</el-form-item>
@@ -52,14 +44,16 @@ import { CaretBottom, CaretTop } from '@element-plus/icons-vue';
 import { reactive, watch } from 'vue';
 import { deepClone } from '/@/utils/other';
 
+// FIXME args无法清空
 const data = reactive({
+	loadFromParent: false,
 	set: false,
 	show: true,
 	commands: '',
 	args: '',
 	k8s: {
-		commands: [],
-		args: [],
+		commands: [''],
+		args: [''],
 	},
 });
 const props = defineProps({
@@ -70,7 +64,7 @@ const props = defineProps({
 const handleArr = (source: Array<String>) => {
 	const dataCopy = deepClone(source);
 	let str = '';
-	dataCopy.forEach((item, index) => {
+	dataCopy.forEach((item: string, index: number) => {
 		if (index == dataCopy.length - 1) {
 			str = str + item;
 		} else {
@@ -82,12 +76,16 @@ const handleArr = (source: Array<String>) => {
 watch(
 	() => [props.args, props.commands],
 	() => {
+		data.loadFromParent = true;
 		if (props.args) {
 			data.args = handleArr(props.args);
 		}
 		if (props.commands) {
 			data.commands = handleArr(props.commands);
 		}
+		setTimeout(() => {
+			data.loadFromParent = false;
+		}, 100);
 	},
 	{
 		immediate: true,
@@ -98,18 +96,20 @@ const emit = defineEmits(['updateCommand']);
 watch(
 	() => [data.args, data.commands, data.set],
 	() => {
-		if (!data.set) {
-			data.k8s.args = [];
-			data.k8s.commands = [];
-		} else {
-			if (data.args) {
-				data.k8s.args = data.args.split(',');
+		if (!data.loadFromParent) {
+			if (!data.set) {
+				data.k8s.args = [];
+				data.k8s.commands = [];
+			} else {
+				if (data.args) {
+					data.k8s.args = data.args.split(',');
+				}
+				if (props.commands) {
+					data.k8s.commands = data.commands.split(',');
+				}
 			}
-			if (props.commands) {
-				data.k8s.commands = data.commands.split(',');
-			}
+			emit('updateCommand', data.k8s);
 		}
-		emit('updateCommand', data.k8s);
 	},
 	{
 		immediate: true,

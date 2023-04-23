@@ -1,5 +1,12 @@
-import { number } from '@intlify/core-base';
-import { V1ObjectMeta } from '@kubernetes/client-node';
+import {
+	V1ObjectMeta,
+	V1VolumeMount,
+	V1HostPathVolumeSource,
+	V1SecretVolumeSource,
+	V1ConfigMapVolumeSource,
+	V1PersistentVolumeClaimVolumeSource,
+	V1EmptyDirVolumeSource,
+} from '@kubernetes/client-node';
 
 export declare type ResourceType = 'deployment' | 'daemonSet' | 'statefulSet' | 'job' | 'cronJob';
 
@@ -21,4 +28,17 @@ export declare type CreateK8SMetaData = {
 	replicas?: number;
 	resourceType?: ResourceType;
 	meta?: V1ObjectMeta;
+};
+
+export declare type CreateK8SVolumentData = {
+	keySet: boolean;
+	keySetShow: boolean;
+	type: string;
+	name: string;
+	hostPath: V1HostPathVolumeSource;
+	secret: V1SecretVolumeSource;
+	configMap: V1ConfigMapVolumeSource;
+	persistentVolumeClaim: V1PersistentVolumeClaimVolumeSource;
+	emptyDir: V1EmptyDirVolumeSource;
+	volumeMountData: V1VolumeMount;
 };

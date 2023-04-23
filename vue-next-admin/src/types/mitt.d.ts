@@ -23,7 +23,7 @@ declare type MittType<T = any> = {
 	openShareTagsView?: string;
 	onTagsViewRefreshRouterView?: T;
 	onCurrentContextmenuClick?: T;
-	updateDeployment: T;
+	updateDeploymentVolumes: T;
 	updateVolumes: T;
 };
 

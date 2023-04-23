@@ -17,8 +17,11 @@
 							<div style="margin-top: 10px" id="0" v-show="data.active === 0">
 								<Meta :bindData="data.bindMetaData" @updateData="getMeta" />
 							</div>
-							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-								<!-- <Containers :containers="data.deployment.spec?.template.spec?.containers" @updateContainers="getContainers" /> -->
+							<div style="margin-top: 10px" id="1" v-if="data.active === 1">
+								<Containers
+									:containers="deepClone(data.deployment.spec!.template.spec!.containers) as Array< V1Container>"
+									@updateContainers="getContainers"
+								/>
 							</div>
 							<div style="margin-top: 10px" id="2" v-show="data.active === 2">
 								<h1>asdj</h1>
@@ -53,11 +56,11 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref, watch } from 'vue';
+import { defineAsyncComponent, onBeforeMount, onUnmounted, reactive, ref, watch } from 'vue';
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { V1Container, V1Deployment, V1ObjectMeta } from '@kubernetes/client-node';
+import { V1Container, V1Deployment } from '@kubernetes/client-node';
 import yaml from 'js-yaml';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { kubernetesInfo } from '/@/stores/kubernetes';
@@ -119,9 +122,9 @@ const data = reactive({
 });
 const extensions = [javascript(), oneDark];
 const getContainers = (containers: Array<V1Container>) => {
-	// data.deployment.spec!.template.spec!.containers = containers;
-	// console.log('接收到容器发生变化。。。。。', containers);
-	// updateCodeMirror();
+	data.deployment.spec!.template.spec!.containers = containers;
+	console.log('4.接收到容器发生变化。。。。。', containers);
+	updateCodeMirror();
 };
 
 const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
@@ -138,12 +141,11 @@ const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
 	updateCodeMirror();
 };
 const nextStep = (formEl: FormInstance | undefined) => {
-	console.log(formEl);
 	if (!formEl) {
 		ElMessage.error('请输入必填项');
 		return;
 	}
-	formEl.validate((valid, fields) => {
+	formEl.validate((valid) => {
 		if (valid) {
 			if (data.active++ > 2) data.active = 0;
 		} else {
@@ -174,8 +176,8 @@ const next = () => {
 // 定义变量内容
 const route = useRoute();
 mittBus.on('updateVolumes', (res) => {
-	// data.deployment.spec!.template.spec!.volumes = res;
-	// updateCodeMirror();
+	data.deployment.spec!.template.spec!.volumes = res;
+	updateCodeMirror();
 });
 
 const confirm = () => {
@@ -208,20 +210,16 @@ watch(
 			if (newValue != oldValue) {
 				const newData = yaml.load(newValue) as V1Deployment;
 				if (typeof newData === 'object' && newData != null) {
-					console.log('code变化了，回填数据', newValue, 'oldCPde:', oldValue);
+					console.log('code变化了，回填数据', newValue);
 					data.bindMetaData.metadata = newData.metadata!;
 					data.bindMetaData.replicas = newData.spec?.replicas!;
 					data.deployment = newData;
-					console.log('^^^^^^^^^^^^^^^^^^^^^^', data.deployment);
-					if (!isObjectValueEqual(data.deployment.spec!.template.spec!.volumes, newData.spec!.template.spec!.volumes)) {
-						mittBus.emit('updateDeployment', newData.spec!.template.spec!.volumes);
-					}
+					mittBus.emit('updateDeploymentVolumes', newData.spec!.template.spec!.volumes);
 					//重新更新一下关联字段，并更新cide
-					data.deployment.metadata!.labels!.app = newData.metadata!.name!
+					data.deployment.metadata!.labels!.app = newData.metadata!.name!;
 					data.deployment.spec!.selector.matchLabels = deepClone(newData).metadata!.labels;
 					data.deployment.spec!.template.metadata!.labels = deepClone(newData).metadata!.labels;
-					updateCodeMirror()
-
+					updateCodeMirror();
 				}
 			}
 		}
@@ -233,6 +231,10 @@ watch(
 
 onBeforeMount(() => {
 	updateCodeMirror();
+});
+onUnmounted(() => {
+	//卸载
+	mittBus.off('updateVolumes', () => {});
 });
 </script>
 

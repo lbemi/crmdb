@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { defineAsyncComponent, reactive, watch } from 'vue';
 import { ref } from 'vue-demi';
-import { V1Container, V1ContainerPort, V1EnvVar, V1SecurityContext } from '@kubernetes/client-node';
+import { V1Container } from '@kubernetes/client-node';
 import type { TabPaneName } from 'element-plus';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { deepClone } from '/@/utils/other';
@@ -48,43 +48,48 @@ const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 
 };
 
 const data = reactive({
+	loadFromParent: false,
 	containers: [
 		{
 			name: '',
+			image: '',
 			imagePullPolicy: 'IfNotPresent',
 			securityContext: {
-				// privileged: false,
-			} as V1SecurityContext,
+				privileged: false,
+			},
+			ports: [],
+			env: [],
+			resources: {},
 			livenessProbe: {},
 			readinessProbe: {},
 			startupProbe: {},
-			env: [] as V1EnvVar[],
-			ports: [] as V1ContainerPort,
-			resources: {},
-		} as V1Container,
-	] as V1Container[],
-	container: {
+			lifecycle: {},
+		},
+	] as Array<V1Container>,
+	container: <V1Container>{
 		name: '',
+		image: '',
 		imagePullPolicy: 'IfNotPresent',
 		securityContext: {
-			// privileged: false,
-		} as V1SecurityContext,
+			privileged: false,
+		},
+		ports: [],
+		env: [],
+		resources: {},
 		livenessProbe: {},
 		readinessProbe: {},
 		startupProbe: {},
-		env: [] as V1EnvVar[],
-		ports: [] as V1ContainerPort,
-		resources: {},
-	} as V1Container,
+		lifecycle: {},
+	},
 });
 
 const getContainer = (index: number, container: V1Container) => {
-	console.log('&&&&&&&&&&&&&&&&&container&&&&--------', container, data.containers[index], isObjectValueEqual(data.containers[index], container));
 	if (index === editableTabsValue.value) {
 		// // FIXME  初始化container name
 		// if (!isObjectValueEqual(data.containers[index], container)) {
 		console.log('2.&&&&&&&&&&&&&&&&&container&&&&&&&&&', container);
-		data.containers[index] = container;
+		data.containers[index] = deepClone(container) as V1Container;
+
 		// }
 	}
 };
@@ -97,8 +102,13 @@ watch(
 	() => props.containers,
 	() => {
 		if (props.containers && props.containers.length != 0 && !isObjectValueEqual(data.containers, props.containers)) {
-			console.log('a.ZZZZZZZZZZZZZZZZZJHGDKJAGSKDBKJASD', props.containers);
+			data.loadFromParent = true;
+			console.log('a.接受父组件传递的containers', props.containers);
 			data.containers = deepClone(props.containers) as V1Container[];
+			setTimeout(() => {
+				// 延迟一下，不然会触发循环更新
+				data.loadFromParent = false;
+			}, 10);
 		}
 	},
 	{
@@ -109,10 +119,12 @@ watch(
 const emit = defineEmits(['updateContainers']);
 
 watch(
-	() => [...data.containers],
+	() => data.containers,
 	() => {
-		console.log('3.containers jiesho;;;;;;', data.containers);
-		emit('updateContainers', data.containers);
+		if (!data.loadFromParent) {
+			console.log('3. 自身containers 变化触发更新', data.containers, data.loadFromParent);
+			emit('updateContainers', deepClone(data.containers));
+		}
 	},
 	{
 		immediate: true,

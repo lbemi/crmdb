@@ -1,6 +1,21 @@
 <template>
 	<div>
-		<el-tabs v-model="activeName">
+		<el-checkbox v-model="data.set" label="开启" size="small" />
+		<el-button
+			v-if="data.show"
+			type="info"
+			v-show="data.set"
+			text
+			:icon="CaretTop"
+			@click="data.show = !data.show"
+			size="small"
+			style="margin-left: 30px"
+			>隐藏</el-button
+		>
+		<el-button v-else type="info" v-show="data.set" text :icon="CaretBottom" @click="data.show = !data.show" size="small" style="margin-left: 30px"
+			>展开</el-button
+		>
+		<el-tabs v-model="activeName" v-if="data.set" v-show="data.show">
 			<el-tab-pane label="Http模式" name="httpGet" v-if="data.lifeProbe.httpGet">
 				<el-form :model="data.lifeProbe.httpGet" label-width="120px" v-show="data.lifeProbe.httpGet">
 					<el-form-item label="请求方式" prop="scheme">
@@ -45,7 +60,7 @@
 						<el-input v-model="data.lifeProbe.tcpSocket.host" placeholder="一般不填写，默认为空" size="small" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="端口">
-						<el-input v-model="data.lifeProbe.tcpSocket.port" size="small" style="width: 200px" />
+						<el-input v-model.number="data.lifeProbe.tcpSocket.port" size="small" style="width: 200px" />
 					</el-form-item>
 				</el-form>
 			</el-tab-pane>
@@ -66,8 +81,12 @@ import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { deepClone } from '/@/utils/other';
 import { V1LifecycleHandler } from '@kubernetes/client-node/dist/gen/model/v1LifecycleHandler';
+import { CaretBottom, CaretTop } from '@element-plus/icons-vue';
 
 const data = reactive({
+	loadFromParent: false,
+	set: false,
+	show: true,
 	command: '',
 	lifeProbe: {
 		httpGet: {
@@ -94,6 +113,7 @@ watch(
 	() => {
 		// 数据不同则更新
 		if (props.lifeData && Object.keys(props.lifeData).length != 0 && !isObjectValueEqual(props.lifeData, data.lifeProbe)) {
+			data.loadFromParent = true;
 			const dataCopy = deepClone(props.lifeData);
 			if (dataCopy.httpGet && !isObjectValueEqual(dataCopy.httpGet, data.lifeProbe.httpGet)) {
 				data.lifeProbe.httpGet = dataCopy.httpGet;
@@ -110,6 +130,9 @@ watch(
 				});
 				if (str != data.command) data.command = str;
 			}
+			setTimeout(() => {
+				data.loadFromParent = false;
+			}, 100);
 		}
 	},
 	{
@@ -120,34 +143,38 @@ watch(
 const emit = defineEmits(['updateLifeData']);
 
 watch(
-	() => [data.lifeProbe, activeName, data.command],
+	() => [data.lifeProbe, activeName, data.set, data.command],
 	() => {
-		console.log('lifie-------------更新了', data.lifeProbe);
-
-		const copyData = deepClone(data);
-		switch (activeName.value) {
-			case 'httpGet': {
-				delete copyData.lifeProbe.tcpSocket;
-				delete copyData.lifeProbe.exec;
-				break;
-			}
-			case 'tcpSocket': {
-				delete copyData.lifeProbe.httpGet;
-				delete copyData.lifeProbe.exec;
-				break;
-			}
-			case 'exec': {
-				if (data.command.indexOf(',')) {
-					copyData.lifeProbe.exec.command = data.command.split(',');
-				} else {
-					copyData.lifeProbe.exec.command = data.command;
+		if (!data.loadFromParent && data.set) {
+			const copyData = deepClone(data);
+			switch (activeName.value) {
+				case 'httpGet': {
+					delete copyData.lifeProbe.tcpSocket;
+					delete copyData.lifeProbe.exec;
+					break;
 				}
-				delete copyData.lifeProbe.httpGet;
-				delete copyData.lifeProbe.tcpSocket;
-				break;
+				case 'tcpSocket': {
+					delete copyData.lifeProbe.httpGet;
+					delete copyData.lifeProbe.exec;
+					break;
+				}
+				case 'exec': {
+					if (data.command.indexOf(',')) {
+						copyData.lifeProbe.exec.command = data.command.split(',');
+					} else {
+						copyData.lifeProbe.exec.command = data.command;
+					}
+					delete copyData.lifeProbe.httpGet;
+					delete copyData.lifeProbe.tcpSocket;
+					break;
+				}
 			}
+			emit('updateLifeData', copyData.lifeProbe);
 		}
-		emit('updateLifeData', copyData.lifeProbe);
+
+		if (!data.set) {
+			emit('updateLifeData', {});
+		}
 	},
 	{
 		immediate: true,
