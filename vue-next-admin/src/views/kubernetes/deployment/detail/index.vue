@@ -19,27 +19,29 @@
 				<el-descriptions-item label="命名空间" label-align="right" align="center">{{
 					k8sStore.state.activeDeployment?.metadata?.namespace
 				}}</el-descriptions-item>
-				<el-descriptions-item label="副本数" label-align="right" align="center">{{
-					k8sStore.state.activeDeployment?.spec?.replicas
-				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
-					dateStrFormat(k8sStore.state.activeDeployment?.metadata.creationTimestamp)
+					dateStrFormat(k8sStore.state.activeDeployment?.metadata?.creationTimestamp)
 				}}</el-descriptions-item>
-				<el-descriptions-item label="选择器" label-align="right" align="center">
+				<el-descriptions-item label="副本数" label-align="right" align="center"
+					><el-button color="#626aef" :icon="Minus" size="small" plain style="margin-right: 10px" @click="scaleDeploy('minus')" />{{
+						k8sStore.state.activeDeployment?.spec?.replicas
+					}}<el-button color="#626aef" :icon="Plus" size="small" plain @click="scaleDeploy('plus')"
+				/></el-descriptions-item>
+				<!-- <el-descriptions-item label="选择器" label-align="right" align="center">
 					<div class="tag-center">
 						<el-tag effect="plain" round v-for="(item, key, index) in k8sStore.state.activeDeployment?.spec?.selector.matchLabels" :key="index">
 							{{ key }}:{{ item }}
 						</el-tag>
 					</div>
-				</el-descriptions-item>
+				</el-descriptions-item> -->
 				<el-descriptions-item label="镜像" label-align="right" align="center">
 					<div class="tag-center">
-						<el-tag round effect="plain" v-for="(item, index) in k8sStore.state.activeDeployment?.spec?.template.spec.containers" :key="index">{{
-							item.image.split('@')[0]
+						<el-tag round effect="plain" v-for="(item, index) in k8sStore.state.activeDeployment?.spec?.template?.spec?.containers" :key="index">{{
+							item.image?.split('@')[0]
 						}}</el-tag>
 					</div>
 				</el-descriptions-item>
-				<el-descriptions-item label="注解" label-align="right" align="center">
+				<!-- <el-descriptions-item label="注解" label-align="right" align="center">
 					<div class="tag-center">
 						<el-tag
 							effect="plain"
@@ -51,7 +53,7 @@
 							{{ key }}:{{ item }}</el-tag
 						>
 					</div>
-				</el-descriptions-item>
+				</el-descriptions-item> -->
 				<el-descriptions-item label="滚动升级策略" label-align="right" align="center">
 					<div>
 						超过期望的Pod数量：
@@ -97,14 +99,16 @@
 			</div>
 
 			<!-- <el-divider /> -->
-			<el-tabs v-model="data.activeName" class="demo-tabs" @tab-click="handleClick" height="100%">
+			<el-tabs v-model="data.activeName" class="demo-tabs" @tab-click="handleClick">
 				<el-tab-pane label="容器组" name="first">
-					<el-table :data="data.pods" stripe style="width: 100%">
+					<el-table :data="data.pods" stripe style="width: 100%" height="300px">
 						<el-table-column prop="metadata.name" label="名称">
 							<template #default="scope">
 								<el-button link type="primary">{{ scope.row.metadata.name }}</el-button>
 								<div v-if="scope.row.status.phase != 'Running'" style="color: red">
-									{{ scope.row.status.containerStatuses[0].state }}
+									<div v-if="scope.row.status.containerStatuses">
+										{{ scope.row.status.containerStatuses[0].state }}
+									</div>
 								</div>
 							</template>
 						</el-table-column>
@@ -116,7 +120,9 @@
 						</el-table-column>
 						<el-table-column label="重启次数">
 							<template #default="scope">
-								{{ scope.row.status.containerStatuses[0].restartCount }}
+								<div v-if="scope.row.status.containerStatuses">
+									{{ scope.row.status.containerStatuses[0].restartCount }}
+								</div>
 							</template>
 						</el-table-column>
 
@@ -163,7 +169,9 @@
 						</el-table-column>
 					</el-table>
 				</el-tab-pane>
-				<el-tab-pane label="Config" name="second">Config</el-tab-pane>
+				<el-tab-pane label="元数据" name="second">
+					<MetaDetail :metaData="k8sStore.state.activeDeployment.metadata" />
+				</el-tab-pane>
 				<el-tab-pane label="Role" name="third">Role</el-tab-pane>
 				<el-tab-pane label="Task" name="fourth">Task</el-tab-pane>
 			</el-tabs>
@@ -174,7 +182,7 @@
 <script lang="ts" setup name="k8sDeploymentDetail">
 import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent } from 'vue';
 import type { TabsPaneContext } from 'element-plus';
-import { ArrowLeft, CaretBottom, Edit, View } from '@element-plus/icons-vue';
+import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { V1Deployment, V1Pod } from '@kubernetes/client-node';
@@ -187,6 +195,7 @@ import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { podInfo } from '/@/stores/pod';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
+const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
 
 const yamlRef = ref();
 const deploymentApi = useDeploymentApi();
@@ -209,6 +218,28 @@ const data = reactive({
 	deployment: [],
 });
 const timer = ref();
+const scaleDeploy = (action: string) => {
+	if (action === 'plus') {
+		k8sStore.state.activeDeployment.spec!.replicas!++;
+	} else {
+		k8sStore.state.activeDeployment.spec!.replicas!--;
+	}
+	deploymentApi
+		.scaleDeployment(
+			k8sStore.state.activeDeployment.metadata!.namespace!,
+			k8sStore.state.activeDeployment.metadata!.name!,
+			k8sStore.state.activeDeployment.spec?.replicas!,
+			{ cloud: k8sStore.state.activeCluster }
+		)
+		.then((res) => {
+			if (res.code == 200) {
+				ElMessage.success('伸缩成功');
+			} else {
+				ElMessage.error('伸缩失败');
+			}
+		});
+};
+
 onMounted(() => {
 	getPods();
 	buildWebsocket();

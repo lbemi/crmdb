@@ -159,6 +159,7 @@ watch(
 	() => {
 		// 数据不同则更新
 		if (props.checkData && Object.keys(props.checkData).length != 0 && !isObjectValueEqual(props.checkData, data.probe)) {
+			data.set = true;
 			data.loadFromParent = true;
 			const dataCopy = deepClone(props.checkData);
 			if (dataCopy.httpGet && !isObjectValueEqual(dataCopy.httpGet, data.probe.httpGet)) {

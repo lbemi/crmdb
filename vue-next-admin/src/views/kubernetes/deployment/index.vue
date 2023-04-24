@@ -49,7 +49,7 @@
 						<a style="color: red">{{ scope.row.status.unavailableReplicas || '0' }}</a>
 					</template>
 				</el-table-column>
-				<el-table-column label="镜像" width="340px" show-overflow-tooltip>
+				<el-table-column label="镜像" show-overflow-tooltip>
 					<template #default="scope">
 						<el-text truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
 							item.image.split('@')[0]
@@ -57,7 +57,7 @@
 					</template>
 				</el-table-column>
 
-				<el-table-column label="标签" width="280px" show-overflow-tooltip>
+				<el-table-column label="标签" width="180px" show-overflow-tooltip>
 					<template #default="scope">
 						<el-tooltip placement="right" effect="light">
 							<template #content>
@@ -74,7 +74,7 @@
 					</template>
 				</el-table-column>
 
-				<el-table-column label="创建时间" width="180px">
+				<el-table-column label="创建时间" width="170px">
 					<template #default="scope">
 						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 					</template>

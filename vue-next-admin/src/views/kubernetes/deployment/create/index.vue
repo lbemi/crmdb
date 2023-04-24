@@ -4,6 +4,7 @@
 			<el-backtop :right="100" :bottom="100" />
 
 			<div>
+				<el-button type="primary" @click="edit">编辑</el-button>
 				<el-steps :active="data.active" finish-status="success" simple>
 					<el-step title="基本信息" description="Some description" />
 					<el-step title="容器配置" description="Some description" />
@@ -56,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeMount, onUnmounted, reactive, ref, watch } from 'vue';
+import { defineAsyncComponent, onBeforeMount, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -73,11 +74,19 @@ import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { CreateK8SBindData, CreateK8SMetaData } from '/@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
 
+const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
+const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
+
 const kubeInfo = kubernetesInfo();
 const deployApi = useDeploymentApi();
 
-const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
-const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
+const edit = () => {
+	const dep = kubeInfo.state.activeDeployment;
+	delete dep.metadata?.resourceVersion;
+	delete dep.metadata?.managedFields;
+	delete dep.status;
+	data.code = yaml.dump(dep);
+};
 const metaRef = ref<FormInstance>();
 const data = reactive({
 	loadCode: false,

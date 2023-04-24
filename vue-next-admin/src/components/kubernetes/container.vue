@@ -254,7 +254,6 @@ const getCommand = (c: any) => {
 
 const getVolumeMount = (volumeMounts: any) => {
 	data.container.volumeMounts = volumeMounts;
-	// console.log('>>>>>>>>>>volumeMounts', volumeMounts, data.container.volumeMounts);
 };
 
 const setResource = () => {
@@ -291,10 +290,16 @@ watch(
 	() => {
 		if (props.container && !isObjectValueEqual(data.container, props.container)) {
 			data.loadFromParent = true;
+
 			console.log('b.处理父组件传递的container', props.container);
 			const copyData = deepClone(props.container) as V1Container;
 			if (!data.container.volumeMounts) {
 				data.container.volumeMounts = [] as V1VolumeMount[];
+			}
+
+			if (props.container.resources.limits || props.container.resources.requests) {
+				data.resourceSet = true;
+				console.log('状态：：：', data.resourceSet);
 			}
 
 			if (!data.container.lifecycle) {

@@ -77,10 +77,13 @@ watch(
 	() => [props.args, props.commands],
 	() => {
 		data.loadFromParent = true;
+
 		if (props.args) {
+			data.set = true; //当本地数据为空，但是传递过来数据不为空时则显示
 			data.args = handleArr(props.args);
 		}
 		if (props.commands) {
+			data.set = true; //当本地数据为空，但是传递过来数据不为空时则显示
 			data.commands = handleArr(props.commands);
 		}
 		setTimeout(() => {

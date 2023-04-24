@@ -114,6 +114,7 @@ watch(
 		// 数据不同则更新
 		if (props.lifeData && Object.keys(props.lifeData).length != 0 && !isObjectValueEqual(props.lifeData, data.lifeProbe)) {
 			data.loadFromParent = true;
+			data.set = true;
 			const dataCopy = deepClone(props.lifeData);
 			if (dataCopy.httpGet && !isObjectValueEqual(dataCopy.httpGet, data.lifeProbe.httpGet)) {
 				data.lifeProbe.httpGet = dataCopy.httpGet;

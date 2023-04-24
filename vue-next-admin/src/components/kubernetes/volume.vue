@@ -392,6 +392,8 @@ const handleTypeChange = (type: string, index: number) => {
 // 监听从根组件传递的volume变化
 mittBus.on('updateDeploymentVolumes', (volumes: any) => {
 	if (!isObjectValueEqual(volumes, data.volumes)) {
+		console.log('---------------------->>>>>>>>', volumes);
+
 		data.loadFromParent = true;
 		data.tmpVolumes = volumes;
 		parseVolumeMount(data.volumeMount);
@@ -459,12 +461,15 @@ watch(
 	() => [props.volumeMounts, data.tmpVolumes],
 	() => {
 		if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0) {
+			console.log('接收到父组件的值： volume', props.volumeMounts);
+
 			data.loadFromParent = true;
 			parseVolumeMount(props.volumeMounts);
 			setTimeout(() => {
 				data.loadFromParent = false;
 			}, 100);
 		}
+		console.log('>>>>>>>>>>>>>>', data.volumeData);
 	},
 	{
 		immediate: true,
