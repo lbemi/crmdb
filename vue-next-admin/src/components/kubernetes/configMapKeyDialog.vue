@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
 	<div>
 		<el-dialog v-model="dialogFormVisible" title="指定键：" width="300px">
 			<el-form ref="dialogRef" :model="props." size="small">
@@ -39,4 +39,4 @@ const props = defineProps({
 });
 </script>
 
-<style scoped></style>
+<style scoped></style> -->

@@ -1,6 +1,6 @@
 <template>
-  <div class="layout-padding container" >
-    <el-card shadow="hover" class="layout-padding-auto">
+	<div class="layout-padding container">
+		<el-card shadow="hover" class="layout-padding-auto">
 			<el-row :gutter="20">
 				<el-col :span="20">
 					<el-button type="info" :icon="ArrowLeft" text @click="backRoute">返回</el-button>
@@ -55,11 +55,11 @@
 				<el-descriptions-item label="滚动升级策略" label-align="right" align="center">
 					<div>
 						超过期望的Pod数量：
-						{{ k8sStore.state.activeDeployment?.spec.strategy.rollingUpdate.maxSurge }}
+						{{ k8sStore.state.activeDeployment?.spec?.strategy?.rollingUpdate?.maxSurge }}
 					</div>
 					<div>
 						不可用Pod最大数量：
-						{{ k8sStore.state.activeDeployment?.spec.strategy.rollingUpdate.maxUnavailable }}
+						{{ k8sStore.state.activeDeployment?.spec?.strategy?.rollingUpdate?.maxUnavailable }}
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="策略" label-align="right" align="center">{{
@@ -97,10 +97,10 @@
 			</div>
 
 			<!-- <el-divider /> -->
-			<el-tabs v-model="data.activeName" class="demo-tabs" @tab-click="handleClick">
+			<el-tabs v-model="data.activeName" class="demo-tabs" @tab-click="handleClick" height="100%">
 				<el-tab-pane label="容器组" name="first">
 					<el-table :data="data.pods" stripe style="width: 100%">
-						<el-table-column prop="metadata.name" label="名称" width="300px">
+						<el-table-column prop="metadata.name" label="名称">
 							<template #default="scope">
 								<el-button link type="primary">{{ scope.row.metadata.name }}</el-button>
 								<div v-if="scope.row.status.phase != 'Running'" style="color: red">
@@ -108,30 +108,30 @@
 								</div>
 							</template>
 						</el-table-column>
-						<el-table-column label="状态" width="90px">
+						<el-table-column label="状态">
 							<template #default="scope">
 								<span v-if="scope.row.status.phase == 'Running'" style="color: green"> {{ scope.row.status.phase }}</span>
 								<span v-else style="color: red"> {{ scope.row.status.phase }}</span>
 							</template>
 						</el-table-column>
-						<el-table-column label="重启次数" width="90px">
+						<el-table-column label="重启次数">
 							<template #default="scope">
 								{{ scope.row.status.containerStatuses[0].restartCount }}
 							</template>
 						</el-table-column>
 
-						<el-table-column prop="status.podIP" label="IP" width="150px">
+						<el-table-column prop="status.podIP" label="IP">
 							<template #default="scope">
 								{{ scope.row.status.podIP }}
 							</template>
 						</el-table-column>
-						<el-table-column prop="spec.nodeName" label="所在节点" width="120px">
+						<el-table-column prop="spec.nodeName" label="所在节点">
 							<template #default="scope">
 								<div>{{ scope.row.spec.nodeName }}</div>
 								<div>{{ scope.row.status.hostIP }}</div>
 							</template>
 						</el-table-column>
-						<el-table-column label="标签" width="200px" show-overflow-tooltip>
+						<el-table-column label="标签" show-overflow-tooltip>
 							<template #default="scope">
 								<el-tooltip placement="top" effect="light">
 									<template #content>
@@ -168,31 +168,31 @@
 				<el-tab-pane label="Task" name="fourth">Task</el-tab-pane>
 			</el-tabs>
 		</el-card>
-    <YamlDialog ref="yamlRef" />
+		<YamlDialog ref="yamlRef" />
 	</div>
 </template>
 <script lang="ts" setup name="k8sDeploymentDetail">
-import {reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent} from 'vue';
+import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent } from 'vue';
 import type { TabsPaneContext } from 'element-plus';
 import { ArrowLeft, CaretBottom, Edit, View } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { V1Pod } from '@kubernetes/client-node';
+import { V1Deployment, V1Pod } from '@kubernetes/client-node';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { usePodApi } from '/@/api/kubernetes/pod';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
-import {podInfo} from "/@/stores/pod";
+import { podInfo } from '/@/stores/pod';
 
-const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'))
+const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 
-const yamlRef = ref()
+const yamlRef = ref();
 const deploymentApi = useDeploymentApi();
 const route = useRoute();
 const websocketApi = useWebsocketApi();
-const podStore = podInfo()
+const podStore = podInfo();
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	console.log(tab, event);
@@ -222,24 +222,24 @@ onMounted(() => {
 
 const getPods = async () => {
 	const res = await deploymentApi.detailDeployment(
-		k8sStore.state.activeDeployment.metadata?.namespace?.toString(),
-		k8sStore.state.activeDeployment?.metadata?.name?.toString(),
+		k8sStore.state.activeDeployment.metadata!.namespace!.toString(),
+		k8sStore.state.activeDeployment?.metadata!.name!.toString(),
 		data.param
 	);
 	data.pods = res.data;
 };
 
 const jumpPodExec = (p: V1Pod) => {
-  podStore.state.podShell = p;
-  router.push({
-    name: 'podShell',
-  });
+	podStore.state.podShell = p;
+	router.push({
+		name: 'podShell',
+	});
 };
 const jumpPodLog = (p: V1Pod) => {
-  podStore.state.podShell = p;
-  router.push({
-    name: 'podLog',
-  });
+	podStore.state.podShell = p;
+	router.push({
+		name: 'podLog',
+	});
 };
 const backRoute = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));
@@ -264,9 +264,9 @@ const deletePod = async (pod: V1Pod) => {
 		.catch(); // 取消
 };
 
-const showYaml =async () =>{
-  yamlRef.value.openDialog(k8sStore.state.activeDeployment)
-}
+const showYaml = async () => {
+	yamlRef.value.openDialog(k8sStore.state.activeDeployment);
+};
 const buildWebsocket = async () => {
 	const ws = await websocketApi.createWebsocket('deployment');
 
@@ -281,8 +281,8 @@ const buildWebsocket = async () => {
 				object.cluster == k8sStore.state.activeCluster
 			) {
 				data.deployment = object.result.data;
-				data.deployment.forEach((item) => {
-					if (item.metadata.name == k8sStore.state.activeDeployment?.metadata?.name) {
+				data.deployment.forEach((item: V1Deployment) => {
+					if (item.metadata!.name == k8sStore.state.activeDeployment?.metadata?.name) {
 						k8sStore.state.activeDeployment = item;
 						return;
 					}
@@ -306,14 +306,14 @@ const buildWebsocket = async () => {
 	}
 }
 .container {
-  :deep(.el-card__body) {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: auto;
-    .el-table {
-      flex: 1;
-    }
-  }
+	:deep(.el-card__body) {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		overflow: auto;
+		.el-table {
+			flex: 1;
+		}
+	}
 }
 </style>

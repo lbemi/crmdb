@@ -38,7 +38,7 @@
 			>
 				<el-table-column prop="" label="类型" width="130">
 					<template #default="scope">
-						<el-select v-model="scope.row.type" size="small" @change="(val) => handleTypeChange(val, scope.$index)">
+						<el-select v-model="scope.row.type" size="small" @change="(val:string) => handleTypeChange(val, scope.$index)">
 							<el-option v-for="item in data.typeList" :key="item.value" :label="item.label" :value="item.value" />
 						</el-select>
 					</template>
@@ -240,22 +240,26 @@ const addKey = () => {
 		path: '',
 	});
 };
+// 从接口获取configMap数据
 const getConfigMap = (config: any) => {
 	configMapApi.listConfigMap(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
 		data.configMapData = res.data.data;
 		config.keySetShow = true;
 	});
 };
+// 从接口获取secret数据
 const getSecret = () => {
 	secretApi.listSecret(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
 		data.secretData = res.data.data;
 	});
 };
+// 从接口获取pvc数据
 const getPvc = () => {
 	pvcApi.listPVC(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
 		data.pvcdata = res.data.data;
 	});
 };
+// 打开dialog,并处理初始化选项
 const openDialog = (config: any, index: number) => {
 	if (config.type === 'configMap') {
 		if (config.configMap.items != undefined) {
@@ -287,6 +291,7 @@ const openDialog = (config: any, index: number) => {
 		}
 	}
 };
+// 关闭dialog
 const handleClose = () => {
 	dialogFormVisible.value = false;
 	//置空数据
@@ -294,6 +299,7 @@ const handleClose = () => {
 	data.index = 0;
 	data.items = [];
 };
+// 确认指定特定的键值
 const handleConfirm = () => {
 	if (data.tmpData.type === 'configMap') {
 		data.volumeData[data.index].configMap!.items = data.items;
@@ -303,6 +309,7 @@ const handleConfirm = () => {
 	handleClose();
 };
 
+// 转换volumeData 为k8s所需类型的数据
 const handleVolumeData = () => {
 	const tmpVolume = [] as V1Volume[];
 	const tempVolumeMount = [] as V1VolumeMount[];
@@ -340,6 +347,8 @@ const handleVolumeData = () => {
 	data.tmpVolumes = tmpVolume;
 	data.volumes = tmpVolume;
 };
+
+// 添加volumeData数据
 const handleSet = () => {
 	const name = 'volume-' + uuid().toString().split('-')[1];
 	data.volumeData.push({
@@ -355,6 +364,7 @@ const handleSet = () => {
 	} as CreateK8SVolumentData);
 };
 
+// 根据不同的type初始化volumeData的值
 const handleTypeChange = (type: string, index: number) => {
 	// 切换type类型时初始化不同的值
 	switch (type) {
@@ -379,6 +389,7 @@ const handleTypeChange = (type: string, index: number) => {
 			break;
 	}
 };
+// 监听从根组件传递的volume变化
 mittBus.on('updateDeploymentVolumes', (volumes: any) => {
 	if (!isObjectValueEqual(volumes, data.volumes)) {
 		data.loadFromParent = true;
@@ -395,10 +406,12 @@ onUnmounted(() => {
 	mittBus.off('updateDeploymentVolumes', () => {});
 });
 
+//接受父组件传递的值
 const props = defineProps({
 	volumeMounts: Array<V1VolumeMount>,
 });
 
+//解析volumeMount为所需要的CreateK8SVolumentData 类型
 const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
 	const tmpVolumeData = [] as Array<CreateK8SVolumentData>;
 	volumeMount.forEach((item: V1VolumeMount) => {
@@ -441,6 +454,7 @@ const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
 	});
 	if (!isObjectValueEqual(data.volumeData, tmpVolumeData)) data.volumeData = tmpVolumeData;
 };
+
 watch(
 	() => [props.volumeMounts, data.tmpVolumes],
 	() => {
@@ -458,6 +472,7 @@ watch(
 	}
 );
 
+// 派发更新事件
 const emit = defineEmits(['updateVolumeMount']);
 watch(
 	() => [data.volumeData],

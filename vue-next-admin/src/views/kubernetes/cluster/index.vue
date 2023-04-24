@@ -1,5 +1,5 @@
 <template>
-	<div class="layout-padding container" >
+	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="mb15">
 				<el-input size="default" placeholder="请输入集群名称" style="max-width: 180px"> </el-input>
@@ -60,14 +60,14 @@
 <script setup lang="ts" name="kubernetesCluster">
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import router from '/@/router';
-import { ClusterInfo } from '/@/types/cluster';
 import { useClusterApi } from '/@/api/kubernetes/cluster';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { kubernetesInfo } from '/@/stores/kubernetes';
+import { ClusterInfo } from '/@/types/kubernetes/cluster';
 
 const CreateCluster = defineAsyncComponent(() => import('./component/create.vue'));
 
-const  k8sStore = kubernetesInfo();
+const k8sStore = kubernetesInfo();
 const clusterAPI = useClusterApi();
 const state = reactive({
 	dialogVisible: false,
@@ -113,7 +113,6 @@ const deleteCluster = async (cluster: any) => {
 };
 
 const handleCluster = (cluster: any) => {
-
 	k8sStore.state.activeCluster = cluster.name;
 
 	router.push({
@@ -124,14 +123,14 @@ const handleCluster = (cluster: any) => {
 
 <style scoped lang="scss">
 .container {
-  :deep(.el-card__body) {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: auto;
-    .el-table {
-      flex: 1;
-    }
-  }
+	:deep(.el-card__body) {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		overflow: auto;
+		.el-table {
+			flex: 1;
+		}
+	}
 }
 </style>

@@ -11,7 +11,7 @@
 					size="small"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
+					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata?.name" />
 				</el-select>
 				<el-button type="primary" size="small" class="ml10" @click="createDeployment">创建</el-button>
 				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" @click="deleteDeployments(data.selectData)"
@@ -49,17 +49,28 @@
 						<a style="color: red">{{ scope.row.status.unavailableReplicas || '0' }}</a>
 					</template>
 				</el-table-column>
-				<el-table-column label="镜像" width="540px">
+				<el-table-column label="镜像" width="340px" show-overflow-tooltip>
 					<template #default="scope">
-						<el-tag type="success" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
+						<el-text truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
 							item.image.split('@')[0]
-						}}</el-tag>
+						}}</el-text>
 					</template>
 				</el-table-column>
 
 				<el-table-column label="标签" width="280px" show-overflow-tooltip>
 					<template #default="scope">
-						<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index"> {{ key }}:{{ item }} </el-tag>
+						<el-tooltip placement="right" effect="light">
+							<template #content>
+								<div style="display: flex; flex-direction: column">
+									<el-tag class="label" type="" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" effect="plain" size="small">
+										{{ key }}:{{ item }}
+									</el-tag>
+								</div>
+							</template>
+							<el-tag type="" effect="plain" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
+								<div>{{ key }}:{{ item }}</div>
+							</el-tag>
+						</el-tooltip>
 					</template>
 				</el-table-column>
 
@@ -68,17 +79,63 @@
 						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 					</template>
 				</el-table-column>
+				<el-table-column fixed="right" label="操作">
+					<template #default="scope">
+						<div style="display: flex; align-items: center">
+							<el-button link type="primary" size="default" @click="deployDetail(scope.row)">详情</el-button>
+							<el-button link type="primary" size="default" @click="deployDetail(scope.row)">编辑</el-button>
+							<el-button link type="primary" size="default" @click="openScaleDialog(scope.row)">伸缩</el-button>
+							<el-button link type="primary" size="default" @click="deployDetail(scope.row)">监控</el-button>
+							<el-divider direction="vertical" />
+							<el-dropdown>
+								<span class="el-dropdown-link">
+									更多<el-icon class="el-icon--right"><CaretBottom /></el-icon>
+								</span>
+								<template #dropdown>
+									<el-dropdown-menu>
+										<el-dropdown-item @click="showYaml(scope.row)">查看Yaml</el-dropdown-item>
+										<el-dropdown-item>重新部署</el-dropdown-item>
+										<el-dropdown-item>编辑标签</el-dropdown-item>
+										<el-dropdown-item>节点亲和性</el-dropdown-item>
+										<el-dropdown-item>弹性伸缩</el-dropdown-item>
+										<el-dropdown-item>调度容忍度</el-dropdown-item>
+										<el-dropdown-item>升级策略</el-dropdown-item>
+										<el-dropdown-item>复制创建</el-dropdown-item>
+										<el-dropdown-item>回滚</el-dropdown-item>
+										<el-dropdown-item>日志</el-dropdown-item>
+										<el-dropdown-item @click="deleteDeployment(scope.row)">删除</el-dropdown-item>
+									</el-dropdown-menu>
+								</template>
+							</el-dropdown>
+						</div>
+					</template>
+				</el-table-column>
 			</el-table>
 			<!-- 分页区域 -->
 			<Pagination :total="data.total" @handlePageChange="handlePageChange" />
 		</el-card>
+		<YamlDialog ref="yamlRef" />
+		<el-dialog v-model="data.dialogVisible" width="300px" @close="data.dialogVisible = false">
+			<template #header>
+				<span style="font-size: 16px">{{ '伸缩: ' + data.scaleDeploy.metadata?.name }}</span>
+			</template>
+			<div style="text-align: center">
+				<el-input-number v-model="data.scaleDeploy.spec!.replicas" :min="0" :max="1000" size="default" w />
+			</div>
+			<template #footer>
+				<span class="dialog-footer">
+					<el-button text @click="data.dialogVisible = false" size="default">取消</el-button>
+					<el-button text type="primary" @click="scaleDeployment" size="default"> 确定 </el-button>
+				</span>
+			</template>
+		</el-dialog>
 	</div>
 </template>
 
 <script setup lang="ts" name="k8sDeployment">
-import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent } from 'vue';
+import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref } from 'vue';
 import { Check, Close } from '@element-plus/icons-vue';
-
+import { CaretBottom } from '@element-plus/icons-vue';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { V1Deployment } from '@kubernetes/client-node';
 import { PageInfo } from '/@/types/kubernetes/common';
@@ -87,8 +144,10 @@ import router from '/@/router';
 import { ElMessage } from 'element-plus';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 
+const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 
+const yamlRef = ref();
 const deploymentApi = useDeploymentApi();
 const k8sStore = kubernetesInfo();
 const socketApi = useWebsocketApi();
@@ -108,9 +167,63 @@ ws.onmessage = (e) => {
 		}
 	}
 };
-const deleteDeployments = (data: any) => {};
+const deleteDeployments = (depList: Array<V1Deployment>) => {
+	depList.forEach((dep: V1Deployment) => {
+		if (dep.metadata) {
+			deploymentApi
+				.deleteDeployment(dep.metadata?.namespace!, dep.metadata?.name!, { cloud: k8sStore.state.activeCluster })
+				.then(() => {})
+				.catch(() => {
+					ElMessage.error(`删除${dep.metadata?.name}失败`);
+				});
+		}
+	});
 
+	ElMessage.success('删除成功');
+};
+const deleteDeployment = (dep: V1Deployment) => {
+	deploymentApi
+		.deleteDeployment(dep.metadata?.namespace!, dep.metadata?.name!, { cloud: k8sStore.state.activeCluster })
+		.then((res: any) => {
+			if (res.code === 200) {
+				ElMessage.success('删除成功');
+			} else {
+				ElMessage.error(`删除${dep.metadata?.name}失败`);
+			}
+		})
+		.catch(() => {
+			ElMessage.error(`删除${dep.metadata?.name}失败`);
+		});
+};
+
+const showYaml = async (deployment: V1Deployment) => {
+	yamlRef.value.openDialog(deployment);
+};
+const openScaleDialog = (dep: V1Deployment) => {
+	data.scaleDeploy = dep;
+	data.dialogVisible = true;
+};
+
+const scaleDeployment = () => {
+	deploymentApi
+		.scaleDeployment(data.scaleDeploy.metadata?.namespace!, data.scaleDeploy.metadata?.name!, data.scaleDeploy.spec?.replicas!, {
+			cloud: k8sStore.state.activeCluster,
+		})
+		.then((res: any) => {
+			if (res.code === 200) {
+				ElMessage.success('操作成功');
+			} else {
+				ElMessage.error('伸缩失败');
+			}
+		})
+		.catch(() => {
+			ElMessage.error('伸缩失败');
+		});
+	data.dialogVisible = false;
+};
 const data = reactive({
+	dialogVisible: false,
+	scaleDeploy: <V1Deployment>{},
 	query: {
 		cloud: '',
 		page: 1,
@@ -156,16 +269,16 @@ const deployDetail = async (dep: V1Deployment) => {
 	router.push({
 		name: 'k8sDeploymentDetail',
 		params: {
-			name: dep.metadata?.name
-		}
+			name: dep.metadata?.name,
+		},
 	});
 };
 
 const createDeployment = () => {
 	router.push({
-		name:'deploymentCreate'
-	})
-}
+		name: 'deploymentCreate',
+	});
+};
 onMounted(() => {
 	listDeployment();
 });
@@ -177,14 +290,22 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .container {
-  :deep(.el-card__body) {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: auto;
-    .el-table {
-      flex: 1;
-    }
-  }
+	:deep(.el-card__body) {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		overflow: auto;
+		.el-table {
+			flex: 1;
+		}
+	}
+}
+.el-input-number {
+	width: 200px;
+}
+
+.label {
+	margin-top: 3px;
+	margin-bottom: 1px;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-	<div class="layout-padding container" >
+	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<el-table :data="data.nodes" style="width: 100%" max-height="100vh - 200px">
 				<el-table-column label="名称/IP地址/UID" width="140" align="center" show-overflow-tooltip>
@@ -99,7 +99,7 @@
 									</el-tag>
 								</div>
 							</template>
-              <el-icon><List /></el-icon>
+							<el-icon><List /></el-icon>
 						</el-tooltip>
 					</template>
 				</el-table-column>
@@ -151,7 +151,7 @@
 
 <script setup lang="ts" name="k8sNode">
 import { reactive, onMounted, defineAsyncComponent } from 'vue';
-import {InfoFilled, CaretBottom, List} from '@element-plus/icons-vue';
+import { InfoFilled, CaretBottom, List } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { V1Node } from '@kubernetes/client-node';
 import { useNodeApi } from '/@/api/kubernetes/node';
@@ -171,7 +171,7 @@ const data = reactive({
 	total: 1,
 	visible: false,
 	title: '修改标签',
-	data: {} as Node,
+	data: {} as V1Node,
 });
 const k8sStore = kubernetesInfo();
 
@@ -196,7 +196,7 @@ const handlePageChange = (pageInfo: PageInfo) => {
 	data.query.limit = pageInfo.limit;
 	listNodes();
 };
-const updateLabels = (node: Node) => {
+const updateLabels = (node: V1Node) => {
 	data.visible = true;
 	data.data = node;
 };
@@ -204,14 +204,18 @@ const updateLabels = (node: Node) => {
 
 <style scoped lang="scss">
 .container {
-  :deep(.el-card__body) {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: auto;
-    .el-table {
-      flex: 1;
-    }
-  }
+	:deep(.el-card__body) {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		overflow: auto;
+		.el-table {
+			flex: 1;
+		}
+	}
+}
+.label {
+	margin-top: 3px;
+	margin-bottom: 1px;
 }
 </style>

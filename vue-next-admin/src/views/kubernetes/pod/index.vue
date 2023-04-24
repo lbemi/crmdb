@@ -12,11 +12,10 @@
 					placeholder="Select"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
+					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata?.name" />
 				</el-select>
 				<el-button type="danger" size="default" class="ml10" :disabled="podStore.state.selectData.length == 0">批量删除</el-button>
 			</div>
-
 			<el-table
 				:data="podStore.state.pods"
 				style="width: 100%"
@@ -50,12 +49,12 @@
 						<el-tooltip placement="right" effect="light">
 							<template #content>
 								<div style="display: flex; flex-direction: column">
-									<el-tag class="label" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
+									<el-tag class="label" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
 										{{ key }}:{{ item }}
 									</el-tag>
 								</div>
 							</template>
-							<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
+							<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
 								<div>{{ key }}:{{ item }}</div>
 							</el-tag>
 						</el-tooltip>
@@ -102,6 +101,7 @@ import { podInfo } from '/@/stores/pod';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { V1Pod } from '@kubernetes/client-node';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
+import { PageInfo } from '/@/types/kubernetes/common';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 
@@ -117,7 +117,7 @@ const handleChange = () => {
 	podStore.state.loading = false;
 };
 
-const handlePageChange = (pageInfo) => {
+const handlePageChange = (pageInfo: PageInfo) => {
 	podStore.state.query.page = pageInfo.page;
 	podStore.state.query.limit = pageInfo.limit;
 	podStore.state.loading = true;
@@ -146,7 +146,7 @@ const deletePod = async (p: V1Pod) => {
 	})
 		.then(() => {
 			podStore.deletePod(p);
-			podStore.listPods();
+			podStore.listPod();
 			ElMessage({
 				type: 'success',
 				message: '${pod.metadata.name} 已删除',
@@ -180,6 +180,7 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .label {
 	margin-top: 3px;
+	margin-bottom: 1px;
 }
 .ellipsis {
 	height: 60px;

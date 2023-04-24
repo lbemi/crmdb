@@ -14,7 +14,7 @@ export function useDeploymentApi() {
 				url: '/deployment',
 				method: 'post',
 				params: param,
-				data: data
+				data: data,
 			});
 		},
 		updateLabel: (param: any, data: any) => {
@@ -29,6 +29,20 @@ export function useDeploymentApi() {
 			return request({
 				url: '/deployment/' + ns + '/' + depName + '/pod',
 				method: 'get',
+				params: param,
+			});
+		},
+		deleteDeployment: (ns: string, name: string, param: any) => {
+			return request({
+				url: `/deployment/${ns}/${name}`,
+				method: 'delete',
+				params: param,
+			});
+		},
+		scaleDeployment: (ns: string, name: string, n: number, param: any) => {
+			return request({
+				url: `/deployment/${ns}/${name}/${n}`,
+				method: 'put',
 				params: param,
 			});
 		},

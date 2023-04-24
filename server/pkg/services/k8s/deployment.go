@@ -82,7 +82,7 @@ func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) e
 		log.Logger.Error(err)
 		return err
 	}
-	oldScale.Status.Replicas = replicaNum
+	oldScale.Spec.Replicas = replicaNum
 	_, err = d.cli.ClientSet.AppsV1().Deployments(d.namespace).UpdateScale(ctx, name, oldScale, metav1.UpdateOptions{})
 	if err != nil {
 		log.Logger.Error(err)

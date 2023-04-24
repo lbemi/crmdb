@@ -90,7 +90,6 @@ func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) e
 		log.Logger.Error(err)
 		return err
 	}
-
 	return nil
 }
 

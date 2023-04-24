@@ -86,11 +86,7 @@ const data = reactive({
 const getContainer = (index: number, container: V1Container) => {
 	if (index === editableTabsValue.value) {
 		// // FIXME  初始化container name
-		// if (!isObjectValueEqual(data.containers[index], container)) {
-		console.log('2.接收container----->containers', container);
 		data.containers[index] = deepClone(container) as V1Container;
-
-		// }
 	}
 };
 
@@ -103,7 +99,6 @@ watch(
 	() => {
 		if (props.containers && props.containers.length != 0 && !isObjectValueEqual(data.containers, props.containers)) {
 			data.loadFromParent = true;
-			console.log('a.接受父组件传递的containers', props.containers);
 			data.containers = deepClone(props.containers) as V1Container[];
 			setTimeout(() => {
 				// 延迟一下，不然会触发循环更新
@@ -122,7 +117,6 @@ watch(
 	() => data.containers,
 	() => {
 		if (!data.loadFromParent) {
-			console.log('3. 自身containers 变化触发更新', data.containers, data.loadFromParent);
 			emit('updateContainers', deepClone(data.containers));
 		}
 	},

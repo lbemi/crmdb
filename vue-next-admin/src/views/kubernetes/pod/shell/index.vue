@@ -1,6 +1,6 @@
 <template>
-  <div class="layout-padding container" >
-    <el-card shadow="hover" class="layout-padding-auto">
+	<div class="layout-padding container">
+		<el-card shadow="hover" class="layout-padding-auto">
 			<span class="mb15">容器组名: {{ pod?.metadata?.name }}：</span>
 			<el-select v-model="selectContainer" class="mb15" placeholder="选择容器" size="default" @change="containerChange">
 				<el-option v-for="item in pod?.spec?.containers" :key="item.name" :label="item.name" :value="item.name" />
@@ -90,7 +90,7 @@ function initSocket() {
 	state.socket = webSocketApi.createShellWebsocket(pod.metadata?.namespace!, pod.metadata?.name!, selectContainer.value);
 
 	// 监听socket错误信息
-	state.socket.onerror = (e: any) => {
+	state.socket.onerror = () => {
 		ElMessage.error('连接失败');
 	};
 
@@ -115,16 +115,15 @@ function closeAll() {
 }
 </script>
 <style lang="scss">
-
 .container {
-  :deep(.el-card__body) {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: auto;
-    .el-table {
-      flex: 1;
-    }
-  }
+	:deep(.el-card__body) {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		overflow: auto;
+		.el-table {
+			flex: 1;
+		}
+	}
 }
 </style>
