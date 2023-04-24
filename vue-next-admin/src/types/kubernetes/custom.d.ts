@@ -31,14 +31,12 @@ export declare type CreateK8SMetaData = {
 };
 
 export declare type CreateK8SVolumentData = {
-	keySet?: boolean;
-	keySetShow?: boolean;
 	type: string;
 	name: string;
-	hostPath?: V1HostPathVolumeSource|undefined;
-	secret?: V1SecretVolumeSource|undefined;
-	configMap?: V1ConfigMapVolumeSource|undefined;
-	persistentVolumeClaim?: V1PersistentVolumeClaimVolumeSource|undefined;
-	emptyDir?: V1EmptyDirVolumeSource|undefined;
-	volumeMountData?: V1VolumeMount|undefined;
+	hostPath?: V1HostPathVolumeSource | undefined;
+	secret?: V1SecretVolumeSource | undefined;
+	configMap?: V1ConfigMapVolumeSource | undefined;
+	persistentVolumeClaim?: V1PersistentVolumeClaimVolumeSource | undefined;
+	emptyDir?: V1EmptyDirVolumeSource | undefined;
+	volumeMountData?: V1VolumeMount | undefined;
 };

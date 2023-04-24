@@ -38,10 +38,9 @@
 			>
 				<el-table-column prop="" label="类型" width="130">
 					<template #default="scope">
-						<el-select v-model="scope.row.type" size="small" @change="handleTypeChange">
+						<el-select v-model="scope.row.type" size="small" @change="(val) => handleTypeChange(val, scope.$index)">
 							<el-option v-for="item in data.typeList" :key="item.value" :label="item.label" :value="item.value" />
 						</el-select>
-						{{ scope.row.type }}
 					</template>
 				</el-table-column>
 
@@ -57,7 +56,7 @@
 							v-model="scope.row.hostPath.path"
 							size="small"
 							placeholder="主机路径：/tmp"
-						/>{{ scope.row.type }}
+						/>
 						<div v-if="scope.row.type === 'persistentVolumeClaim'" style="display: flex">
 							<el-select v-model="scope.row.persistentVolumeClaim.name" size="small" :loading="data.loading" @click="getPvc" show-overflow-tooltip>
 								<el-option v-for="item in data.pvcdata" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name" />
@@ -183,7 +182,6 @@ import { usePVCApi } from '/@/api/kubernetes/persitentVolumeClaim';
 import mittBus from '/@/utils/mitt';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { CreateK8SVolumentData } from '/@/types/kubernetes/custom';
-import { IterMode } from '@lezer/common';
 
 const k8sStore = kubernetesInfo();
 const configMapApi = useConfigMapApi();
@@ -345,45 +343,51 @@ const handleVolumeData = () => {
 const handleSet = () => {
 	const name = 'volume-' + uuid().toString().split('-')[1];
 	data.volumeData.push({
-		keySet: false,
-		keySetShow: false,
 		type: 'hostPath',
 		name: name,
 		hostPath: {
 			path: '',
 		},
-		secret: {},
-		configMap: {},
-		persistentVolumeClaim: {
-			claimName: '',
-		},
-		emptyDir: {},
 		volumeMountData: {
 			name: name,
 			mountPath: '',
-			subPath: '',
 		},
 	} as CreateK8SVolumentData);
 };
 
-const handleTypeChange = (type: string) => {
-	console.log(type);
-	// switch(type){
-	// 	case 'hostPth': {
-	// 		data.volumeData.
-	// 	}
-	// }
+const handleTypeChange = (type: string, index: number) => {
+	// 切换type类型时初始化不同的值
+	switch (type) {
+		case 'hostPth':
+			data.volumeData[index].hostPath = {
+				path: '',
+			};
+			break;
+		case 'secret':
+			data.volumeData[index].secret = {};
+			break;
+		case 'configMap':
+			data.volumeData[index].configMap = {};
+			break;
+		case 'tmp':
+			data.volumeData[index].emptyDir = {};
+			break;
+		case 'persistentVolumeClaim':
+			data.volumeData[index].persistentVolumeClaim = {
+				claimName: '',
+			};
+			break;
+	}
 };
 mittBus.on('updateDeploymentVolumes', (volumes: any) => {
-	// if (!isObjectValueEqual(volumes, data.volumes)) {
-	// 	data.loadFromParent = true;
-	// 	console.log('--------------------', volumes);
-	// 	data.tmpVolumes = volumes;
-	// 	parseVolumeMount(data.volumeMount);
-	// 	setTimeout(() => {
-	// 		data.loadFromParent = false;
-	// 	}, 100);
-	// }
+	if (!isObjectValueEqual(volumes, data.volumes)) {
+		data.loadFromParent = true;
+		data.tmpVolumes = volumes;
+		parseVolumeMount(data.volumeMount);
+		setTimeout(() => {
+			data.loadFromParent = false;
+		}, 100);
+	}
 });
 
 onUnmounted(() => {
@@ -396,10 +400,11 @@ const props = defineProps({
 });
 
 const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
-	const tmpVolumeMount = [] as Array<CreateK8SVolumentData>;
+	const tmpVolumeData = [] as Array<CreateK8SVolumentData>;
 	volumeMount.forEach((item: V1VolumeMount) => {
 		data.tmpVolumes.forEach((v: V1Volume) => {
 			let volumeType = '';
+
 			if (v.hostPath) {
 				volumeType = 'hostPath';
 			}
@@ -417,7 +422,7 @@ const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
 			}
 
 			if (item.name === v.name) {
-				tmpVolumeMount.push({
+				tmpVolumeData.push({
 					name: item.name,
 					type: volumeType,
 					emptyDir: v.emptyDir,
@@ -434,16 +439,13 @@ const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
 			}
 		});
 	});
-	console.log('#$^^^^^%%%%%%%%%%%%%%%%%', tmpVolumeMount, volumeMount, data.tmpVolumes);
-	if (!isObjectValueEqual(data.volumeData, tmpVolumeMount)) data.volumeData = tmpVolumeMount;
+	if (!isObjectValueEqual(data.volumeData, tmpVolumeData)) data.volumeData = tmpVolumeData;
 };
 watch(
 	() => [props.volumeMounts, data.tmpVolumes],
 	() => {
 		if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0) {
 			data.loadFromParent = true;
-			console.log('更新。。。。。。', props.volumeMounts);
-
 			parseVolumeMount(props.volumeMounts);
 			setTimeout(() => {
 				data.loadFromParent = false;
@@ -461,7 +463,6 @@ watch(
 	() => [data.volumeData],
 	() => {
 		if (!data.loadFromParent) {
-			console.log('触发更新volume--->', data.volumeData);
 			handleVolumeData();
 			emit('updateVolumeMount', data.volumeMount);
 			mittBus.emit('updateVolumes', data.volumes);
