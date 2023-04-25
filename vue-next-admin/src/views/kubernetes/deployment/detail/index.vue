@@ -2,13 +2,14 @@
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<el-row :gutter="20">
-				<el-col :span="20">
+				<el-col :span="18">
 					<el-button type="info" :icon="ArrowLeft" text @click="backRoute">返回</el-button>
 					<span style="font-weight: 35">{{ k8sStore.state.activeDeployment?.metadata?.name }}</span></el-col
 				>
-				<el-col :span="4"
+				<el-col :span="6"
 					><el-button type="primary" size="small" :icon="Edit">编辑</el-button>
-					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button></el-col
+					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button>
+					<el-button type="primary" size="small" :icon="RefreshRight" @click="reDeploy">重新部署</el-button></el-col
 				>
 			</el-row>
 
@@ -207,7 +208,7 @@
 <script lang="ts" setup name="k8sDeploymentDetail">
 import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent } from 'vue';
 import type { TabsPaneContext } from 'element-plus';
-import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus } from '@element-plus/icons-vue';
+import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, RefreshRight } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { V1Deployment, V1Pod, V1ReplicaSet } from '@kubernetes/client-node';
@@ -246,6 +247,22 @@ const data = reactive({
 	deployment: [],
 });
 const timer = ref();
+
+const reDeploy = () => {
+	const deployment = k8sStore.state.activeDeployment;
+	deploymentApi
+		.reDeployDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, { cloud: k8sStore.state.activeCluster })
+		.then((res) => {
+			if (res.code == 200) {
+				ElMessage.success('操作成功');
+			} else {
+				ElMessage.error(res.message);
+			}
+		})
+		.catch((res: any) => {
+			ElMessage.error(res.message);
+		});
+};
 const scaleDeploy = (action: string) => {
 	if (action === 'plus') {
 		k8sStore.state.activeDeployment.spec!.replicas!++;

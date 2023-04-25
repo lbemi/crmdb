@@ -54,5 +54,12 @@ export function useDeploymentApi() {
 				params: param,
 			});
 		},
+		reDeployDeployment: (ns: string, name: string, param: any) => {
+			return request({
+				url: `/deployment/redeploy/${ns}/${name}`,
+				method: 'put',
+				params: param,
+			});
+		},
 	};
 }

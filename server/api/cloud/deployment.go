@@ -2,13 +2,13 @@ package cloud
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/util"
 	v1 "k8s.io/api/apps/v1"
 	"strconv"
+	"time"
 )
 
 func ListDeployments(c *gin.Context) {
@@ -142,6 +142,32 @@ func UpdateDeployment(c *gin.Context) {
 	response.Success(c, response.StatusOK, newDeployment)
 }
 
+func ReDeployDeployment(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	namespace := c.Param("namespace")
+	deploymentName := c.Param("name")
+
+	deployment, err := core.V1.Cluster(clusterName).Deployments(namespace).Get(c, deploymentName)
+	if err != nil {
+		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
+		return
+	}
+
+	deployment.Spec.Template.Annotations["lbemi.io/restartAt"] = time.Now().String()
+
+	newDeployment, err := core.V1.Cluster(clusterName).Deployments(deployment.Namespace).Update(c, deployment)
+	if err != nil {
+		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
+		return
+	}
+
+	response.Success(c, response.StatusOK, newDeployment)
+}
+
 func DeleteDeployment(c *gin.Context) {
 	clusterName := c.Query("cloud")
 	if clusterName == "" {
@@ -208,6 +234,5 @@ func GetDeploymentPods(c *gin.Context) {
 		"replicaSets": replicaSets,
 	}
 	util.GinError(c, err, response.ErrCodeParameter)
-	log.Logger.Info(replicaSets)
 	response.Success(c, response.StatusOK, detail)
 }

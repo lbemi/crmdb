@@ -42,6 +42,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		deployment.GET("/:namespace/:deploymentName", cloud.GetDeployment)
 		deployment.POST("", cloud.CreateDeployment)
 		deployment.PUT("", cloud.UpdateDeployment)
+		deployment.PUT("/redeploy/:namespace/:name", cloud.ReDeployDeployment)
 		deployment.DELETE("/:namespace/:deploymentName", cloud.DeleteDeployment)
 		deployment.PUT("/:namespace/:deploymentName/:scale", cloud.ScaleDeployments)
 		deployment.GET("/:namespace/:deploymentName/pod", cloud.GetDeploymentPods)

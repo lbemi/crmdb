@@ -94,7 +94,7 @@
 								<template #dropdown>
 									<el-dropdown-menu>
 										<el-dropdown-item @click="showYaml(scope.row)">查看Yaml</el-dropdown-item>
-										<el-dropdown-item>重新部署</el-dropdown-item>
+										<el-dropdown-item @click="reDeploy(scope.row)">重新部署</el-dropdown-item>
 										<el-dropdown-item>编辑标签</el-dropdown-item>
 										<el-dropdown-item>节点亲和性</el-dropdown-item>
 										<el-dropdown-item>弹性伸缩</el-dropdown-item>
@@ -168,7 +168,20 @@ ws.onmessage = (e) => {
 		}
 	}
 };
-
+const reDeploy = (deployment: V1Deployment) => {
+	deploymentApi
+		.reDeployDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, { cloud: k8sStore.state.activeCluster })
+		.then((res) => {
+			if (res.code == 200) {
+				ElMessage.success('操作成功');
+			} else {
+				ElMessage.error(res.message);
+			}
+		})
+		.catch((res: any) => {
+			ElMessage.error(res.message);
+		});
+};
 const updateDeployment = () => {
 	const updateData = YAML.load(yamlRef.value.code) as V1Deployment;
 	delete updateData.status;
