@@ -2,6 +2,7 @@ package cloud
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/handler/types"
@@ -201,8 +202,12 @@ func GetDeploymentPods(c *gin.Context) {
 		return
 	}
 
-	pods, err := core.V1.Cluster(clusterName).Deployments(namespace).GetDeploymentPods(c, deploymentName)
+	pods, replicaSets, err := core.V1.Cluster(clusterName).Deployments(namespace).GetDeploymentPods(c, deploymentName)
+	var detail = map[string]interface{}{
+		"pods":        pods,
+		"replicaSets": replicaSets,
+	}
 	util.GinError(c, err, response.ErrCodeParameter)
-
-	response.Success(c, response.StatusOK, pods)
+	log.Logger.Info(replicaSets)
+	response.Success(c, response.StatusOK, detail)
 }

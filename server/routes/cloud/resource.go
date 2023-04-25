@@ -47,6 +47,13 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		deployment.GET("/:namespace/:deploymentName/pod", cloud.GetDeploymentPods)
 	}
 
+	//replicaset 资源路由
+	replicaset := group.Group("/replicaset")
+	{
+		replicaset.GET("/:namespace", cloud.ListReplicaSets)
+		replicaset.GET("/:namespace/:name", cloud.GetReplicaSet)
+	}
+
 	//statefulSet 资源路由
 	statefulSet := group.Group("/statefulset")
 	{

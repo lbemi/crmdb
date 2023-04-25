@@ -23,7 +23,7 @@ type IDeployment interface {
 	Delete(ctx context.Context, name string) error
 	Scale(ctx context.Context, name string, replicaNum int32) error
 
-	GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, error)
+	GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, []*appsv1.ReplicaSet, error)
 }
 
 type Deployment struct {
@@ -93,25 +93,27 @@ func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) e
 	return nil
 }
 
-func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, error) {
+func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, []*appsv1.ReplicaSet, error) {
 	dep, err := d.k8s.Deployment().Get(ctx, name)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	replicaSets, err := d.k8s.Replicaset().List(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	res := make([]map[string]string, 0)
+
+	PodReplicaSets := make([]*appsv1.ReplicaSet, 0)
 
 	for _, item := range replicaSets {
 		if d.isRsFromDep(dep, item) {
 			selectorAsMap, err := v1.LabelSelectorAsMap(item.Spec.Selector)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
-
+			PodReplicaSets = append(PodReplicaSets, item)
 			res = append(res, selectorAsMap)
 		}
 	}
@@ -119,13 +121,8 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 	pods, err := d.k8s.Pod().GetPodByLabels(ctx, dep.Namespace, res)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-
-	//按时间排序
-	//sort.Slice(pods, func(i, j int) bool {
-	//	return pods[j].ObjectMeta.GetCreationTimestamp().Time.Before(pods[i].ObjectMeta.GetCreationTimestamp().Time)
-	//})
 
 	sort.Slice(pods, func(i, j int) bool {
 		// sort by creation timestamp in descending order
@@ -139,7 +136,18 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 		return pods[i].ObjectMeta.GetName() < pods[j].ObjectMeta.GetName()
 	})
 
-	return pods, nil
+	sort.Slice(PodReplicaSets, func(i, j int) bool {
+		// sort by creation timestamp in descending order
+		if PodReplicaSets[j].ObjectMeta.GetCreationTimestamp().Time.Before(PodReplicaSets[i].ObjectMeta.GetCreationTimestamp().Time) {
+			return true
+		} else if PodReplicaSets[i].ObjectMeta.GetCreationTimestamp().Time.Before(PodReplicaSets[j].ObjectMeta.GetCreationTimestamp().Time) {
+			return false
+		}
+
+		// if the creation timestamps are equal, sort by name in ascending order
+		return PodReplicaSets[i].ObjectMeta.GetName() < PodReplicaSets[j].ObjectMeta.GetName()
+	})
+	return pods, PodReplicaSets, nil
 
 }
 

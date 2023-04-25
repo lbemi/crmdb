@@ -173,10 +173,34 @@
 				<el-tab-pane label="元数据" name="second">
 					<MetaDetail :metaData="k8sStore.state.activeDeployment.metadata" />
 				</el-tab-pane>
-				<el-tab-pane label="Role" name="third">Role</el-tab-pane>
+				<el-tab-pane label="历史版本" name="third">
+					<el-table :data="data.replicasets" style="width: 100%">
+						<el-table-column p label="版本">
+							<template #default="scope">
+								#{{ scope.row.metadata.annotations['deployment.kubernetes.io/revision'] }}
+								<el-tag v-if="scope.row.status.replicas != 0" plain size="small" type="success" style="margin-left: 15px">当前版本</el-tag>
+							</template>
+						</el-table-column>
+						<el-table-column p label="镜像">
+							<template #default="scope"> {{ scope.row.spec.template.spec.containers[0].image }} </template>
+						</el-table-column>
+						<el-table-column p label="镜像">
+							<template #default="scope"> {{ dateStrFormat(scope.row.metadata.creationTimestamp) }} </template>
+						</el-table-column>
+
+						<el-table-column fixed="right" label="Operations">
+							<template #default="scope">
+								<el-button link type="primary" size="small" @click="showRsYaml(scope.row)">详情</el-button>
+								<el-button link type="primary" size="small">回滚到该版本</el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</el-tab-pane>
 				<el-tab-pane label="Task" name="fourth">Task</el-tab-pane>
 			</el-tabs>
 		</el-card>
+		<YamlDialog ref="resplicaSetRef" />
+
 		<YamlDialog ref="yamlRef" :resourceType="'deployment'" :update-resource="updateDeployment" />
 	</div>
 </template>
@@ -186,7 +210,7 @@ import type { TabsPaneContext } from 'element-plus';
 import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { V1Deployment, V1Pod } from '@kubernetes/client-node';
+import { V1Deployment, V1Pod, V1ReplicaSet } from '@kubernetes/client-node';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -199,6 +223,7 @@ import YAML from 'js-yaml';
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
 
+const resplicaSetRef = ref();
 const yamlRef = ref();
 const route = useRoute();
 const websocketApi = useWebsocketApi();
@@ -214,6 +239,7 @@ const data = reactive({
 	param: {
 		cloud: k8sStore.state.activeCluster,
 	},
+	replicasets: [] as V1ReplicaSet[],
 	pods: [] as V1Pod[],
 	iShow: false,
 	activeName: 'first',
@@ -277,7 +303,8 @@ const getPods = async () => {
 		k8sStore.state.activeDeployment?.metadata!.name!.toString(),
 		data.param
 	);
-	data.pods = res.data;
+	data.pods = res.data.pods;
+	data.replicasets = res.data.replicaSets;
 };
 
 const jumpPodExec = (p: V1Pod) => {
@@ -313,6 +340,9 @@ const deletePod = async (pod: V1Pod) => {
 			});
 		})
 		.catch(); // 取消
+};
+const showRsYaml = async (replicaSets: V1ReplicaSet) => {
+	resplicaSetRef.value.openDialog(replicaSets);
 };
 
 const showYaml = async () => {

@@ -18,14 +18,12 @@ import { reactive, ref, watch } from 'vue';
 import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
+import { gutters } from '@codemirror/view';
 
-const code = ref();
+const code = ref('');
 const extensions = [javascript(), oneDark];
 const dialogVisible = ref(false);
-const state = reactive({
-	dialogVisible: false,
-});
-
+const merge = ref(false);
 const handleClose = () => {
 	dialogVisible.value = false;
 };
@@ -38,10 +36,11 @@ const openDialog = (data: any) => {
 const props = defineProps({
 	updateResource: Function,
 	resourceType: String,
+	merge: Boolean,
 });
 
 watch(
-	() => props.resourceType,
+	() => [props.resourceType, props.merge],
 	() => {
 		if (props.resourceType) {
 			switch (props.resourceType) {
@@ -49,12 +48,14 @@ watch(
 					code.value = `apiVersion: apps/v1\nkind: Deployment\n`;
 					break;
 				case 'statefulSet':
-					code.value = `apiVersion: apps/v1
-		kind: DaemonSet\n`;
+					code.value = `apiVersion: apps/v1\nkind: DaemonSet\n`;
 					break;
 				default:
 					code.value = '';
 			}
+		}
+		if (props.merge) {
+			merge.value = props.merge;
 		}
 	},
 	{
