@@ -28,12 +28,12 @@
 				>展开</el-button
 			>
 		</el-form-item>
-		<el-form-item label="命令：" v-show="data.set && data.show" style="margin-bottom: 0" label-width="60px">
-			<el-input v-model="data.commands" size="small" style="width: 200px" />
+		<el-form-item label="命令：" v-show="data.set && data.show" style="margin-bottom: 5" label-width="60px">
+			<el-input v-model="data.commands" size="small" style="width: 500px" type="textarea" />
 			<span style="font-size: 10px; color: rgba(22, 9, 7, 0.57); margin-left: 5px">如有多个命令请使用半角逗号（,）分隔</span>
 		</el-form-item>
 		<el-form-item label="参数：" v-show="data.set && data.show" style="margin-bottom: 0" label-width="60px">
-			<el-input v-model="data.args" size="small" style="width: 200px" />
+			<el-input v-model="data.args" size="small" style="width: 500px" type="textarea" />
 			<span style="font-size: 10px; color: rgba(22, 9, 7, 0.57); margin-left: 5px"> 如有多个参数请使用半角逗号（,）分隔</span>
 		</el-form-item>
 	</div>
@@ -77,6 +77,7 @@ watch(
 	() => [props.args, props.commands],
 	() => {
 		data.loadFromParent = true;
+		console.log('-----------------<<<<<<<>>>>>>>');
 
 		if (props.args) {
 			data.set = true; //当本地数据为空，但是传递过来数据不为空时则显示

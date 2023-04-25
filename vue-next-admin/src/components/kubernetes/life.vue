@@ -36,7 +36,7 @@
 							size="small"
 							text
 							style="padding-left: 0"
-							@click="data.lifeProbe.httpGet.httpHeaders?.push({ name: '', value: '' })"
+							@click="data.lifeProbe?.httpGet?.httpHeaders?.push({ name: '', value: '' })"
 							>新增</el-button
 						>
 					</el-form-item>
@@ -49,7 +49,7 @@
 							type="primary"
 							size="small"
 							text
-							@click="data.lifeProbe.httpGet.httpHeaders?.splice(index, 1)"
+							@click="data.lifeProbe?.httpGet?.httpHeaders?.splice(index, 1)"
 						></el-button>
 					</el-form-item>
 				</el-form>

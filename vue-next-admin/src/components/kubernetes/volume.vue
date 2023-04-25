@@ -483,7 +483,7 @@ watch(
 	() => [data.volumeData],
 	() => {
 		if (!data.loadFromParent) {
-			handleVolumeData();
+			// handleVolumeData();
 			emit('updateVolumeMount', data.volumeMount);
 			mittBus.emit('updateVolumes', data.volumes);
 		}

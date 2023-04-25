@@ -117,9 +117,28 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 	}
 
 	pods, err := d.k8s.Pod().GetPodByLabels(ctx, dep.Namespace, res)
+
 	if err != nil {
 		return nil, err
 	}
+
+	//按时间排序
+	//sort.Slice(pods, func(i, j int) bool {
+	//	return pods[j].ObjectMeta.GetCreationTimestamp().Time.Before(pods[i].ObjectMeta.GetCreationTimestamp().Time)
+	//})
+
+	sort.Slice(pods, func(i, j int) bool {
+		// sort by creation timestamp in descending order
+		if pods[j].ObjectMeta.GetCreationTimestamp().Time.Before(pods[i].ObjectMeta.GetCreationTimestamp().Time) {
+			return true
+		} else if pods[i].ObjectMeta.GetCreationTimestamp().Time.Before(pods[j].ObjectMeta.GetCreationTimestamp().Time) {
+			return false
+		}
+
+		// if the creation timestamps are equal, sort by name in ascending order
+		return pods[i].ObjectMeta.GetName() < pods[j].ObjectMeta.GetName()
+	})
+
 	return pods, nil
 
 }

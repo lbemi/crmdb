@@ -46,5 +46,13 @@ export function useDeploymentApi() {
 				params: param,
 			});
 		},
+		updateDeployment: (data: any, param: any) => {
+			return request({
+				url: `/deployment`,
+				method: 'put',
+				data: data,
+				params: param,
+			});
+		},
 	};
 }

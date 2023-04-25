@@ -114,7 +114,7 @@
 			<!-- 分页区域 -->
 			<Pagination :total="data.total" @handlePageChange="handlePageChange" />
 		</el-card>
-		<YamlDialog ref="yamlRef" />
+		<YamlDialog ref="yamlRef" :resourceType="'deployment'" :update-resource="updateDeployment" />
 		<el-dialog v-model="data.dialogVisible" width="300px" @close="data.dialogVisible = false">
 			<template #header>
 				<span style="font-size: 16px">{{ '伸缩: ' + data.scaleDeploy.metadata?.name }}</span>
@@ -143,6 +143,7 @@ import { kubernetesInfo } from '/@/stores/kubernetes';
 import router from '/@/router';
 import { ElMessage } from 'element-plus';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
+import YAML from 'js-yaml';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
@@ -167,6 +168,26 @@ ws.onmessage = (e) => {
 		}
 	}
 };
+
+const updateDeployment = () => {
+	const updateData = YAML.load(yamlRef.value.code) as V1Deployment;
+	delete updateData.status;
+	delete updateData.metadata?.managedFields;
+	deploymentApi
+		.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
+		.then((res) => {
+			if (res.code == 200) {
+				ElMessage.success('更新成功');
+			} else {
+				ElMessage.error(res.message);
+			}
+		})
+		.catch((e) => {
+			ElMessage.error(e.message);
+		});
+	yamlRef.value.handleClose();
+};
+
 const deleteDeployments = (depList: Array<V1Deployment>) => {
 	depList.forEach((dep: V1Deployment) => {
 		if (dep.metadata) {
@@ -197,6 +218,7 @@ const deleteDeployment = (dep: V1Deployment) => {
 };
 
 const showYaml = async (deployment: V1Deployment) => {
+	delete deployment.metadata?.managedFields;
 	yamlRef.value.openDialog(deployment);
 };
 const openScaleDialog = (dep: V1Deployment) => {

@@ -29,7 +29,10 @@
 					<template #default="scope">
 						<el-button link type="primary">{{ scope.row.metadata.name }}</el-button>
 						<div v-if="scope.row.status.phase != 'Running'" style="color: red">
-							{{ scope.row.status.containerStatuses[0].state }}
+							<div v-if="scope.row.status.containerStatuses">
+								{{ scope.row.status.containerStatuses[0].state }}
+							</div>
+							<div v-else>{{ scope.row.status.conditions[0].reason }}:{{ scope.row.status.conditions[0].message }}</div>
 						</div>
 					</template>
 				</el-table-column>
@@ -41,7 +44,9 @@
 				</el-table-column>
 				<el-table-column label="重启次数" width="100px">
 					<template #default="scope">
-						{{ scope.row.status.containerStatuses[0].restartCount }}
+						<div v-if="scope.row.status.containerStatuses">
+							{{ scope.row.status.containerStatuses[0].restartCount }}
+						</div>
 					</template>
 				</el-table-column>
 				<el-table-column label="标签" width="180px">

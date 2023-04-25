@@ -293,17 +293,22 @@ watch(
 
 			console.log('b.处理父组件传递的container', props.container);
 			const copyData = deepClone(props.container) as V1Container;
-			if (!data.container.volumeMounts) {
-				data.container.volumeMounts = [] as V1VolumeMount[];
+			if (!copyData.volumeMounts) {
+				copyData.volumeMounts = [] as V1VolumeMount[];
 			}
 
-			if (props.container.resources.limits || props.container.resources.requests) {
+			if (copyData.resources?.limits || copyData.resources?.requests) {
 				data.resourceSet = true;
 				console.log('状态：：：', data.resourceSet);
 			}
 
-			if (!data.container.lifecycle) {
-				data.container.lifecycle = {};
+			if (!copyData.securityContext) {
+				copyData.securityContext = {
+					privileged: false,
+				};
+			}
+			if (!copyData.lifecycle) {
+				copyData.lifecycle = {};
 			}
 
 			data.container = copyData;

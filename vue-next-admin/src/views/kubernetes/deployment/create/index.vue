@@ -18,7 +18,7 @@
 							<div style="margin-top: 10px" id="0" v-show="data.active === 0">
 								<Meta :bindData="data.bindMetaData" @updateData="getMeta" />
 							</div>
-							<div style="margin-top: 10px" id="1" v-if="data.active === 1">
+							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
 								<Containers
 									:containers="deepClone(data.deployment.spec!.template.spec!.containers) as Array< V1Container>"
 									@updateContainers="getContainers"

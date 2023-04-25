@@ -109,6 +109,7 @@
 									<div v-if="scope.row.status.containerStatuses">
 										{{ scope.row.status.containerStatuses[0].state }}
 									</div>
+									<div v-else>{{ scope.row.status.conditions[0].reason }}:{{ scope.row.status.conditions[0].message }}</div>
 								</div>
 							</template>
 						</el-table-column>
@@ -176,7 +177,7 @@
 				<el-tab-pane label="Task" name="fourth">Task</el-tab-pane>
 			</el-tabs>
 		</el-card>
-		<YamlDialog ref="yamlRef" />
+		<YamlDialog ref="yamlRef" :resourceType="'deployment'" :update-resource="updateDeployment" />
 	</div>
 </template>
 <script lang="ts" setup name="k8sDeploymentDetail">
@@ -193,12 +194,12 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { usePodApi } from '/@/api/kubernetes/pod';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { podInfo } from '/@/stores/pod';
+import YAML from 'js-yaml';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
 
 const yamlRef = ref();
-const deploymentApi = useDeploymentApi();
 const route = useRoute();
 const websocketApi = useWebsocketApi();
 const podStore = podInfo();
@@ -208,6 +209,7 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 };
 const k8sStore = kubernetesInfo();
 const podApi = usePodApi();
+const deploymentApi = useDeploymentApi();
 const data = reactive({
 	param: {
 		cloud: k8sStore.state.activeCluster,
@@ -250,6 +252,24 @@ onMounted(() => {
 		window.clearInterval(timer.value);
 	});
 });
+const updateDeployment = () => {
+	const updateData = YAML.load(yamlRef.value.code) as V1Deployment;
+	delete updateData.status;
+	delete updateData.metadata?.managedFields;
+	deploymentApi
+		.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
+		.then((res) => {
+			if (res.code == 200) {
+				ElMessage.success('更新成功');
+			} else {
+				ElMessage.error(res.message);
+			}
+		})
+		.catch((e) => {
+			ElMessage.error(e.message);
+		});
+	yamlRef.value.handleClose();
+};
 
 const getPods = async () => {
 	const res = await deploymentApi.detailDeployment(
@@ -296,10 +316,11 @@ const deletePod = async (pod: V1Pod) => {
 };
 
 const showYaml = async () => {
+	delete k8sStore.state.activeDeployment.metadata?.managedFields;
 	yamlRef.value.openDialog(k8sStore.state.activeDeployment);
 };
-const buildWebsocket = async () => {
-	const ws = await websocketApi.createWebsocket('deployment');
+const buildWebsocket = () => {
+	const ws = websocketApi.createWebsocket('deployment');
 
 	ws.onmessage = (e) => {
 		if (e.data === 'ping') {

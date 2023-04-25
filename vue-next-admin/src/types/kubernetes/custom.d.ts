@@ -1,3 +1,11 @@
+export enum ResourceType {
+	Deployment = 'deployment',
+	DaemonSet = 'daemonSet',
+	Job = 'job',
+	CronJob = 'cronJob',
+	StatefulSet = 'statefulSet',
+}
+
 import {
 	V1ObjectMeta,
 	V1VolumeMount,
