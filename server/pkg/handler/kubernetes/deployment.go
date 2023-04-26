@@ -9,6 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
+	"strconv"
 )
 
 type DeploymentGetter interface {
@@ -20,6 +21,7 @@ type IDeployment interface {
 	Get(ctx context.Context, name string) (*appsv1.Deployment, error)
 	Create(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error)
 	Update(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error)
+	RollBack(ctx context.Context, depName string, reversion string) (*appsv1.Deployment, error)
 	Delete(ctx context.Context, name string) error
 	Scale(ctx context.Context, name string, replicaNum int32) error
 
@@ -75,7 +77,49 @@ func (d *Deployment) Update(ctx context.Context, obj *appsv1.Deployment) (*appsv
 	}
 	return updateDeployment, err
 }
+func (d *Deployment) RollBack(ctx context.Context, depName string, reversion string) (*appsv1.Deployment, error) {
+	parseInt, err := strconv.ParseInt(reversion, 10, 64)
+	if err != nil {
+		log.Logger.Error("reversion not fount")
+		return nil, fmt.Errorf("reversion not fount")
+	}
+	if parseInt < 0 {
+		log.Logger.Error("reversion not fount")
+		return nil, fmt.Errorf("reversion not fount")
+	}
 
+	deployment, err := d.k8s.Deployment().Get(ctx, depName)
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	replicaSets, err := d.k8s.Replicaset().List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var replicaSet *appsv1.ReplicaSet
+	//找到对应的rs
+	for _, item := range replicaSets {
+		if d.isRsFromDep(deployment, item) {
+			if item.ObjectMeta.Annotations["deployment.kubernetes.io/revision"] == reversion {
+				replicaSet = item
+			}
+		}
+	}
+
+	if replicaSet == nil {
+		return nil, fmt.Errorf("reversion not fount")
+	}
+
+	deployment.Spec.Template = replicaSet.Spec.Template
+
+	updateDeployment, err := d.k8s.Deployment().Update(ctx, deployment)
+	if err != nil {
+		log.Logger.Error(err)
+	}
+
+	return updateDeployment, err
+}
 func (d *Deployment) Delete(ctx context.Context, name string) error {
 	err := d.k8s.Deployment().Delete(ctx, name)
 	if err != nil {

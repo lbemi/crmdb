@@ -189,10 +189,10 @@
 							<template #default="scope"> {{ dateStrFormat(scope.row.metadata.creationTimestamp) }} </template>
 						</el-table-column>
 
-						<el-table-column fixed="right" label="Operations">
+						<el-table-column fixed="right" label="操作">
 							<template #default="scope">
 								<el-button link type="primary" size="small" @click="showRsYaml(scope.row)">详情</el-button>
-								<el-button link type="primary" size="small">回滚到该版本</el-button>
+								<el-button link type="primary" size="small" @click="rollBack(scope.row)">回滚到该版本</el-button>
 							</template>
 						</el-table-column>
 					</el-table>
@@ -220,20 +220,41 @@ import { usePodApi } from '/@/api/kubernetes/pod';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { podInfo } from '/@/stores/pod';
 import YAML from 'js-yaml';
+import { deepClone } from '/@/utils/other';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const YamlMegeDialog = defineAsyncComponent(() => import('/@/components/yaml/matchCode.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
 
-const resplicaSetRef = ref();
 const yamlRef = ref();
 const route = useRoute();
 const websocketApi = useWebsocketApi();
 const podStore = podInfo();
 
-const code = ref();
+const code = ref({});
 const dialogVisible = ref(false);
 
+const rollBack = (rs: V1ReplicaSet) => {
+	deploymentApi
+		.rollBackDeployment(
+			k8sStore.state.activeDeployment.metadata!.namespace!,
+			k8sStore.state.activeDeployment.metadata!.name!,
+			rs.metadata!.annotations!['deployment.kubernetes.io/revision'],
+			{
+				cloud: k8sStore.state.activeCluster,
+			}
+		)
+		.then((res) => {
+			if (res.code == 200) {
+				ElMessage.success('回滚成功');
+			} else {
+				ElMessage.error('回滚失败,' + res.message);
+			}
+		})
+		.catch((res) => {
+			ElMessage.error('回滚失败,' + res.message);
+		});
+};
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	// console.log(tab, event);
 };
@@ -364,8 +385,9 @@ const deletePod = async (pod: V1Pod) => {
 };
 const showRsYaml = async (replicaSets: V1ReplicaSet) => {
 	dialogVisible.value = true;
-	code.value = replicaSets;
-	delete code.value.metadata.managedFields;
+	const data = deepClone(replicaSets);
+	delete data.metadata.managedFields;
+	code.value = data;
 };
 
 const showYaml = async () => {

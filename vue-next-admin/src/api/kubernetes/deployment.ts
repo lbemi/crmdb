@@ -61,5 +61,13 @@ export function useDeploymentApi() {
 				params: param,
 			});
 		},
+		// /rollback/:namespace/:name/:reversion
+		rollBackDeployment: (ns: string, name: string, reversion: string, param: any) => {
+			return request({
+				url: `/deployment/rollback/${ns}/${name}/${reversion}`,
+				method: 'put',
+				params: param,
+			});
+		},
 	};
 }

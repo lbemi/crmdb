@@ -48,6 +48,7 @@ const dialogVisible = ref(false);
 
 const handleClose = () => {
 	dialogVisible.value = false;
+	code.value = {};
 };
 const myTheme = EditorView.theme(
 	{
@@ -114,10 +115,11 @@ const props = defineProps({
 });
 
 watch(
-	() => props,
+	() => [props.code, props.dialogVisible],
 	() => {
 		dialogVisible.value = props.dialogVisible;
 		code.value = props.code;
+		initEditor();
 	},
 	{
 		immediate: true,

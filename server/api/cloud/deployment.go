@@ -142,6 +142,30 @@ func UpdateDeployment(c *gin.Context) {
 	response.Success(c, response.StatusOK, newDeployment)
 }
 
+func RollBackDeployment(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	namespace := c.Param("namespace")
+	deploymentName := c.Param("name")
+	reversion := c.Param("reversion")
+
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	newDeployment, err := core.V1.Cluster(clusterName).Deployments(namespace).RollBack(c, deploymentName, reversion)
+
+	if err != nil {
+		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
+		return
+	}
+
+	response.Success(c, response.StatusOK, newDeployment)
+}
 func ReDeployDeployment(c *gin.Context) {
 	clusterName := c.Query("cloud")
 	if clusterName == "" {

@@ -101,7 +101,7 @@
 										<el-dropdown-item>调度容忍度</el-dropdown-item>
 										<el-dropdown-item>升级策略</el-dropdown-item>
 										<el-dropdown-item>复制创建</el-dropdown-item>
-										<el-dropdown-item>回滚</el-dropdown-item>
+										<el-dropdown-item @click="rollBack(scope.row)">回滚</el-dropdown-item>
 										<el-dropdown-item>日志</el-dropdown-item>
 										<el-dropdown-item @click="deleteDeployment(scope.row)">删除</el-dropdown-item>
 									</el-dropdown-menu>
@@ -167,6 +167,24 @@ ws.onmessage = (e) => {
 			data.deployments = object.result.data;
 		}
 	}
+};
+const rollBack = (deployment: V1Deployment) => {
+	const reversion = deployment.metadata?.annotations!['deployment.kubernetes.io/revision']!;
+	parseInt(reversion, 10);
+	deploymentApi
+		.rollBackDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, parseInt(reversion, 10) - 1 + '', {
+			cloud: k8sStore.state.activeCluster,
+		})
+		.then((res) => {
+			if (res.code == 200) {
+				ElMessage.success('回滚成功');
+			} else {
+				ElMessage.error('回滚失败,' + res.message);
+			}
+		})
+		.catch((res) => {
+			ElMessage.error('回滚失败,' + res.message);
+		});
 };
 const reDeploy = (deployment: V1Deployment) => {
 	deploymentApi
