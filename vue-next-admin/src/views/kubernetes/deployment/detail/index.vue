@@ -200,7 +200,7 @@
 				<el-tab-pane label="Task" name="fourth">Task</el-tab-pane>
 			</el-tabs>
 		</el-card>
-		<YamlDialog ref="resplicaSetRef" />
+		<YamlMegeDialog :code="code" :dialogVisible="dialogVisible" v-if="dialogVisible" />
 
 		<YamlDialog ref="yamlRef" :resourceType="'deployment'" :update-resource="updateDeployment" />
 	</div>
@@ -222,6 +222,7 @@ import { podInfo } from '/@/stores/pod';
 import YAML from 'js-yaml';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
+const YamlMegeDialog = defineAsyncComponent(() => import('/@/components/yaml/matchCode.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
 
 const resplicaSetRef = ref();
@@ -230,8 +231,11 @@ const route = useRoute();
 const websocketApi = useWebsocketApi();
 const podStore = podInfo();
 
+const code = ref();
+const dialogVisible = ref(false);
+
 const handleClick = (tab: TabsPaneContext, event: Event) => {
-	console.log(tab, event);
+	// console.log(tab, event);
 };
 const k8sStore = kubernetesInfo();
 const podApi = usePodApi();
@@ -359,7 +363,9 @@ const deletePod = async (pod: V1Pod) => {
 		.catch(); // 取消
 };
 const showRsYaml = async (replicaSets: V1ReplicaSet) => {
-	resplicaSetRef.value.openDialog(replicaSets);
+	dialogVisible.value = true;
+	code.value = replicaSets;
+	delete code.value.metadata.managedFields;
 };
 
 const showYaml = async () => {

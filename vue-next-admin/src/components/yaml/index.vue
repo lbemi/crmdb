@@ -19,9 +19,11 @@ import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { gutters } from '@codemirror/view';
+import { StreamLanguage, foldGutter } from '@codemirror/language';
+import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
 const code = ref('');
-const extensions = [javascript(), oneDark];
+const extensions = [oneDark, StreamLanguage.define(yaml), foldGutter()];
 const dialogVisible = ref(false);
 const merge = ref(false);
 const handleClose = () => {

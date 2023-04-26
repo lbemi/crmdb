@@ -62,7 +62,7 @@ import { Codemirror } from 'vue-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { V1Container, V1Deployment } from '@kubernetes/client-node';
-import yaml from 'js-yaml';
+import yamlJs from 'js-yaml';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
@@ -73,6 +73,8 @@ import { deepClone } from '/@/utils/other';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { CreateK8SBindData, CreateK8SMetaData } from '/@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
+import { StreamLanguage, foldGutter, foldKeymap } from '@codemirror/language';
+import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
@@ -85,7 +87,7 @@ const edit = () => {
 	delete dep.metadata?.resourceVersion;
 	delete dep.metadata?.managedFields;
 	delete dep.status;
-	data.code = yaml.dump(dep);
+	data.code = yamlJs.dump(dep);
 };
 const metaRef = ref<FormInstance>();
 const data = reactive({
@@ -129,7 +131,7 @@ const data = reactive({
 		resourceType: 'deployment',
 	},
 });
-const extensions = [javascript(), oneDark];
+const extensions = [oneDark, StreamLanguage.define(yaml), foldGutter()];
 const getContainers = (containers: Array<V1Container>) => {
 	data.deployment.spec!.template.spec!.containers = containers;
 	console.log('4.接收到容器发生变化。。。。。', containers);
@@ -207,7 +209,7 @@ const confirm = () => {
 };
 const updateCodeMirror = () => {
 	data.loadCode = true;
-	data.code = yaml.dump(data.deployment);
+	data.code = yamlJs.dump(data.deployment);
 	setTimeout(() => {
 		data.loadCode = false;
 	}, 1);
@@ -217,7 +219,7 @@ watch(
 	(newValue, oldValue) => {
 		if (newValue && !data.loadCode) {
 			if (newValue != oldValue) {
-				const newData = yaml.load(newValue) as V1Deployment;
+				const newData = yamlJs.load(newValue) as V1Deployment;
 				if (typeof newData === 'object' && newData != null) {
 					console.log('code变化了，回填数据', newValue);
 					data.bindMetaData.metadata = newData.metadata!;
