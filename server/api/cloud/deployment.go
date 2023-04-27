@@ -181,7 +181,9 @@ func ReDeployDeployment(c *gin.Context) {
 		return
 	}
 
-	deployment.Spec.Template.Annotations["lbemi.io/restartAt"] = time.Now().String()
+	deployment.Spec.Template.Annotations = map[string]string{
+		"lbemi.io/restartAt": time.Now().String(),
+	}
 
 	newDeployment, err := core.V1.Cluster(clusterName).Deployments(deployment.Namespace).Update(c, deployment)
 	if err != nil {
@@ -259,4 +261,23 @@ func GetDeploymentPods(c *gin.Context) {
 	}
 	util.GinError(c, err, response.ErrCodeParameter)
 	response.Success(c, response.StatusOK, detail)
+}
+
+func GetDeploymentEvents(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	namespace := c.Param("namespace")
+	deploymentName := c.Param("deploymentName")
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	events, err := core.V1.Cluster(clusterName).Deployments(namespace).GetDeploymentEvent(c, deploymentName)
+	util.GinError(c, err, response.ErrCodeParameter)
+
+	response.Success(c, response.StatusOK, events)
 }

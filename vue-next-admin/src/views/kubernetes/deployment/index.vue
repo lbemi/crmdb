@@ -35,7 +35,13 @@
 				</el-table-column>
 				<el-table-column label="状态" width="90px">
 					<template #default="scope">
-						<el-button v-if="scope.row.status.conditions[0].status === 'True'" type="success" :icon="Check" size="small" circle />
+						<el-button
+							v-if="scope.row.status.availableReplicas && scope.row.status.availableReplicas == scope.row.status.replicas"
+							type="success"
+							:icon="Check"
+							size="small"
+							circle
+						/>
 						<el-button v-else type="danger" :icon="Close" size="small" circle />
 					</template>
 				</el-table-column>

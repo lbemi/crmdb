@@ -38,7 +38,7 @@
 				</el-table-column>
 				<el-table-column label="状态" width="90px">
 					<template #default="scope">
-						<span v-if="scope.row.status.phase == 'Running'" style="color: green"> {{ scope.row.status.phase }}</span>
+						<span v-if="podStatus(scope.row.status)" style="color: green"> {{ scope.row.status.phase }}</span>
 						<span v-else style="color: red"> {{ scope.row.status.phase }}</span>
 					</template>
 				</el-table-column>
@@ -99,14 +99,15 @@
 </template>
 
 <script setup lang="ts" name="k8sPod">
-import { defineAsyncComponent, onBeforeUnmount, onMounted } from 'vue';
-import { ElMessageBox, ElMessage } from 'element-plus';
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted } from 'vue';
+import { ElMessageBox, ElMessage, imageEmits } from 'element-plus';
 import router from '/@/router';
 import { podInfo } from '/@/stores/pod';
 import { kubernetesInfo } from '/@/stores/kubernetes';
-import { V1Pod } from '@kubernetes/client-node';
+import { V1Pod, V1PodStatus } from '@kubernetes/client-node';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { PageInfo } from '/@/types/kubernetes/common';
+import { IterMode } from '@lezer/common';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 
@@ -122,6 +123,18 @@ const handleChange = () => {
 	podStore.state.loading = false;
 };
 
+// FIXME
+const podStatus = (status: V1PodStatus) => {
+	if (status.phase === 'Running') {
+		status.conditions!.forEach((item) => {
+			if (item.status != 'True') {
+				return false;
+			}
+		});
+	} else {
+		return false;
+	}
+};
 const handlePageChange = (pageInfo: PageInfo) => {
 	podStore.state.query.page = pageInfo.page;
 	podStore.state.query.limit = pageInfo.limit;

@@ -32,6 +32,13 @@ export function useDeploymentApi() {
 				params: param,
 			});
 		},
+		getDeploymentEvents: (ns: string, depName: string, param: any) => {
+			return request({
+				url: '/deployment/' + ns + '/' + depName + '/event',
+				method: 'get',
+				params: param,
+			});
+		},
 		deleteDeployment: (ns: string, name: string, param: any) => {
 			return request({
 				url: `/deployment/${ns}/${name}`,

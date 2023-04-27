@@ -8,6 +8,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sort"
 	"strconv"
 )
@@ -26,6 +27,7 @@ type IDeployment interface {
 	Scale(ctx context.Context, name string, replicaNum int32) error
 
 	GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, []*appsv1.ReplicaSet, error)
+	GetDeploymentEvent(ctx context.Context, name string) ([]*corev1.Event, error)
 }
 
 type Deployment struct {
@@ -77,6 +79,7 @@ func (d *Deployment) Update(ctx context.Context, obj *appsv1.Deployment) (*appsv
 	}
 	return updateDeployment, err
 }
+
 func (d *Deployment) RollBack(ctx context.Context, depName string, reversion string) (*appsv1.Deployment, error) {
 	parseInt, err := strconv.ParseInt(reversion, 10, 64)
 	if err != nil {
@@ -120,6 +123,7 @@ func (d *Deployment) RollBack(ctx context.Context, depName string, reversion str
 
 	return updateDeployment, err
 }
+
 func (d *Deployment) Delete(ctx context.Context, name string) error {
 	err := d.k8s.Deployment().Delete(ctx, name)
 	if err != nil {
@@ -192,6 +196,40 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 		return PodReplicaSets[i].ObjectMeta.GetName() < PodReplicaSets[j].ObjectMeta.GetName()
 	})
 	return pods, PodReplicaSets, nil
+
+}
+
+func (d *Deployment) GetDeploymentEvent(ctx context.Context, name string) ([]*corev1.Event, error) {
+	dep, err := d.k8s.Deployment().Get(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	replicaSets, err := d.k8s.Replicaset().List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	res := make([]labels.Set, 0)
+	events := make([]*corev1.Event, 0)
+
+	for _, item := range replicaSets {
+		if d.isRsFromDep(dep, item) {
+			selectorAsMap, err := v1.LabelSelectorAsMap(item.Spec.Selector)
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, selectorAsMap)
+		}
+	}
+	for _, item := range res {
+		event, err := d.k8s.Event().ListByLabels(ctx, item)
+		if err != nil {
+			break
+		}
+		events = append(events, event...)
+	}
+
+	return events, nil
 
 }
 

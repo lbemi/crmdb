@@ -212,7 +212,76 @@
 					</el-table>
 				</el-tab-pane>
 				<el-tab-pane label="监控" name="five">监控</el-tab-pane>
-				<el-tab-pane label="事件" name="six">事件</el-tab-pane>
+				<el-tab-pane label="事件" name="six">
+					<el-table :data="data.events" stripe style="width: 100%" max-height="350px">
+						<el-table-column prop="metadata.name" label="名称">
+							<template #default="scope">
+								<el-button link type="primary">{{ scope.row.metadata.name }}</el-button>
+								<div v-if="scope.row.status.phase != 'Running'" style="color: red">
+									<div v-if="scope.row.status.containerStatuses">
+										{{ scope.row.status.containerStatuses[0].state }}
+									</div>
+									<div v-else>{{ scope.row.status.conditions[0].reason }}:{{ scope.row.status.conditions[0].message }}</div>
+								</div>
+							</template>
+						</el-table-column>
+						<el-table-column label="状态">
+							<template #default="scope">
+								<span v-if="scope.row.status.phase == 'Running'" style="color: green"> {{ scope.row.status.phase }}</span>
+								<span v-else style="color: red"> {{ scope.row.status.phase }}</span>
+							</template>
+						</el-table-column>
+						<el-table-column label="重启次数">
+							<template #default="scope">
+								<div v-if="scope.row.status.containerStatuses">
+									{{ scope.row.status.containerStatuses[0].restartCount }}
+								</div>
+							</template>
+						</el-table-column>
+
+						<el-table-column prop="status.podIP" label="IP">
+							<template #default="scope">
+								{{ scope.row.status.podIP }}
+							</template>
+						</el-table-column>
+						<el-table-column prop="spec.nodeName" label="所在节点">
+							<template #default="scope">
+								<div>{{ scope.row.spec.nodeName }}</div>
+								<div>{{ scope.row.status.hostIP }}</div>
+							</template>
+						</el-table-column>
+						<el-table-column label="标签" show-overflow-tooltip>
+							<template #default="scope">
+								<el-tooltip placement="top" effect="light">
+									<template #content>
+										<div style="display: flex; flex-direction: column">
+											<el-tag class="label" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
+												{{ key }}:{{ item }}
+											</el-tag>
+										</div>
+									</template>
+									<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
+										<div>{{ key }}:{{ item }}</div>
+									</el-tag>
+								</el-tooltip>
+							</template>
+						</el-table-column>
+						<el-table-column label="创建时间" width="180px">
+							<template #default="scope">
+								{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
+							</template>
+						</el-table-column>
+						<el-table-column fixed="right" label="操作" width="160">
+							<template #default="scope">
+								<el-button link type="primary" size="small" @click="handleClick">详情</el-button><el-divider direction="vertical" />
+								<el-button link type="primary" size="small">编辑</el-button><el-divider direction="vertical" />
+								<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
+								<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
+								<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</el-tab-pane>
 			</el-tabs>
 		</el-card>
 		<YamlMegeDialog :code="code" :dialogVisible="dialogVisible" v-if="dialogVisible" />
@@ -226,7 +295,7 @@ import type { TabsPaneContext } from 'element-plus';
 import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, RefreshRight } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { V1Deployment, V1Pod, V1ReplicaSet } from '@kubernetes/client-node';
+import { V1Deployment, V1Pod, V1ReplicaSet, V1ReplicaSetCondition } from '@kubernetes/client-node';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -286,6 +355,7 @@ const data = reactive({
 	iShow: false,
 	activeName: 'first',
 	deployment: [],
+	events: [] as V1ReplicaSetCondition[],
 });
 const timer = ref();
 
@@ -326,8 +396,20 @@ const scaleDeploy = (action: string) => {
 		});
 };
 
+const handleEnvent = () => {
+	data.replicasets.forEach((item: V1ReplicaSet) => {
+		if (item.status) {
+			if (item.status.conditions) {
+				item.status.conditions.forEach((it: V1ReplicaSetCondition) => {
+					data.events.push(it);
+				});
+			}
+		}
+	});
+};
 onMounted(() => {
 	getPods();
+	getEvents();
 	buildWebsocket();
 	timer.value = window.setInterval(() => {
 		getPods();
@@ -365,6 +447,14 @@ const getPods = async () => {
 	data.replicasets = res.data.replicaSets;
 };
 
+const getEvents = async () => {
+	const res = await deploymentApi.getDeploymentEvents(
+		k8sStore.state.activeDeployment.metadata!.namespace!.toString(),
+		k8sStore.state.activeDeployment?.metadata!.name!.toString(),
+		data.param
+	);
+	data.events = res.data;
+};
 const jumpPodExec = (p: V1Pod) => {
 	podStore.state.podShell = p;
 	router.push({
