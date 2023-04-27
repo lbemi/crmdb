@@ -36,7 +36,7 @@
 						</div>
 					</template>
 				</el-table-column>
-				<el-table-column label="状态" width="180px">
+				<el-table-column label="状态" width="200px">
 					<template #default="scope">
 						<p v-html="podStatus(scope.row.status)" />
 						<!-- <span v-if="podStatus(scope.row.status)" style="color: green"> {{ scope.row.status.phase }}</span>
@@ -103,7 +103,7 @@ import { ElMessageBox, ElMessage, imageEmits } from 'element-plus';
 import router from '/@/router';
 import { podInfo } from '/@/stores/pod';
 import { kubernetesInfo } from '/@/stores/kubernetes';
-import { V1Pod, V1PodStatus } from '@kubernetes/client-node';
+import { V1ContainerStatus, V1Pod, V1PodCondition, V1PodStatus } from '@kubernetes/client-node';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { PageInfo } from '/@/types/kubernetes/common';
 
@@ -132,14 +132,14 @@ const podRestart = (status: V1PodStatus) => {
 const podStatus = (status: V1PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
 	if (status.phase === 'Running') {
-		status.conditions!.forEach((item) => {
+		status.conditions!.forEach((item: V1PodCondition) => {
 			if (item.status != 'True') {
 				let res = '';
-				status.containerStatuses?.forEach((c) => {
+				status.containerStatuses?.forEach((c: V1ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
-							// res = `${c.state.waiting.reason}:${c.state.waiting.message}`;
-							res = `${c.state.waiting.reason}`;
+							res = `<div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
+							// res = `${c.state.waiting.reason}`;
 						}
 						if (c.state?.terminated) {
 							res = `${c.state.terminated.reason}`;

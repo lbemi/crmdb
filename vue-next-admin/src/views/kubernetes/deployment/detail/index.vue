@@ -285,11 +285,10 @@
 </template>
 <script lang="ts" setup name="k8sDeploymentDetail">
 import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent } from 'vue';
-import type { TabsPaneContext } from 'element-plus';
 import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, RefreshRight } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { V1Deployment, V1Pod, V1ReplicaSet, V1ReplicaSetCondition } from '@kubernetes/client-node';
+import { V1ContainerStatus, V1Deployment, V1Pod, V1PodCondition, V1PodStatus, V1ReplicaSet, V1ReplicaSetCondition } from '@kubernetes/client-node';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -299,7 +298,6 @@ import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { podInfo } from '/@/stores/pod';
 import YAML from 'js-yaml';
 import { deepClone } from '/@/utils/other';
-import { height } from 'dom7';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const YamlMegeDialog = defineAsyncComponent(() => import('/@/components/yaml/matchCode.vue'));
@@ -413,14 +411,14 @@ const podRestart = (status: V1PodStatus) => {
 const podStatus = (status: V1PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
 	if (status.phase === 'Running') {
-		status.conditions!.forEach((item) => {
+		status.conditions!.forEach((item: V1PodCondition) => {
 			if (item.status != 'True') {
 				let res = '';
-				status.containerStatuses?.forEach((c) => {
+				status.containerStatuses?.forEach((c: V1ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
-							// res = `${c.state.waiting.reason}:${c.state.waiting.message}`;
-							res = `${c.state.waiting.reason}`;
+							res = `<div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
+							// res = `${c.state.waiting.reason}`;
 						}
 						if (c.state?.terminated) {
 							res = `${c.state.terminated.reason}`;
