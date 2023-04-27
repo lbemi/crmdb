@@ -1,6 +1,6 @@
 <template>
 	<div class="layout-padding container">
-		<el-card shadow="hover" class="layout-padding-auto">
+		<el-card shadow="hover" class="layout-padding-auto card">
 			<el-row :gutter="20">
 				<el-col :span="18">
 					<el-button type="info" :icon="ArrowLeft" text @click="backRoute">返回</el-button>
@@ -102,7 +102,7 @@
 			<!-- <el-divider /> -->
 			<el-tabs v-model="data.activeName" class="demo-tabs" @tab-click="handleClick">
 				<el-tab-pane label="容器组" name="first">
-					<el-table :data="data.pods" stripe style="width: 100%" height="300px">
+					<el-table :data="data.pods" stripe style="width: 100%" max-height="350px">
 						<el-table-column prop="metadata.name" label="名称">
 							<template #default="scope">
 								<el-button link type="primary">{{ scope.row.metadata.name }}</el-button>
@@ -174,7 +174,19 @@
 				<el-tab-pane label="元数据" name="second">
 					<MetaDetail :metaData="k8sStore.state.activeDeployment.metadata" />
 				</el-tab-pane>
-				<el-tab-pane label="历史版本" name="third">
+				<el-tab-pane label="环境变量" name="third">
+					<el-descriptions :column="1" direction="vertical">
+						<el-descriptions-item :label="'容器: ' + item.name" v-for="item in k8sStore.state.activeDeployment.spec?.template.spec?.containers">
+							<el-card class="card" :body-style="{ height: '200px' }">
+								<div v-if="item.env" v-for="(value, key, index) in item.env" :key="index" style="margin-bottom: 8px">
+									<el-tag type="info" size="default"> {{ value }} </el-tag>
+								</div>
+								<div v-else>无数据</div>
+							</el-card>
+						</el-descriptions-item>
+					</el-descriptions>
+				</el-tab-pane>
+				<el-tab-pane label="历史版本" name="fourth">
 					<el-table :data="data.replicasets" style="width: 100%">
 						<el-table-column p label="版本">
 							<template #default="scope">
@@ -182,22 +194,25 @@
 								<el-tag v-if="scope.row.status.replicas != 0" plain size="small" type="success" style="margin-left: 15px">当前版本</el-tag>
 							</template>
 						</el-table-column>
-						<el-table-column p label="镜像">
+						<el-table-column label="镜像">
 							<template #default="scope"> {{ scope.row.spec.template.spec.containers[0].image }} </template>
 						</el-table-column>
-						<el-table-column p label="镜像">
+						<el-table-column label="创建时间">
 							<template #default="scope"> {{ dateStrFormat(scope.row.metadata.creationTimestamp) }} </template>
 						</el-table-column>
 
 						<el-table-column fixed="right" label="操作">
 							<template #default="scope">
 								<el-button link type="primary" size="small" @click="showRsYaml(scope.row)">详情</el-button>
-								<el-button link type="primary" size="small" @click="rollBack(scope.row)">回滚到该版本</el-button>
+								<el-button link type="primary" size="small" @click="rollBack(scope.row)" :disabled="data.replicasets.length == 1"
+									>回滚到该版本</el-button
+								>
 							</template>
 						</el-table-column>
 					</el-table>
 				</el-tab-pane>
-				<el-tab-pane label="Task" name="fourth">Task</el-tab-pane>
+				<el-tab-pane label="监控" name="five">监控</el-tab-pane>
+				<el-tab-pane label="事件" name="six">事件</el-tab-pane>
 			</el-tabs>
 		</el-card>
 		<YamlMegeDialog :code="code" :dialogVisible="dialogVisible" v-if="dialogVisible" />
@@ -221,6 +236,7 @@ import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { podInfo } from '/@/stores/pod';
 import YAML from 'js-yaml';
 import { deepClone } from '/@/utils/other';
+import { height } from 'dom7';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const YamlMegeDialog = defineAsyncComponent(() => import('/@/components/yaml/matchCode.vue'));
@@ -255,7 +271,7 @@ const rollBack = (rs: V1ReplicaSet) => {
 			ElMessage.error('回滚失败,' + res.message);
 		});
 };
-const handleClick = (tab: TabsPaneContext, event: Event) => {
+const handleClick = () => {
 	// console.log(tab, event);
 };
 const k8sStore = kubernetesInfo();
@@ -420,6 +436,10 @@ const buildWebsocket = () => {
 };
 </script>
 <style lang="scss">
+.card {
+	overflow-y: auto; /* 开启滚动显示溢出内容 */
+}
+
 .tag-center {
 	display: flex;
 	flex-direction: column;

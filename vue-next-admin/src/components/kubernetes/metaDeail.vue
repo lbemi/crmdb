@@ -28,7 +28,7 @@ const props = defineProps({
 </script>
 
 <style scoped>
-.el-descriptions {
-	margin-top: 20px;
-}
+/* .el-descriptions {
+	margin-top: 10px;
+} */
 </style>
