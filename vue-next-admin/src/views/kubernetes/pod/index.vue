@@ -39,8 +39,6 @@
 				<el-table-column label="状态" width="200px">
 					<template #default="scope">
 						<p v-html="podStatus(scope.row.status)" />
-						<!-- <span v-if="podStatus(scope.row.status)" style="color: green"> {{ scope.row.status.phase }}</span>
-						<span v-else style="color: red"> {{ scope.row.status.phase }}</span> -->
 					</template>
 				</el-table-column>
 				<el-table-column label="重启次数" width="100px">
@@ -148,7 +146,6 @@ const podStatus = (status: V1PodStatus) => {
 				});
 				return (s = `<span style="color: red">${res}</span>`);
 			}
-			// s = '<span style="color: green">true</span>';
 		});
 	} else {
 		s = '<span style="color: green">ERROR</span>';
