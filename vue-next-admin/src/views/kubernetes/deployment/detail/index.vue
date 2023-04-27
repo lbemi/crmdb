@@ -114,17 +114,14 @@
 								</div>
 							</template>
 						</el-table-column>
-						<el-table-column label="状态">
+						<el-table-column label="状态" width="180px">
 							<template #default="scope">
-								<span v-if="scope.row.status.phase == 'Running'" style="color: green"> {{ scope.row.status.phase }}</span>
-								<span v-else style="color: red"> {{ scope.row.status.phase }}</span>
+								<p v-html="podStatus(scope.row.status)" />
 							</template>
 						</el-table-column>
 						<el-table-column label="重启次数">
 							<template #default="scope">
-								<div v-if="scope.row.status.containerStatuses">
-									{{ scope.row.status.containerStatuses[0].restartCount }}
-								</div>
+								<div v-if="scope.row.status.containerStatuses">{{ podRestart(scope.row.status) }}</div>
 							</template>
 						</el-table-column>
 
@@ -227,15 +224,12 @@
 						</el-table-column>
 						<el-table-column label="状态">
 							<template #default="scope">
-								<span v-if="scope.row.status.phase == 'Running'" style="color: green"> {{ scope.row.status.phase }}</span>
-								<span v-else style="color: red"> {{ scope.row.status.phase }}</span>
+								<p v-html="podStatus(scope.row.status)" />
 							</template>
 						</el-table-column>
 						<el-table-column label="重启次数">
 							<template #default="scope">
-								<div v-if="scope.row.status.containerStatuses">
-									{{ scope.row.status.containerStatuses[0].restartCount }}
-								</div>
+								<div v-if="scope.row.status.containerStatuses">{{ podRestart(scope.row.status) }}</div>
 							</template>
 						</el-table-column>
 
@@ -406,6 +400,42 @@ const handleEnvent = () => {
 			}
 		}
 	});
+};
+
+const podRestart = (status: V1PodStatus) => {
+	let count = 0;
+	status.containerStatuses!.forEach((item) => {
+		count += item.restartCount;
+	});
+	return count;
+};
+// FIXME
+const podStatus = (status: V1PodStatus) => {
+	let s = '<span style="color: green">Running</span>';
+	if (status.phase === 'Running') {
+		status.conditions!.forEach((item) => {
+			if (item.status != 'True') {
+				let res = '';
+				status.containerStatuses?.forEach((c) => {
+					if (!c.ready) {
+						if (c.state?.waiting) {
+							// res = `${c.state.waiting.reason}:${c.state.waiting.message}`;
+							res = `${c.state.waiting.reason}`;
+						}
+						if (c.state?.terminated) {
+							res = `${c.state.terminated.reason}`;
+						}
+					}
+				});
+				return (s = `<span style="color: red">${res}</span>`);
+			}
+			// s = '<span style="color: green">true</span>';
+		});
+	} else {
+		s = '<span style="color: green">ERROR</span>';
+	}
+
+	return s;
 };
 onMounted(() => {
 	getPods();

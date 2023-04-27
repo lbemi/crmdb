@@ -21,7 +21,6 @@ type event struct {
 
 func (e *event) ListByLabels(ctx context.Context, labelsData labels.Set) ([]*corev1.Event, error) {
 	selector := labels.SelectorFromSet(labelsData)
-	fileldS
 	eventList, err := e.cli.SharedInformerFactory.Core().V1().Events().Lister().Events(e.ns).List(selector)
 	if err != nil {
 		log.Logger.Error(err)
