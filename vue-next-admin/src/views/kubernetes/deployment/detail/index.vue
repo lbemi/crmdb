@@ -42,19 +42,6 @@
 						}}</el-tag>
 					</div>
 				</el-descriptions-item>
-				<!-- <el-descriptions-item label="注解" label-align="right" align="center">
-					<div class="tag-center">
-						<el-tag
-							effect="plain"
-							type="info"
-							v-for="(item, key, index) in k8sStore.state.activeDeployment?.metadata?.annotations"
-							:key="index"
-							show-overflow-tooltip
-						>
-							{{ key }}:{{ item }}</el-tag
-						>
-					</div>
-				</el-descriptions-item> -->
 				<el-descriptions-item label="滚动升级策略" label-align="right" align="center">
 					<div>
 						超过期望的Pod数量：
@@ -79,7 +66,7 @@
 
 					个
 					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow" style="font-size: 10px; margin-left: 5px"
-						>展开现状现状详情<el-icon> <CaretBottom /> </el-icon
+						>展开现状详情<el-icon> <CaretBottom /> </el-icon
 					></el-link>
 				</el-descriptions-item>
 			</el-descriptions>
@@ -159,7 +146,7 @@
 						</el-table-column>
 						<el-table-column fixed="right" label="操作" width="160">
 							<template #default="scope">
-								<el-button link type="primary" size="small" @click="handleClick">详情</el-button><el-divider direction="vertical" />
+								<el-button link type="primary" size="small" @click="tahandleClick()">详情</el-button><el-divider direction="vertical" />
 								<el-button link type="primary" size="small">编辑</el-button><el-divider direction="vertical" />
 								<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
 								<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
@@ -210,68 +197,31 @@
 				</el-tab-pane>
 				<el-tab-pane label="监控" name="five">监控</el-tab-pane>
 				<el-tab-pane label="事件" name="six">
-					<el-table :data="data.events" stripe style="width: 100%" max-height="350px">
-						<el-table-column prop="metadata.name" label="名称">
+					<el-alert title="资源事件只保存最近1小时内发生的事件" :closable="false" type="info" class="mb15" show-icon />
+					<el-table :data="data.events">
+						<el-table-column prop="type" label="类型" width="100px">
 							<template #default="scope">
-								<el-button link type="primary">{{ scope.row.metadata.name }}</el-button>
-								<div v-if="scope.row.status.phase != 'Running'" style="color: red">
-									<div v-if="scope.row.status.containerStatuses">
-										{{ scope.row.status.containerStatuses[0].state }}
-									</div>
-									<div v-else>{{ scope.row.status.conditions[0].reason }}:{{ scope.row.status.conditions[0].message }}</div>
-								</div>
+								<el-button link type="primary">{{ scope.row.type }}</el-button>
 							</template>
 						</el-table-column>
-						<el-table-column label="状态">
+						<el-table-column label="原因">
 							<template #default="scope">
-								<p v-html="podStatus(scope.row.status)" />
+								{{ scope.row.reason }}
 							</template>
 						</el-table-column>
-						<el-table-column label="重启次数">
+						<el-table-column label="来源">
 							<template #default="scope">
-								<div v-if="scope.row.status.containerStatuses">{{ podRestart(scope.row.status) }}</div>
+								{{ scope.row.source.component }}
 							</template>
 						</el-table-column>
-
-						<el-table-column prop="status.podIP" label="IP">
+						<el-table-column prop="spec.nodeName" label="消息">
 							<template #default="scope">
-								{{ scope.row.status.podIP }}
+								{{ scope.row.message }}
 							</template>
 						</el-table-column>
-						<el-table-column prop="spec.nodeName" label="所在节点">
+						<el-table-column label="时间" width="180px">
 							<template #default="scope">
-								<div>{{ scope.row.spec.nodeName }}</div>
-								<div>{{ scope.row.status.hostIP }}</div>
-							</template>
-						</el-table-column>
-						<el-table-column label="标签" show-overflow-tooltip>
-							<template #default="scope">
-								<el-tooltip placement="top" effect="light">
-									<template #content>
-										<div style="display: flex; flex-direction: column">
-											<el-tag class="label" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
-												{{ key }}:{{ item }}
-											</el-tag>
-										</div>
-									</template>
-									<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
-										<div>{{ key }}:{{ item }}</div>
-									</el-tag>
-								</el-tooltip>
-							</template>
-						</el-table-column>
-						<el-table-column label="创建时间" width="180px">
-							<template #default="scope">
-								{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
-							</template>
-						</el-table-column>
-						<el-table-column fixed="right" label="操作" width="160">
-							<template #default="scope">
-								<el-button link type="primary" size="small" @click="handleClick">详情</el-button><el-divider direction="vertical" />
-								<el-button link type="primary" size="small">编辑</el-button><el-divider direction="vertical" />
-								<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
-								<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
-								<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button>
+								{{ dateStrFormat(scope.row.firstTimestamp) }}
 							</template>
 						</el-table-column>
 					</el-table>
@@ -292,7 +242,7 @@ import { V1ContainerStatus, V1Deployment, V1Pod, V1PodCondition, V1PodStatus, V1
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox, TabsPaneContext } from 'element-plus';
 import { usePodApi } from '/@/api/kubernetes/pod';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { podInfo } from '/@/stores/pod';
@@ -332,9 +282,12 @@ const rollBack = (rs: V1ReplicaSet) => {
 			ElMessage.error('回滚失败,' + res.message);
 		});
 };
-const handleClick = () => {
-	// console.log(tab, event);
+const handleClick = (tab: TabsPaneContext, event: Event) => {
+	if (tab.paneName === 'six') {
+		getEvents();
+	}
 };
+
 const k8sStore = kubernetesInfo();
 const podApi = usePodApi();
 const deploymentApi = useDeploymentApi();
@@ -437,7 +390,6 @@ const podStatus = (status: V1PodStatus) => {
 };
 onMounted(() => {
 	getPods();
-	getEvents();
 	buildWebsocket();
 	timer.value = window.setInterval(() => {
 		getPods();

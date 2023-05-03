@@ -31,6 +31,7 @@ const handleClose = () => {
 };
 
 const openDialog = (data: any) => {
+	code.value = '';
 	dialogVisible.value = true;
 	code.value += YAML.dump(data);
 };
@@ -51,6 +52,9 @@ watch(
 					break;
 				case 'statefulSet':
 					code.value = `apiVersion: apps/v1\nkind: DaemonSet\n`;
+					break;
+				case 'pod':
+					code.value = `apiVersion: apps/v1\nkind: Pod\n`;
 					break;
 				default:
 					code.value = '';

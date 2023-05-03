@@ -2,13 +2,13 @@
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<span class="mb15">容器组名: {{ pod.metadata?.name }}</span> :
-			<el-select v-model="selectContainer" class="m-2" placeholder="选择容器" size="default">
+			<el-select v-model="selectContainer" class="m-2" placeholder="选择容器" size="small">
 				<el-option v-for="item in pod.spec?.containers" :key="item.name" :label="item.name" :value="item.name" />
 			</el-select>
-			<el-button type="primary" size="default" class="ml10" @click="getLog">显示日志</el-button>
+			<el-button type="primary" size="small" class="ml10" @click="getLog">显示日志</el-button>
 
-			<el-button type="primary" size="default" class="ml10" @click="logs = ''">清空</el-button>
-			<el-button type="primary" size="default" class="ml10" @click="stop = !stop">{{ stop ? '继续' : '暂停' }}</el-button>
+			<el-button type="primary" size="small" class="ml10" @click="logs = ''">清空</el-button>
+			<el-button type="primary" size="small" class="ml10" @click="stop = !stop">{{ stop ? '继续' : '暂停' }}</el-button>
 			<el-scrollbar ref="scrollbarRef" height="800px" class="logs">
 				<div ref="innerRef" id="logs">
 					{{ logs }}
@@ -40,7 +40,7 @@ const getLog = async () => {
 	ws.value = websocketApi.createLogWebsocket(pod.metadata?.namespace!, pod.metadata?.name!, selectContainer.value);
 	const logDiv = document.getElementById('logs');
 	const cacheLog = ref('');
-	ws.value.onmessage = (e) => {
+	ws.value.onmessage = (e: any) => {
 		if (e.data === 'ping') {
 			return;
 		} else {

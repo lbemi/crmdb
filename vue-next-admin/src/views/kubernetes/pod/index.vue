@@ -7,14 +7,14 @@
 				<el-select
 					v-model="k8sStore.state.activeNamespace"
 					style="max-width: 180px"
-					size="default"
+					size="small"
 					class="m-2"
 					placeholder="Select"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata?.name" />
+					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
 				</el-select>
-				<el-button type="danger" size="default" class="ml10" :disabled="podStore.state.selectData.length == 0">批量删除</el-button>
+				<el-button type="danger" size="small" class="ml10" :disabled="podStore.state.selectData.length == 0">批量删除</el-button>
 			</div>
 			<el-table
 				:data="podStore.state.pods"
@@ -82,7 +82,7 @@
 				<el-table-column fixed="right" label="操作" width="160">
 					<template #default="scope">
 						<el-button link type="primary" size="small">详情</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small">编辑</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" size="small" @click="editPod(scope.row)">编辑</el-button><el-divider direction="vertical" />
 						<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
 						<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
 						<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button>
@@ -92,21 +92,25 @@
 			<!-- 分页区域 -->
 			<Pagination :total="podStore.state.total" @handlePageChange="handlePageChange" />
 		</el-card>
+		<YamlDialog ref="yamlRef" :resourceType="'pod'" :update-resource="updatePod" />
 	</div>
 </template>
 
 <script setup lang="ts" name="k8sPod">
-import { computed, defineAsyncComponent, onBeforeUnmount, onMounted } from 'vue';
-import { ElMessageBox, ElMessage, imageEmits } from 'element-plus';
+import { defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue';
+import { ElMessageBox, ElMessage } from 'element-plus';
 import router from '/@/router';
 import { podInfo } from '/@/stores/pod';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { V1ContainerStatus, V1Pod, V1PodCondition, V1PodStatus } from '@kubernetes/client-node';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { PageInfo } from '/@/types/kubernetes/common';
+import YAML from 'js-yaml';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
+const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 
+const yamlRef = ref();
 const k8sStore = kubernetesInfo();
 const podStore = podInfo();
 const websocketApi = useWebsocketApi();
@@ -161,6 +165,28 @@ const handlePageChange = (pageInfo: PageInfo) => {
 	podStore.state.loading = false;
 };
 
+const updatePod = () => {
+	const updateData = YAML.load(yamlRef.value.code) as V1Pod;
+	delete updateData.status;
+	// delete updateData.metadata?.managedFields;
+	// deploymentApi
+	// 	.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
+	// 	.then((res) => {
+	// 		if (res.code == 200) {
+	// 			ElMessage.success('更新成功');
+	// 		} else {
+	// 			ElMessage.error(res.message);
+	// 		}
+	// 	})
+	// 	.catch((e) => {
+	// 		ElMessage.error(e.message);
+	// 	});
+	yamlRef.value.handleClose();
+};
+const editPod = (pod: V1Pod) => {
+	delete pod.metadata?.managedFields;
+	yamlRef.value.openDialog(pod);
+};
 const jumpPodExec = (p: V1Pod) => {
 	podStore.state.podShell = p;
 	router.push({

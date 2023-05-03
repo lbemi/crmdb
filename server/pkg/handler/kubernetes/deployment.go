@@ -8,7 +8,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"sort"
 	"strconv"
 )
@@ -200,34 +199,46 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 }
 
 func (d *Deployment) GetDeploymentEvent(ctx context.Context, name string) ([]*corev1.Event, error) {
-	dep, err := d.k8s.Deployment().Get(ctx, name)
-	if err != nil {
-		return nil, err
-	}
+	//dep, err := d.k8s.Deployment().Get(ctx, name)
+	//if err != nil {
+	//	return nil, err
+	//}
 
-	replicaSets, err := d.k8s.Replicaset().List(ctx)
-	if err != nil {
-		return nil, err
-	}
-	res := make([]labels.Set, 0)
 	events := make([]*corev1.Event, 0)
+	eventList, err := d.k8s.Event().List(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	for _, item := range replicaSets {
-		if d.isRsFromDep(dep, item) {
-			selectorAsMap, err := v1.LabelSelectorAsMap(item.Spec.Selector)
-			if err != nil {
-				return nil, err
-			}
-			res = append(res, selectorAsMap)
+	for _, item := range eventList {
+		if (item.InvolvedObject.Kind == "ReplicaSet" || item.InvolvedObject.Kind == "Deployment") && item.InvolvedObject.Name == name {
+			events = append(events, item)
 		}
 	}
-	for _, item := range res {
-		event, err := d.k8s.Event().ListByLabels(ctx, item)
-		if err != nil {
-			break
-		}
-		events = append(events, event...)
-	}
+
+	//replicaSets, err := d.k8s.Replicaset().List(ctx)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//res := make([]labels.Set, 0)
+	//events := make([]*corev1.Event, 0)
+	//
+	//for _, item := range replicaSets {
+	//	if d.isRsFromDep(dep, item) {
+	//		selectorAsMap, err := v1.LabelSelectorAsMap(item.Spec.Selector)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//		res = append(res, selectorAsMap)
+	//	}
+	//}
+	//for _, item := range res {
+	//	event, err := d.k8s.Event().ListByLabels(ctx, item)
+	//	if err != nil {
+	//		break
+	//	}
+	//	events = append(events, event...)
+	//}
 
 	return events, nil
 
