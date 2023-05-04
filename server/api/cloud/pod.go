@@ -9,6 +9,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/handler/types"
+	"github.com/lbemi/lbemi/pkg/util"
 	"io"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/remotecommand"
@@ -254,6 +255,25 @@ func GetPodLog(c *gin.Context) {
 			break
 		}
 	}
+}
+
+func GetPodEvents(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	namespace := c.Param("namespace")
+	podName := c.Param("name")
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	events, err := core.V1.Cluster(clusterName).Pods(namespace).GetPodEvent(c, podName)
+	util.GinError(c, err, response.ErrCodeParameter)
+
+	response.Success(c, response.StatusOK, events)
 }
 
 /*

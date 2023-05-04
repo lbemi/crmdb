@@ -81,7 +81,7 @@
 				</el-table-column>
 				<el-table-column fixed="right" label="操作" width="160">
 					<template #default="scope">
-						<el-button link type="primary" size="small">详情</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" size="small" @click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
 						<el-button link type="primary" size="small" @click="editPod(scope.row)">编辑</el-button><el-divider direction="vertical" />
 						<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
 						<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
@@ -191,6 +191,12 @@ const jumpPodExec = (p: V1Pod) => {
 	podStore.state.podShell = p;
 	router.push({
 		name: 'podShell',
+	});
+};
+const jumpPodDetail = (pod: V1Pod) => {
+	podStore.state.podDetail = pod;
+	router.push({
+		name: 'podDetail',
 	});
 };
 const jumpPodLog = (p: V1Pod) => {

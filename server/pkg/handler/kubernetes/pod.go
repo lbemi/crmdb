@@ -23,6 +23,7 @@ type IPod interface {
 
 	PodExec(ctx context.Context, namespace, pod, container string, command []string) remotecommand.Executor
 	GetPodLog(ctx context.Context, pod, container string) *rest.Request
+	GetPodEvent(ctx context.Context, name string) ([]*corev1.Event, error)
 }
 
 type pod struct {
@@ -89,4 +90,20 @@ func (p *pod) PodExec(ctx context.Context, namespace, pod, container string, com
 
 func (p *pod) GetPodLog(ctx context.Context, pod, container string) *rest.Request {
 	return p.k8s.Pod().GetPodLog(ctx, pod, container)
+}
+
+func (p *pod) GetPodEvent(ctx context.Context, name string) ([]*corev1.Event, error) {
+	events := make([]*corev1.Event, 0)
+	eventList, err := p.k8s.Event().List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range eventList {
+		if item.InvolvedObject.Kind == "Pod" && item.InvolvedObject.Name == name {
+			events = append(events, item)
+		}
+	}
+
+	return events, nil
 }

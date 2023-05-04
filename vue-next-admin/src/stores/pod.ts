@@ -15,6 +15,7 @@ export const podInfo = defineStore(
 		const k8sStore = kubernetesInfo();
 		const podApi = usePodApi();
 		const state = reactive({
+			podDetail: {} as V1Pod,
 			pods: [] as V1Pod[],
 			query: {
 				cloud: k8sStore.state.activeCluster,

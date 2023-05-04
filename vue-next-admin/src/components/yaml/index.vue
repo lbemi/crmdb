@@ -14,11 +14,9 @@
 
 <script setup lang="ts">
 import YAML from 'js-yaml';
-import { reactive, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { Codemirror } from 'vue-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { gutters } from '@codemirror/view';
 import { StreamLanguage, foldGutter } from '@codemirror/language';
 import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
@@ -28,10 +26,23 @@ const dialogVisible = ref(false);
 const merge = ref(false);
 const handleClose = () => {
 	dialogVisible.value = false;
+
+	switch (props.resourceType) {
+		case 'deployment':
+			code.value = `apiVersion: apps/v1\nkind: Deployment\n`;
+			break;
+		case 'statefulSet':
+			code.value = `apiVersion: apps/v1\nkind: DaemonSet\n`;
+			break;
+		case 'pod':
+			code.value = `apiVersion: v1\nkind: Pod\n`;
+			break;
+		default:
+			code.value = '';
+	}
 };
 
 const openDialog = (data: any) => {
-	code.value = '';
 	dialogVisible.value = true;
 	code.value += YAML.dump(data);
 };
@@ -54,7 +65,7 @@ watch(
 					code.value = `apiVersion: apps/v1\nkind: DaemonSet\n`;
 					break;
 				case 'pod':
-					code.value = `apiVersion: apps/v1\nkind: Pod\n`;
+					code.value = `apiVersion: v1\nkind: Pod\n`;
 					break;
 				default:
 					code.value = '';
