@@ -5,7 +5,7 @@
 				<el-table-column label="名称/IP地址/UID" width="140" align="center" show-overflow-tooltip>
 					<template #default="scope">
 						<div>{{ scope.row.metadata.name }}</div>
-						<el-button link type="primary">{{ scope.row.status.addresses[0].address }}</el-button>
+						<el-button link type="primary" @click="jumpNodeDetail(scope.row)">{{ scope.row.status.addresses[0].address }}</el-button>
 						<div>{{ scope.row.metadata.uid }}</div>
 					</template>
 				</el-table-column>
@@ -117,7 +117,7 @@
 				<el-table-column fixed="right" label="操作" width="130">
 					<template #default="scope">
 						<div style="display: flex; align-items: center">
-							<el-button link type="primary" size="default">详情</el-button>
+							<el-button link type="primary" size="default" @click="jumpNodeDetail(scope.row)">详情</el-button>
 							<el-divider direction="vertical" />
 							<el-dropdown>
 								<span class="el-dropdown-link">
@@ -156,6 +156,7 @@ import { kubernetesInfo } from '/@/stores/kubernetes';
 import { V1Node } from '@kubernetes/client-node';
 import { useNodeApi } from '/@/api/kubernetes/node';
 import { PageInfo } from '/@/types/kubernetes/common';
+import router from '/@/router';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const Labels = defineAsyncComponent(() => import('./component/labels.vue'));
@@ -178,6 +179,12 @@ const k8sStore = kubernetesInfo();
 onMounted(() => {
 	listNodes();
 });
+const jumpNodeDetail = (node: V1Node) => {
+	k8sStore.state.activeNode = node;
+	router.push({
+		name: 'nodeDetail',
+	});
+};
 const listNodes = () => {
 	data.query.cloud = k8sStore.state.activeCluster;
 	nodeApi

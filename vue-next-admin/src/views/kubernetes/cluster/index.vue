@@ -10,12 +10,7 @@
 					查询
 				</el-button>
 				<el-button @click="loadCluster">ceshi </el-button>
-				<el-button size="default" type="success" class="ml10" @click="loadCluster()">
-					<!--					<el-icon>-->
-					<!--						<ele-FolderAdd />-->
-					<!--					</el-icon>-->
-					导入集群
-				</el-button>
+				<el-button size="default" type="success" class="ml10" @click="loadCluster()"> 导入集群 </el-button>
 			</div>
 
 			<el-table :data="data.clusters" style="width: 100%">

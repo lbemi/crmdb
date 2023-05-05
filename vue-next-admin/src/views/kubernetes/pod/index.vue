@@ -27,7 +27,7 @@
 
 				<el-table-column prop="metadata.name" label="名称" width="300px" show-overflow-tooltip>
 					<template #default="scope">
-						<el-button link type="primary">{{ scope.row.metadata.name }}</el-button>
+						<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>
 						<div v-if="scope.row.status.phase != 'Running'" style="color: red">
 							<div v-if="scope.row.status.containerStatuses">
 								{{ scope.row.status.containerStatuses[0].state }}
@@ -140,7 +140,7 @@ const podStatus = (status: V1PodStatus) => {
 				status.containerStatuses?.forEach((c: V1ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
-							res = `<div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
+							res = ` </div> <div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
 							// res = `${c.state.waiting.reason}`;
 						}
 						if (c.state?.terminated) {
@@ -168,19 +168,6 @@ const handlePageChange = (pageInfo: PageInfo) => {
 const updatePod = () => {
 	const updateData = YAML.load(yamlRef.value.code) as V1Pod;
 	delete updateData.status;
-	// delete updateData.metadata?.managedFields;
-	// deploymentApi
-	// 	.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
-	// 	.then((res) => {
-	// 		if (res.code == 200) {
-	// 			ElMessage.success('更新成功');
-	// 		} else {
-	// 			ElMessage.error(res.message);
-	// 		}
-	// 	})
-	// 	.catch((e) => {
-	// 		ElMessage.error(e.message);
-	// 	});
 	yamlRef.value.handleClose();
 };
 const editPod = (pod: V1Pod) => {

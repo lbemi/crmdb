@@ -2,7 +2,7 @@
 <template>
 	<div>
 		<el-dialog v-model="visible" :title="title" width="30%" :before-close="handleClose">
-			<Labels v-model:tableData="labels" @on-click="getLabels" v-if="visible" />
+			<Labels :labelData="labels" @on-click="getLabels" v-if="visible" />
 			<template #footer>
 				<span class="dialog-footer">
 					<el-button @click="handleClose()">取消</el-button>
@@ -15,10 +15,12 @@
 
 <script setup lang="ts">
 import Labels from '/@/components/label/index.vue';
+
 import { ElMessage } from 'element-plus';
 import { ref, watch, reactive, toRefs } from 'vue';
 import { V1Node } from '@kubernetes/client-node';
 import { useNodeApi } from '/@/api/kubernetes/node';
+
 interface label {
 	key: string;
 	value: string;
@@ -79,6 +81,10 @@ watch(
 				labels.value.push(l);
 			}
 		}
+	},
+	{
+		immediate: true,
+		deep: true,
 	}
 );
 </script>

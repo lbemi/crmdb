@@ -48,7 +48,6 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		deployment.DELETE("/:namespace/:deploymentName", cloud.DeleteDeployment)
 		deployment.PUT("/:namespace/:deploymentName/:scale", cloud.ScaleDeployments)
 		deployment.GET("/:namespace/:deploymentName/pod", cloud.GetDeploymentPods)
-		// FIXME 方法有问题，待修复
 		deployment.GET("/:namespace/:deploymentName/event", cloud.GetDeploymentEvents)
 	}
 
