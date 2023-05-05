@@ -92,15 +92,8 @@
 							</template>
 						</el-table-column>
 						<el-table-column label="镜像" prop="image" />
-						<!-- <el-table-column label="命令" prop="command" />
-						<el-table-column label="参数" prop="args" /> -->
-						<el-table-column label="端口">
-							<template #default="scope">
-								<a v-for="item in scope.row.ports"> {{ item.name }}:{{ item.containerPort }}/{{ item.protocol }}</a>
-								<!-- {{ dateStrFormat(scope.row.metadata.creationTimestamp) }} -->
-							</template>
-						</el-table-column>
-						<el-table-column label="参数" prop="args" />
+
+						<el-table-column label="重启次数" prop="restartCount" />
 
 						<el-table-column label="创建时间" width="180px">
 							<template #default="scope">
