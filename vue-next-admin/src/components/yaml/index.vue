@@ -37,6 +37,9 @@ const handleClose = () => {
 		case 'pod':
 			code.value = `apiVersion: v1\nkind: Pod\n`;
 			break;
+		case 'node':
+			code.value = `apiVersion: v1\nkind: Node\n`;
+			break;
 		default:
 			code.value = '';
 	}
@@ -66,6 +69,9 @@ watch(
 					break;
 				case 'pod':
 					code.value = `apiVersion: v1\nkind: Pod\n`;
+					break;
+				case 'node':
+					code.value = `apiVersion: v1\nkind: Node\n`;
 					break;
 				default:
 					code.value = '';

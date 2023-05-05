@@ -2,21 +2,40 @@
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="mb15">
-				命名空间:
-				<el-select
-					v-model="k8sStore.state.activeNamespace"
-					style="max-width: 180px"
-					class="m-2"
-					placeholder="Select"
-					size="small"
-					@change="handleChange"
-					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata?.name" />
-				</el-select>
-				<el-button type="primary" size="small" class="ml10" @click="createDeployment">创建</el-button>
-				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" @click="deleteDeployments(data.selectData)"
-					>批量删除</el-button
-				>
+				<el-row :gutter="20">
+					<el-col :span="18">
+						命名空间:
+						<el-select
+							v-model="k8sStore.state.activeNamespace"
+							style="max-width: 180px"
+							class="m-2"
+							placeholder="Select"
+							size="small"
+							@change="handleChange"
+							><el-option key="all" label="所有命名空间" value="all"></el-option>
+							<el-option
+								v-for="item in k8sStore.state.namespace"
+								:key="item.metadata?.name"
+								:label="item.metadata?.name"
+								:value="item.metadata!.name!"
+							/>
+						</el-select>
+
+						<el-button type="primary" size="small" class="ml10" @click="createDeployment">创建</el-button>
+						<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" @click="deleteDeployments(data.selectData)"
+							>批量删除</el-button
+						>
+					</el-col>
+					<el-col :span="6">
+						<el-input size="small" placeholder="请输入集群名称" style="max-width: 180px"> </el-input>
+						<el-button size="small" type="primary" class="ml10">
+							<el-icon>
+								<ele-Search />
+							</el-icon>
+							查询
+						</el-button>
+					</el-col>
+				</el-row>
 			</div>
 
 			<el-table

@@ -2,15 +2,14 @@
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="mb15">
-				<el-input size="default" placeholder="请输入集群名称" style="max-width: 180px"> </el-input>
-				<el-button size="default" type="primary" class="ml10">
+				<el-input size="small" placeholder="请输入集群名称" style="max-width: 180px"> </el-input>
+				<el-button size="small" type="primary" class="ml10">
 					<el-icon>
 						<ele-Search />
 					</el-icon>
 					查询
 				</el-button>
-				<el-button @click="loadCluster">ceshi </el-button>
-				<el-button size="default" type="success" class="ml10" @click="loadCluster()"> 导入集群 </el-button>
+				<el-button size="small" type="success" class="ml10" @click="loadCluster()"> 导入集群 </el-button>
 			</div>
 
 			<el-table :data="data.clusters" style="width: 100%">

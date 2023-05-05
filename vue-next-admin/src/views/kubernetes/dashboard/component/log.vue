@@ -11,7 +11,7 @@
 		>
 			<el-table-column prop="metadata.creationTimestamp" label="时间" width="180" sortable>
 				<template #default="scope">
-					{{dateStrFormat(scope.row.metadata.creationTimestamp) }}
+					{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 				</template>
 			</el-table-column>
 			<el-table-column
@@ -24,10 +24,10 @@
 				:filter-method="filterTag"
 			>
 				<template #default="scope">
-					<el-tag v-if="scope.row.type === 'Normal'" type="success">
+					<el-tag v-if="scope.row.type === 'Normal'" size="small" type="success">
 						{{ scope.row.type }}
 					</el-tag>
-					<el-tag v-else-if="scope.row.type === 'Warning'" type="warning">
+					<el-tag v-else-if="scope.row.type === 'Warning'" size="small" type="warning">
 						{{ scope.row.type }}
 					</el-tag>
 					<el-tag v-else type="danger">
@@ -44,22 +44,22 @@
 			>
 		</el-table>
 		<!-- 分页区域 -->
-		<Pagination :total="state.total" @handlePageChange="handlePageChange"/>
+		<Pagination :total="state.total" @handlePageChange="handlePageChange" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import {defineAsyncComponent, onMounted, reactive} from 'vue';
+import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import type { ElTableColumn } from 'element-plus';
-import {EventData, PageInfo} from '/@/types/kubernetes/common';
+import { EventData, PageInfo } from '/@/types/kubernetes/common';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useEventApi } from '/@/api/kubernetes/event';
 import * as k8s from '@kubernetes/client-node';
 
-const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'))
+const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 
 const state = reactive<EventData>({
-	events: [] as k8s.CoreV1Event[] ,
+	events: [] as k8s.CoreV1Event[],
 	query: {
 		cloud: '',
 		page: 1,
@@ -77,12 +77,11 @@ const listEvent = () => {
 	state.loading = true;
 	state.query.cloud = k8sStore.state.activeCluster;
 	state.query.namespace = 'all';
-	eventApi.getEventLog("all",state.query).then((res) => {
+	eventApi.getEventLog('all', state.query).then((res) => {
 		if (res.data.data) {
 			state.events = res.data.data;
 			state.total = res.data.total;
 		}
-
 	});
 	state.loading = false;
 };

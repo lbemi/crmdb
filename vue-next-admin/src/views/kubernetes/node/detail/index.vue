@@ -9,7 +9,7 @@
 				<el-col :span="8"
 					><el-button type="primary" size="small" :icon="Edit" @click="showYaml">编辑</el-button>
 					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button>
-					<el-button type="danger" size="small" :icon="Delete" @click="deletePod(podStore.state.podDetail)">删除</el-button>
+					<el-button type="danger" size="small" :icon="Delete" @click="drain(k8sStore.state.activeNode)">排水</el-button>
 					<el-button type="primary" size="small" @click="refreshCurrentTagsView">
 						<el-icon>
 							<ele-RefreshRight />
@@ -23,9 +23,10 @@
 				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">
 					{{ k8sStore.state.activeNode?.metadata?.name }}
 				</el-descriptions-item>
-				<el-descriptions-item label="角色" label-align="right" align="center">{{
-					k8sStore.state.activeNode?.metadata?.labels!['kubernetes.io/role']
-				}}</el-descriptions-item>
+				<el-descriptions-item label="角色" label-align="right" align="center">
+					<div v-if="k8sStore.state.activeNode.metadata?.labels!['kubernetes.io/role'] === 'master'">Master</div>
+					<div v-else>Work</div>
+				</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
 					dateStrFormat(k8sStore.state.activeNode?.metadata?.creationTimestamp)
 				}}</el-descriptions-item>
@@ -168,9 +169,8 @@
 				</el-tab-pane>
 			</el-tabs>
 		</el-card>
-		<YamlMegeDialog :code="code" :dialogVisible="dialogVisible" v-if="dialogVisible" />
 
-		<YamlDialog ref="yamlRef" :resourceType="'pod'" :update-resource="updatePod" />
+		<YamlDialog ref="yamlRef" :resourceType="'node'" />
 	</div>
 </template>
 <script lang="ts" setup name="nodeDetail">
@@ -178,7 +178,16 @@ import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, onUnmo
 import { ArrowLeft, CaretBottom, Edit, View, Delete, Plus, RefreshRight } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { V1ContainerStatus, V1Deployment, V1Pod, V1PodCondition, V1PodStatus, V1ReplicaSet, V1ReplicaSetCondition } from '@kubernetes/client-node';
+import {
+	V1ContainerStatus,
+	V1Deployment,
+	V1Node,
+	V1Pod,
+	V1PodCondition,
+	V1PodStatus,
+	V1ReplicaSet,
+	V1ReplicaSetCondition,
+} from '@kubernetes/client-node';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -186,9 +195,9 @@ import { ElMessage, ElMessageBox, TabsPaneContext } from 'element-plus';
 import { usePodApi } from '/@/api/kubernetes/pod';
 import { podInfo } from '/@/stores/pod';
 import { ECharts, EChartsOption, init } from 'echarts';
+import { deepClone } from '/@/utils/other';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
-const YamlMegeDialog = defineAsyncComponent(() => import('/@/components/yaml/matchCode.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
 
 onMounted(() => {
@@ -461,27 +470,28 @@ const backRoute = () => {
 		name: 'k8sNode',
 	});
 };
-const deletePod = async (pod: V1Pod) => {
-	ElMessageBox.confirm(`此操作将删除[ ${pod.metadata?.name} ] 容器 . 是否继续?`, '警告', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
-		type: 'warning',
-	})
-		.then(() => {
-			podApi.deletePod(pod.metadata?.namespace, pod.metadata?.name, data.param);
-			getPods();
-			ElMessage({
-				type: 'success',
-				message: `${pod.metadata?.name}` + ' 已删除',
-			});
-			backRoute();
-		})
-		.catch(); // 取消
+const drain = async (node: V1Node) => {
+	// ElMessageBox.confirm(`此操作将删除[ ${pod.metadata?.name} ] 容器 . 是否继续?`, '警告', {
+	// 	confirmButtonText: '确定',
+	// 	cancelButtonText: '取消',
+	// 	type: 'warning',
+	// })
+	// 	.then(() => {
+	// 		podApi.deletePod(pod.metadata?.namespace, pod.metadata?.name, data.param);
+	// 		getPods();
+	// 		ElMessage({
+	// 			type: 'success',
+	// 			message: `${pod.metadata?.name}` + ' 已删除',
+	// 		});
+	// 		backRoute();
+	// 	})
+	// 	.catch(); // 取消
 };
 
 const showYaml = async () => {
-	delete podStore.state.podDetail.metadata?.managedFields;
-	yamlRef.value.openDialog(podStore.state.podDetail);
+	const node = deepClone(k8sStore.state.activeNode);
+	delete node.usage;
+	yamlRef.value.openDialog(node);
 };
 </script>
 <style lang="scss">
