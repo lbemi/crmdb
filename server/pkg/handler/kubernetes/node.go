@@ -20,6 +20,7 @@ type INode interface {
 	Create(ctx context.Context, node *v1.Node) (*v1.Node, error)
 	Update(ctx context.Context, node *v1.Node) (*v1.Node, error)
 	Patch(ctx context.Context, name string, playLoad map[string]interface{}) (*v1.Node, error)
+	Drain(ctx context.Context, name string) (*v1.Node, error)
 }
 
 type node struct {
@@ -83,6 +84,10 @@ func (n *node) Patch(ctx context.Context, name string, labels map[string]interfa
 		log.Logger.Error(err)
 	}
 	return res, err
+}
+
+func (n *node) Drain(ctx context.Context, name string) (*v1.Node, error) {
+	return nil, nil
 }
 
 type NodeHandler struct {

@@ -3,10 +3,12 @@ package k8s
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	apitype "k8s.io/apimachinery/pkg/types"
@@ -138,6 +140,34 @@ func (n *node) getPodNumByNode(ctx context.Context, nodeName string) int {
 	return count
 }
 
+func (n *node) Drain(ctx context.Context, name string) error {
+	// 排水选项
+	drainOptions := metav1.DeleteOptions{GracePeriodSeconds: int64Ptr(0)}
+
+	// 获取该节点上的所有 Pod
+
+	podList, err := n.cli.ClientSet.CoreV1().Pods("").List(ctx, metav1.ListOptions{
+		FieldSelector: fmt.Sprintf("spec.nodeName=%s", name),
+	})
+	if err != nil {
+		log.Logger.Error(err)
+		return err
+	}
+
+	// 删除该节点上的所有 Pod
+	for _, pod := range podList.Items {
+		err = n.cli.ClientSet.CoreV1().Pods(pod.Namespace).Delete(ctx, pod.Name, drainOptions)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				log.Logger.Error(err)
+				return err
+			}
+		}
+	}
+	//TODO
+	return nil
+}
+
 func newNode(cli *store.Clients) *node {
 	return &node{cli: cli}
 }
@@ -159,4 +189,8 @@ func (n *NodeHandler) OnDelete(obj interface{}) {
 
 func NewNodeHandler() *NodeHandler {
 	return &NodeHandler{}
+}
+
+func int64Ptr(i int64) *int64 {
+	return &i
 }
