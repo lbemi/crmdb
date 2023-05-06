@@ -40,6 +40,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	deployment := group.Group("/deployment")
 	{
 		deployment.GET("/:namespace", cloud.ListDeployments)
+		deployment.GET("/:namespace/search", cloud.SearchDeployments)
 		deployment.GET("/:namespace/:deploymentName", cloud.GetDeployment)
 		deployment.POST("", cloud.CreateDeployment)
 		deployment.PUT("", cloud.UpdateDeployment)

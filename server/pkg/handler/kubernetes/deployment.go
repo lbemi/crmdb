@@ -27,6 +27,7 @@ type IDeployment interface {
 
 	GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, []*appsv1.ReplicaSet, error)
 	GetDeploymentEvent(ctx context.Context, name string) ([]*corev1.Event, error)
+	Search(ctx context.Context, key string, searchType int) ([]*appsv1.Deployment, error)
 }
 
 type Deployment struct {
@@ -213,6 +214,10 @@ func (d *Deployment) GetDeploymentEvent(ctx context.Context, name string) ([]*co
 
 	return events, nil
 
+}
+
+func (d *Deployment) Search(ctx context.Context, key string, searchType int) ([]*appsv1.Deployment, error) {
+	return d.k8s.Deployment().Search(ctx, key, searchType)
 }
 
 func (d *Deployment) isRsFromDep(dep *appsv1.Deployment, rs *appsv1.ReplicaSet) bool {

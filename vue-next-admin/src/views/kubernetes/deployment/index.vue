@@ -27,8 +27,8 @@
 						>
 					</el-col>
 					<el-col :span="6">
-						<el-input size="small" placeholder="请输入集群名称" style="max-width: 180px"> </el-input>
-						<el-button size="small" type="primary" class="ml10">
+						<el-input size="small" placeholder="请输入集群名称" style="max-width: 180px" v-model="data.search"> </el-input>
+						<el-button size="small" type="primary" class="ml10" @click="search">
 							<el-icon>
 								<ele-Search />
 							</el-icon>
@@ -69,7 +69,7 @@
 
 					<template #default="scope">
 						<a style="color: green">{{ scope.row.status.readyReplicas || '0' }}</a
-						>/ <a style="color: green">{{ scope.row.status.replicas }}</a
+						>/ <a style="color: green">{{ scope.row.status.replicas || '0' }}</a
 						>/
 						<a style="color: red">{{ scope.row.status.unavailableReplicas || '0' }}</a>
 					</template>
@@ -158,7 +158,7 @@
 </template>
 
 <script setup lang="ts" name="k8sDeployment">
-import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref } from 'vue';
+import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref, computed } from 'vue';
 import { Check, Close } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
@@ -169,6 +169,7 @@ import router from '/@/router';
 import { ElMessage } from 'element-plus';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import YAML from 'js-yaml';
+import { dataTool } from 'echarts';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
@@ -193,6 +194,18 @@ ws.onmessage = (e) => {
 		}
 	}
 };
+
+const search = () => {
+	data.query.cloud = k8sStore.state.activeCluster;
+	data.query.key = data.search;
+	deploymentApi.searchDeployment(k8sStore.state.activeNamespace, data.query).then((res) => {
+		if (res.code == 200) {
+			data.deployments = res.data.data;
+			data.total = res.data.total;
+		}
+	});
+};
+
 const rollBack = (deployment: V1Deployment) => {
 	const reversion = deployment.metadata?.annotations!['deployment.kubernetes.io/revision']!;
 	parseInt(reversion, 10);
@@ -299,13 +312,20 @@ const scaleDeployment = () => {
 		});
 	data.dialogVisible = false;
 };
+
+const filterTableData = computed(() =>
+	data.deployments.filter((item) => !data.search || item.metadata!.name!.toLowerCase().includes(data.search.toLowerCase()))
+);
 const data = reactive({
+	search: '',
 	dialogVisible: false,
 	scaleDeploy: <V1Deployment>{},
 	query: {
 		cloud: '',
 		page: 1,
 		limit: 10,
+		key: '',
+		type: 0,
 	},
 	namespace: '',
 	loading: false,
@@ -340,7 +360,11 @@ const handleChange = () => {
 const handlePageChange = (pageInfo: PageInfo) => {
 	data.query.page = pageInfo.page;
 	data.query.limit = pageInfo.limit;
-	listDeployment();
+	if (data.search != '') {
+		search();
+	} else {
+		listDeployment();
+	}
 };
 const deployDetail = async (dep: V1Deployment) => {
 	k8sStore.state.activeDeployment = dep;

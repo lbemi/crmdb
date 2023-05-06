@@ -9,6 +9,13 @@ export function useDeploymentApi() {
 				params: param,
 			});
 		},
+		searchDeployment: (ns: string, param: any) => {
+			return request({
+				url: `/deployment/${ns}/search`,
+				method: 'get',
+				params: param,
+			});
+		},
 		createDeployment: (param: any, data: any) => {
 			return request({
 				url: '/deployment',

@@ -6,10 +6,12 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
+	"github.com/lbemi/lbemi/pkg/handler/types"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sort"
+	"strings"
 )
 
 type DeploymentImp interface {
@@ -19,6 +21,7 @@ type DeploymentImp interface {
 	Update(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error)
 	Delete(ctx context.Context, name string) error
 	Scale(ctx context.Context, name string, replicaNum int32) error
+	Search(ctx context.Context, key string, searchType int) ([]*appsv1.Deployment, error)
 }
 
 type Deployment struct {
@@ -88,6 +91,42 @@ func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) e
 		log.Logger.Error(err)
 	}
 	return nil
+}
+
+func (d *Deployment) Search(ctx context.Context, key string, searchType int) ([]*appsv1.Deployment, error) {
+	var deploymentList = make([]*appsv1.Deployment, 0)
+	deployments, err := d.List(ctx)
+	if err != nil {
+		log.Logger.Error(err)
+		return nil, err
+	}
+	switch searchType {
+	case types.SearchByName:
+		// 遍历deployment，如果name包含key则保存返回
+		for _, item := range deployments {
+			if strings.Contains(item.Name, key) {
+				deploymentList = append(deploymentList, item)
+			}
+		}
+	case types.SearchByLabel:
+		// 遍历deployment，如果name包含key则保存返回
+		for _, item := range deployments {
+			for k, label := range item.Labels {
+				if strings.Contains(label, key) || strings.Contains(k, key) {
+					deploymentList = append(deploymentList, item)
+					break
+				}
+			}
+		}
+	default:
+		return nil, fmt.Errorf("参数错误")
+	}
+
+	sort.Slice(deploymentList, func(i, j int) bool {
+		return deploymentList[j].ObjectMeta.GetCreationTimestamp().Time.Before(deploymentList[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
+
+	return deploymentList, nil
 }
 
 type DeploymentHandler struct {

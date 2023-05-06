@@ -281,3 +281,59 @@ func GetDeploymentEvents(c *gin.Context) {
 
 	response.Success(c, response.StatusOK, events)
 }
+
+func SearchDeployments(c *gin.Context) {
+
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	limitStr := c.DefaultQuery("limit", "0")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	namespace := c.Param("namespace")
+
+	key := c.DefaultQuery("key", "")
+	searchTypeStr := c.DefaultQuery("type", "0")
+	searchType, err := strconv.Atoi(searchTypeStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+	deploymentList, err := core.V1.Cluster(clusterName).Deployments(namespace).Search(c, key, searchType)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+	// 处理分页
+	var pageQuery types.PageQuery
+	pageQuery.Total = len(deploymentList)
+
+	if pageQuery.Total <= limit {
+		pageQuery.Data = deploymentList
+	} else if page*limit >= pageQuery.Total {
+		pageQuery.Data = deploymentList[(page-1)*limit : pageQuery.Total]
+	} else {
+		pageQuery.Data = deploymentList[(page-1)*limit : page*limit]
+	}
+
+	response.Success(c, response.StatusOK, pageQuery)
+}
