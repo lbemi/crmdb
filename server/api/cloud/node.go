@@ -141,3 +141,57 @@ func PatchNode(c *gin.Context) {
 
 	response.Success(c, response.StatusOK, list)
 }
+
+func Schedulable(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	name := c.Param("name")
+	unschedulableStr := c.Param("unschedulable")
+	var unschedulable bool
+	if unschedulableStr == "true" {
+		unschedulable = true
+	} else if unschedulableStr == "false" {
+		unschedulable = false
+	} else {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	list, err := core.V1.Cluster(clusterName).Nodes().Schedulable(c, name, unschedulable)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	response.Success(c, response.StatusOK, list)
+}
+
+func Drain(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+	name := c.Param("name")
+
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	res, err := core.V1.Cluster(clusterName).Nodes().Drain(c, name)
+	if err != nil || !res {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	response.Success(c, response.StatusOK, "")
+}

@@ -127,7 +127,7 @@
 									<el-dropdown-menu>
 										<el-dropdown-item @click="updateLabels(scope.row)">修改标签</el-dropdown-item>
 										<el-dropdown-item>添加污点</el-dropdown-item>
-										<el-dropdown-item>是否可调度</el-dropdown-item>
+										<el-dropdown-item @click="schedulable(scope.row)">是否可调度</el-dropdown-item>
 										<el-dropdown-item>删除节点</el-dropdown-item>
 									</el-dropdown-menu>
 								</template>
@@ -157,6 +157,8 @@ import { V1Node } from '@kubernetes/client-node';
 import { useNodeApi } from '/@/api/kubernetes/node';
 import { PageInfo } from '/@/types/kubernetes/common';
 import router from '/@/router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Node } from '/@/types/kubernetes/cluster';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const Labels = defineAsyncComponent(() => import('./component/labels.vue'));
@@ -168,23 +170,57 @@ const data = reactive({
 		page: 1,
 		limit: 10,
 	},
-	nodes: [] as V1Node[],
+	nodes: [] as Node[],
 	total: 1,
 	visible: false,
 	title: '修改标签',
-	data: {} as V1Node,
+	data: {} as Node,
 });
 const k8sStore = kubernetesInfo();
 
 onMounted(() => {
 	listNodes();
 });
-const jumpNodeDetail = (node: V1Node) => {
+const jumpNodeDetail = (node: Node) => {
 	k8sStore.state.activeNode = node;
 	router.push({
 		name: 'nodeDetail',
 	});
 };
+
+//设置是否可以调度
+const schedulable = (node: Node) => {
+	data.query.cloud = k8sStore.state.activeCluster;
+	let status = false;
+	if (node.spec?.unschedulable === true) {
+		status = false;
+	} else {
+		status = true;
+	}
+
+	ElMessageBox.confirm(`是否修改节点的调度状态为: ${status ? '不可调度' : '可调度'}`, 'Warning', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			nodeApi.schedulable(data.query, node.metadata!.name!, status).then((res) => {
+				if (res.code === 200) {
+					ElMessage.success(res.message);
+					listNodes();
+				} else {
+					ElMessage.error(res.message);
+				}
+			});
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '设置失败',
+			});
+		});
+};
+
 const listNodes = () => {
 	data.query.cloud = k8sStore.state.activeCluster;
 	nodeApi
@@ -203,7 +239,7 @@ const handlePageChange = (pageInfo: PageInfo) => {
 	data.query.limit = pageInfo.limit;
 	listNodes();
 };
-const updateLabels = (node: V1Node) => {
+const updateLabels = (node: Node) => {
 	data.visible = true;
 	data.data = node;
 };

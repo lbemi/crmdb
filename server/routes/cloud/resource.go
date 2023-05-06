@@ -105,7 +105,10 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		node.GET("/:nodeName", cloud.GetNode)
 		node.PUT("", cloud.UpdateNode)
 		node.PATCH("", cloud.PatchNode)
-
+		// 设置是否可以调度
+		node.PUT("/:name/:unschedulable", cloud.Schedulable)
+		// 排水
+		node.POST("/:name/drain", cloud.Drain)
 	}
 
 	// service 资源路由

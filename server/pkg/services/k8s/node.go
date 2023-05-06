@@ -23,6 +23,7 @@ type NodeImp interface {
 	Update(ctx context.Context, node *v1.Node) (*v1.Node, error)
 	Patch(ctx context.Context, name string, playLoad map[string]interface{}) (*v1.Node, error)
 
+	GetPodByNode(ctx context.Context, nodeName string) (*v1.PodList, error)
 	GetNodeUsage(ctx context.Context, node *v1.Node) (cpuUsage, memoryUsage float64, err error)
 }
 
@@ -138,6 +139,17 @@ func (n *node) getPodNumByNode(ctx context.Context, nodeName string) int {
 	}
 
 	return count
+}
+
+func (n *node) GetPodByNode(ctx context.Context, nodeName string) (*v1.PodList, error) {
+	podList, err := n.cli.ClientSet.CoreV1().Pods("").List(ctx, metav1.ListOptions{
+		FieldSelector: fmt.Sprintf("spec.nodeName=" + nodeName),
+	})
+	if err != nil {
+		log.Logger.Error(err)
+		return nil, err
+	}
+	return podList, nil
 }
 
 func (n *node) Drain(ctx context.Context, name string) error {

@@ -56,12 +56,14 @@
 						<span style="color: red">不可调度</span>
 					</div>
 					<div v-else>可调度</div>
+					<el-button type="primary" size="small" plain :icon="Edit" @click="schedulable">设置</el-button>
 				</el-descriptions-item>
 				<el-descriptions-item label="污点" label-align="right" align="center">
 					<el-tag v-for="item in k8sStore.state.activeNode?.spec?.taints"> {{ item.key }}:{{ item.value }}:{{ item.effect }} </el-tag>
 				</el-descriptions-item>
 				<el-descriptions-item label="状态" label-align="right" align="center">
-					<a v-html="podStatus(podStore.state.podDetail?.status!)" />
+					<el-text type="success" v-if="k8sStore.state.activeNode?.status!.conditions!.slice(-1)[0]['status'] == 'True'">Running</el-text>
+					<el-text type="danger" v-else>故障</el-text>
 					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow" style="font-size: 10px; margin-left: 5px"
 						>展开现状详情<el-icon> <CaretBottom /> </el-icon
 					></el-link>
@@ -175,7 +177,7 @@
 </template>
 <script lang="ts" setup name="nodeDetail">
 import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, onUnmounted } from 'vue';
-import { ArrowLeft, CaretBottom, Edit, View, Delete, Plus, RefreshRight } from '@element-plus/icons-vue';
+import { ArrowLeft, CaretBottom, View, Delete, Edit, RefreshRight } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import {
@@ -196,6 +198,8 @@ import { usePodApi } from '/@/api/kubernetes/pod';
 import { podInfo } from '/@/stores/pod';
 import { ECharts, EChartsOption, init } from 'echarts';
 import { deepClone } from '/@/utils/other';
+import { useNodeApi } from '/@/api/kubernetes/node';
+import { Node } from '/@/types/kubernetes/cluster';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
@@ -206,6 +210,7 @@ onMounted(() => {
 	podUsage();
 });
 
+const nodeApi = useNodeApi();
 const yamlRef = ref();
 const route = useRoute();
 const podStore = podInfo();
@@ -271,7 +276,7 @@ const cpuUsage = () => {
 				data: [
 					{
 						value: Math.round(k8sStore.state.activeNode.usage!.cpu * 100),
-						name: 'CPU使用率 (总:' + k8sStore.state.activeNode.status?.capacity.cpu + 'vCPU)',
+						name: 'CPU使用率 (总:' + k8sStore.state.activeNode.status!.capacity!.cpu + 'vCPU)',
 					},
 				],
 			},
@@ -470,22 +475,71 @@ const backRoute = () => {
 		name: 'k8sNode',
 	});
 };
-const drain = async (node: V1Node) => {
-	// ElMessageBox.confirm(`此操作将删除[ ${pod.metadata?.name} ] 容器 . 是否继续?`, '警告', {
-	// 	confirmButtonText: '确定',
-	// 	cancelButtonText: '取消',
-	// 	type: 'warning',
-	// })
-	// 	.then(() => {
-	// 		podApi.deletePod(pod.metadata?.namespace, pod.metadata?.name, data.param);
-	// 		getPods();
-	// 		ElMessage({
-	// 			type: 'success',
-	// 			message: `${pod.metadata?.name}` + ' 已删除',
-	// 		});
-	// 		backRoute();
-	// 	})
-	// 	.catch(); // 取消
+const getNode = () => {
+	nodeApi.getNode(k8sStore.state.activeNode.metadata!.name!, { cloud: k8sStore.state.activeCluster }).then((res) => {
+		if (res.code == 200) {
+			k8sStore.state.activeNode.spec = res.data.spec;
+			k8sStore.state.activeNode.metadata = res.data.metadata;
+		}
+	});
+};
+//设置是否可以调度
+const schedulable = () => {
+	const node = k8sStore.state.activeNode;
+	let status = false;
+	if (node.spec?.unschedulable === true) {
+		status = false;
+	} else {
+		status = true;
+	}
+
+	ElMessageBox.confirm(`是否修改节点的调度状态为: ${status ? '不可调度' : '可调度'}`, 'Warning', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			nodeApi.schedulable({ cloud: k8sStore.state.activeCluster }, node.metadata!.name!, status).then((res) => {
+				if (res.code === 200) {
+					ElMessage.success(res.message);
+					getNode();
+				} else {
+					ElMessage.error(res.message);
+				}
+			});
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '取消',
+			});
+		});
+};
+const drain = async (node: Node) => {
+	ElMessageBox.confirm(`是否对[ ${node.metadata?.name} ]执行排水操作  . 是否继续?`, '警告', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			nodeApi.drainNode(node.metadata!.name!, { cloud: k8sStore.state.activeCluster }).then((res) => {
+				if (res.code == 200) {
+					ElMessage({
+						type: 'success',
+						message: '操作成功',
+					});
+					getNode();
+				} else {
+					ElMessage.error(res.message);
+				}
+			});
+		})
+		.catch(() => {
+			ElMessage({
+				type: 'info',
+				message: '取消',
+			});
+		});
 };
 
 const showYaml = async () => {

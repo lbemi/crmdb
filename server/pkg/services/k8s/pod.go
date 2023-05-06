@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
 	corev1 "k8s.io/api/core/v1"
+	policy "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -23,6 +24,7 @@ type PodImp interface {
 	GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) ([]*corev1.Pod, error)
 	PodExec(ctx context.Context, namespace, pod, container string, command []string) (remotecommand.Executor, error)
 	GetPodLog(ctx context.Context, pod, container string) *rest.Request
+	EvictsPod(ctx context.Context, name, namespace string) error
 }
 
 type pod struct {
@@ -135,6 +137,24 @@ func (p *pod) GetPodLog(ctx context.Context, pod, container string) *rest.Reques
 		TailLines: &tailLine,
 	}
 	return p.cli.ClientSet.CoreV1().Pods(p.ns).GetLogs(pod, option)
+}
+
+// EvictsPod 驱逐pod
+func (p *pod) EvictsPod(ctx context.Context, name, namespace string) error {
+	// Pod优雅退出时间, 默认退出时间30s, 如果未指定, 则默认为每个对象的值。0表示立即删除。
+	var gracePeriodSeconds int64 = 0
+	propagationPolicy := metav1.DeletePropagationForeground
+	deleteOptions := &metav1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriodSeconds,
+		PropagationPolicy:  &propagationPolicy,
+	}
+	return p.cli.ClientSet.PolicyV1beta1().Evictions(namespace).Evict(ctx, &policy.Eviction{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		DeleteOptions: deleteOptions,
+	})
 }
 
 type PodHandler struct {

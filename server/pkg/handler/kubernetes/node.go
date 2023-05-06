@@ -20,7 +20,9 @@ type INode interface {
 	Create(ctx context.Context, node *v1.Node) (*v1.Node, error)
 	Update(ctx context.Context, node *v1.Node) (*v1.Node, error)
 	Patch(ctx context.Context, name string, playLoad map[string]interface{}) (*v1.Node, error)
-	Drain(ctx context.Context, name string) (*v1.Node, error)
+	Drain(ctx context.Context, name string) (bool, error)
+
+	Schedulable(ctx context.Context, name string, unschedulable bool) (bool, error)
 }
 
 type node struct {
@@ -86,8 +88,51 @@ func (n *node) Patch(ctx context.Context, name string, labels map[string]interfa
 	return res, err
 }
 
-func (n *node) Drain(ctx context.Context, name string) (*v1.Node, error) {
-	return nil, nil
+func (n *node) Drain(ctx context.Context, name string) (bool, error) {
+	// 设置node不可调度
+	status, err := n.Schedulable(ctx, name, true)
+	if err != nil || !status {
+		log.Logger.Error(err)
+		return false, err
+	}
+	// 获取节点的上的pod信息
+	podList, err := n.k8s.Node().GetPodByNode(ctx, name)
+	if err != nil {
+		log.Logger.Error(err)
+		return false, err
+	}
+	// 清除节点上的pod
+	for _, item := range podList.Items {
+		// 排除kube-system 空间的pod
+		if item.Namespace == "kube-system" {
+			continue
+		}
+		err := n.k8s.Pod().EvictsPod(ctx, item.Name, item.Namespace)
+		if err != nil {
+			log.Logger.Error("移出节点上的pod异常", err)
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
+func (n *node) Schedulable(ctx context.Context, name string, unschedulable bool) (bool, error) {
+	// 先查询node信息
+	node, err := n.k8s.Node().Get(ctx, name)
+	if err != nil {
+		log.Logger.Error(err)
+		return false, err
+	}
+	// 设置Unschedulable状态
+	node.Spec.Unschedulable = unschedulable
+	// 更新Unschedulable状态
+	_, err = n.k8s.Node().Update(ctx, node)
+	if err != nil {
+		log.Logger.Error(err)
+		return false, err
+	}
+	return true, nil
 }
 
 type NodeHandler struct {
