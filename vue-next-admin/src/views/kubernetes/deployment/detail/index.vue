@@ -92,7 +92,7 @@
 					<el-table :data="data.pods" stripe style="width: 100%" max-height="350px">
 						<el-table-column prop="metadata.name" label="名称">
 							<template #default="scope">
-								<el-button link type="primary">{{ scope.row.metadata.name }}</el-button>
+								<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>
 								<div v-if="scope.row.status.phase != 'Running'" style="color: red">
 									<div v-if="scope.row.status.containerStatuses">
 										{{ scope.row.status.containerStatuses[0].state }}
@@ -146,7 +146,7 @@
 						</el-table-column>
 						<el-table-column fixed="right" label="操作" width="160">
 							<template #default="scope">
-								<el-button link type="primary" size="small" @click="tahandleClick()">详情</el-button><el-divider direction="vertical" />
+								<el-button link type="primary" size="small" @click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
 								<el-button link type="primary" size="small">编辑</el-button><el-divider direction="vertical" />
 								<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
 								<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
@@ -434,6 +434,12 @@ const getEvents = async () => {
 		data.param
 	);
 	data.events = res.data;
+};
+const jumpPodDetail = (p: V1Pod) => {
+	podStore.state.podDetail = p;
+	router.push({
+		name: 'podDetail',
+	});
 };
 const jumpPodExec = (p: V1Pod) => {
 	podStore.state.podShell = p;

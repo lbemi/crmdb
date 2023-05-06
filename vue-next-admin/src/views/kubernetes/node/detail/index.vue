@@ -180,16 +180,7 @@ import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, onUnmo
 import { ArrowLeft, CaretBottom, View, Delete, Edit, RefreshRight } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import {
-	V1ContainerStatus,
-	V1Deployment,
-	V1Node,
-	V1Pod,
-	V1PodCondition,
-	V1PodStatus,
-	V1ReplicaSet,
-	V1ReplicaSetCondition,
-} from '@kubernetes/client-node';
+import { V1ContainerStatus, V1Pod, V1PodCondition, V1PodStatus, V1ReplicaSet, V1ReplicaSetCondition } from '@kubernetes/client-node';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -214,8 +205,6 @@ const nodeApi = useNodeApi();
 const yamlRef = ref();
 const route = useRoute();
 const podStore = podInfo();
-const code = ref({});
-const dialogVisible = ref(false);
 const k8sStore = kubernetesInfo();
 const podApi = usePodApi();
 const deploymentApi = useDeploymentApi();

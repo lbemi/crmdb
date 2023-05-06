@@ -26,13 +26,28 @@
 							>批量删除</el-button
 						>
 					</el-col>
-					<el-col :span="6">
-						<el-input size="small" placeholder="请输入集群名称" style="max-width: 180px" v-model="data.search"> </el-input>
-						<el-button size="small" type="primary" class="ml10" @click="search">
+					<el-col :span="6" style="display: flex">
+						<el-input v-model="data.search" placeholder="输入标签或者名称" size="small" clearable @change="search">
+							<template #prepend>
+								<el-select v-model="data.searchType" placeholder="输入标签或者名称" style="width: 60px" size="small">
+									<el-option label="标签" value="0" size="small" />
+									<el-option label="名称" value="1" size="small" />
+								</el-select>
+							</template>
+							<template #append>
+								<el-button size="small" @click="search">
+									<el-icon>
+										<ele-Search />
+									</el-icon>
+									查询
+								</el-button>
+							</template>
+						</el-input>
+						<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
 							<el-icon>
-								<ele-Search />
+								<ele-RefreshRight />
 							</el-icon>
-							查询
+							刷新
 						</el-button>
 					</el-col>
 				</el-row>
@@ -84,7 +99,7 @@
 
 				<el-table-column label="标签" width="180px" show-overflow-tooltip>
 					<template #default="scope">
-						<el-tooltip placement="right" effect="light">
+						<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
 							<template #content>
 								<div style="display: flex; flex-direction: column">
 									<el-tag class="label" type="" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" effect="plain" size="small">
@@ -159,7 +174,7 @@
 
 <script setup lang="ts" name="k8sDeployment">
 import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref, computed } from 'vue';
-import { Check, Close } from '@element-plus/icons-vue';
+import { Check, Close, Search } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { V1Deployment } from '@kubernetes/client-node';
@@ -169,12 +184,14 @@ import router from '/@/router';
 import { ElMessage } from 'element-plus';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import YAML from 'js-yaml';
-import { dataTool } from 'echarts';
+import mittBus from '/@/utils/mitt';
+import { useRoute } from 'vue-router';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 
 const yamlRef = ref();
+const route = useRoute();
 const deploymentApi = useDeploymentApi();
 const k8sStore = kubernetesInfo();
 const socketApi = useWebsocketApi();
@@ -196,14 +213,22 @@ ws.onmessage = (e) => {
 };
 
 const search = () => {
+	data.loading = true;
 	data.query.cloud = k8sStore.state.activeCluster;
 	data.query.key = data.search;
-	deploymentApi.searchDeployment(k8sStore.state.activeNamespace, data.query).then((res) => {
-		if (res.code == 200) {
-			data.deployments = res.data.data;
-			data.total = res.data.total;
-		}
-	});
+	data.query.type = data.searchType;
+
+	if (data.query.key != '') {
+		deploymentApi.searchDeployment(k8sStore.state.activeNamespace, data.query).then((res) => {
+			if (res.code == 200) {
+				data.deployments = res.data.data;
+				data.total = res.data.total;
+			}
+		});
+	} else {
+		listDeployment();
+	}
+	data.loading = false;
 };
 
 const rollBack = (deployment: V1Deployment) => {
@@ -317,6 +342,7 @@ const filterTableData = computed(() =>
 	data.deployments.filter((item) => !data.search || item.metadata!.name!.toLowerCase().includes(data.search.toLowerCase()))
 );
 const data = reactive({
+	searchType: '1',
 	search: '',
 	dialogVisible: false,
 	scaleDeploy: <V1Deployment>{},
@@ -325,7 +351,7 @@ const data = reactive({
 		page: 1,
 		limit: 10,
 		key: '',
-		type: 0,
+		type: '0',
 	},
 	namespace: '',
 	loading: false,
@@ -352,14 +378,12 @@ const listDeployment = async () => {
 	data.loading = false;
 };
 const handleChange = () => {
-	// data.namespace = activeNamespace
-	// setActiveNamespace(data.namespace)
-	//   setActiveNamespace(data.namespace)
 	listDeployment();
 };
 const handlePageChange = (pageInfo: PageInfo) => {
 	data.query.page = pageInfo.page;
 	data.query.limit = pageInfo.limit;
+
 	if (data.search != '') {
 		search();
 	} else {
@@ -384,7 +408,9 @@ const createDeployment = () => {
 onMounted(() => {
 	listDeployment();
 });
-
+const refreshCurrentTagsView = () => {
+	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
+};
 onBeforeUnmount(() => {
 	ws.close();
 });
