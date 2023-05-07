@@ -25,6 +25,7 @@ declare type MittType<T = any> = {
 	onCurrentContextmenuClick?: T;
 	updateDeploymentVolumes: T;
 	updateVolumes: T;
+	changeNamespace: T;
 };
 
 // mitt 参数类型定义

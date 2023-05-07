@@ -2,32 +2,9 @@
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="mb15">
-				<el-row :gutter="20">
-					<el-col :span="18">
-						命名空间:
-						<el-select
-							v-model="k8sStore.state.activeNamespace"
-							style="max-width: 180px"
-							class="m-2"
-							placeholder="Select"
-							size="small"
-							@change="handleChange"
-							><el-option key="all" label="所有命名空间" value="all"></el-option>
-							<el-option
-								v-for="item in k8sStore.state.namespace"
-								:key="item.metadata?.name"
-								:label="item.metadata?.name"
-								:value="item.metadata!.name!"
-							/>
-						</el-select>
-
-						<el-button type="primary" size="small" class="ml10" @click="createDeployment">创建</el-button>
-						<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" @click="deleteDeployments(data.selectData)"
-							>批量删除</el-button
-						>
-					</el-col>
-					<el-col :span="6" style="display: flex">
-						<el-input v-model="data.search" placeholder="输入标签或者名称" size="small" clearable @change="search">
+				<el-row :gutter="24">
+					<el-col :span="18" style="display: flex">
+						<el-input v-model="data.search" placeholder="输入标签或者名称" size="small" clearable @change="search" style="width: 250px">
 							<template #prepend>
 								<el-select v-model="data.searchType" placeholder="输入标签或者名称" style="width: 60px" size="small">
 									<el-option label="标签" value="0" size="small" />
@@ -43,6 +20,17 @@
 								</el-button>
 							</template>
 						</el-input>
+
+						<el-button type="primary" size="small" class="ml10" @click="createDeployment" :icon="Edit">创建</el-button>
+						<el-button
+							type="danger"
+							size="small"
+							class="ml10"
+							:disabled="data.selectData.length == 0"
+							@click="deleteDeployments(data.selectData)"
+							:icon="Delete"
+							>批量删除</el-button
+						>
 						<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
 							<el-icon>
 								<ele-RefreshRight />
@@ -50,6 +38,7 @@
 							刷新
 						</el-button>
 					</el-col>
+					<el-col :span="6" style="display: flex"> </el-col>
 				</el-row>
 			</div>
 
@@ -173,8 +162,8 @@
 </template>
 
 <script setup lang="ts" name="k8sDeployment">
-import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref, computed } from 'vue';
-import { Check, Close, Search } from '@element-plus/icons-vue';
+import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref, computed, onUnmounted } from 'vue';
+import { Check, Close, Delete, Edit, Search } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { V1Deployment } from '@kubernetes/client-node';
@@ -373,13 +362,15 @@ const listDeployment = async () => {
 			data.total = res.data.total;
 		});
 	} catch (e: any) {
-		ElMessage.error(e.data.message);
+		ElMessage.error(e);
 	}
 	data.loading = false;
 };
-const handleChange = () => {
+
+mittBus.on('changeNamespace', () => {
 	listDeployment();
-};
+});
+
 const handlePageChange = (pageInfo: PageInfo) => {
 	data.query.page = pageInfo.page;
 	data.query.limit = pageInfo.limit;
@@ -407,6 +398,9 @@ const createDeployment = () => {
 };
 onMounted(() => {
 	listDeployment();
+});
+onUnmounted(() => {
+	mittBus.off('changeNamespace', () => {});
 });
 const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));

@@ -9,7 +9,7 @@
 				<el-col :span="6"
 					><el-button type="primary" size="small" :icon="Edit">编辑</el-button>
 					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button>
-					<el-button type="primary" size="small" :icon="RefreshRight" @click="reDeploy">重新部署</el-button></el-col
+					<el-button type="primary" size="small" :icon="Refresh" @click="reDeploy">重新部署</el-button></el-col
 				>
 			</el-row>
 
@@ -235,7 +235,7 @@
 </template>
 <script lang="ts" setup name="k8sDeploymentDetail">
 import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent } from 'vue';
-import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, RefreshRight } from '@element-plus/icons-vue';
+import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, Refresh } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { V1ContainerStatus, V1Deployment, V1Pod, V1PodCondition, V1PodStatus, V1ReplicaSet, V1ReplicaSetCondition } from '@kubernetes/client-node';
