@@ -110,6 +110,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		node.PUT("/:name/:unschedulable", cloud.Schedulable)
 		// 排水
 		node.POST("/:name/drain", cloud.Drain)
+		node.GET("/pods/:nodeName", cloud.GetPodByNode)
 	}
 
 	// service 资源路由

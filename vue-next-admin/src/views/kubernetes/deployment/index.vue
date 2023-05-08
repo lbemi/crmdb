@@ -3,8 +3,31 @@
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="mb15">
 				<el-row :gutter="24">
-					<el-col :span="18" style="display: flex">
-						<el-input v-model="data.search" placeholder="输入标签或者名称" size="small" clearable @change="search" style="width: 250px">
+					<el-col :span="18" style="display: flex; justify-content;: center">
+						<el-text class="mx-1" size="small">命名空间：</el-text>
+						<el-select
+							v-model="k8sStore.state.activeNamespace"
+							style="max-width: 180px"
+							class="m-2"
+							placeholder="Select"
+							size="small"
+							@change="handleChange"
+							><el-option key="all" label="所有命名空间" value="all"></el-option>
+							<el-option
+								v-for="item in k8sStore.state.namespace"
+								:key="item.metadata?.name"
+								:label="item.metadata?.name"
+								:value="item.metadata!.name!"
+							/>
+						</el-select>
+						<el-input
+							v-model="data.search"
+							placeholder="输入标签或者名称"
+							size="small"
+							clearable
+							@change="search"
+							style="width: 250px; margin-left: 10px"
+						>
 							<template #prepend>
 								<el-select v-model="data.searchType" placeholder="输入标签或者名称" style="width: 60px" size="small">
 									<el-option label="标签" value="0" size="small" />
@@ -251,6 +274,10 @@ const reDeploy = (deployment: V1Deployment) => {
 		.catch((res: any) => {
 			ElMessage.error(res.message);
 		});
+};
+
+const handleChange = () => {
+	listDeployment();
 };
 const updateDeployment = () => {
 	const updateData = YAML.load(yamlRef.value.code) as V1Deployment;

@@ -5,7 +5,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"sort"
 )
 
@@ -15,14 +15,15 @@ type NodeGetter interface {
 
 type INode interface {
 	List(ctx context.Context) ([]*types.Node, error)
-	Get(ctx context.Context, name string) (*v1.Node, error)
+	Get(ctx context.Context, name string) (*corev1.Node, error)
 	Delete(ctx context.Context, name string) error
-	Create(ctx context.Context, node *v1.Node) (*v1.Node, error)
-	Update(ctx context.Context, node *v1.Node) (*v1.Node, error)
-	Patch(ctx context.Context, name string, playLoad map[string]interface{}) (*v1.Node, error)
+	Create(ctx context.Context, node *corev1.Node) (*corev1.Node, error)
+	Update(ctx context.Context, node *corev1.Node) (*corev1.Node, error)
+	Patch(ctx context.Context, name string, playLoad map[string]interface{}) (*corev1.Node, error)
 	Drain(ctx context.Context, name string) (bool, error)
 
 	Schedulable(ctx context.Context, name string, unschedulable bool) (bool, error)
+	GetPodByNode(ctx context.Context, nodeName string) (*corev1.PodList, error)
 }
 
 type node struct {
@@ -47,7 +48,7 @@ func (n *node) List(ctx context.Context) ([]*types.Node, error) {
 	return nodeList, err
 }
 
-func (n *node) Get(ctx context.Context, name string) (*v1.Node, error) {
+func (n *node) Get(ctx context.Context, name string) (*corev1.Node, error) {
 	node, err := n.k8s.Node().Get(ctx, name)
 	if err != nil {
 		log.Logger.Error(err)
@@ -63,7 +64,7 @@ func (n *node) Delete(ctx context.Context, name string) error {
 	return err
 }
 
-func (n *node) Create(ctx context.Context, node *v1.Node) (*v1.Node, error) {
+func (n *node) Create(ctx context.Context, node *corev1.Node) (*corev1.Node, error) {
 	res, err := n.k8s.Node().Create(ctx, node)
 	if err != nil {
 		log.Logger.Error(err)
@@ -71,7 +72,7 @@ func (n *node) Create(ctx context.Context, node *v1.Node) (*v1.Node, error) {
 	return res, err
 }
 
-func (n *node) Update(ctx context.Context, node *v1.Node) (*v1.Node, error) {
+func (n *node) Update(ctx context.Context, node *corev1.Node) (*corev1.Node, error) {
 
 	res, err := n.k8s.Node().Update(ctx, node)
 	if err != nil {
@@ -80,7 +81,7 @@ func (n *node) Update(ctx context.Context, node *v1.Node) (*v1.Node, error) {
 	return res, err
 }
 
-func (n *node) Patch(ctx context.Context, name string, labels map[string]interface{}) (*v1.Node, error) {
+func (n *node) Patch(ctx context.Context, name string, labels map[string]interface{}) (*corev1.Node, error) {
 	res, err := n.k8s.Node().Patch(ctx, name, labels)
 	if err != nil {
 		log.Logger.Error(err)
@@ -133,6 +134,10 @@ func (n *node) Schedulable(ctx context.Context, name string, unschedulable bool)
 		return false, err
 	}
 	return true, nil
+}
+
+func (p *node) GetPodByNode(ctx context.Context, nodeName string) (*corev1.PodList, error) {
+	return p.k8s.Node().GetPodByNode(ctx, nodeName)
 }
 
 type NodeHandler struct {

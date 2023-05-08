@@ -104,36 +104,78 @@
 						<el-card id="echar-pod" style="width: 300px; height: 300px" />
 					</el-space>
 				</el-tab-pane>
-				<el-tab-pane label="容器组" name="first">
-					<el-table :data="podStore.state.podDetail.status?.containerStatuses" stripe style="width: 100%" max-height="350px">
-						<el-table-column label="名称">
-							<template #default="scope">
-								<el-text :type="scope.row.ready === true ? 'success' : 'danger'">{{ scope.row.name }}</el-text>
-							</template>
-						</el-table-column>
-						<el-table-column label="状态">
-							<template #default="scope">
-								<el-text :type="scope.row.ready === true ? 'success' : 'danger'" v-for="(item, key) in scope.row.state">
-									<div>
-										{{ key }}
-									</div>
-									<div style="font-size: 10px">
-										{{ item.message }}
-									</div>
-								</el-text>
-							</template>
-						</el-table-column>
-						<el-table-column label="镜像" prop="image" />
+				<el-tab-pane label="容器组" name="containers">
+					<div>
+						<el-table :data="data.pods" style="width: 100%" @selection-change="handleSelectionChange" v-loading="data.loading" max-height="300px">
+							<el-table-column type="selection" width="55" />
 
-						<el-table-column label="重启次数" prop="restartCount" />
+							<el-table-column prop="metadata.name" label="名称" width="300px" show-overflow-tooltip>
+								<template #default="scope">
+									<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>
+									<div v-if="scope.row.status.phase != 'Running'" style="color: red">
+										<div v-if="scope.row.status.containerStatuses">
+											{{ scope.row.status.containerStatuses[0].state }}
+										</div>
+										<div v-else>{{ scope.row.status.conditions[0].reason }}:{{ scope.row.status.conditions[0].message }}</div>
+									</div>
+								</template>
+							</el-table-column>
+							<el-table-column label="状态" width="200px">
+								<template #default="scope">
+									<p v-html="podStatus(scope.row.status)" />
+								</template>
+							</el-table-column>
+							<el-table-column label="重启次数" width="100px">
+								<template #default="scope">
+									<div v-if="scope.row.status.containerStatuses">{{ podRestart(scope.row.status) }}</div>
+								</template>
+							</el-table-column>
+							<el-table-column label="标签" width="180px">
+								<template #default="scope">
+									<el-tooltip placement="right" effect="light">
+										<template #content>
+											<div style="display: flex; flex-direction: column">
+												<el-tag class="label" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
+													{{ key }}:{{ item }}
+												</el-tag>
+											</div>
+										</template>
+										<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
+											<div>{{ key }}:{{ item }}</div>
+										</el-tag>
+									</el-tooltip>
+								</template>
+							</el-table-column>
 
-						<el-table-column fixed="right" label="操作" width="160">
-							<template #default="scope">
-								<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
-								<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button>
-							</template>
-						</el-table-column>
-					</el-table>
+							<el-table-column prop="status.podIP" label="IP" width="220px">
+								<template #default="scope">
+									{{ scope.row.status.podIP }}
+								</template>
+							</el-table-column>
+							<el-table-column prop="spec.nodeName" label="所在节点" width="220px">
+								<template #default="scope">
+									<div>{{ scope.row.spec.nodeName }}</div>
+									<div>{{ scope.row.status.hostIP }}</div>
+								</template>
+							</el-table-column>
+							<el-table-column label="创建时间" width="180px">
+								<template #default="scope">
+									{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
+								</template>
+							</el-table-column>
+							<el-table-column fixed="right" label="操作" width="160">
+								<template #default="scope">
+									<el-button link type="primary" size="small" @click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
+									<el-button link type="primary" size="small" @click="editPod(scope.row)">编辑</el-button><el-divider direction="vertical" />
+									<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
+									<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
+									<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+						<!-- 分页区域 -->
+						<Pagination :total="data.total" @handlePageChange="handlePageChange" />
+					</div>
 				</el-tab-pane>
 				<el-tab-pane label="元数据" name="second">
 					<MetaDetail :metaData="k8sStore.state.activeNode?.metadata" />
@@ -191,9 +233,11 @@ import { ECharts, EChartsOption, init } from 'echarts';
 import { deepClone } from '/@/utils/other';
 import { useNodeApi } from '/@/api/kubernetes/node';
 import { Node } from '/@/types/kubernetes/cluster';
+import { PageInfo } from '/@/types/kubernetes/common';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
+const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 
 onMounted(() => {
 	cpuUsage();
@@ -209,15 +253,22 @@ const k8sStore = kubernetesInfo();
 const podApi = usePodApi();
 const deploymentApi = useDeploymentApi();
 const data = reactive({
+	loading: false,
 	param: {
 		cloud: k8sStore.state.activeCluster,
 	},
 	replicasets: [] as V1ReplicaSet[],
 	pods: [] as V1Pod[],
+	total: 0,
 	iShow: false,
 	activeName: 'dashboard',
 	deployment: [],
 	events: [] as V1ReplicaSetCondition[],
+	query: {
+		cloud: k8sStore.state.activeCluster,
+		page: 1,
+		limit: 10,
+	},
 });
 
 const cpuUsage = () => {
@@ -372,15 +423,13 @@ const podUsage = () => {
 	};
 	cpuChar.setOption(option);
 };
-const handleClick = (tab: TabsPaneContext, event: Event) => {
-	if (tab.paneName === 'six') {
-		getEvents();
-	}
+const podRestart = (status: V1PodStatus) => {
+	let count = 0;
+	status.containerStatuses!.forEach((item) => {
+		count += item.restartCount;
+	});
+	return count;
 };
-const refreshCurrentTagsView = () => {
-	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
-};
-
 // FIXME
 const podStatus = (status: V1PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
@@ -391,7 +440,7 @@ const podStatus = (status: V1PodStatus) => {
 				status.containerStatuses?.forEach((c: V1ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
-							res = `<div>${c.state.waiting.reason}</div>`;
+							res = ` </div> <div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
 							// res = `${c.state.waiting.reason}`;
 						}
 						if (c.state?.terminated) {
@@ -401,46 +450,35 @@ const podStatus = (status: V1PodStatus) => {
 				});
 				return (s = `<span style="color: red">${res}</span>`);
 			}
-			// s = '<span style="color: green">true</span>';
 		});
 	} else {
-		s = '<span style="color: red">ERROR</span>';
+		s = '<span style="color: green">ERROR</span>';
 	}
 
 	return s;
 };
-
-const updatePod = () => {
-	// TODO 完善功能
-	ElMessage.success('更新成功');
-	// const updateData = YAML.load(yamlRef.value.code) as V1Deployment;
-	// delete updateData.status;
-	// delete updateData.metadata?.managedFields;
-	// deploymentApi
-	// 	.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
-	// 	.then((res) => {
-	// 		if (res.code == 200) {
-	// 			ElMessage.success('更新成功');
-	// 		} else {
-	// 			ElMessage.error(res.message);
-	// 		}
-	// 	})
-	// 	.catch((e) => {
-	// 		ElMessage.error(e.message);
-	// 	});
-	yamlRef.value.handleClose();
+const handleClick = (tab: TabsPaneContext, event: Event) => {
+	if (tab.paneName === 'six') {
+		getEvents();
+	} else if (tab.paneName === 'containers') {
+		getPodsByNode();
+	}
 };
 
-const getPods = async () => {
-	const res = await deploymentApi.detailDeployment(
-		k8sStore.state.activeDeployment.metadata!.namespace!.toString(),
-		k8sStore.state.activeDeployment?.metadata!.name!.toString(),
-		data.param
-	);
-	data.pods = res.data.pods;
-	data.replicasets = res.data.replicaSets;
+const getPodsByNode = () => {
+	data.loading = true;
+	nodeApi.listPodByNode(k8sStore.state.activeNode.metadata!.name!, data.query).then((res) => {
+		if (res.code == 200) {
+			data.pods = res.data.data;
+			data.total = res.data.total;
+		}
+	});
+	data.loading = false;
 };
-
+const refreshCurrentTagsView = () => {
+	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
+};
+const handleSelectionChange = () => {};
 const getEvents = async () => {
 	const pod = podStore.state.podDetail;
 	const res = await podApi.podEvents(pod.metadata!.namespace, pod.metadata!.name, data.param);
@@ -457,6 +495,39 @@ const jumpPodLog = (p: V1Pod) => {
 	router.push({
 		name: 'podLog',
 	});
+};
+const jumpPodDetail = (pod: V1Pod) => {
+	podStore.state.podDetail = pod;
+	router.push({
+		name: 'podDetail',
+	});
+};
+const deletePod = async (p: V1Pod) => {
+	ElMessageBox.confirm(`此操作将删除[ ${p.metadata?.name} ] 容器 . 是否继续?`, '警告', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			podStore.deletePod(p);
+			podStore.listPod();
+			ElMessage({
+				type: 'success',
+				message: '${pod.metadata.name} 已删除',
+			});
+		})
+		.catch(); // 取消
+};
+const handlePageChange = (pageInfo: PageInfo) => {
+	data.loading = true;
+	data.query.page = pageInfo.page;
+	data.query.limit = pageInfo.limit;
+	getPodsByNode();
+	data.loading = false;
+};
+const editPod = (pod: V1Pod) => {
+	delete pod.metadata?.managedFields;
+	yamlRef.value.openDialog(pod);
 };
 const backRoute = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));

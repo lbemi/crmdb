@@ -20,7 +20,7 @@
 				</el-breadcrumb-item>
 			</transition-group>
 		</el-breadcrumb>
-		<div style="margin-left: 10px" v-if="route.path.startsWith('/kubernetes') && route.path != '/kubernetes/cluster'">
+		<!-- <div style="margin-left: 10px" v-if="route.path.startsWith('/kubernetes') && route.path != '/kubernetes/cluster'">
 			<a style="font-size: 10px">命名空间：</a>
 			<el-select
 				v-model="k8sStore.state.activeNamespace"
@@ -32,7 +32,7 @@
 				><el-option key="all" label="所有命名空间" value="all"></el-option>
 				<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
 			</el-select>
-		</div>
+		</div> -->
 	</div>
 </template>
 

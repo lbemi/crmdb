@@ -9,6 +9,13 @@ export function useNodeApi() {
 				params: param,
 			});
 		},
+		listPodByNode: (nodeName: string, param: any) => {
+			return request({
+				url: `/node/pods/${nodeName}`,
+				method: 'get',
+				params: param,
+			});
+		},
 
 		getNode: (name: string, param: any) => {
 			return request({

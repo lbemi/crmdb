@@ -7,24 +7,25 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/handler/types"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	apitype "k8s.io/apimachinery/pkg/types"
+	"sort"
 	"time"
 )
 
 type NodeImp interface {
 	List(ctx context.Context) ([]*types.Node, error)
-	Get(ctx context.Context, name string) (*v1.Node, error)
+	Get(ctx context.Context, name string) (*corev1.Node, error)
 	Delete(ctx context.Context, name string) error
-	Create(ctx context.Context, node *v1.Node) (*v1.Node, error)
-	Update(ctx context.Context, node *v1.Node) (*v1.Node, error)
-	Patch(ctx context.Context, name string, playLoad map[string]interface{}) (*v1.Node, error)
+	Create(ctx context.Context, node *corev1.Node) (*corev1.Node, error)
+	Update(ctx context.Context, node *corev1.Node) (*corev1.Node, error)
+	Patch(ctx context.Context, name string, playLoad map[string]interface{}) (*corev1.Node, error)
 
-	GetPodByNode(ctx context.Context, nodeName string) (*v1.PodList, error)
-	GetNodeUsage(ctx context.Context, node *v1.Node) (cpuUsage, memoryUsage float64, err error)
+	GetPodByNode(ctx context.Context, nodeName string) (*corev1.PodList, error)
+	GetNodeUsage(ctx context.Context, node *corev1.Node) (cpuUsage, memoryUsage float64, err error)
 }
 
 type node struct {
@@ -60,7 +61,7 @@ func (n *node) List(ctx context.Context) ([]*types.Node, error) {
 	return nodes, err
 }
 
-func (n *node) Get(ctx context.Context, name string) (*v1.Node, error) {
+func (n *node) Get(ctx context.Context, name string) (*corev1.Node, error) {
 	node, err := n.cli.SharedInformerFactory.Core().V1().Nodes().Lister().Get(name)
 	if err != nil {
 		log.Logger.Error(err)
@@ -76,7 +77,7 @@ func (n *node) Delete(ctx context.Context, name string) error {
 	return err
 }
 
-func (n *node) Create(ctx context.Context, node *v1.Node) (*v1.Node, error) {
+func (n *node) Create(ctx context.Context, node *corev1.Node) (*corev1.Node, error) {
 	res, err := n.cli.ClientSet.CoreV1().Nodes().Create(ctx, node, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Error(err)
@@ -84,7 +85,7 @@ func (n *node) Create(ctx context.Context, node *v1.Node) (*v1.Node, error) {
 	return res, err
 }
 
-func (n *node) Update(ctx context.Context, node *v1.Node) (*v1.Node, error) {
+func (n *node) Update(ctx context.Context, node *corev1.Node) (*corev1.Node, error) {
 
 	res, err := n.cli.ClientSet.CoreV1().Nodes().Update(ctx, node, metav1.UpdateOptions{})
 	if err != nil {
@@ -93,7 +94,7 @@ func (n *node) Update(ctx context.Context, node *v1.Node) (*v1.Node, error) {
 	return res, err
 }
 
-func (n *node) Patch(ctx context.Context, name string, labels map[string]interface{}) (*v1.Node, error) {
+func (n *node) Patch(ctx context.Context, name string, labels map[string]interface{}) (*corev1.Node, error) {
 	patchData := map[string]interface{}{"metadata": map[string]map[string]interface{}{"labels": labels}}
 	playLoadBytes, err := json.Marshal(patchData)
 
@@ -109,7 +110,7 @@ func (n *node) Patch(ctx context.Context, name string, labels map[string]interfa
 	return res, err
 }
 
-func (n *node) GetNodeUsage(ctx context.Context, node *v1.Node) (cpuUsage, memoryUsage float64, err error) {
+func (n *node) GetNodeUsage(ctx context.Context, node *corev1.Node) (cpuUsage, memoryUsage float64, err error) {
 
 	// 如果两秒超时，则返回空
 	withTimeout, cancelFunc := context.WithTimeout(ctx, 1*time.Second)
@@ -141,7 +142,7 @@ func (n *node) getPodNumByNode(ctx context.Context, nodeName string) int {
 	return count
 }
 
-func (n *node) GetPodByNode(ctx context.Context, nodeName string) (*v1.PodList, error) {
+func (n *node) GetPodByNode(ctx context.Context, nodeName string) (*corev1.PodList, error) {
 	podList, err := n.cli.ClientSet.CoreV1().Pods("").List(ctx, metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("spec.nodeName=" + nodeName),
 	})
@@ -149,6 +150,9 @@ func (n *node) GetPodByNode(ctx context.Context, nodeName string) (*v1.PodList, 
 		log.Logger.Error(err)
 		return nil, err
 	}
+	sort.Slice(podList.Items, func(i, j int) bool {
+		return podList.Items[j].ObjectMeta.CreationTimestamp.Time.Before(podList.Items[i].ObjectMeta.CreationTimestamp.Time)
+	})
 	return podList, nil
 }
 
