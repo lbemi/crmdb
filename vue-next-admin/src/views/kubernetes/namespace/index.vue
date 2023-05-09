@@ -213,14 +213,13 @@ const filterPod = () => {
 		});
 	} else {
 		data.namespace.forEach((namespace: V1Namespace) => {
-			if (namespace.metadata?.annotations) {
-				for (let k in namespace.metadata.annotations) {
-					if (k.includes(data.query.key) || namespace.metadata.annotations[k].includes(data.query.key)) {
+			if (namespace.metadata?.labels) {
+				for (let k in namespace.metadata.labels) {
+					if (k.includes(data.query.key) || namespace.metadata.labels[k].includes(data.query.key)) {
 						nsList.push(namespace);
 						break;
 					}
 				}
-				nsList.push(namespace);
 			}
 		});
 	}

@@ -9,5 +9,12 @@ export function useServiceApi() {
 				params: param,
 			});
 		},
+		deleteService: ( param: any,name: string, namespace: string) => {
+			return request({
+				url: `/service/${namespace}/${name}`,
+				method: 'delete',
+				params: param,
+			});
+		},
 	};
 }

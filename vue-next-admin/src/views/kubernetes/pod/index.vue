@@ -270,14 +270,13 @@ const filterPod = (pods: Array<V1Pod>) => {
 		});
 	} else {
 		pods.forEach((pod: V1Pod) => {
-			if (pod.metadata?.annotations) {
-				for (let k in pod.metadata.annotations) {
-					if (k.includes(podStore.state.query.key) || pod.metadata.annotations[k].includes(podStore.state.query.key)) {
+			if (pod.metadata?.labels) {
+				for (let k in pod.metadata.labels) {
+					if (k.includes(podStore.state.query.key) || pod.metadata.labels[k].includes(podStore.state.query.key)) {
 						podList.push(pod);
 						break;
 					}
 				}
-				podList.push(pod);
 			}
 		});
 	}

@@ -44,7 +44,7 @@
 					</el-icon>
 					刷新
 				</el-button>
-				<el-table :data="data.services" @selection-change="handleSelectionChange" style="width: 100%" max-height="100vh - 235px">
+				<el-table :data="data.services" @selection-change="handleSelectionChange" size="small" style="width: 100%" max-height="100vh - 235px">
 					<el-table-column type="selection" width="35" />
 					<el-table-column prop="metadata.name" label="名称" />
 					<el-table-column prop="metadata.namespace" label="命名空间" />
@@ -52,13 +52,23 @@
 					<el-table-column prop="spec.clusterIP" label="集群IP" />
 					<el-table-column label="外部访问IP">
 						<template #default="scope">
-							<a href="" v-for="item in scope.row.status.loadBalancer.ingress"> {{ item.ip }}</a>
+							<a href="" v-if="scope.row.status.loadBalancer.ingress" v-for="item in scope.row.status.loadBalancer.ingress"> {{ item.ip }}</a>
 						</template>
 					</el-table-column>
+					<el-table-column label="端口" style="display: flex" align="center" width="210px">
+						<template #header>
+							<span>端口</span><br /><span style="font-size: 10px; font-weight: 50">(nodePort:port/protocol->targetPort)</span>
+						</template>
 
+						<template #default="scope">
+							<el-tag class="label" size="small" effect="plain" v-if="scope.row.spec.ports" v-for="item in scope.row.spec.ports">
+								{{ item.nodePort }}:{{ item.port }}/{{ item.protocol }}->{{ item.targetPort }}</el-tag
+							>
+						</template>
+					</el-table-column>
 					<el-table-column label="标签">
 						<template #default="scope">
-							<el-tooltip placement="right" effect="light">
+							<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
 								<template #content>
 									<div style="display: flex; flex-direction: column">
 										<el-tag
@@ -80,16 +90,17 @@
 						</template>
 					</el-table-column>
 
-					<el-table-column label="创建时间">
+					<el-table-column label="创建时间" width="170px">
 						<template #default="scope">
 							{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 						</template>
 					</el-table-column>
 
-					<el-table-column fixed="right" label="操作" width="220">
+					<el-table-column fixed="right" label="操作" width="160px">
 						<template #default="scope">
+							<el-button link type="primary" size="small" @click="updateService(scope.row)">详情</el-button><el-divider direction="vertical" />
 							<el-button link type="primary" size="small" @click="updateService(scope.row)">编辑</el-button><el-divider direction="vertical" />
-							<el-button :disabled="scope.row.metadata.name === 'default'" link type="danger" size="small" @click="deleteService(scope.row)"
+							<el-button :disabled="scope.row.metadata.name === 'kubernetes'" link type="danger" size="small" @click="deleteService(scope.row)"
 								>删除</el-button
 							>
 						</template>
@@ -111,11 +122,11 @@
 
 <script setup lang="ts" name="k8sService">
 import { V1Service } from '@kubernetes/client-node';
-import { defineAsyncComponent, onMounted, reactive } from 'vue';
+import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useServiceApi } from '/@/api/kubernetes/service';
 import { ResponseType } from '/@/types/response';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '/@/utils/formatTime';
@@ -132,6 +143,7 @@ const data = reactive({
 	loading: false,
 	selectData: [] as V1Service[],
 	services: [] as V1Service[],
+	tmpService: [] as V1Service[],
 	total: 0,
 	query: {
 		page: 1,
@@ -144,12 +156,69 @@ const data = reactive({
 onMounted(() => {
 	listService();
 });
-const search = () => {};
+const search = () => {
+	filterService(data.tmpService);
+};
 const handleChange = () => {
 	listService();
 };
+const filterService = (services: Array<V1Service>) => {
+	const serviceList = [] as V1Service[];
+	if (data.query.type === '1') {
+		services.forEach((service: V1Service) => {
+			if (service.metadata?.name?.includes(data.query.key)) {
+				serviceList.push(service);
+			}
+		});
+	} else {
+		services.forEach((service: V1Service) => {
+			if (service.metadata?.labels) {
+				for (let k in service.metadata.labels) {
+					if (k.includes(data.query.key) || service.metadata.labels[k].includes(data.query.key)) {
+						serviceList.push(service);
+						break;
+					}
+				}
+				// serviceList.push(service);
+			}
+		});
+	}
+	data.services = serviceList;
+};
 const createService = () => {};
-const deleteService = (service: V1Service) => {};
+const deleteService = (service: V1Service) => {
+	ElMessageBox({
+		title: '提示',
+		message: h('p', null, [
+			h('span', null, '此操作将删除 '),
+			h('i', { style: 'color: teal' }, `${service.metadata!.name}`),
+			h('span', null, ' 服务. 是否继续? '),
+		]),
+		buttonSize: 'small',
+		showCancelButton: true,
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+
+		draggable: true,
+	})
+		.then(() => {
+			data.loading = true;
+			servieApi
+				.deleteService({ cloud: k8sStore.state.activeCluster }, service.metadata!.name!, service.metadata!.namespace!)
+				.then((res) => {
+					listService();
+					ElMessage.success(res.message);
+				})
+				.catch((e) => {
+					ElMessage.error(e);
+				});
+		})
+		.catch(() => {
+			ElMessage.info('取消');
+		});
+	data.loading = false;
+};
 const handleSelectionChange = () => {};
 const updateService = (ervice: V1Service) => {};
 const handlePageChange = (page: PageInfo) => {
@@ -163,6 +232,7 @@ const listService = () => {
 		.then((res: ResponseType) => {
 			if (res.code === 200) {
 				data.services = res.data.data;
+				data.tmpService = res.data.data;
 				data.total = res.data.total;
 			}
 		})

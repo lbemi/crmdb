@@ -1,8 +1,9 @@
 <template>
-	<div >
+	<div>
 		<!-- 分页区域 -->
 		<el-pagination
 			class="mt15"
+			small
 			background
 			v-model:current-page="page.page"
 			v-model:page-size="page.limit"
