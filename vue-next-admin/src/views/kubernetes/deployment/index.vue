@@ -198,6 +198,7 @@ import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import YAML from 'js-yaml';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));

@@ -33,6 +33,7 @@ export default {
 		k8sPod: 'Pod',
 		podLog: '日志',
 		nodeDetail: 'node详情',
+		k8sNamespace: '命名空间',
 		menu: '菜单嵌套',
 		menu1: '菜单1',
 		menu11: '菜单11',

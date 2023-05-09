@@ -138,8 +138,7 @@ import { PageInfo } from '/@/types/kubernetes/common';
 import YAML from 'js-yaml';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
-import { dataTool } from 'echarts';
-import { keysOf } from 'element-plus/es/utils';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));

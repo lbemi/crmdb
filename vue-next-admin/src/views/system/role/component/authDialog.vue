@@ -54,11 +54,11 @@
 </template>
 
 <script setup lang="ts" name="systemRoleAuthDialog">
-import { reactive, ref} from 'vue';
+import { reactive, ref } from 'vue';
 import { useMenuApi } from '/@/api/system/menu';
 import { unref } from 'vue-demi';
 import { MenuType, RoleType } from '/@/types/views';
-import { ElMessage } from 'element-plus';
+import { ElLoading, ElMessage } from 'element-plus';
 import { useRoleApi } from '/@/api/system/role';
 
 // 定义子组件向父组件传值/事件
@@ -71,6 +71,7 @@ const menuRef = ref<HTMLElement | null>(null);
 const apiRef = ref<HTMLElement | null>(null);
 const roleAuthDialogFormRef = ref<HTMLElement | null>(null);
 const state = reactive({
+	loading: false,
 	id: 0,
 	apiExpand: false,
 	apiNodeAll: false,
@@ -98,7 +99,7 @@ const openAuthDialog = (row: RoleType) => {
 	state.id = row.id;
 	state.apiCheckedKeys = [];
 	state.menuCheckedKeys = [];
-	state.activeName="first";
+	state.activeName = 'first';
 
 	listMenuAndButton();
 	listApi();
@@ -109,40 +110,38 @@ const openAuthDialog = (row: RoleType) => {
 const listMenuAndButton = async () => {
 	await menuApi.listMenu({ menuType: '1,2' }).then((res) => {
 		state.menuData = res.data.menus;
-
 	});
 };
 
-const getRoleMenus =async () =>{
-	roleApi.getRoleMenu(state.id,{menuType: "1,2"}).then((res)=>{
+const getRoleMenus = async () => {
+	roleApi.getRoleMenu(state.id, { menuType: '1,2' }).then((res) => {
 		if (res.data) {
-			res.data.forEach((item)=>{
-				state.menuCheckedKeys.push(item.id)
-				if(item.children) {
+			res.data.forEach((item) => {
+				state.menuCheckedKeys.push(item.id);
+				if (item.children) {
 					item.children.forEach((res) => {
-						state.menuCheckedKeys.push(res.id)
-					})
+						state.menuCheckedKeys.push(res.id);
+					});
 				}
-			})
+			});
 		}
-	})
+	});
 	// console.log("----",state.menuCheckedKeys)
-}
-const getRoleApis =async () =>{
-	roleApi.getRoleMenu(state.id,{menuType: "3"}).then((res)=>{
-		if(res.data) {
-			res.data.forEach((item)=>{
-				state.apiCheckedKeys.push(item.id)
-				if(item.children) {
+};
+const getRoleApis = async () => {
+	roleApi.getRoleMenu(state.id, { menuType: '3' }).then((res) => {
+		if (res.data) {
+			res.data.forEach((item) => {
+				state.apiCheckedKeys.push(item.id);
+				if (item.children) {
 					item.children.forEach((res) => {
-						state.apiCheckedKeys.push(res.id)
-					})
+						state.apiCheckedKeys.push(res.id);
+					});
 				}
-			})
+			});
 		}
-
-	})
-}
+	});
+};
 const listApi = async () => {
 	await menuApi.listMenu({ menuType: '3', isTree: false }).then((res) => {
 		state.apiData = buildApiTree(res.data.menus);
@@ -208,15 +207,23 @@ const onCancel = () => {
 };
 // 提交
 const onSubmit = () => {
+	const loading = ElLoading.service({
+		lock: true,
+		text: 'Loading',
+		background: 'rgba(0, 0, 0, 0.7)',
+	});
 	getAllCheckIds();
-	roleApi.setRoleAuth(state.id, {menuIDS: state.apiAndMenuIDs}).then(()=>{
-		ElMessage.success("授权成功")
-		closeDialog()
-		emit("refresh")
-	}).catch((res)=>{
-		ElMessage.error(res.message)
-	})
-
+	roleApi
+		.setRoleAuth(state.id, { menuIDS: state.apiAndMenuIDs })
+		.then(() => {
+			ElMessage.success('授权成功');
+			loading.close();
+			closeDialog();
+			emit('refresh');
+		})
+		.catch((res) => {
+			ElMessage.error(res);
+		});
 };
 
 // 所有菜单节点数据
@@ -247,7 +254,7 @@ const getAllCheckIds = () => {
 	state.apiAndMenuIDs = [];
 	getMenuAllCheckedKeys();
 	getApiAllCheckedKeys();
-	console.log("提交的权限列表",state.apiAndMenuIDs)
+	console.log('提交的权限列表', state.apiAndMenuIDs);
 };
 
 // 暴露变量

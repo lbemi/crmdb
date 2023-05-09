@@ -17,6 +17,7 @@ export const kubernetesInfo = defineStore(
 			activeDeployment: {} as V1Deployment,
 			clusters: [],
 			namespace: [] as V1Namespace[],
+			namespaceTotal: 0,
 			creatDeployment: {
 				namespace: '',
 				name: '',

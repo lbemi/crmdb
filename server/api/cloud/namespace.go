@@ -52,10 +52,11 @@ func ListNamespace(c *gin.Context) {
 		}
 		response.Success(c, response.StatusOK, pageQuery)
 
+	} else {
+		pageQuery.Data = namespaceList
+		response.Success(c, response.StatusOK, pageQuery)
 	}
-	pageQuery.Data = namespaceList
 
-	response.Success(c, response.StatusOK, pageQuery)
 }
 
 func GetNamespace(c *gin.Context) {

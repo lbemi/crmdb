@@ -28,6 +28,7 @@ const k8sStore = kubernetesInfo();
 onMounted(() => {
 	namespaceApi.listNamespace({ cloud: k8sStore.state.activeCluster }).then((res) => {
 		k8sStore.state.namespace = res.data.data;
+		k8sStore.state.namespaceTotal = res.data.total;
 	});
 });
 </script>
