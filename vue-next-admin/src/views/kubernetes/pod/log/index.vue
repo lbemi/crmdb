@@ -8,7 +8,8 @@
 			<el-button type="primary" size="small" class="ml10" @click="getLog">显示日志</el-button>
 
 			<el-button type="primary" size="small" class="ml10" @click="logs = ''">清空</el-button>
-			<el-button type="primary" size="small" class="ml10" @click="stop = !stop">{{ stop ? '继续' : '暂停' }}</el-button>
+			<el-button type="success" size="small" class="ml10" v-if="stop" @click="stop = !stop" :icon="VideoPlay">{{ stop ? '继续' : '暂停' }}</el-button>
+			<el-button type="danger" size="small" class="ml10" v-else @click="stop = !stop" :icon="VideoPause">{{ stop ? '继续' : '暂停' }}</el-button>
 			<el-scrollbar ref="scrollbarRef" height="800px" class="logs">
 				<div ref="innerRef" id="logs">
 					{{ logs }}
@@ -22,6 +23,7 @@ import { onBeforeUnmount, ref } from 'vue';
 import { ElScrollbar } from 'element-plus';
 import { podInfo } from '/@/stores/pod';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
+import { VideoPause, VideoPlay } from '@element-plus/icons-vue';
 
 const selectContainer = ref();
 const pod = podInfo().state.podShell;

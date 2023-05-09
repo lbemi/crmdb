@@ -9,6 +9,13 @@ export function usePodApi() {
 				params: param,
 			});
 		},
+		searchPods: (ns: string, param: any) => {
+			return request({
+				url: `/pod/${ns}/search`,
+				method: 'get',
+				params: param,
+			});
+		},
 		deletePod: (ns: string | undefined, podName: string | undefined, param: any) => {
 			return request({
 				url: '/pod/' + ns + '/' + podName,

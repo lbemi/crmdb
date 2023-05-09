@@ -276,6 +276,60 @@ func GetPodEvents(c *gin.Context) {
 	response.Success(c, response.StatusOK, events)
 }
 
+func SearchPods(c *gin.Context) {
+
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	limitStr := c.DefaultQuery("limit", "0")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	namespace := c.Param("namespace")
+
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	key := c.DefaultQuery("key", "")
+	searchTypeStr := c.DefaultQuery("type", "0")
+	searchType, err := strconv.Atoi(searchTypeStr)
+
+	podList, err := core.V1.Cluster(clusterName).Pods(namespace).Search(c, key, searchType)
+	if err != nil {
+		response.Fail(c, response.ErrOperateFailed)
+		return
+	}
+
+	// 处理分页
+	var pageQuery types.PageQuery
+	pageQuery.Total = len(podList)
+
+	if pageQuery.Total <= limit {
+		pageQuery.Data = podList
+	} else if page*limit >= pageQuery.Total {
+		pageQuery.Data = podList[(page-1)*limit : pageQuery.Total]
+	} else {
+		pageQuery.Data = podList[(page-1)*limit : page*limit]
+	}
+
+	response.Success(c, response.StatusOK, pageQuery)
+}
+
 /*
 // WebSocket 读取 Pod 实时日志并推送给前端
 func tailLog(podName, containerName string, ws *websocket.Conn) {

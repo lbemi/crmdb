@@ -24,6 +24,7 @@ type IPod interface {
 	PodExec(ctx context.Context, namespace, pod, container string, command []string) remotecommand.Executor
 	GetPodLog(ctx context.Context, pod, container string) *rest.Request
 	GetPodEvent(ctx context.Context, name string) ([]*corev1.Event, error)
+	Search(ctx context.Context, key string, searchType int) ([]*corev1.Pod, error)
 }
 
 type pod struct {
@@ -106,4 +107,8 @@ func (p *pod) GetPodEvent(ctx context.Context, name string) ([]*corev1.Event, er
 	}
 
 	return events, nil
+}
+
+func (p *pod) Search(ctx context.Context, key string, searchType int) ([]*corev1.Pod, error) {
+	return p.k8s.Pod().Search(ctx, key, searchType)
 }

@@ -28,6 +28,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	pod := group.Group("/pod")
 	{
 		pod.GET("/:namespace", cloud.ListPods)
+		pod.GET("/:namespace/search", cloud.SearchPods)
 		pod.GET("/:namespace/:podName", cloud.GetPod)
 		pod.POST("", cloud.CreatePod)
 		pod.PUT("", cloud.UpdatePod)
