@@ -66,3 +66,21 @@ func (s *service) Update(ctx context.Context, service *v1.Service) (*v1.Service,
 func newService(client *store.Clients, namespace string) *service {
 	return &service{client: client, ns: namespace}
 }
+
+type ServiceHandle struct{}
+
+func NewServiceHandle() *ServiceHandle {
+	return &ServiceHandle{}
+}
+
+func (s *ServiceHandle) OnAdd(obj interface{}) {
+	//TODO implement me
+}
+
+func (s *ServiceHandle) OnUpdate(oldObj, newObj interface{}) {
+	//TODO implement me
+}
+
+func (s *ServiceHandle) OnDelete(obj interface{}) {
+	//TODO implement me
+}
