@@ -127,7 +127,7 @@
 			</div>
 		</el-card>
 		<YamlDialog
-			:dialog-visible="data.dialogVisible"
+			v-model:dialogVisible="data.dialogVisible"
 			:code-data="data.codeData"
 			:resourceType="'ingress'"
 			@update="updateIngressYaml"
@@ -242,12 +242,12 @@ const showYaml = (ingress: V1Ingress) => {
 	data.dialogVisible = true;
 	delete ingress.metadata?.managedFields;
 	data.codeData = ingress;
-
 	// yamlRef.value.openDialog(ingress);
 };
 const updateIngressYaml = (code: any) => {
 	console.log('更新Ingress', code);
 };
+
 const handleSelectionChange = () => {};
 const updateIngress = (ervice: V1Ingress) => {};
 const handlePageChange = (page: PageInfo) => {

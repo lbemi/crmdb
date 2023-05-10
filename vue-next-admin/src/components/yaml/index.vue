@@ -1,6 +1,6 @@
 <template>
 	<div class="system-user-dialog-container">
-		<el-dialog v-model="dialogVisible" width="769px">
+		<el-dialog v-model="dialogVisible" width="769px" @close="handleClose()">
 			<template #header>
 				<h3>YAML</h3>
 			</template>
@@ -29,26 +29,6 @@ const dialogVisible = ref(false);
 const handleClose = () => {
 	// dialogVisible.value = false;
 	emit('update:dialogVisible', false);
-
-	// switch (props.resourceType) {
-	// 	case 'deployment':
-	// 		code.value = `apiVersion: apps/v1\nkind: Deployment\n`;
-	// 		break;
-	// 	case 'statefulSet':
-	// 		code.value = `apiVersion: apps/v1\nkind: DaemonSet\n`;
-	// 		break;
-	// 	case 'pod':
-	// 		code.value = `apiVersion: v1\nkind: Pod\n`;
-	// 		break;
-	// 	case 'node':
-	// 		code.value = `apiVersion: v1\nkind: Node\n`;
-	// 		break;
-	// 	case 'ingress':
-	// 		code.value = `apiVersion: networking.k8s.io/v1\nkind: Ingress\n`;
-	// 		break;
-	// 	default:
-	// 		code.value = '';
-	// }
 };
 
 const emit = defineEmits(['update', 'update:dialogVisible']);
@@ -56,11 +36,6 @@ const emit = defineEmits(['update', 'update:dialogVisible']);
 const update = () => {
 	emit('update', code.value);
 };
-
-// const openDialog = (data: any) => {
-// 	dialogVisible.value = true;
-// 	code.value += YAML.dump(data);
-// };
 
 const props = defineProps({
 	codeData: Object,
@@ -71,6 +46,7 @@ const props = defineProps({
 watch(
 	() => [props.resourceType, props.codeData],
 	() => {
+		console.log(props);
 		dialogVisible.value = props.dialogVisible;
 		if (props.resourceType) {
 			switch (props.resourceType) {
@@ -101,12 +77,6 @@ watch(
 		immediate: true,
 	}
 );
-
-// defineExpose({
-// 	// openDialog,
-// 	handleClose,
-// 	code,
-// });
 </script>
 
 <style scoped></style>
