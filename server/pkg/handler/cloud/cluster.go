@@ -59,8 +59,8 @@ func (c *cluster) Events(namespace string) kubernetes.IEvent {
 	return kubernetes.NewEvent(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
 func (c *cluster) Ingresses(namespace string) kubernetes.IIngresses {
-	if namespace == "" {
-		namespace = "default"
+	if namespace == "all" {
+		namespace = ""
 	}
 	return kubernetes.NewIngresses(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }
@@ -73,8 +73,8 @@ func (c *cluster) ConfigMaps(namespace string) kubernetes.IConfigMap {
 }
 
 func (c *cluster) CronJobs(namespace string) kubernetes.ICronJob {
-	if namespace == "" {
-		namespace = "default"
+	if namespace == "all" {
+		namespace = ""
 	}
 	return kubernetes.NewCronJob(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
 }

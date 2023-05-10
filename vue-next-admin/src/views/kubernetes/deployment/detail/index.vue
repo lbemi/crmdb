@@ -21,7 +21,7 @@
 					k8sStore.state.activeDeployment?.metadata?.namespace
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
-					dateStrFormat(k8sStore.state.activeDeployment?.metadata?.creationTimestamp)
+					dateStrFormat(k8sStore.state.activeDeployment?.metadata?.creationTimestamp?.toString()!)
 				}}</el-descriptions-item>
 				<el-descriptions-item label="副本数" label-align="right" align="center"
 					><el-button color="#626aef" :icon="Minus" size="small" plain style="margin-right: 10px" @click="scaleDeploy('minus')" />{{
@@ -234,7 +234,7 @@
 	</div>
 </template>
 <script lang="ts" setup name="k8sDeploymentDetail">
-import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent } from 'vue';
+import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, h } from 'vue';
 import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, Refresh } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
@@ -248,6 +248,7 @@ import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { podInfo } from '/@/stores/pod';
 import YAML from 'js-yaml';
 import { deepClone } from '/@/utils/other';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const YamlMegeDialog = defineAsyncComponent(() => import('/@/components/yaml/matchCode.vue'));
@@ -262,24 +263,40 @@ const code = ref({});
 const dialogVisible = ref(false);
 
 const rollBack = (rs: V1ReplicaSet) => {
-	deploymentApi
-		.rollBackDeployment(
-			k8sStore.state.activeDeployment.metadata!.namespace!,
-			k8sStore.state.activeDeployment.metadata!.name!,
-			rs.metadata!.annotations!['deployment.kubernetes.io/revision'],
-			{
-				cloud: k8sStore.state.activeCluster,
-			}
-		)
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('回滚成功');
-			} else {
-				ElMessage.error('回滚失败,' + res.message);
-			}
+	ElMessageBox({
+		title: '提示',
+		message: h('p', null, [
+			h('span', null, '回滚到 '),
+			h('i', { style: 'color: teal' }, `${rs.metadata?.annotations!['deployment.kubernetes.io/revision']}`),
+			h('span', null, ' 版本. 是否继续? '),
+		]),
+		buttonSize: 'small',
+		showCancelButton: true,
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(() => {
+			deploymentApi
+				.rollBackDeployment(
+					k8sStore.state.activeDeployment.metadata!.namespace!,
+					k8sStore.state.activeDeployment.metadata!.name!,
+					rs.metadata!.annotations!['deployment.kubernetes.io/revision'],
+					{
+						cloud: k8sStore.state.activeCluster,
+					}
+				)
+				.then((res) => {
+					if (res.code == 200) {
+						ElMessage.success('回滚成功');
+					} else {
+						ElMessage.error('回滚失败,' + res.message);
+					}
+				});
 		})
-		.catch((res) => {
-			ElMessage.error('回滚失败,' + res.message);
+		.catch(() => {
+			ElMessage.info('取消');
 		});
 };
 const handleClick = (tab: TabsPaneContext, event: Event) => {
@@ -306,19 +323,36 @@ const timer = ref();
 
 const reDeploy = () => {
 	const deployment = k8sStore.state.activeDeployment;
-	deploymentApi
-		.reDeployDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, { cloud: k8sStore.state.activeCluster })
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('操作成功');
-			} else {
-				ElMessage.error(res.message);
-			}
+	ElMessageBox({
+		title: '提示',
+		message: h('p', null, [
+			h('span', null, '重新部署 '),
+			h('i', { style: 'color: teal' }, `${deployment.metadata?.name}`),
+			h('span', null, ' . 是否继续? '),
+		]),
+		buttonSize: 'small',
+		showCancelButton: true,
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(() => {
+			deploymentApi
+				.reDeployDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, { cloud: k8sStore.state.activeCluster })
+				.then((res) => {
+					if (res.code == 200) {
+						ElMessage.success('操作成功');
+					} else {
+						ElMessage.error(res.message);
+					}
+				});
 		})
-		.catch((res: any) => {
-			ElMessage.error(res.message);
+		.catch(() => {
+			ElMessage.info('取消');
 		});
 };
+
 const scaleDeploy = (action: string) => {
 	if (action === 'plus') {
 		k8sStore.state.activeDeployment.spec!.replicas!++;
@@ -460,10 +494,19 @@ const backRoute = () => {
 	});
 };
 const deletePod = async (pod: V1Pod) => {
-	ElMessageBox.confirm(`此操作将删除[ ${pod.metadata?.name} ] 容器 . 是否继续?`, '警告', {
+	ElMessageBox({
+		title: '提示',
+		message: h('p', null, [
+			h('span', null, '此操作将删除 '),
+			h('i', { style: 'color: teal' }, `${pod.metadata!.name}`),
+			h('span', null, ' 服务. 是否继续? '),
+		]),
+		buttonSize: 'small',
+		showCancelButton: true,
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
 		type: 'warning',
+		draggable: true,
 	})
 		.then(() => {
 			podApi.deletePod(pod.metadata?.namespace, pod.metadata?.name, data.param);
@@ -473,7 +516,9 @@ const deletePod = async (pod: V1Pod) => {
 				message: `${pod.metadata?.name}` + ' 已删除',
 			});
 		})
-		.catch(); // 取消
+		.catch(() => {
+			ElMessage.info('取消');
+		});
 };
 const showRsYaml = async (replicaSets: V1ReplicaSet) => {
 	dialogVisible.value = true;

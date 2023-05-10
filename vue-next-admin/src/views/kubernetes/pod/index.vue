@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang="ts" name="k8sPod">
-import { defineAsyncComponent, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { defineAsyncComponent, h, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import router from '/@/router';
 import { podInfo } from '/@/stores/pod';
@@ -244,20 +244,31 @@ const deletePods = async () => {
 	podStore.state.loading = false;
 };
 const deletePod = async (p: V1Pod) => {
-	ElMessageBox.confirm(`此操作将删除[ ${p.metadata?.name} ] 容器 . 是否继续?`, '警告', {
+	ElMessageBox({
+		title: '提示',
+		message: h('p', null, [
+			h('span', null, '此操作将删除 '),
+			h('i', { style: 'color: teal' }, `${p.metadata?.name}`),
+			h('span', null, ' 容器. 是否继续? '),
+		]),
+		buttonSize: 'small',
+		showCancelButton: true,
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
 		type: 'warning',
+		draggable: true,
 	})
 		.then(() => {
 			podStore.deletePod(p);
-			// podStore.listPod();
+			podStore.listPod();
 			ElMessage({
 				type: 'success',
-				message: '${pod.metadata.name} 已删除',
+				message: `${p.metadata?.name} 已删`,
 			});
 		})
-		.catch(); // 取消
+		.catch(() => {
+			ElMessage.info('取消');
+		});
 };
 
 const filterPod = (pods: Array<V1Pod>) => {

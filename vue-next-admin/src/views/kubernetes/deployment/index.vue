@@ -65,13 +65,7 @@
 				</el-row>
 			</div>
 
-			<el-table
-				:data="data.deployments"
-				style="width: 100%"
-				@selection-change="handleSelectionChange"
-				v-loading="data.loading"
-				max-height="100vh - 235px"
-			>
+			<el-table :data="data.deployments" style="width: 100%" @selection-change="handleSelectionChange" v-loading="data.loading">
 				<el-table-column type="selection" width="55" />
 
 				<el-table-column prop="metadata.name" label="名称" width="220px">
@@ -185,7 +179,7 @@
 </template>
 
 <script setup lang="ts" name="k8sDeployment">
-import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref, computed, onUnmounted } from 'vue';
+import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref, computed, onUnmounted, h } from 'vue';
 import { Check, Close, Delete, Edit, Search } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
@@ -193,7 +187,7 @@ import { V1Deployment } from '@kubernetes/client-node';
 import { PageInfo } from '/@/types/kubernetes/common';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import router from '/@/router';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import YAML from 'js-yaml';
 import mittBus from '/@/utils/mitt';
@@ -300,31 +294,62 @@ const updateDeployment = () => {
 };
 
 const deleteDeployments = (depList: Array<V1Deployment>) => {
-	depList.forEach((dep: V1Deployment) => {
-		if (dep.metadata) {
-			deploymentApi
-				.deleteDeployment(dep.metadata?.namespace!, dep.metadata?.name!, { cloud: k8sStore.state.activeCluster })
-				.then(() => {})
-				.catch(() => {
-					ElMessage.error(`删除${dep.metadata?.name}失败`);
-				});
-		}
-	});
-
-	ElMessage.success('删除成功');
-};
-const deleteDeployment = (dep: V1Deployment) => {
-	deploymentApi
-		.deleteDeployment(dep.metadata?.namespace!, dep.metadata?.name!, { cloud: k8sStore.state.activeCluster })
-		.then((res: any) => {
-			if (res.code === 200) {
-				ElMessage.success('删除成功');
-			} else {
-				ElMessage.error(`删除${dep.metadata?.name}失败`);
-			}
+	ElMessageBox({
+		title: '提示',
+		message: h('p', null, [
+			h('span', null, '此操作将批量删除多个 '),
+			h('i', { style: 'color: teal' }, `Deplpoment副本`),
+			h('span', null, ' . 是否继续? '),
+		]),
+		buttonSize: 'small',
+		showCancelButton: true,
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(() => {
+			depList.forEach((dep: V1Deployment) => {
+				if (dep.metadata) {
+					deploymentApi
+						.deleteDeployment(dep.metadata?.namespace!, dep.metadata?.name!, { cloud: k8sStore.state.activeCluster })
+						.then(() => {})
+						.catch(() => {
+							ElMessage.error(`删除${dep.metadata?.name}失败`);
+						});
+				}
+			});
 		})
 		.catch(() => {
-			ElMessage.error(`删除${dep.metadata?.name}失败`);
+			ElMessage.info('取消');
+		});
+};
+const deleteDeployment = (dep: V1Deployment) => {
+	ElMessageBox({
+		title: '提示',
+		message: h('p', null, [
+			h('span', null, '此操作将删除 '),
+			h('i', { style: 'color: teal' }, `${dep.metadata?.name}`),
+			h('span', null, ' deployment. 是否继续? '),
+		]),
+		buttonSize: 'small',
+		showCancelButton: true,
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(() => {
+			deploymentApi.deleteDeployment(dep.metadata?.namespace!, dep.metadata?.name!, { cloud: k8sStore.state.activeCluster }).then((res: any) => {
+				if (res.code === 200) {
+					ElMessage.success('删除成功');
+				} else {
+					ElMessage.error(`删除${dep.metadata?.name}失败`);
+				}
+			});
+		})
+		.catch(() => {
+			ElMessage.error('取消');
 		});
 };
 

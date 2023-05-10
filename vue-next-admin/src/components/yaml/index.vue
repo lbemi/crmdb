@@ -1,11 +1,14 @@
 <template>
 	<div class="system-user-dialog-container">
-		<el-dialog title="YAML" v-model="dialogVisible" width="769px">
+		<el-dialog v-model="dialogVisible" width="769px">
+			<template #header>
+				<h3>YAML</h3>
+			</template>
 			<codemirror v-model="code" :style="{ height: '100%' }" :autofocus="true" :tabSize="2" :extensions="extensions" />
 			<template #footer>
 				<span class="dialog-footer">
-					<el-button size="default" @click="handleClose">取 消</el-button>
-					<el-button type="primary" size="default" @click="props.updateResource">更新</el-button>
+					<el-button size="small" @click="handleClose">取 消</el-button>
+					<el-button type="primary" size="small" @click="update">更新</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -23,42 +26,52 @@ import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 const code = ref('');
 const extensions = [oneDark, StreamLanguage.define(yaml), foldGutter()];
 const dialogVisible = ref(false);
-const merge = ref(false);
 const handleClose = () => {
-	dialogVisible.value = false;
+	// dialogVisible.value = false;
+	emit('update:dialogVisible', false);
 
-	switch (props.resourceType) {
-		case 'deployment':
-			code.value = `apiVersion: apps/v1\nkind: Deployment\n`;
-			break;
-		case 'statefulSet':
-			code.value = `apiVersion: apps/v1\nkind: DaemonSet\n`;
-			break;
-		case 'pod':
-			code.value = `apiVersion: v1\nkind: Pod\n`;
-			break;
-		case 'node':
-			code.value = `apiVersion: v1\nkind: Node\n`;
-			break;
-		default:
-			code.value = '';
-	}
+	// switch (props.resourceType) {
+	// 	case 'deployment':
+	// 		code.value = `apiVersion: apps/v1\nkind: Deployment\n`;
+	// 		break;
+	// 	case 'statefulSet':
+	// 		code.value = `apiVersion: apps/v1\nkind: DaemonSet\n`;
+	// 		break;
+	// 	case 'pod':
+	// 		code.value = `apiVersion: v1\nkind: Pod\n`;
+	// 		break;
+	// 	case 'node':
+	// 		code.value = `apiVersion: v1\nkind: Node\n`;
+	// 		break;
+	// 	case 'ingress':
+	// 		code.value = `apiVersion: networking.k8s.io/v1\nkind: Ingress\n`;
+	// 		break;
+	// 	default:
+	// 		code.value = '';
+	// }
 };
 
-const openDialog = (data: any) => {
-	dialogVisible.value = true;
-	code.value += YAML.dump(data);
+const emit = defineEmits(['update', 'update:dialogVisible']);
+
+const update = () => {
+	emit('update', code.value);
 };
+
+// const openDialog = (data: any) => {
+// 	dialogVisible.value = true;
+// 	code.value += YAML.dump(data);
+// };
 
 const props = defineProps({
-	updateResource: Function,
+	codeData: Object,
+	dialogVisible: Boolean,
 	resourceType: String,
-	merge: Boolean,
 });
 
 watch(
-	() => [props.resourceType, props.merge],
+	() => [props.resourceType, props.codeData],
 	() => {
+		dialogVisible.value = props.dialogVisible;
 		if (props.resourceType) {
 			switch (props.resourceType) {
 				case 'deployment':
@@ -73,12 +86,15 @@ watch(
 				case 'node':
 					code.value = `apiVersion: v1\nkind: Node\n`;
 					break;
+				case 'ingress':
+					code.value = `apiVersion: networking.k8s.io/v1\nkind: Ingress\n`;
+					break;
 				default:
 					code.value = '';
 			}
 		}
-		if (props.merge) {
-			merge.value = props.merge;
+		if (props.codeData) {
+			code.value += YAML.dump(props.codeData);
 		}
 	},
 	{
@@ -86,11 +102,11 @@ watch(
 	}
 );
 
-defineExpose({
-	openDialog,
-	handleClose,
-	code,
-});
+// defineExpose({
+// 	// openDialog,
+// 	handleClose,
+// 	code,
+// });
 </script>
 
 <style scoped></style>

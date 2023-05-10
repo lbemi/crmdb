@@ -21,7 +21,7 @@
 					podStore.state.podDetail?.metadata?.namespace
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
-					dateStrFormat(podStore.state.podDetail?.metadata?.creationTimestamp)
+					dateStrFormat(podStore.state.podDetail.metadata!.creationTimestamp!.toString())
 				}}</el-descriptions-item>
 				<el-descriptions-item label="所在节点及IP" label-align="right" align="center">
 					<div>{{ podStore.state.podDetail?.spec?.nodeName }}</div>
@@ -200,7 +200,7 @@
 	</div>
 </template>
 <script lang="ts" setup name="podDetail">
-import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent } from 'vue';
+import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, h } from 'vue';
 import { ArrowLeft, CaretBottom, Edit, View, Delete, Plus, RefreshRight } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
@@ -212,6 +212,7 @@ import { ElMessage, ElMessageBox, TabsPaneContext } from 'element-plus';
 import { usePodApi } from '/@/api/kubernetes/pod';
 import { podInfo } from '/@/stores/pod';
 import { deepClone } from '/@/utils/other';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const YamlMegeDialog = defineAsyncComponent(() => import('/@/components/yaml/matchCode.vue'));
@@ -238,80 +239,10 @@ const data = reactive({
 	events: [] as V1ReplicaSetCondition[],
 });
 
-const rollBack = (rs: V1ReplicaSet) => {
-	deploymentApi
-		.rollBackDeployment(
-			k8sStore.state.activeDeployment.metadata!.namespace!,
-			k8sStore.state.activeDeployment.metadata!.name!,
-			rs.metadata!.annotations!['deployment.kubernetes.io/revision'],
-			{
-				cloud: k8sStore.state.activeCluster,
-			}
-		)
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('回滚成功');
-			} else {
-				ElMessage.error('回滚失败,' + res.message);
-			}
-		})
-		.catch((res) => {
-			ElMessage.error('回滚失败,' + res.message);
-		});
-};
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	if (tab.paneName === 'six') {
 		getEvents();
 	}
-};
-
-const reDeploy = () => {
-	const deployment = k8sStore.state.activeDeployment;
-	deploymentApi
-		.reDeployDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, { cloud: k8sStore.state.activeCluster })
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('操作成功');
-			} else {
-				ElMessage.error(res.message);
-			}
-		})
-		.catch((res: any) => {
-			ElMessage.error(res.message);
-		});
-};
-const scaleDeploy = (action: string) => {
-	if (action === 'plus') {
-		k8sStore.state.activeDeployment.spec!.replicas!++;
-	} else {
-		k8sStore.state.activeDeployment.spec!.replicas!--;
-	}
-	deploymentApi
-		.scaleDeployment(
-			k8sStore.state.activeDeployment.metadata!.namespace!,
-			k8sStore.state.activeDeployment.metadata!.name!,
-			k8sStore.state.activeDeployment.spec?.replicas!,
-			{ cloud: k8sStore.state.activeCluster }
-		)
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('伸缩成功');
-			} else {
-				ElMessage.error('伸缩失败');
-			}
-		});
-};
-
-const handleEnvent = () => {
-	data.replicasets.forEach((item: V1ReplicaSet) => {
-		if (item.status) {
-			if (item.status.conditions) {
-				item.status.conditions.forEach((it: V1ReplicaSetCondition) => {
-					data.events.push(it);
-				});
-			}
-		}
-	});
 };
 
 const podRestart = (status: V1PodStatus) => {
@@ -414,10 +345,19 @@ const backRoute = () => {
 	});
 };
 const deletePod = async (pod: V1Pod) => {
-	ElMessageBox.confirm(`此操作将删除[ ${pod.metadata?.name} ] 容器 . 是否继续?`, '警告', {
+	ElMessageBox({
+		title: '提示',
+		message: h('p', null, [
+			h('span', null, '此操作将删除 '),
+			h('i', { style: 'color: teal' }, `${pod.metadata?.name}`),
+			h('span', null, ' 容器. 是否继续? '),
+		]),
+		buttonSize: 'small',
+		showCancelButton: true,
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
 		type: 'warning',
+		draggable: true,
 	})
 		.then(() => {
 			podApi.deletePod(pod.metadata?.namespace, pod.metadata?.name, data.param);

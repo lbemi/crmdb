@@ -60,6 +60,7 @@ func (s *service) Update(ctx context.Context, service *v1.Service) (*v1.Service,
 	if err != nil {
 		log.Logger.Error(err)
 	}
+
 	return res, err
 }
 

@@ -1,6 +1,6 @@
 <template>
 	<div class="layout-padding container">
-		<el-card shadow="hover" class="layout-padding-auto">
+		<el-card shadow="hover" class="layout-padding-auto layout-padding-view">
 			<div class="mb15">
 				<el-text class="mx-1" size="small">命名空间：</el-text>
 				<el-select
@@ -44,18 +44,21 @@
 					</el-icon>
 					刷新
 				</el-button>
-				<el-table :data="data.services" @selection-change="handleSelectionChange" size="small" style="width: 100%" max-height="100vh - 235px">
+				<el-table
+					:data="data.services"
+					@selection-change="handleSelectionChange"
+					size="small"
+					style="width: 100%"
+					max-height="100vh - 235px"
+					v-loading="data.loading"
+				>
 					<el-table-column type="selection" width="35" />
 					<el-table-column prop="metadata.name" label="名称" />
 					<el-table-column prop="metadata.namespace" label="命名空间" />
 					<el-table-column prop="spec.type" label="类型" />
 					<el-table-column prop="spec.clusterIP" label="集群IP" />
-					<el-table-column label="外部访问IP">
-						<template #default="scope">
-							<a href="" v-if="scope.row.status.loadBalancer.ingress" v-for="item in scope.row.status.loadBalancer.ingress"> {{ item.ip }}</a>
-						</template>
-					</el-table-column>
-					<el-table-column label="端口" style="display: flex" align="center" width="210px">
+
+					<el-table-column label="端口" style="display: flex" align="center" width="220px">
 						<template #header>
 							<span>端口</span><br /><span style="font-size: 10px; font-weight: 50">(nodePort:port/protocol->targetPort)</span>
 						</template>
@@ -66,7 +69,12 @@
 							>
 						</template>
 					</el-table-column>
-					<el-table-column label="标签">
+					<el-table-column label="外部访问IP">
+						<template #default="scope">
+							<a href="" v-if="scope.row.status.loadBalancer.ingress" v-for="item in scope.row.status.loadBalancer.ingress"> {{ item.ip }}</a>
+						</template>
+					</el-table-column>
+					<el-table-column label="标签" width="70px">
 						<template #default="scope">
 							<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
 								<template #content>
@@ -83,9 +91,7 @@
 										</el-tag>
 									</div>
 								</template>
-								<el-tag type="info" effect="plain" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
-									<div>{{ key }}:{{ item }}</div>
-								</el-tag>
+								<el-icon><List /></el-icon>
 							</el-tooltip>
 						</template>
 					</el-table-column>
@@ -110,13 +116,6 @@
 				<pagination :total="data.total" @handlePageChange="handlePageChange"></pagination>
 			</div>
 		</el-card>
-		<!-- <NamespaceDialog
-			:title="data.title"
-			v-model:visible="data.visible"
-			:namespace="data.activeNamespace"
-			@value-change="listNamespace()"
-			v-if="data.visible"
-		/> -->
 	</div>
 </template>
 
@@ -131,7 +130,7 @@ import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '/@/utils/formatTime';
 import { PageInfo } from '/@/types/kubernetes/common';
-import { Edit, Delete } from '@element-plus/icons-vue';
+import { Edit, Delete, List } from '@element-plus/icons-vue';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 
@@ -179,7 +178,6 @@ const filterService = (services: Array<V1Service>) => {
 						break;
 					}
 				}
-				// serviceList.push(service);
 			}
 		});
 	}
@@ -199,7 +197,6 @@ const deleteService = (service: V1Service) => {
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
 		type: 'warning',
-
 		draggable: true,
 	})
 		.then(() => {
