@@ -1,6 +1,6 @@
 <template>
 	<div class="system-user-dialog-container">
-		<el-dialog title="YAML" v-model="dialogVisible" width="769px">
+		<el-dialog title="YAML" v-model="dialogVisible" width="800px">
 			<div ref="editorRef" class="editor-main" />
 			<template #footer>
 				<span class="dialog-footer">

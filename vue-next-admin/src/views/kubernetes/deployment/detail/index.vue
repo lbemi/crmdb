@@ -230,7 +230,13 @@
 		</el-card>
 		<YamlMegeDialog :code="code" :dialogVisible="dialogVisible" v-if="dialogVisible" />
 
-		<YamlDialog ref="yamlRef" :resourceType="'deployment'" :update-resource="updateDeployment" />
+		<YamlDialog
+			v-model:dialogVisible="data.dialogVisible"
+			:code-data="data.codeData"
+			:resourceType="'deployment'"
+			@update="updateDeployment"
+			v-if="data.dialogVisible"
+		/>
 	</div>
 </template>
 <script lang="ts" setup name="k8sDeploymentDetail">
@@ -254,13 +260,29 @@ const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.v
 const YamlMegeDialog = defineAsyncComponent(() => import('/@/components/yaml/matchCode.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
 
-const yamlRef = ref();
 const route = useRoute();
 const websocketApi = useWebsocketApi();
 const podStore = podInfo();
-
+const k8sStore = kubernetesInfo();
+const podApi = usePodApi();
+const deploymentApi = useDeploymentApi();
+const timer = ref();
 const code = ref({});
 const dialogVisible = ref(false);
+
+const data = reactive({
+	dialogVisible: false,
+	codeData: {} as V1Deployment,
+	param: {
+		cloud: k8sStore.state.activeCluster,
+	},
+	replicasets: [] as V1ReplicaSet[],
+	pods: [] as V1Pod[],
+	iShow: false,
+	activeName: 'first',
+	deployment: [],
+	events: [] as V1ReplicaSetCondition[],
+});
 
 const rollBack = (rs: V1ReplicaSet) => {
 	ElMessageBox({
@@ -304,22 +326,6 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 		getEvents();
 	}
 };
-
-const k8sStore = kubernetesInfo();
-const podApi = usePodApi();
-const deploymentApi = useDeploymentApi();
-const data = reactive({
-	param: {
-		cloud: k8sStore.state.activeCluster,
-	},
-	replicasets: [] as V1ReplicaSet[],
-	pods: [] as V1Pod[],
-	iShow: false,
-	activeName: 'first',
-	deployment: [],
-	events: [] as V1ReplicaSetCondition[],
-});
-const timer = ref();
 
 const reDeploy = () => {
 	const deployment = k8sStore.state.activeDeployment;
@@ -432,8 +438,8 @@ onMounted(() => {
 		window.clearInterval(timer.value);
 	});
 });
-const updateDeployment = () => {
-	const updateData = YAML.load(yamlRef.value.code) as V1Deployment;
+const updateDeployment = async (codeData: any) => {
+	const updateData = YAML.load(codeData) as V1Deployment;
 	delete updateData.status;
 	delete updateData.metadata?.managedFields;
 	deploymentApi
@@ -448,7 +454,7 @@ const updateDeployment = () => {
 		.catch((e) => {
 			ElMessage.error(e.message);
 		});
-	yamlRef.value.handleClose();
+	data.dialogVisible = false;
 };
 
 const getPods = async () => {
@@ -529,7 +535,8 @@ const showRsYaml = async (replicaSets: V1ReplicaSet) => {
 
 const showYaml = async () => {
 	delete k8sStore.state.activeDeployment.metadata?.managedFields;
-	yamlRef.value.openDialog(k8sStore.state.activeDeployment);
+	data.codeData = k8sStore.state.activeDeployment;
+	data.dialogVisible = true;
 };
 const buildWebsocket = () => {
 	const ws = websocketApi.createWebsocket('deployment');

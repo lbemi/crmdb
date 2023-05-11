@@ -119,6 +119,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	{
 		service.GET("/:namespace", cloud.ListServices)
 		service.GET("/:namespace/:serviceName", cloud.GetService)
+		service.GET("/:namespace/:serviceName/work", cloud.GetServiceWorkLoad)
 		service.POST("", cloud.CreateService)
 		service.PUT("", cloud.UpdateService)
 		service.DELETE("/:namespace/:serviceName", cloud.DeleteService)

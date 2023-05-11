@@ -82,6 +82,30 @@ func GetService(c *gin.Context) {
 	response.Success(c, response.StatusOK, service)
 }
 
+func GetServiceWorkLoad(c *gin.Context) {
+	clusterName := c.Query("cloud")
+	if clusterName == "" {
+		response.Fail(c, response.ErrCodeParameter)
+		return
+	}
+
+	namespace := c.Param("namespace")
+	serviceName := c.Param("serviceName")
+
+	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+		response.Fail(c, response.ClusterNoHealth)
+		return
+	}
+
+	data, err := core.V1.Cluster(clusterName).Service(namespace).ListWorkLoad(c, serviceName)
+	if err != nil {
+		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
+		return
+	}
+
+	response.Success(c, response.StatusOK, data)
+}
+
 func CreateService(c *gin.Context) {
 	clusterName := c.Query("cloud")
 	if clusterName == "" {

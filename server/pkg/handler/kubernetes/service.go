@@ -3,6 +3,7 @@ package kubernetes
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	v1 "k8s.io/api/core/v1"
 )
@@ -17,6 +18,7 @@ type IService interface {
 	Delete(ctx context.Context, name string) error
 	Create(ctx context.Context, node *v1.Service) (*v1.Service, error)
 	Update(ctx context.Context, service *v1.Service) (*v1.Service, error)
+	ListWorkLoad(ctx context.Context, name string) (*types.ServiceWorkLoad, error)
 }
 
 type service struct {
@@ -34,6 +36,10 @@ func (s *service) List(ctx context.Context) ([]*v1.Service, error) {
 		log.Logger.Error(err)
 	}
 	return nodeList, err
+}
+
+func (s *service) ListWorkLoad(ctx context.Context, name string) (*types.ServiceWorkLoad, error) {
+	return s.k8s.Service().ListWorkLoad(ctx, name)
 }
 
 func (s *service) Get(ctx context.Context, name string) (*v1.Service, error) {

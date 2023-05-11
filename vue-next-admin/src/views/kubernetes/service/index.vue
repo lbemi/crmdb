@@ -53,7 +53,11 @@
 					v-loading="data.loading"
 				>
 					<el-table-column type="selection" width="35" />
-					<el-table-column prop="metadata.name" label="名称" />
+					<el-table-column prop="metadata.name" label="名称">
+						<template #default="scope">
+							<el-button link type="primary" size="small" @click="serviceDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
+						</template>
+					</el-table-column>
 					<el-table-column prop="metadata.namespace" label="命名空间" />
 					<el-table-column prop="spec.type" label="类型" />
 					<el-table-column prop="spec.clusterIP" label="集群IP" />
@@ -65,13 +69,22 @@
 
 						<template #default="scope">
 							<el-tag class="label" size="small" effect="plain" v-if="scope.row.spec.ports" v-for="item in scope.row.spec.ports">
-								{{ item.nodePort }}:{{ item.port }}/{{ item.protocol }}->{{ item.targetPort }}</el-tag
+								<a v-if="scope.row.spec.type === 'NodePort'"> {{ item.nodePort }}:</a>{{ item.port }}/{{ item.protocol }}->{{
+									item.targetPort
+								}}</el-tag
 							>
 						</template>
 					</el-table-column>
 					<el-table-column label="外部访问IP">
 						<template #default="scope">
-							<a href="" v-if="scope.row.status.loadBalancer.ingress" v-for="item in scope.row.status.loadBalancer.ingress"> {{ item.ip }}</a>
+							<el-link
+								v-if="scope.row.status.loadBalancer.ingress"
+								v-for="item in scope.row.status.loadBalancer.ingress"
+								target="_blank"
+								type="primary"
+								:href="'http://' + item.ip"
+								>{{ item.ip }}</el-link
+							>
 						</template>
 					</el-table-column>
 					<el-table-column label="标签" width="70px">
@@ -102,13 +115,29 @@
 						</template>
 					</el-table-column>
 
-					<el-table-column fixed="right" label="操作" width="160px">
+					<el-table-column fixed="right" label="操作">
 						<template #default="scope">
 							<el-button link type="primary" size="small" @click="updateService(scope.row)">详情</el-button><el-divider direction="vertical" />
 							<el-button link type="primary" size="small" @click="updateService(scope.row)">编辑</el-button><el-divider direction="vertical" />
-							<el-button :disabled="scope.row.metadata.name === 'kubernetes'" link type="danger" size="small" @click="deleteService(scope.row)"
-								>删除</el-button
-							>
+							<el-dropdown size="small">
+								<span class="el-dropdown-link" style="font-size: 12px">
+									更多<el-icon class="el-icon--right"><CaretBottom /></el-icon>
+								</span>
+								<template #dropdown>
+									<el-dropdown-menu>
+										<el-dropdown-item @click="showYaml(scope.row)">查看Yaml</el-dropdown-item>
+										<el-dropdown-item>日志</el-dropdown-item>
+										<el-dropdown-item
+											:disabled="scope.row.metadata.name === 'kubernetes'"
+											link
+											type="danger"
+											size="small"
+											@click="deleteService(scope.row)"
+											>删除</el-dropdown-item
+										>
+									</el-dropdown-menu>
+								</template>
+							</el-dropdown>
 						</template>
 					</el-table-column>
 				</el-table>
@@ -116,6 +145,13 @@
 				<pagination :total="data.total" @handlePageChange="handlePageChange"></pagination>
 			</div>
 		</el-card>
+		<YamlDialog
+			v-model:dialogVisible="data.dialogVisible"
+			:code-data="data.codeData"
+			:resourceType="'service'"
+			@update="updateServiceYaml"
+			v-if="data.dialogVisible"
+		/>
 	</div>
 </template>
 
@@ -130,15 +166,21 @@ import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '/@/utils/formatTime';
 import { PageInfo } from '/@/types/kubernetes/common';
-import { Edit, Delete, List } from '@element-plus/icons-vue';
+import { Edit, Delete, List, CaretBottom } from '@element-plus/icons-vue';
+import { deepClone } from '/@/utils/other';
+import YAML from 'js-yaml';
+import router from '/@/router';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
+const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 
 const k8sStore = kubernetesInfo();
 const servieApi = useServiceApi();
 const route = useRoute();
 
 const data = reactive({
+	dialogVisible: false,
+	codeData: {} as V1Service,
 	loading: false,
 	selectData: [] as V1Service[],
 	services: [] as V1Service[],
@@ -161,6 +203,21 @@ const search = () => {
 const handleChange = () => {
 	listService();
 };
+
+const serviceDetail = (service: V1Service) => {
+	k8sStore.state.activeService = service;
+	router.push({
+		name: 'k8sServiceDetail',
+	});
+};
+
+const showYaml = async (service: V1Service) => {
+	const svc = deepClone(service);
+	delete svc.metadata?.managedFields;
+	data.codeData = svc;
+	data.dialogVisible = true;
+};
+
 const filterService = (services: Array<V1Service>) => {
 	const serviceList = [] as V1Service[];
 	if (data.query.type === '1') {
@@ -218,6 +275,27 @@ const deleteService = (service: V1Service) => {
 };
 const handleSelectionChange = () => {};
 const updateService = (ervice: V1Service) => {};
+const updateServiceYaml = async (svc: any) => {
+	const updateData = YAML.load(svc) as V1Service;
+	delete updateData.status;
+	delete updateData.metadata?.managedFields;
+
+	await servieApi
+		.updateService({ cloud: k8sStore.state.activeCluster }, updateData)
+		.then((res) => {
+			if (res.code == 200) {
+				ElMessage.success('更新成功');
+				listService();
+			} else {
+				ElMessage.error(res.message);
+			}
+		})
+		.catch((e) => {
+			ElMessage.error(e.message);
+		});
+	data.dialogVisible = false;
+};
+
 const handlePageChange = (page: PageInfo) => {
 	data.query.page = page.page;
 	data.query.limit = page.limit;

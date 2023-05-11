@@ -153,12 +153,6 @@
 						<el-table-column label="镜像" prop="image" />
 
 						<el-table-column label="重启次数" prop="restartCount" />
-
-						<el-table-column fixed="right" label="操作">
-							<template #default="scope">
-								<el-button link type="primary" size="small" @click="showRsYaml(scope.row)">详情</el-button>
-							</template>
-						</el-table-column>
 					</el-table>
 				</el-tab-pane>
 				<el-tab-pane label="监控" name="five">监控</el-tab-pane>
@@ -194,9 +188,14 @@
 				</el-tab-pane>
 			</el-tabs>
 		</el-card>
-		<YamlMegeDialog :code="code" :dialogVisible="dialogVisible" v-if="dialogVisible" />
-
-		<YamlDialog ref="yamlRef" :resourceType="'pod'" :update-resource="updatePod" />
+		<YamlDialog
+			v-model:dialogVisible="data.dialogVisible"
+			:disabled-update="true"
+			:code-data="data.codeData"
+			:resourceType="'pod'"
+			@update="updatePod"
+			v-if="data.dialogVisible"
+		/>
 	</div>
 </template>
 <script lang="ts" setup name="podDetail">
@@ -215,19 +214,16 @@ import { deepClone } from '/@/utils/other';
 import { dateStrFormat } from '/@/utils/formatTime';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
-const YamlMegeDialog = defineAsyncComponent(() => import('/@/components/yaml/matchCode.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
 
-const yamlRef = ref();
 const route = useRoute();
 const podStore = podInfo();
-const code = ref({});
-const dialogVisible = ref(false);
-const timer = ref();
 const k8sStore = kubernetesInfo();
 const podApi = usePodApi();
 const deploymentApi = useDeploymentApi();
 const data = reactive({
+	dialogVisible: false,
+	codeData: {} as V1Pod,
 	param: {
 		cloud: k8sStore.state.activeCluster,
 	},
@@ -280,17 +276,8 @@ const podStatus = (status: V1PodStatus) => {
 
 	return s;
 };
-onMounted(() => {
-	// getPods();
-	// // buildWebsocket();
-	// timer.value = window.setInterval(() => {
-	// 	getPods();
-	// }, 5000);
-	// onBeforeUnmount(() => {
-	// 	window.clearInterval(timer.value);
-	// });
-});
-const updatePod = () => {
+
+const updatePod = (podData: any) => {
 	// TODO 完善功能
 	ElMessage.success('更新成功');
 	// const updateData = YAML.load(yamlRef.value.code) as V1Deployment;
@@ -308,7 +295,7 @@ const updatePod = () => {
 	// 	.catch((e) => {
 	// 		ElMessage.error(e.message);
 	// 	});
-	yamlRef.value.handleClose();
+	data.dialogVisible = false;
 };
 
 const getPods = async () => {
@@ -370,41 +357,12 @@ const deletePod = async (pod: V1Pod) => {
 		})
 		.catch(); // 取消
 };
-const showRsYaml = async (replicaSets: V1ReplicaSet) => {
-	dialogVisible.value = true;
-	const data = deepClone(replicaSets);
-	delete data.metadata.managedFields;
-	code.value = data;
-};
 
 const showYaml = async () => {
 	delete podStore.state.podDetail.metadata?.managedFields;
-	yamlRef.value.openDialog(podStore.state.podDetail);
+	data.codeData = podStore.state.podDetail;
+	data.dialogVisible = true;
 };
-// const buildWebsocket = () => {
-// 	const ws = websocketApi.createWebsocket('deployment');
-
-// 	ws.onmessage = (e) => {
-// 		if (e.data === 'ping') {
-// 			return;
-// 		} else {
-// 			const object = JSON.parse(e.data);
-// 			if (
-// 				object.type === 'deployment' &&
-// 				object.result.namespace === k8sStore.state.activeDeployment?.metadata?.namespace &&
-// 				object.cluster == k8sStore.state.activeCluster
-// 			) {
-// 				data.deployment = object.result.data;
-// 				data.deployment.forEach((item: V1Deployment) => {
-// 					if (item.metadata!.name == k8sStore.state.activeDeployment?.metadata?.name) {
-// 						k8sStore.state.activeDeployment = item;
-// 						return;
-// 					}
-// 				});
-// 			}
-// 		}
-// 	};
-// };
 </script>
 <style lang="scss">
 .card {

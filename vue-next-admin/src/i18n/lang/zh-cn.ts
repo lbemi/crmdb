@@ -37,6 +37,7 @@ export default {
 		k8sConfigmap: '配置字典',
 		k8sSecret: '保密字典',
 		k8sService: '服务',
+		k8sServiceDetail: '服务详情',
 		k8sIngress: '应用路由',
 		menu: '菜单嵌套',
 		menu1: '菜单1',

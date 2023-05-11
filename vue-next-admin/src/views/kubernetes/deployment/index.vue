@@ -4,13 +4,13 @@
 			<div class="mb15">
 				<el-row :gutter="24">
 					<el-col :span="18" style="display: flex; justify-content;: center">
-						<el-text class="mx-1" size="small">命名空间：</el-text>
+						<el-text class="mx-1" :size="theme.themeConfig.globalComponentSize">命名空间：</el-text>
 						<el-select
 							v-model="k8sStore.state.activeNamespace"
 							style="max-width: 180px"
 							class="m-2"
 							placeholder="Select"
-							size="small"
+							:size="theme.themeConfig.globalComponentSize"
 							@change="handleChange"
 							><el-option key="all" label="所有命名空间" value="all"></el-option>
 							<el-option
@@ -23,19 +23,19 @@
 						<el-input
 							v-model="data.search"
 							placeholder="输入标签或者名称"
-							size="small"
+							:size="theme.themeConfig.globalComponentSize"
 							clearable
 							@change="search"
 							style="width: 250px; margin-left: 10px"
 						>
 							<template #prepend>
-								<el-select v-model="data.searchType" placeholder="输入标签或者名称" style="width: 60px" size="small">
-									<el-option label="标签" value="0" size="small" />
-									<el-option label="名称" value="1" size="small" />
+								<el-select v-model="data.searchType" placeholder="输入标签或者名称" style="width: 80px" :size="theme.themeConfig.globalComponentSize">
+									<el-option label="标签" value="0" :size="theme.themeConfig.globalComponentSize" />
+									<el-option label="名称" value="1" :size="theme.themeConfig.globalComponentSize" />
 								</el-select>
 							</template>
 							<template #append>
-								<el-button size="small" @click="search">
+								<el-button :size="theme.themeConfig.globalComponentSize" @click="search">
 									<el-icon>
 										<ele-Search />
 									</el-icon>
@@ -44,17 +44,19 @@
 							</template>
 						</el-input>
 
-						<el-button type="primary" size="small" class="ml10" @click="createDeployment" :icon="Edit">创建</el-button>
+						<el-button type="primary" :size="theme.themeConfig.globalComponentSize" class="ml10" @click="createDeployment" :icon="Edit"
+							>创建</el-button
+						>
 						<el-button
 							type="danger"
-							size="small"
+							:size="theme.themeConfig.globalComponentSize"
 							class="ml10"
 							:disabled="data.selectData.length == 0"
 							@click="deleteDeployments(data.selectData)"
 							:icon="Delete"
 							>批量删除</el-button
 						>
-						<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
+						<el-button type="success" :size="theme.themeConfig.globalComponentSize" @click="refreshCurrentTagsView" style="margin-left: 10px">
 							<el-icon>
 								<ele-RefreshRight />
 							</el-icon>
@@ -64,13 +66,20 @@
 					<el-col :span="6" style="display: flex"> </el-col>
 				</el-row>
 			</div>
-
-			<el-table :data="data.deployments" style="width: 100%" @selection-change="handleSelectionChange" v-loading="data.loading">
+			<el-table
+				:data="data.deployments"
+				style="width: 100%"
+				@selection-change="handleSelectionChange"
+				v-loading="data.loading"
+				:size="theme.themeConfig.globalComponentSize"
+			>
 				<el-table-column type="selection" width="55" />
 
-				<el-table-column prop="metadata.name" label="名称" width="220px">
+				<el-table-column prop="metadata.name" label="名称">
 					<template #default="scope">
-						<el-button link type="primary" @click="deployDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
+						<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="deployDetail(scope.row)">
+							{{ scope.row.metadata.name }}</el-button
+						>
 					</template>
 				</el-table-column>
 				<el-table-column label="状态" width="90px">
@@ -97,23 +106,41 @@
 				</el-table-column>
 				<el-table-column label="镜像" show-overflow-tooltip>
 					<template #default="scope">
-						<el-text truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
-							item.image.split('@')[0]
-						}}</el-text>
+						<el-text
+							:size="theme.themeConfig.globalComponentSize"
+							truncated
+							type=""
+							v-for="(item, index) in scope.row.spec.template.spec.containers"
+							:key="index"
+							>{{ item.image.split('@')[0] }}</el-text
+						>
 					</template>
 				</el-table-column>
 
-				<el-table-column label="标签" width="180px" show-overflow-tooltip>
+				<el-table-column label="标签">
 					<template #default="scope">
 						<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
 							<template #content>
 								<div style="display: flex; flex-direction: column">
-									<el-tag class="label" type="" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" effect="plain" size="small">
+									<el-tag
+										class="label"
+										type=""
+										v-for="(item, key, index) in scope.row.metadata.labels"
+										:key="index"
+										effect="plain"
+										:size="theme.themeConfig.globalComponentSize"
+									>
 										{{ key }}:{{ item }}
 									</el-tag>
 								</div>
 							</template>
-							<el-tag type="" effect="plain" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
+							<el-tag
+								type=""
+								effect="plain"
+								v-for="(item, key, index) in scope.row.metadata.labels"
+								:key="index"
+								:size="theme.themeConfig.globalComponentSize"
+							>
 								<div>{{ key }}:{{ item }}</div>
 							</el-tag>
 						</el-tooltip>
@@ -128,13 +155,13 @@
 				<el-table-column fixed="right" label="操作">
 					<template #default="scope">
 						<div style="display: flex; align-items: center">
-							<el-button link type="primary" size="default" @click="deployDetail(scope.row)">详情</el-button>
-							<el-button link type="primary" size="default" @click="deployDetail(scope.row)">编辑</el-button>
-							<el-button link type="primary" size="default" @click="openScaleDialog(scope.row)">伸缩</el-button>
-							<el-button link type="primary" size="default" @click="deployDetail(scope.row)">监控</el-button>
+							<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="deployDetail(scope.row)">详情</el-button>
+							<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="deployDetail(scope.row)">编辑</el-button>
+							<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="openScaleDialog(scope.row)">伸缩</el-button>
+							<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="deployDetail(scope.row)">监控</el-button>
 							<el-divider direction="vertical" />
-							<el-dropdown>
-								<span class="el-dropdown-link">
+							<el-dropdown :size="theme.themeConfig.globalComponentSize">
+								<span class="el-dropdown-link" style="font-size: 12px">
 									更多<el-icon class="el-icon--right"><CaretBottom /></el-icon>
 								</span>
 								<template #dropdown>
@@ -148,7 +175,6 @@
 										<el-dropdown-item>升级策略</el-dropdown-item>
 										<el-dropdown-item>复制创建</el-dropdown-item>
 										<el-dropdown-item @click="rollBack(scope.row)">回滚</el-dropdown-item>
-										<el-dropdown-item>日志</el-dropdown-item>
 										<el-dropdown-item @click="deleteDeployment(scope.row)">删除</el-dropdown-item>
 									</el-dropdown-menu>
 								</template>
@@ -160,8 +186,15 @@
 			<!-- 分页区域 -->
 			<Pagination :total="data.total" @handlePageChange="handlePageChange" />
 		</el-card>
-		<YamlDialog ref="yamlRef" :resourceType="'deployment'" :update-resource="updateDeployment" />
-		<el-dialog v-model="data.dialogVisible" width="300px" @close="data.dialogVisible = false">
+		<YamlDialog
+			v-model:dialogVisible="data.dialogVisible"
+			:code-data="data.codeData"
+			:resourceType="'deployment'"
+			@update="updateDeployment"
+			v-if="data.dialogVisible"
+		/>
+		<!-- <YamlDialog ref="yamlRef" :resourceType="'deployment'" :update-resource="updateDeployment" /> -->
+		<el-dialog v-model="data.visible" width="300px" @close="data.visible = false">
 			<template #header>
 				<span style="font-size: 16px">{{ '伸缩: ' + data.scaleDeploy.metadata?.name }}</span>
 			</template>
@@ -170,7 +203,7 @@
 			</div>
 			<template #footer>
 				<span class="dialog-footer">
-					<el-button text @click="data.dialogVisible = false" size="default">取消</el-button>
+					<el-button text @click="data.visible = false" size="default">取消</el-button>
 					<el-button text type="primary" @click="scaleDeployment" size="default"> 确定 </el-button>
 				</span>
 			</template>
@@ -193,11 +226,33 @@ import YAML from 'js-yaml';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '/@/utils/formatTime';
+import { deepClone, globalComponentSize } from '/@/utils/other';
+import { useThemeConfig } from '/@/stores/themeConfig';
+const theme = useThemeConfig();
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 
-const yamlRef = ref();
+const data = reactive({
+	codeData: {} as V1Deployment,
+	searchType: '1',
+	search: '',
+	dialogVisible: false,
+	visible: false,
+	scaleDeploy: <V1Deployment>{},
+	query: {
+		cloud: '',
+		page: 1,
+		limit: 10,
+		key: '',
+		type: '0',
+	},
+	namespace: '',
+	loading: false,
+	deployments: [] as V1Deployment[],
+	selectData: [] as V1Deployment[],
+	total: 0,
+});
 const route = useRoute();
 const deploymentApi = useDeploymentApi();
 const k8sStore = kubernetesInfo();
@@ -274,11 +329,11 @@ const reDeploy = (deployment: V1Deployment) => {
 const handleChange = () => {
 	listDeployment();
 };
-const updateDeployment = () => {
-	const updateData = YAML.load(yamlRef.value.code) as V1Deployment;
+const updateDeployment = async (codeData: any) => {
+	const updateData = YAML.load(codeData) as V1Deployment;
 	delete updateData.status;
 	delete updateData.metadata?.managedFields;
-	deploymentApi
+	await deploymentApi
 		.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
 		.then((res) => {
 			if (res.code == 200) {
@@ -290,7 +345,7 @@ const updateDeployment = () => {
 		.catch((e) => {
 			ElMessage.error(e.message);
 		});
-	yamlRef.value.handleClose();
+	data.dialogVisible = false;
 };
 
 const deleteDeployments = (depList: Array<V1Deployment>) => {
@@ -354,12 +409,14 @@ const deleteDeployment = (dep: V1Deployment) => {
 };
 
 const showYaml = async (deployment: V1Deployment) => {
-	delete deployment.metadata?.managedFields;
-	yamlRef.value.openDialog(deployment);
+	const dep = deepClone(deployment);
+	delete dep.metadata?.managedFields;
+	data.codeData = dep;
+	data.dialogVisible = true;
 };
 const openScaleDialog = (dep: V1Deployment) => {
-	data.scaleDeploy = dep;
-	data.dialogVisible = true;
+	data.scaleDeploy = deepClone(dep);
+	data.visible = true;
 };
 
 const scaleDeployment = () => {
@@ -377,30 +434,13 @@ const scaleDeployment = () => {
 		.catch(() => {
 			ElMessage.error('伸缩失败');
 		});
-	data.dialogVisible = false;
+	data.visible = false;
 };
 
 const filterTableData = computed(() =>
 	data.deployments.filter((item) => !data.search || item.metadata!.name!.toLowerCase().includes(data.search.toLowerCase()))
 );
-const data = reactive({
-	searchType: '1',
-	search: '',
-	dialogVisible: false,
-	scaleDeploy: <V1Deployment>{},
-	query: {
-		cloud: '',
-		page: 1,
-		limit: 10,
-		key: '',
-		type: '0',
-	},
-	namespace: '',
-	loading: false,
-	deployments: [] as V1Deployment[],
-	selectData: [] as V1Deployment[],
-	total: 0,
-});
+
 const handleSelectionChange = (value: any) => {
 	data.selectData = value;
 };

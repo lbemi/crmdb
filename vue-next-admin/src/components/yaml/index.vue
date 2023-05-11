@@ -1,14 +1,14 @@
 <template>
 	<div class="system-user-dialog-container">
-		<el-dialog v-model="dialogVisible" width="769px" @close="handleClose()">
+		<el-dialog v-model="dialogVisible" width="800px" @close="handleClose()">
 			<template #header>
 				<h3>YAML</h3>
 			</template>
-			<codemirror v-model="code" :style="{ height: '100%' }" :autofocus="true" :tabSize="2" :extensions="extensions" />
+			<Codemirror v-model="code" style="height: 100%" :autofocus="true" :tabSize="2" :extensions="extensions" :disabled="disabledUpdate" />
 			<template #footer>
 				<span class="dialog-footer">
-					<el-button size="small" @click="handleClose">取 消</el-button>
-					<el-button type="primary" size="small" @click="update">更新</el-button>
+					<el-button size="small" @click="handleClose">关闭</el-button>
+					<el-button type="primary" size="small" @click="update" v-if="!disabledUpdate">更新</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -27,7 +27,6 @@ const code = ref('');
 const extensions = [oneDark, StreamLanguage.define(yaml), foldGutter()];
 const dialogVisible = ref(false);
 const handleClose = () => {
-	// dialogVisible.value = false;
 	emit('update:dialogVisible', false);
 };
 
@@ -41,12 +40,12 @@ const props = defineProps({
 	codeData: Object,
 	dialogVisible: Boolean,
 	resourceType: String,
+	disabledUpdate: Boolean,
 });
 
 watch(
 	() => [props.resourceType, props.codeData],
 	() => {
-		console.log(props);
 		dialogVisible.value = props.dialogVisible;
 		if (props.resourceType) {
 			switch (props.resourceType) {

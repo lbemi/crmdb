@@ -1,6 +1,7 @@
 package types
 
 import (
+	v1 "k8s.io/api/apps/v1"
 	v12 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -12,4 +13,10 @@ type Secret struct {
 	Data              map[string][]byte `json:"data,omitempty"`
 	StringData        map[string]string `json:"stringData,omitempty"`
 	Type              v12.SecretType    `json:"type,omitempty"`
+}
+
+type ServiceWorkLoad struct {
+	Deployments  []*v1.Deployment  `json:"deployments"`
+	DaemonSets   []*v1.DaemonSet   `json:"daemonSets"`
+	StatefulSets []*v1.StatefulSet `json:"statefulSets"`
 }

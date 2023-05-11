@@ -181,7 +181,7 @@ const onSearchClick = () => {
 	searchRef.value.openSearch();
 };
 // 组件大小改变
-const onComponentSizeChange = (size: string) => {
+const onComponentSizeChange = (size: 'default' | 'small' | 'large') => {
 	Local.remove('themeConfig');
 	themeConfig.value.globalComponentSize = size;
 	Local.set('themeConfig', themeConfig.value);

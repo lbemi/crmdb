@@ -2,10 +2,10 @@
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto layout-padding-view">
 			<div class="mb15">
-				<el-text class="mx-1" size="small">命名空间：</el-text>
+				<el-text class="mx-1" :size="theme.themeConfig.globalComponentSize">命名空间：</el-text>
 				<el-select
 					v-model="k8sStore.state.activeNamespace"
-					style="max-width: 180px"
+					style="max-width: 280px"
 					class="m-2"
 					placeholder="Select"
 					size="small"
@@ -19,10 +19,10 @@
 					size="small"
 					clearable
 					@change="search"
-					style="width: 250px; margin-left: 10px"
+					style="max-width: 300px; margin-left: 10px"
 				>
 					<template #prepend>
-						<el-select v-model="data.query.type" placeholder="输入标签或者名称" style="width: 60px" size="small">
+						<el-select v-model="data.query.type" placeholder="输入标签或者名称" style="max-width: 120px" size="small">
 							<el-option label="标签" value="0" size="small" />
 							<el-option label="名称" value="1" size="small" />
 						</el-select>
@@ -44,87 +44,98 @@
 					</el-icon>
 					刷新
 				</el-button>
-				<el-table
-					:data="data.services"
-					@selection-change="handleSelectionChange"
-					style="width: 100%"
-					max-height="100vh - 235px"
-					v-loading="data.loading"
-				>
-					<el-table-column type="selection" width="35" />
-					<el-table-column label="名称">
-						<template #default="scope">
-							<el-button type="primary" text> {{ scope.row.metadata.name }}</el-button>
-						</template>
-					</el-table-column>
-					<el-table-column prop="metadata.namespace" label="命名空间" />
-					<el-table-column prop="spec.type" label="类型" />
-					<el-table-column label="外部访问IP">
-						<template #default="scope">
-							<el-link
-								target="_blank"
-								type="primary"
-								v-if="scope.row.status.loadBalancer.ingress"
-								v-for="item in scope.row.status.loadBalancer.ingress"
-								:href="'http://' + item.ip"
-							>
-								{{ item.ip }}</el-link
-							>
-						</template>
-					</el-table-column>
-					<el-table-column label="规则" style="display: flex" min-width="200px">
-						<template #default="scope">
-							<div v-for="item in scope.row.spec.rules">
-								<div v-for="path in item.http.paths">
-									<el-link target="_blank" type="primary" :href="'http://' + item.host + path.path">{{ item.host }}{{ path.path }}</el-link>
-									<a> -> {{ path.backend.service.name }}:{{ path.backend.service.port.number }}</a>
-								</div>
-							</div>
-						</template>
-					</el-table-column>
-
-					<el-table-column label="标签" width="70px">
-						<template #default="scope">
-							<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
-								<template #content>
-									<div style="display: flex; flex-direction: column">
-										<el-tag
-											class="label"
-											effect="plain"
-											type="info"
-											v-for="(item, key, index) in scope.row.metadata.labels"
-											:key="index"
-											size="small"
-										>
-											{{ key }}:{{ item }}
-										</el-tag>
-									</div>
-								</template>
-								<el-icon><List /></el-icon>
-							</el-tooltip>
-						</template>
-					</el-table-column>
-
-					<el-table-column label="创建时间" width="170px">
-						<template #default="scope">
-							{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
-						</template>
-					</el-table-column>
-
-					<el-table-column fixed="right" label="操作" width="160px">
-						<template #default="scope">
-							<el-button link type="primary" size="small" @click="updateIngress(scope.row)">详情</el-button><el-divider direction="vertical" />
-							<el-button link type="primary" size="small" @click="updateIngress(scope.row)">编辑</el-button><el-divider direction="vertical" />
-							<el-button link type="primary" size="small" @click="showYaml(scope.row)">查看YAML</el-button><el-divider direction="vertical" />
-							<el-button :disabled="scope.row.metadata.name === 'kubernetes'" link type="danger" size="small" @click="deleteIngress(scope.row)"
-								>删除</el-button
-							>
-						</template>
-					</el-table-column>
-				</el-table>
-				<!-- 分页区域 -->
-				<pagination :total="data.total" @handlePageChange="handlePageChange"></pagination>
 			</div>
+			<el-table
+				:data="data.services"
+				@selection-change="handleSelectionChange"
+				style="width: 100%"
+				max-height="100vh - 235px"
+				v-loading="data.loading"
+			>
+				<el-table-column type="selection" width="35" />
+				<el-table-column label="名称">
+					<template #default="scope">
+						<el-button :size="theme.themeConfig.globalComponentSize" type="primary" text> {{ scope.row.metadata.name }}</el-button>
+					</template>
+				</el-table-column>
+				<el-table-column prop="metadata.namespace" label="命名空间" />
+				<el-table-column prop="spec.type" label="类型" />
+				<el-table-column label="外部访问IP">
+					<template #default="scope">
+						<el-link
+							target="_blank"
+							type="primary"
+							:size="theme.themeConfig.globalComponentSize"
+							v-if="scope.row.status.loadBalancer.ingress"
+							v-for="item in scope.row.status.loadBalancer.ingress"
+							:href="'http://' + item.ip"
+						>
+							{{ item.ip }}</el-link
+						>
+					</template>
+				</el-table-column>
+				<el-table-column label="规则" style="display: flex" min-width="200px">
+					<template #default="scope">
+						<div v-for="item in scope.row.spec.rules">
+							<div v-for="path in item.http.paths">
+								<el-link :size="theme.themeConfig.globalComponentSize" target="_blank" type="primary" :href="'http://' + item.host + path.path"
+									>{{ item.host }}{{ path.path }}</el-link
+								>
+								<a> -> {{ path.backend.service.name }}:{{ path.backend.service.port.number }}</a>
+							</div>
+						</div>
+					</template>
+				</el-table-column>
+
+				<el-table-column label="标签" width="70px">
+					<template #default="scope">
+						<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
+							<template #content>
+								<div style="display: flex; flex-direction: column">
+									<el-tag
+										class="label"
+										effect="plain"
+										type="info"
+										v-for="(item, key, index) in scope.row.metadata.labels"
+										:key="index"
+										:size="theme.themeConfig.globalComponentSize"
+									>
+										{{ key }}:{{ item }}
+									</el-tag>
+								</div>
+							</template>
+							<el-icon><List /></el-icon>
+						</el-tooltip>
+					</template>
+				</el-table-column>
+
+				<el-table-column label="创建时间" width="170px">
+					<template #default="scope">
+						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
+					</template>
+				</el-table-column>
+
+				<el-table-column fixed="right" label="操作" width="160px">
+					<template #default="scope">
+						<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="updateIngress(scope.row)">详情</el-button
+						><el-divider direction="vertical" />
+						<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="updateIngress(scope.row)">编辑</el-button
+						><el-divider direction="vertical" />
+						<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="showYaml(scope.row)">查看YAML</el-button
+						><el-divider direction="vertical" />
+						<el-button
+							:disabled="scope.row.metadata.name === 'kubernetes'"
+							link
+							type="danger"
+							:size="theme.themeConfig.globalComponentSize"
+							@click="deleteIngress(scope.row)"
+							>删除</el-button
+						>
+					</template>
+				</el-table-column>
+			</el-table>
+			<!-- 分页区域 -->
+			<pagination :total="data.total" @handlePageChange="handlePageChange"></pagination>
 		</el-card>
 		<YamlDialog
 			v-model:dialogVisible="data.dialogVisible"
@@ -148,6 +159,7 @@ import { dateStrFormat } from '/@/utils/formatTime';
 import { PageInfo } from '/@/types/kubernetes/common';
 import { Edit, Delete, List } from '@element-plus/icons-vue';
 import { useIngressApi } from '/@/api/kubernetes/ingress';
+import { useThemeConfig } from '/@/stores/themeConfig';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
@@ -155,8 +167,7 @@ const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.v
 const k8sStore = kubernetesInfo();
 const ingressApi = useIngressApi();
 const route = useRoute();
-const yamlRef = ref();
-
+const theme = useThemeConfig();
 const data = reactive({
 	dialogVisible: false,
 	codeData: {} as V1Ingress,
