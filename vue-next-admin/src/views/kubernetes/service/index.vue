@@ -68,11 +68,13 @@
 						</template>
 
 						<template #default="scope">
-							<el-tag class="label" size="small" effect="plain" v-if="scope.row.spec.ports" v-for="item in scope.row.spec.ports">
-								<a v-if="scope.row.spec.type === 'NodePort'"> {{ item.nodePort }}:</a>{{ item.port }}/{{ item.protocol }}->{{
-									item.targetPort
-								}}</el-tag
-							>
+							<div v-if="scope.row.spec.ports" v-for="item in scope.row.spec.ports">
+								<el-tag class="label" size="small" effect="plain">
+									<a v-if="scope.row.spec.type === 'NodePort'"> {{ item.nodePort }}:</a>{{ item.port }}/{{ item.protocol }}->{{
+										item.targetPort
+									}}</el-tag
+								>
+							</div>
 						</template>
 					</el-table-column>
 					<el-table-column label="外部访问IP">

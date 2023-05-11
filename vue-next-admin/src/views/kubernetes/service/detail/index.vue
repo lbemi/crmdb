@@ -82,53 +82,112 @@
 
 			<el-tabs v-model="data.activeName" class="demo-tabs">
 				<el-tab-pane label="工作负载" name="workload">
-					<el-table v-if="data.serviceInfo.deployments" :data="data.serviceInfo.deployments" stripe style="width: 100%">
-						<el-table-column prop="metadata.name" label="名称">
-							<template #default="scope">
-								<el-button link type="primary" @click="deployDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
-							</template>
-						</el-table-column>
-						<el-table-column prop="spec.replicas" label="Pods" align="center">
-							<template #header> <span>Pods</span><br /><span style="font-size: 10px; font-weight: 50">就绪/副本/失败</span> </template>
+					<el-descriptions :column="1" direction="vertical">
+						<el-descriptions-item label="无状态" v-if="data.serviceInfo.deployments">
+							<el-card>
+								<div v-if="data.serviceInfo.deployments">
+									<el-table stripe style="width: 100%" :data="data.serviceInfo.deployments">
+										<el-table-column prop="metadata.name" label="名称">
+											<template #default="scope">
+												<el-button link type="primary" @click="deployDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
+											</template>
+										</el-table-column>
+										<el-table-column prop="spec.replicas" label="Pods" align="center">
+											<template #header> <span>Pods</span><br /><span style="font-size: 10px; font-weight: 50">就绪/副本/失败</span> </template>
 
-							<template #default="scope">
-								<a style="color: green">{{ scope.row.status.readyReplicas || '0' }}</a
-								>/ <a style="color: green">{{ scope.row.status.replicas || '0' }}</a
-								>/
-								<a style="color: red">{{ scope.row.status.unavailableReplicas || '0' }}</a>
-							</template>
-						</el-table-column>
-						<el-table-column label="镜像" show-overflow-tooltip>
-							<template #default="scope">
-								<el-text truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
-									item.image.split('@')[0]
-								}}</el-text>
-							</template>
-						</el-table-column>
+											<template #default="scope">
+												<a style="color: green">{{ scope.row.status.readyReplicas || '0' }}</a
+												>/ <a style="color: green">{{ scope.row.status.replicas || '0' }}</a
+												>/
+												<a style="color: red">{{ scope.row.status.unavailableReplicas || '0' }}</a>
+											</template>
+										</el-table-column>
+										<el-table-column label="镜像" show-overflow-tooltip>
+											<template #default="scope">
+												<el-text truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
+													item.image.split('@')[0]
+												}}</el-text>
+											</template>
+										</el-table-column>
 
-						<el-table-column label="标签">
-							<template #default="scope">
-								<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
-									<template #content>
-										<div style="display: flex; flex-direction: column">
-											<el-tag class="label" type="" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" effect="plain">
-												{{ key }}:{{ item }}
-											</el-tag>
-										</div>
-									</template>
-									<el-tag class="label" type="" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" effect="plain">
-										{{ key }}:{{ item }}
-									</el-tag>
-								</el-tooltip>
-							</template>
-						</el-table-column>
+										<el-table-column label="标签">
+											<template #default="scope">
+												<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
+													<template #content>
+														<div style="display: flex; flex-direction: column">
+															<el-tag class="label" type="" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" effect="plain">
+																{{ key }}:{{ item }}
+															</el-tag>
+														</div>
+													</template>
+													<el-tag class="label" type="" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" effect="plain">
+														{{ key }}:{{ item }}
+													</el-tag>
+												</el-tooltip>
+											</template>
+										</el-table-column>
+										<el-table-column label="创建时间">
+											<template #default="scope">
+												{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
+											</template>
+										</el-table-column>
+									</el-table>
+								</div>
+							</el-card>
+						</el-descriptions-item>
+						<el-descriptions-item label="有状态" v-if="data.serviceInfo.statefulSets">
+							<el-card>
+								<div v-if="data.serviceInfo.statefulSets">
+									<el-table stripe style="width: 100%" :data="data.serviceInfo.statefulSets">
+										<el-table-column prop="metadata.name" label="名称">
+											<template #default="scope">
+												<el-button link type="primary" @click="deployDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
+											</template>
+										</el-table-column>
+										<el-table-column prop="spec.replicas" label="Pods" align="center">
+											<template #header> <span>Pods</span><br /><span style="font-size: 10px; font-weight: 50">就绪/副本/失败</span> </template>
 
-						<el-table-column label="创建时间">
-							<template #default="scope">
-								{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
-							</template>
-						</el-table-column>
-					</el-table>
+											<template #default="scope">
+												<a style="color: green">{{ scope.row.status.readyReplicas || '0' }}</a
+												>/ <a style="color: green">{{ scope.row.status.replicas || '0' }}</a
+												>/
+												<a style="color: red">{{ scope.row.status.unavailableReplicas || '0' }}</a>
+											</template>
+										</el-table-column>
+										<el-table-column label="镜像" show-overflow-tooltip>
+											<template #default="scope">
+												<el-text truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
+													item.image.split('@')[0]
+												}}</el-text>
+											</template>
+										</el-table-column>
+
+										<el-table-column label="标签">
+											<template #default="scope">
+												<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
+													<template #content>
+														<div style="display: flex; flex-direction: column">
+															<el-tag class="label" type="" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" effect="plain">
+																{{ key }}:{{ item }}
+															</el-tag>
+														</div>
+													</template>
+													<el-tag class="label" type="" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" effect="plain">
+														{{ key }}:{{ item }}
+													</el-tag>
+												</el-tooltip>
+											</template>
+										</el-table-column>
+										<el-table-column label="创建时间">
+											<template #default="scope">
+												{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
+											</template>
+										</el-table-column>
+									</el-table>
+								</div>
+							</el-card>
+						</el-descriptions-item>
+					</el-descriptions>
 				</el-tab-pane>
 				<el-tab-pane label="容器组" name="first">
 					<el-table
@@ -140,7 +199,7 @@
 					>
 						<el-table-column label="名称">
 							<template #default="scope">
-								{{ scope.row.targetRef.name }}
+								<el-button link type="primary" @click="podDetail(scope.row.targetRef.name)"> {{ scope.row.targetRef.name }}</el-button>
 							</template>
 						</el-table-column>
 						<el-table-column prop="nodeName" label="所在节点" />
@@ -196,7 +255,6 @@
 import { reactive, onMounted, defineAsyncComponent, h } from 'vue';
 import { ArrowLeft, Edit, View, InfoFilled } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
-import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import {
 	CoreV1Event,
 	V1DaemonSet,
@@ -215,6 +273,9 @@ import { ElMessage, TabsPaneContext } from 'element-plus';
 import YAML from 'js-yaml';
 import { dateStrFormat } from '/@/utils/formatTime';
 import { useServiceApi } from '/@/api/kubernetes/service';
+import { usePodApi } from '/@/api/kubernetes/pod';
+import { ResponseType } from '/@/types/response';
+import { podInfo } from '/@/stores/pod';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
@@ -222,8 +283,8 @@ const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/m
 const route = useRoute();
 const servieApi = useServiceApi();
 const k8sStore = kubernetesInfo();
-const deploymentApi = useDeploymentApi();
-
+const podStore = podInfo();
+const podApi = usePodApi();
 const data = reactive({
 	serviceInfo: {
 		deployments: [] as V1Deployment[],
@@ -255,6 +316,16 @@ const deployDetail = async (dep: V1Deployment) => {
 	});
 };
 
+const podDetail = (name: string) => {
+	podApi.getPod(k8sStore.state.activeService.metadata!.namespace!, name, { cloud: k8sStore.state.activeCluster }).then((res: any) => {
+		if (res.code === 200) {
+			podStore.state.podDetail = res.data;
+			router.push({
+				name: 'podDetail',
+			});
+		}
+	});
+};
 const getServiceInfo = () => {
 	servieApi
 		.listServiceWorkLoad(k8sStore.state.activeService.metadata!.namespace!, k8sStore.state.activeService.metadata!.name!, {
@@ -289,14 +360,6 @@ const updateServiceYaml = async (svc: any) => {
 			ElMessage.error(e.message);
 		});
 	data.dialogVisible = false;
-};
-const getEvents = async () => {
-	const res = await deploymentApi.getDeploymentEvents(
-		k8sStore.state.activeService.metadata!.namespace!.toString(),
-		k8sStore.state.activeService?.metadata!.name!.toString(),
-		data.param
-	);
-	data.events = res.data;
 };
 
 const backRoute = () => {
