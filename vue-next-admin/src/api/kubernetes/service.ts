@@ -10,6 +10,13 @@ export function useServiceApi() {
 				params: param,
 			});
 		},
+		listServiceWorkLoad: (namespace: string, name: string, param: any) => {
+			return request({
+				url: `/service/${namespace}/${name}/work`,
+				method: 'get',
+				params: param,
+			});
+		},
 		deleteService: (param: any, name: string, namespace: string) => {
 			return request({
 				url: `/service/${namespace}/${name}`,
@@ -25,5 +32,6 @@ export function useServiceApi() {
 				data: data,
 			});
 		},
+		
 	};
 }

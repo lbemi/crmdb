@@ -38,14 +38,28 @@ func (s *service) ListWorkLoad(ctx context.Context, name string) (*types.Service
 		Deployments:  make([]*appsv1.Deployment, 0),
 		StatefulSets: make([]*appsv1.StatefulSet, 0),
 		DaemonSets:   make([]*appsv1.DaemonSet, 0),
+		Events:       make([]*v1.Event, 0),
 	}
 	svc, err := s.Get(ctx, name)
 	if err != nil {
 		log.Logger.Error(err)
 		return workLoad, err
 	}
-
 	selector := labels.SelectorFromSet(svc.Spec.Selector)
+	eventList, err := s.client.SharedInformerFactory.Core().V1().Events().Lister().Events(s.ns).List(labels.Everything())
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	for _, item := range eventList {
+		if item.InvolvedObject.Kind == "Service" && item.InvolvedObject.Name == name {
+			workLoad.Events = append(workLoad.Events, item)
+		}
+	}
+	endpoints, err := s.client.ClientSet.CoreV1().Endpoints(s.ns).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		log.Logger.Error(err)
+		return workLoad, err
+	}
 	deployments, err := s.client.SharedInformerFactory.Apps().V1().Deployments().Lister().List(selector)
 	if err != nil {
 		log.Logger.Error(err)
@@ -67,6 +81,7 @@ func (s *service) ListWorkLoad(ctx context.Context, name string) (*types.Service
 	workLoad.Deployments = deployments
 	workLoad.StatefulSets = statefulSets
 	workLoad.DaemonSets = daemonSets
+	workLoad.EndPoints = endpoints
 
 	return workLoad, nil
 }
