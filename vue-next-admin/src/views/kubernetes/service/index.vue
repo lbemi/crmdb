@@ -154,6 +154,7 @@
 			@update="updateServiceYaml"
 			v-if="data.dialogVisible"
 		/>
+		<ServiceDialog v-model:dialogVisible="data.serviceDialog" :title="data.title" @update="updateService" v-if="data.serviceDialog" />
 	</div>
 </template>
 
@@ -175,12 +176,15 @@ import router from '/@/router';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
+const ServiceDialog = defineAsyncComponent(() => import('./component/dialog.vue'));
 
 const k8sStore = kubernetesInfo();
 const servieApi = useServiceApi();
 const route = useRoute();
 
 const data = reactive({
+	title: '',
+	serviceDialog: false,
 	dialogVisible: false,
 	codeData: {} as V1Service,
 	loading: false,
@@ -242,7 +246,11 @@ const filterService = (services: Array<V1Service>) => {
 	}
 	data.services = serviceList;
 };
-const createService = () => {};
+const createService = () => {
+	data.title = '创建service';
+	data.serviceDialog = true;
+};
+
 const deleteService = (service: V1Service) => {
 	ElMessageBox({
 		title: '提示',
@@ -275,7 +283,9 @@ const deleteService = (service: V1Service) => {
 		});
 	data.loading = false;
 };
-const handleSelectionChange = () => {};
+const handleSelectionChange = (value: any) => {
+	data.selectData = value;
+};
 const updateService = (ervice: V1Service) => {};
 const updateServiceYaml = async (svc: any) => {
 	const updateData = YAML.load(svc) as V1Service;

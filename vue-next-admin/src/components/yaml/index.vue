@@ -64,6 +64,9 @@ watch(
 				case 'ingress':
 					code.value = `apiVersion: networking.k8s.io/v1\nkind: Ingress\n`;
 					break;
+				case 'service':
+					code.value = `apiVersion: v1\nkind: Service\n`;
+					break;
 				default:
 					code.value = '';
 			}

@@ -62,9 +62,10 @@
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="外部流量策略" label-align="right" align="center">
-					{{ k8sStore.state.activeService.spec?.internalTrafficPolicy }}
+					{{ k8sStore.state.activeService.spec?.internalTrafficPolicy || 'Cluster' }}
 					<el-tooltip
-						content='<div style="margin-left: 12px"><ul><li>Local：流量只转发给本机的Pod</li><li >Cluster：流量可以转发到集群中其他节点上的Pod</li></ul></div>'
+						content='<div style="margin-left: 12px"><ul><li>Local：流量只转发给本机的Pod</li><li >Cluster：流量可以转发到集群中其他节点上的Pod</li></ul>
+            <a target="_blank" href="https://kubernetes.io/zh-cn/docs/tasks/access-application-cluster/create-external-load-balancer/">详细信息</a></div>'
 						raw-content
 						placement="right"
 						effect="light"
