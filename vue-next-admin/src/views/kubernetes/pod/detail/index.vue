@@ -27,13 +27,7 @@
 					<div>{{ podStore.state.podDetail?.spec?.nodeName }}</div>
 					<div>{{ podStore.state.podDetail?.status?.hostIP }}</div>
 				</el-descriptions-item>
-				<!-- <el-descriptions-item label="选择器" label-align="right" align="center">
-					<div class="tag-center">
-						<el-tag effect="plain" round v-for="(item, key, index) in k8sStore.state.activeDeployment?.spec?.selector.matchLabels" :key="index">
-							{{ key }}:{{ item }}
-						</el-tag>
-					</div>
-				</el-descriptions-item> -->
+
 				<el-descriptions-item label="镜像" label-align="right" align="center">
 					<div class="tag-center">
 						<el-tag round effect="plain" v-for="(item, index) in podStore.state.podDetail?.spec?.containers" :key="index">{{
@@ -86,6 +80,42 @@
 			<!-- <el-divider /> -->
 			<el-tabs v-model="data.activeName" class="demo-tabs" @tab-click="handleClick">
 				<el-tab-pane label="容器" name="first">
+					<el-space wrap v-for="container in podStore.state.podDetail.status?.containerStatuses">
+						<el-card class="box-card">
+							<template #header>
+								<div class="card-header" @click="">
+									<h3><SvgIcon name="iconfont icon-container-" class="svg" />{{ container.name }}</h3>
+									<div class="image">{{ container.image }}</div>
+								</div>
+							</template>
+							<h3>状态</h3>
+							<div style="display: flex; justify-content: space-between; margin: 10px 0">
+								<el-text size="large" :type="container.ready === true ? 'success' : 'danger'" v-for="(item, key) in container.state">
+									<div>{{ container.ready ? 'Running' : item.reason }}</div>
+									<!-- {{ item.message }} -->
+								</el-text>
+								<el-text size="large" :type="container.started === true ? 'success' : 'danger'">
+									{{ container.started ? 'Started' : 'NotStarted' }}
+								</el-text>
+								<el-text size="large" :type="container.ready === true ? 'success' : 'warning'">
+									{{ container.ready ? 'Ready' : 'NotReady' }}
+								</el-text>
+							</div>
+							<h3>状态</h3>
+							<div style="display: flex; justify-content: space-between">
+								<el-text size="large" :type="container.ready === true ? 'success' : 'danger'" v-for="(item, key) in container.state">
+									<div>{{ container.ready ? 'Running' : item.reason }}</div>
+									<!-- {{ item.message }} -->
+								</el-text>
+								<el-text size="large" :type="container.started === true ? 'success' : 'danger'">
+									{{ container.started ? 'Started' : 'NotStarted' }}
+								</el-text>
+								<el-text size="large" :type="container.ready === true ? 'success' : 'warning'">
+									{{ container.ready ? 'Ready' : 'NotReady' }}
+								</el-text>
+							</div>
+						</el-card>
+					</el-space>
 					<el-table :data="podStore.state.podDetail.status?.containerStatuses" stripe style="width: 100%" max-height="350px">
 						<el-table-column label="名称">
 							<template #default="scope">
@@ -391,5 +421,28 @@ const showYaml = async () => {
 			flex: 1;
 		}
 	}
+}
+
+.card-header {
+	align-items: center;
+}
+
+.text {
+	font-size: 14px;
+}
+
+.item {
+	margin-bottom: 18px;
+}
+
+.box-card {
+	width: 480px;
+}
+.svg {
+	margin-right: 5px;
+}
+.image {
+	margin-top: 5px;
+	font-stretch: condensed;
 }
 </style>

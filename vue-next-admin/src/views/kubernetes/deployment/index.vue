@@ -82,18 +82,22 @@
 						>
 					</template>
 				</el-table-column>
-				<el-table-column label="状态" width="90px">
+				<el-table-column label="状态" width="130px">
 					<template #default="scope">
-						<el-button
+						<div
 							v-if="scope.row.status.availableReplicas && scope.row.status.availableReplicas == scope.row.status.replicas"
-							type="success"
-							:icon="Check"
-							size="small"
-							circle
-						/>
-						<el-button v-else type="danger" :icon="Close" size="small" circle />
+							style="display: flex; align-items: center"
+						>
+							<div style="display: inline-block; width: 12px; height: 12px; background: #67c23a; border-radius: 50%"></div>
+							<span style="margin-left: 5px; font-size: 12px; color: #67c23a">Running </span>
+						</div>
+						<div v-else style="display: flex; align-items: center">
+							<div style="display: inline-block; width: 12px; height: 12px; background: #f56c6c; border-radius: 50%"></div>
+							<span style="margin-left: 5px; font-size: 12px; color: #f56c6c">故障... </span>
+						</div>
 					</template>
 				</el-table-column>
+
 				<el-table-column prop="spec.replicas" label="Pods" width="150px" align="center">
 					<template #header> <span>Pods</span><br /><span style="font-size: 10px; font-weight: 50">就绪/副本/失败</span> </template>
 
@@ -293,6 +297,7 @@ const search = () => {
 	data.loading = false;
 };
 
+const deploymentStatus = computed((dep: V1Deployment) => {});
 const rollBack = (deployment: V1Deployment) => {
 	const reversion = deployment.metadata?.annotations!['deployment.kubernetes.io/revision']!;
 	parseInt(reversion, 10);

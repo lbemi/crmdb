@@ -14,7 +14,6 @@
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
 				</el-select>
-
 				<el-input
 					v-model="podStore.state.query.key"
 					placeholder="输入标签或者名称"
@@ -58,12 +57,12 @@
 				<el-table-column prop="metadata.name" label="名称" width="300px" show-overflow-tooltip>
 					<template #default="scope">
 						<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>
-						<div v-if="scope.row.status.phase != 'Running'" style="color: red">
+						<!-- <div v-if="scope.row.status.phase != 'Running'" style="color: red">
 							<div v-if="scope.row.status.containerStatuses">
 								{{ scope.row.status.containerStatuses[0].state }}
 							</div>
 							<div v-else>{{ scope.row.status.conditions[0].reason }}:{{ scope.row.status.conditions[0].message }}</div>
-						</div>
+						</div> -->
 					</template>
 				</el-table-column>
 				<el-table-column label="状态" width="200px">
@@ -188,6 +187,7 @@ const podStatus = (status: V1PodStatus) => {
 						}
 						if (c.state?.terminated) {
 							res = `${c.state.terminated.reason}`;
+							// res = 'Terminating';
 						}
 					}
 				});
@@ -195,7 +195,7 @@ const podStatus = (status: V1PodStatus) => {
 			}
 		});
 	} else {
-		s = '<span style="color: green">ERROR</span>';
+		s = `<span style="color: red">${status.phase}</span>`;
 	}
 
 	return s;
