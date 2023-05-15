@@ -19,7 +19,7 @@
 				</el-col>
 			</el-row>
 
-			<el-descriptions :column="3" border>
+			<el-descriptions :column="3" border class="desc-body">
 				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">
 					{{ k8sStore.state.activeNode?.metadata?.name }}
 				</el-descriptions-item>
@@ -28,7 +28,7 @@
 					<div v-else>Work</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
-					dateStrFormat(k8sStore.state.activeNode?.metadata?.creationTimestamp)
+					dateStrFormat(k8sStore.state.activeNode!.metadata!.creationTimestamp!.toString())
 				}}</el-descriptions-item>
 				<el-descriptions-item label="IP地址" label-align="right" align="center">
 					{{ k8sStore.state.activeNode?.status?.addresses![0].address }}
@@ -234,6 +234,7 @@ import { deepClone } from '/@/utils/other';
 import { useNodeApi } from '/@/api/kubernetes/node';
 import { Node } from '/@/types/kubernetes/cluster';
 import { PageInfo } from '/@/types/kubernetes/common';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
@@ -369,7 +370,7 @@ const memoryUsage = () => {
 				data: [
 					{
 						value: Math.round(k8sStore.state.activeNode.usage?.memory! * 100),
-						name: '内存使用率 (总:' + parseInt(k8sStore.state.activeNode.status!.capacity!.memory!.split('Ki')[0] / 1000000 + '') + 'GiB)',
+						name: '内存使用率 (总:' + parseInt(k8sStore.state.activeNode.status!.capacity!.memory.toString().split('Ki')[0] / 1000000 + '') + 'GiB)',
 					},
 				],
 			},

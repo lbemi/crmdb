@@ -35,7 +35,7 @@
 					</el-icon>
 					刷新
 				</el-button>
-				<el-table :data="data.namespace" @selection-change="handleSelectionChange" style="width: 100%" max-height="100vh - 235px">
+				<el-table :data="data.namespace" @selection-change="handleSelectionChange" style="width: 100%" max-height="100vh - 235px" class="desc-body">
 					<el-table-column type="selection" width="35" />
 					<el-table-column prop="metadata.name" label="名称" />
 					<el-table-column label="状态">

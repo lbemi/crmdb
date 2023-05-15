@@ -33,7 +33,7 @@
 				<!--				<el-col :span="1" />-->
 				<el-col :span="7">
 					<el-card style="margin-top: 15px; height: 99%">
-						<codemirror v-model="data.code" style="margin-top: 15px" :autofocus="true" :tabSize="2" :extensions="extensions" />
+						<div ref="editorRef" />
 					</el-card>
 				</el-col>
 				<el-col :span="2" style="margin-left: 20px">
@@ -57,10 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeMount, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
-import { Codemirror } from 'vue-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
-import { oneDark } from '@codemirror/theme-one-dark';
+import { defineAsyncComponent, onBeforeMount, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { V1Container, V1Deployment } from '@kubernetes/client-node';
 import yamlJs from 'js-yaml';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
@@ -70,10 +67,12 @@ import router from '/@/router';
 import { useRoute } from 'vue-router';
 import mittBus from '/@/utils/mitt';
 import { deepClone } from '/@/utils/other';
-import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { CreateK8SBindData, CreateK8SMetaData } from '/@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
-import { StreamLanguage, foldGutter, foldKeymap } from '@codemirror/language';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { EditorState } from '@codemirror/state';
+import { EditorView, basicSetup } from 'codemirror';
+import { StreamLanguage } from '@codemirror/language';
 import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
@@ -81,6 +80,35 @@ const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/c
 
 const kubeInfo = kubernetesInfo();
 const deployApi = useDeploymentApi();
+const editorRef = ref();
+const editorView = ref();
+
+let onUpdateExt = EditorView.updateListener.of((v: any) => {
+	if (v.docChanged) {
+		console.log('*************', v.state);
+
+		editorView.value.current.dispatch({
+			state: v.state,
+		});
+	}
+});
+
+const initEditor = () => {
+	if (typeof editorView.value !== 'undefined') {
+		editorView.value.destroy();
+	}
+	const state = EditorState.create({
+		doc: data.code,
+		extensions: [basicSetup, oneDark, StreamLanguage.define(yaml)],
+	});
+
+	if (editorRef.value) {
+		editorView.value = new EditorView({
+			state,
+			parent: editorRef.value,
+		});
+	}
+};
 
 const edit = () => {
 	const dep = kubeInfo.state.activeDeployment;
@@ -89,6 +117,7 @@ const edit = () => {
 	delete dep.status;
 	data.code = yamlJs.dump(dep);
 };
+
 const metaRef = ref<FormInstance>();
 const data = reactive({
 	loadCode: false,
@@ -131,7 +160,6 @@ const data = reactive({
 		resourceType: 'deployment',
 	},
 });
-const extensions = [oneDark, StreamLanguage.define(yaml), foldGutter()];
 const getContainers = (containers: Array<V1Container>) => {
 	data.deployment.spec!.template.spec!.containers = containers;
 	console.log('4.接收到容器发生变化。。。。。', containers);
@@ -214,6 +242,7 @@ const updateCodeMirror = () => {
 		data.loadCode = false;
 	}, 1);
 };
+
 watch(
 	() => data.code,
 	(newValue, oldValue) => {
@@ -236,13 +265,24 @@ watch(
 		}
 	},
 	{
+		immediate: true,
 		deep: true,
 	}
 );
 
-onBeforeMount(() => {
+// onBeforeMount(() => {
+// 	nextTick(() => {
+// 		initEditor();
+// 	});
+// });
+
+onMounted(() => {
 	updateCodeMirror();
+	nextTick(() => {
+		initEditor();
+	});
 });
+
 onUnmounted(() => {
 	//卸载
 	mittBus.off('updateVolumes', () => {});
