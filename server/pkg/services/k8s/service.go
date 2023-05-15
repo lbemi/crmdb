@@ -45,7 +45,12 @@ func (s *service) ListWorkLoad(ctx context.Context, name string) (*types.Service
 		log.Logger.Error(err)
 		return workLoad, err
 	}
+
 	selector := labels.SelectorFromSet(svc.Spec.Selector)
+
+	if selector.Empty() {
+		return workLoad, nil
+	}
 	eventList, err := s.client.SharedInformerFactory.Core().V1().Events().Lister().Events(s.ns).List(labels.Everything())
 	if err != nil {
 		log.Logger.Error(err)

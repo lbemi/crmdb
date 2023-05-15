@@ -119,7 +119,7 @@
 
 					<el-table-column fixed="right" label="操作">
 						<template #default="scope">
-							<el-button link type="primary" size="small" @click="updateService(scope.row)">详情</el-button><el-divider direction="vertical" />
+							<el-button link type="primary" size="small" @click="serviceDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
 							<el-button link type="primary" size="small" @click="updateService(scope.row)">编辑</el-button><el-divider direction="vertical" />
 							<el-dropdown size="small">
 								<span class="el-dropdown-link" style="font-size: 12px">

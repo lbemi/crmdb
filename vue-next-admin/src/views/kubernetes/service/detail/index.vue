@@ -200,7 +200,9 @@
 					>
 						<el-table-column label="名称">
 							<template #default="scope">
-								<el-button link type="primary" @click="podDetail(scope.row.targetRef.name)"> {{ scope.row.targetRef.name }}</el-button>
+								<el-button v-if="scope.row.targetRef.name != undefined" link type="primary" @click="podDetail(scope.row.targetRef.name)">
+									{{ scope.row.targetRef.name }}</el-button
+								>
 							</template>
 						</el-table-column>
 						<el-table-column prop="nodeName" label="所在节点" />
@@ -317,7 +319,8 @@ const deployDetail = async (dep: V1Deployment) => {
 	});
 };
 
-const podDetail = (name: string) => {
+const podDetail = (name: string | undefined) => {
+	if (name === undefined) return;
 	podApi.getPod(k8sStore.state.activeService.metadata!.namespace!, name, { cloud: k8sStore.state.activeCluster }).then((res: any) => {
 		if (res.code === 200) {
 			podStore.state.podDetail = res.data;
