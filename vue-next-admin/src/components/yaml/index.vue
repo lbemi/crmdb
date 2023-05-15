@@ -4,7 +4,7 @@
 			<template #header>
 				<h3>YAML</h3>
 			</template>
-			<div ref="editorRef" />
+			<Codemirror v-model="code" style="height: 100%" :autofocus="true" :tabSize="2" :extensions="extensions" :disabled="disabledUpdate" />
 			<template #footer>
 				<span class="dialog-footer">
 					<el-button size="small" @click="handleClose">关闭</el-button>
@@ -17,40 +17,15 @@
 
 <script setup lang="ts">
 import YAML from 'js-yaml';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
+import { Codemirror } from 'vue-codemirror';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { StreamLanguage } from '@codemirror/language';
 import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
-const editorRef = ref();
-const editorView = ref();
 const code = ref('');
 const extensions = [oneDark, StreamLanguage.define(yaml)];
 const dialogVisible = ref(false);
-
-const initEditor = () => {
-	if (typeof editorView.value !== 'undefined') {
-		editorView.value.destroy();
-	}
-	const state = EditorState.create({
-		doc: code.value,
-		extensions: [basicSetup, oneDark, StreamLanguage.define(yaml)],
-	});
-
-	if (editorRef.value) {
-		editorView.value = new EditorView({
-			state,
-			parent: editorRef.value,
-		});
-	}
-};
-
-onMounted(() => {
-	nextTick(() => {
-		initEditor();
-	});
-});
-
 const handleClose = () => {
 	emit('update:dialogVisible', false);
 };
@@ -58,7 +33,7 @@ const handleClose = () => {
 const emit = defineEmits(['update', 'update:dialogVisible']);
 
 const update = () => {
-	emit('update', editorView.value.state.doc.toString());
+	emit('update', code.value);
 };
 
 const props = defineProps({
