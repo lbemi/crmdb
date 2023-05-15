@@ -59,7 +59,6 @@
 <script setup lang="ts">
 import { defineAsyncComponent, onBeforeMount, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { Codemirror } from 'vue-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { V1Container, V1Deployment } from '@kubernetes/client-node';
 import yamlJs from 'js-yaml';
@@ -70,10 +69,9 @@ import router from '/@/router';
 import { useRoute } from 'vue-router';
 import mittBus from '/@/utils/mitt';
 import { deepClone } from '/@/utils/other';
-import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { CreateK8SBindData, CreateK8SMetaData } from '/@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
-import { StreamLanguage, foldGutter, foldKeymap } from '@codemirror/language';
+import { StreamLanguage } from '@codemirror/language';
 import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
@@ -131,7 +129,7 @@ const data = reactive({
 		resourceType: 'deployment',
 	},
 });
-const extensions = [oneDark, StreamLanguage.define(yaml), foldGutter()];
+const extensions = [oneDark, StreamLanguage.define(yaml)];
 const getContainers = (containers: Array<V1Container>) => {
 	data.deployment.spec!.template.spec!.containers = containers;
 	console.log('4.接收到容器发生变化。。。。。', containers);
