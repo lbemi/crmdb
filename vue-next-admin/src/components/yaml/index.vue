@@ -20,11 +20,11 @@ import YAML from 'js-yaml';
 import { ref, watch } from 'vue';
 import { Codemirror } from 'vue-codemirror';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { StreamLanguage, foldGutter } from '@codemirror/language';
+import { StreamLanguage } from '@codemirror/language';
 import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
 const code = ref('');
-const extensions = [oneDark, StreamLanguage.define(yaml), foldGutter()];
+const extensions = [oneDark, StreamLanguage.define(yaml)];
 const dialogVisible = ref(false);
 const handleClose = () => {
 	emit('update:dialogVisible', false);

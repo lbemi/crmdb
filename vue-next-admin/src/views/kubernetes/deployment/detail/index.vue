@@ -230,6 +230,8 @@
 		</el-card>
 		<YamlMegeDialog :code="code" :dialogVisible="dialogVisible" v-if="dialogVisible" />
 
+		<YamlDialog v-model:dialogVisible="data.RsdialogVisible" :code-data="data.rscode" v-if="data.RsdialogVisible" />
+
 		<YamlDialog
 			v-model:dialogVisible="data.dialogVisible"
 			:code-data="data.codeData"
@@ -271,6 +273,8 @@ const code = ref({});
 const dialogVisible = ref(false);
 
 const data = reactive({
+	RsdialogVisible: false,
+	rscode: {},
 	dialogVisible: false,
 	codeData: {} as V1Deployment,
 	param: {
@@ -527,10 +531,10 @@ const deletePod = async (pod: V1Pod) => {
 		});
 };
 const showRsYaml = async (replicaSets: V1ReplicaSet) => {
-	dialogVisible.value = true;
-	const data = deepClone(replicaSets);
-	delete data.metadata.managedFields;
-	code.value = data;
+	data.RsdialogVisible = true;
+	const codeData = deepClone(replicaSets);
+	delete codeData.metadata.managedFields;
+	data.rscode = codeData;
 };
 
 const showYaml = async () => {
