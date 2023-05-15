@@ -17,7 +17,7 @@
 					</el-button>
 				</el-col>
 			</el-row>
-			<el-descriptions :column="3" border>
+			<el-descriptions :column="3" border class="desc-body">
 				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">{{
 					k8sStore.state.activeService?.metadata?.name
 				}}</el-descriptions-item>

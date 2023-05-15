@@ -2,6 +2,7 @@ package cloud
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/handler/types"
@@ -124,6 +125,7 @@ func UpdateDeployment(c *gin.Context) {
 
 	err := c.ShouldBindJSON(&deployment)
 	if err != nil {
+		log.Logger.Error(err)
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}

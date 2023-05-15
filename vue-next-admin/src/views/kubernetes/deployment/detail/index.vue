@@ -13,7 +13,7 @@
 				>
 			</el-row>
 
-			<el-descriptions :column="3" border>
+			<el-descriptions :column="3" border class="desc-body">
 				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">{{
 					k8sStore.state.activeDeployment?.metadata?.name
 				}}</el-descriptions-item>
@@ -445,7 +445,8 @@ const updateDeployment = async (codeData: any) => {
 	const updateData = YAML.load(codeData) as V1Deployment;
 	delete updateData.status;
 	delete updateData.metadata?.managedFields;
-	deploymentApi
+
+	await deploymentApi
 		.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
 		.then((res) => {
 			if (res.code == 200) {
