@@ -3,7 +3,7 @@
 		<el-form ref="metaRef" :model="data.meta" v-if="data.meta" label-width="120px" label-position="left" :rules="metaRules" size="default">
 			<el-form-item label="命名空间">
 				<el-select v-model="data.meta.namespace" style="max-width: 220px" class="m-2" placeholder="Select">
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name" />
+					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name!" />
 				</el-select>
 			</el-form-item>
 			<el-form-item label="应用名称" prop="name">
@@ -33,7 +33,7 @@ import { kubernetesInfo } from '/@/stores/kubernetes';
 import { ref } from 'vue-demi';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { deepClone } from '/@/utils/other';
-import { CreateK8SBindData, CreateK8SMetaData } from '/@/types/kubernetes/custom';
+import { CreateK8SBindData, CreateK8SMetaData, ResourceType } from '/@/types/kubernetes/custom';
 import type { FormInstance, FormRules } from 'element-plus';
 
 const Label = defineAsyncComponent(() => import('/@/components/kubernetes/label.vue'));
@@ -49,7 +49,7 @@ const data = reactive<CreateK8SMetaData>({
 	labelData: [{ key: 'app', value: '' }],
 	annotationsData: [],
 	replicas: 1,
-	resourceType: 'deployment',
+	resourceType: 'deployment' as ResourceType,
 	meta: {
 		name: '',
 		namespace: 'default',

@@ -1,6 +1,9 @@
 package cloud
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
@@ -8,8 +11,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/util"
 	v1 "k8s.io/api/apps/v1"
-	"strconv"
-	"time"
 )
 
 func ListDeployments(c *gin.Context) {
@@ -49,12 +50,16 @@ func ListDeployments(c *gin.Context) {
 	var pageQuery types.PageQuery
 	pageQuery.Total = len(deploymentList)
 
-	if pageQuery.Total <= limit {
+	if limit == 0 && page == 0 {
 		pageQuery.Data = deploymentList
-	} else if page*limit >= pageQuery.Total {
-		pageQuery.Data = deploymentList[(page-1)*limit : pageQuery.Total]
 	} else {
-		pageQuery.Data = deploymentList[(page-1)*limit : page*limit]
+		if pageQuery.Total <= limit {
+			pageQuery.Data = deploymentList
+		} else if page*limit >= pageQuery.Total {
+			pageQuery.Data = deploymentList[(page-1)*limit : pageQuery.Total]
+		} else {
+			pageQuery.Data = deploymentList[(page-1)*limit : page*limit]
+		}
 	}
 
 	response.Success(c, response.StatusOK, pageQuery)

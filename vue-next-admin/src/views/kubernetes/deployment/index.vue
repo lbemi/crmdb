@@ -4,13 +4,13 @@
 			<div class="mb15">
 				<el-row :gutter="24">
 					<el-col :span="18" style="display: flex; justify-content;: center">
-						<el-text class="mx-1" :size="theme.themeConfig.globalComponentSize">命名空间：</el-text>
+						<el-text class="mx-1" size="small">命名空间：</el-text>
 						<el-select
 							v-model="k8sStore.state.activeNamespace"
 							style="max-width: 180px"
 							class="m-2"
 							placeholder="Select"
-							:size="theme.themeConfig.globalComponentSize"
+							size="small"
 							@change="handleChange"
 							><el-option key="all" label="所有命名空间" value="all"></el-option>
 							<el-option
@@ -23,19 +23,19 @@
 						<el-input
 							v-model="data.search"
 							placeholder="输入标签或者名称"
-							:size="theme.themeConfig.globalComponentSize"
+							size="small"
 							clearable
 							@change="search"
 							style="width: 250px; margin-left: 10px"
 						>
 							<template #prepend>
-								<el-select v-model="data.searchType" placeholder="输入标签或者名称" style="width: 80px" :size="theme.themeConfig.globalComponentSize">
-									<el-option label="标签" value="0" :size="theme.themeConfig.globalComponentSize" />
-									<el-option label="名称" value="1" :size="theme.themeConfig.globalComponentSize" />
+								<el-select v-model="data.searchType" placeholder="输入标签或者名称" style="width: 80px" size="small">
+									<el-option label="标签" value="0" size="small" />
+									<el-option label="名称" value="1" size="small" />
 								</el-select>
 							</template>
 							<template #append>
-								<el-button :size="theme.themeConfig.globalComponentSize" @click="search">
+								<el-button size="small" @click="search">
 									<el-icon>
 										<ele-Search />
 									</el-icon>
@@ -44,19 +44,17 @@
 							</template>
 						</el-input>
 
-						<el-button type="primary" :size="theme.themeConfig.globalComponentSize" class="ml10" @click="createDeployment" :icon="Edit"
-							>创建</el-button
-						>
+						<el-button type="primary" size="small" class="ml10" @click="createDeployment" :icon="Edit">创建</el-button>
 						<el-button
 							type="danger"
-							:size="theme.themeConfig.globalComponentSize"
+							size="small"
 							class="ml10"
 							:disabled="data.selectData.length == 0"
 							@click="deleteDeployments(data.selectData)"
 							:icon="Delete"
 							>批量删除</el-button
 						>
-						<el-button type="success" :size="theme.themeConfig.globalComponentSize" @click="refreshCurrentTagsView" style="margin-left: 10px">
+						<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
 							<el-icon>
 								<ele-RefreshRight />
 							</el-icon>
