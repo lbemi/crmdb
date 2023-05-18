@@ -5,6 +5,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	v1 "k8s.io/api/networking/v1"
+	"sort"
 )
 
 type IngressesGetter interface {
@@ -28,11 +29,16 @@ func NewIngresses(k8s *k8s.Factory) *ingresses {
 }
 
 func (s *ingresses) List(ctx context.Context) ([]*v1.Ingress, error) {
-	nodeList, err := s.k8s.Ingress().List(ctx)
+	ingressList, err := s.k8s.Ingress().List(ctx)
 	if err != nil {
 		log.Logger.Error(err)
 	}
-	return nodeList, err
+
+	sort.Slice(ingressList, func(i, j int) bool {
+		return ingressList[j].ObjectMeta.CreationTimestamp.Time.Before(ingressList[i].ObjectMeta.CreationTimestamp.Time)
+	})
+	
+	return ingressList, err
 }
 
 func (s *ingresses) Get(ctx context.Context, name string) (*v1.Ingress, error) {

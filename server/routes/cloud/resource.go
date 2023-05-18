@@ -28,23 +28,36 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	pod := group.Group("/pod")
 	{
 		pod.GET("/:namespace", cloud.ListPods)
+		pod.GET("/:namespace/search", cloud.SearchPods)
 		pod.GET("/:namespace/:podName", cloud.GetPod)
 		pod.POST("", cloud.CreatePod)
 		pod.PUT("", cloud.UpdatePod)
 		pod.DELETE("/:namespace/:podName", cloud.DeletePod)
 		pod.GET("/log/:namespace/:podName/:container", cloud.GetPodLog)
+		pod.GET("/event/:namespace/:name", cloud.GetPodEvents)
 	}
 
 	//deployment 资源路由
 	deployment := group.Group("/deployment")
 	{
 		deployment.GET("/:namespace", cloud.ListDeployments)
+		deployment.GET("/:namespace/search", cloud.SearchDeployments)
 		deployment.GET("/:namespace/:deploymentName", cloud.GetDeployment)
 		deployment.POST("", cloud.CreateDeployment)
 		deployment.PUT("", cloud.UpdateDeployment)
+		deployment.PUT("/redeploy/:namespace/:name", cloud.ReDeployDeployment)
+		deployment.PUT("/rollback/:namespace/:name/:reversion", cloud.RollBackDeployment)
 		deployment.DELETE("/:namespace/:deploymentName", cloud.DeleteDeployment)
 		deployment.PUT("/:namespace/:deploymentName/:scale", cloud.ScaleDeployments)
 		deployment.GET("/:namespace/:deploymentName/pod", cloud.GetDeploymentPods)
+		deployment.GET("/:namespace/:deploymentName/event", cloud.GetDeploymentEvents)
+	}
+
+	//replicaset 资源路由
+	replicaset := group.Group("/replicaset")
+	{
+		replicaset.GET("/:namespace", cloud.ListReplicaSets)
+		replicaset.GET("/:namespace/:name", cloud.GetReplicaSet)
 	}
 
 	//statefulSet 资源路由
@@ -94,7 +107,11 @@ func NewResourceRoute(group *gin.RouterGroup) {
 		node.GET("/:nodeName", cloud.GetNode)
 		node.PUT("", cloud.UpdateNode)
 		node.PATCH("", cloud.PatchNode)
-
+		// 设置是否可以调度
+		node.PUT("/:name/:unschedulable", cloud.Schedulable)
+		// 排水
+		node.POST("/:name/drain", cloud.Drain)
+		node.GET("/pods/:nodeName", cloud.GetPodByNode)
 	}
 
 	// service 资源路由
@@ -102,6 +119,7 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	{
 		service.GET("/:namespace", cloud.ListServices)
 		service.GET("/:namespace/:serviceName", cloud.GetService)
+		service.GET("/:namespace/:serviceName/work", cloud.GetServiceWorkLoad)
 		service.POST("", cloud.CreateService)
 		service.PUT("", cloud.UpdateService)
 		service.DELETE("/:namespace/:serviceName", cloud.DeleteService)
@@ -142,5 +160,15 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	{
 		event.GET("/:namespace", cloud.ListEvents)
 		event.GET("/:namespace/:name", cloud.GetEvent)
+	}
+
+	//  persistentVolumeClaim资源路由
+	persistentVolumeClaim := group.Group("/pvc")
+	{
+		persistentVolumeClaim.GET("/:namespace", cloud.ListPersistentVolumeClaim)
+		persistentVolumeClaim.GET("/:namespace/:name", cloud.GetPersistentVolumeClaim)
+		persistentVolumeClaim.POST("", cloud.CreatePersistentVolumeClaim)
+		persistentVolumeClaim.PUT("", cloud.UpdatePersistentVolumeClaim)
+		persistentVolumeClaim.DELETE("/:namespace/:name", cloud.DeletePersistentVolumeClaim)
 	}
 }

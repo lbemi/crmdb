@@ -1,24 +1,48 @@
-import { UploadFile } from 'element-plus'
+import { V1Node, V1NodeSpec, V1ObjectMeta, V1NodeStatus } from '@kubernetes/client-node';
+import { UploadFile } from 'element-plus';
 
 export interface ClusterInfo {
-    id: number
-    created_at: string
-    updated_at: string
-    name: string
-    version: string
-    runtime: string
-    service_cidr: string
-    pod_cidr: string
-    cni: string
-    proxy_mode: string
-    status: boolean
-    nodes: number
-    internal_ip: string
-    cpu: number
-    memory: number
+	id: number;
+	created_at: string;
+	updated_at: string;
+	name: string;
+	version: string;
+	runtime: string;
+	service_cidr: string;
+	pod_cidr: string;
+	cni: string;
+	proxy_mode: string;
+	status: boolean;
+	nodes: number;
+	internal_ip: string;
+	cpu: number;
+	memory: number;
 }
 export interface ClusterForm {
-    name: string
-    kube_config: UploadFile
+	name: string;
+	kube_config: UploadFile;
 }
 
+export interface Node {
+	apiVersion?: string;
+	kind?: string;
+	metadata?: V1ObjectMeta;
+	spec?: V1NodeSpec;
+	status?: V1NodeStatus;
+	usage?: {
+		cpu: number;
+		memory: number;
+		pod: number;
+	};
+	discriminator: string | undefined;
+	attributeTypeMap: Array<{
+		name: string;
+		baseName: string;
+		type: string;
+	}>;
+	static getAttributeTypeMap(): {
+		name: string;
+		baseName: string;
+		type: string;
+	}[];
+}

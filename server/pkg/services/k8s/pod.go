@@ -2,16 +2,20 @@ package k8s
 
 import (
 	"context"
+	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
+	"github.com/lbemi/lbemi/pkg/handler/types"
 	corev1 "k8s.io/api/core/v1"
+	policy "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 	"sort"
+	"strings"
 )
 
 type PodImp interface {
@@ -23,6 +27,8 @@ type PodImp interface {
 	GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) ([]*corev1.Pod, error)
 	PodExec(ctx context.Context, namespace, pod, container string, command []string) (remotecommand.Executor, error)
 	GetPodLog(ctx context.Context, pod, container string) *rest.Request
+	EvictsPod(ctx context.Context, name, namespace string) error
+	Search(ctx context.Context, key string, searchType int) ([]*corev1.Pod, error)
 }
 
 type pod struct {
@@ -135,6 +141,58 @@ func (p *pod) GetPodLog(ctx context.Context, pod, container string) *rest.Reques
 		TailLines: &tailLine,
 	}
 	return p.cli.ClientSet.CoreV1().Pods(p.ns).GetLogs(pod, option)
+}
+
+// EvictsPod 驱逐pod
+func (p *pod) EvictsPod(ctx context.Context, name, namespace string) error {
+	// Pod优雅退出时间, 默认退出时间30s, 如果未指定, 则默认为每个对象的值。0表示立即删除。
+	var gracePeriodSeconds int64 = 0
+	propagationPolicy := metav1.DeletePropagationForeground
+	deleteOptions := &metav1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriodSeconds,
+		PropagationPolicy:  &propagationPolicy,
+	}
+	return p.cli.ClientSet.PolicyV1beta1().Evictions(namespace).Evict(ctx, &policy.Eviction{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		DeleteOptions: deleteOptions,
+	})
+}
+
+func (p *pod) Search(ctx context.Context, key string, searchType int) ([]*corev1.Pod, error) {
+	var podList = make([]*corev1.Pod, 0)
+	pods, err := p.List(ctx)
+	if err != nil {
+		log.Logger.Error(err)
+		return nil, err
+	}
+	switch searchType {
+	case types.SearchByName:
+		for _, item := range pods {
+			if strings.Contains(item.Name, key) {
+				podList = append(podList, item)
+			}
+		}
+	case types.SearchByLabel:
+		for _, item := range pods {
+			for k, label := range item.Labels {
+				if strings.Contains(label, key) || strings.Contains(k, key) {
+					podList = append(podList, item)
+					break
+				}
+			}
+		}
+	default:
+		return nil, fmt.Errorf("参数错误")
+	}
+
+	sort.Slice(podList, func(i, j int) bool {
+		return podList[j].ObjectMeta.GetCreationTimestamp().Time.Before(podList[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
+
+	return podList, nil
 }
 
 type PodHandler struct {

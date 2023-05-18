@@ -66,3 +66,22 @@ func (d *statefulSet) Delete(ctx context.Context, name string) error {
 func newStatefulSet(cli *store.Clients, namespace string) *statefulSet {
 	return &statefulSet{cli: cli, ns: namespace}
 }
+
+type StatefulSetHandle struct {
+}
+
+func NewStatefulSetHandle() *StatefulSetHandle {
+	return &StatefulSetHandle{}
+}
+
+func (s *StatefulSetHandle) OnAdd(obj interface{}) {
+	//TODO implement me
+}
+
+func (s *StatefulSetHandle) OnUpdate(oldObj, newObj interface{}) {
+	//TODO implement me
+}
+
+func (s *StatefulSetHandle) OnDelete(obj interface{}) {
+	//TODO implement me
+}

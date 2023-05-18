@@ -1,21 +1,15 @@
 <template>
-	<div class="layout-padding container" >
+	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="mb15">
-				<el-input size="default" placeholder="请输入集群名称" style="max-width: 180px"> </el-input>
-				<el-button size="default" type="primary" class="ml10">
+				<el-input size="small" placeholder="请输入集群名称" style="max-width: 180px"> </el-input>
+				<el-button size="small" type="primary" class="ml10">
 					<el-icon>
 						<ele-Search />
 					</el-icon>
 					查询
 				</el-button>
-				<el-button @click="loadCluster">ceshi </el-button>
-				<el-button size="default" type="success" class="ml10" @click="loadCluster()">
-					<!--					<el-icon>-->
-					<!--						<ele-FolderAdd />-->
-					<!--					</el-icon>-->
-					导入集群
-				</el-button>
+				<el-button size="small" type="success" class="ml10" @click="loadCluster()"> 导入集群 </el-button>
 			</div>
 
 			<el-table :data="data.clusters" style="width: 100%">
@@ -60,14 +54,14 @@
 <script setup lang="ts" name="kubernetesCluster">
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import router from '/@/router';
-import { ClusterInfo } from '/@/types/cluster';
 import { useClusterApi } from '/@/api/kubernetes/cluster';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { kubernetesInfo } from '/@/stores/kubernetes';
+import { ClusterInfo } from '/@/types/kubernetes/cluster';
 
 const CreateCluster = defineAsyncComponent(() => import('./component/create.vue'));
 
-const  k8sStore = kubernetesInfo();
+const k8sStore = kubernetesInfo();
 const clusterAPI = useClusterApi();
 const state = reactive({
 	dialogVisible: false,
@@ -113,7 +107,6 @@ const deleteCluster = async (cluster: any) => {
 };
 
 const handleCluster = (cluster: any) => {
-
 	k8sStore.state.activeCluster = cluster.name;
 
 	router.push({
@@ -124,14 +117,14 @@ const handleCluster = (cluster: any) => {
 
 <style scoped lang="scss">
 .container {
-  :deep(.el-card__body) {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: auto;
-    .el-table {
-      flex: 1;
-    }
-  }
+	:deep(.el-card__body) {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		overflow: auto;
+		.el-table {
+			flex: 1;
+		}
+	}
 }
 </style>

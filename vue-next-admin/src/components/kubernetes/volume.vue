@@ -38,7 +38,7 @@
 			>
 				<el-table-column prop="" label="类型" width="130">
 					<template #default="scope">
-						<el-select v-model="scope.row.type" size="small">
+						<el-select v-model="scope.row.type" size="small" @change="(val:string) => handleTypeChange(val, scope.$index)">
 							<el-option v-for="item in data.typeList" :key="item.value" :label="item.label" :value="item.value" />
 						</el-select>
 					</template>
@@ -49,22 +49,66 @@
 						<el-input v-model="scope.row.name" size="small" />
 					</template>
 				</el-table-column>
-				<el-table-column prop="" label="挂载源" width="250">
+				<el-table-column prop="" label="挂载源" width="200">
 					<template #default="scope">
-						<el-input v-model="scope.row.hostPath.path" size="small" placeholder="主机路径：/tmp" v-show="scope.row.type === 'hostPath'" />
-						<div v-show="scope.row.type === 'configMap'" style="display: flex">
-							<el-select v-model="scope.row.configMap.name" size="small" :loading="data.loading" @click="getConfigMap" show-overflow-tooltip>
-								<el-option v-for="item in data.configMapData" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
+						<el-input
+							v-if="scope.row.type === 'hostPath' && scope.row.hostPath"
+							v-model="scope.row.hostPath.path"
+							size="small"
+							placeholder="主机路径：/tmp"
+						/>
+						<div v-if="scope.row.type === 'persistentVolumeClaim'" style="display: flex">
+							<el-select v-model="scope.row.persistentVolumeClaim.name" size="small" :loading="data.loading" @click="getPvc" show-overflow-tooltip>
+								<el-option v-for="item in data.pvcdata" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name" />
 							</el-select>
-							<el-checkbox size="small">指定键</el-checkbox>
 						</div>
-						<div v-show="scope.row.type === 'secret'" style="display: flex">
+						<div v-if="scope.row.type === 'configMap'" style="display: flex">
+							<el-select
+								v-model="scope.row.configMap.name"
+								size="small"
+								:loading="data.loading"
+								@click="getConfigMap(scope.row)"
+								show-overflow-tooltip
+							>
+								<el-option v-for="item in data.configMapData" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name" />
+							</el-select>
+							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
+								<el-tooltip placement="top" effect="light">
+									<template #content>
+										<div
+											v-for="(item, index) in scope.row.configMap.items"
+											:key="index"
+											style="display: flex; justify-content: space-between; width: 280px"
+										>
+											<span>Key : {{ item.key }}</span>
+											<span>Path: {{ item.path }}</span>
+										</div>
+									</template>
+									高级
+								</el-tooltip>
+							</el-button>
+						</div>
+						<div v-if="scope.row.type === 'secret'" style="display: flex">
 							<el-select v-model="scope.row.secret.secretName" size="small" :loading="data.loading" @click="getSecret" show-overflow-tooltip>
-								<el-option v-for="item in data.secretData" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
+								<el-option v-for="item in data.secretData" :key="item.metadata!.uid" :label="item.metadata!.name" :value="item.metadata!.name" />
 							</el-select>
+							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
+								<el-tooltip placement="top" effect="dark">
+									<template #content>
+										<div
+											v-for="(item, index) in scope.row.secret.items"
+											:key="index"
+											style="display: flex; justify-content: space-between; width: 280px"
+										>
+											<span>Key : {{ item.key }}</span>
+											<span>Path: {{ item.path }}</span>
+										</div>
+									</template>
+									高级
+								</el-tooltip>
+							</el-button>
 						</div>
-						<span v-show="scope.row.type === 'tmp'">临时目录</span>
-						<el-input v-model="scope.row.hostPath.path" size="small" placeholder="主机路径：/tmp" v-show="scope.row.type === ' '" />
+						<span v-if="scope.row.type === 'tmp'">临时目录</span>
 					</template>
 				</el-table-column>
 				<el-table-column prop="mountPath" label="容器挂载路径" width="150">
@@ -84,28 +128,73 @@
 				</el-table-column>
 			</el-table>
 		</el-form-item>
+		<el-dialog ref="dialogRef" v-model="dialogFormVisible" title="指定键：" width="400px" v-if="dialogFormVisible">
+			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0" @click="addKey">新增</el-button>
+			<el-table
+				:data="data.items"
+				size="small"
+				style="width: 100%; font-size: 10px"
+				:cell-style="{ padding: '0,5px' }"
+				:row-style="{ padding: '2px' }"
+				:header-cell-style="{ padding: '5px' }"
+				:header-row-style="{ padding: '5px' }"
+			>
+				<el-table-column label="键名">
+					<template #default="scope">
+						<el-select v-model="scope.row.key" placeholder="选择key" size="small">
+							<el-option v-for="(item, key, index) in data.keyValData" :value="key" :key="index" :label="key"> {{ key }} </el-option>
+						</el-select>
+					</template>
+				</el-table-column>
+				<el-table-column label="挂载路径">
+					<template #default="scope">
+						<el-input v-model="scope.row.path" autocomplete="off" size="small" placeholder="请使用相对路径：tmp" />
+					</template>
+				</el-table-column>
+				<el-table-column width="30">
+					<template #default="scope">
+						<el-button :icon="RemoveFilled" type="danger" size="small" text @click="data.items.splice(scope.$index, 1)"></el-button>
+					</template>
+				</el-table-column>
+			</el-table>
+
+			<template #footer>
+				<span class="dialog-footer">
+					<el-button @click="handleClose" size="small">Cancel</el-button>
+					<el-button type="primary" @click="handleConfirm" size="small"> Confirm </el-button>
+				</span>
+			</template>
+		</el-dialog>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { CaretBottom, CaretTop, CirclePlusFilled, Delete, Edit, RemoveFilled } from '@element-plus/icons-vue';
-import { reactive, watch } from 'vue';
-import { deepClone } from '/@/utils/other';
-import { V1ConfigMap, V1HostPathVolumeSource, V1Secret, V1Volume, V1VolumeMount } from '@kubernetes/client-node';
-import { V1SecretVolumeSource } from '@kubernetes/client-node/dist/gen/model/v1SecretVolumeSource';
-import { V1ConfigMapVolumeSource } from '@kubernetes/client-node/dist/gen/model/v1ConfigMapVolumeSource';
+import { CaretBottom, CaretTop, CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
+import { onUnmounted, reactive, ref, watch } from 'vue';
+import { V1ConfigMap, V1PersistentVolumeClaim, V1Secret, V1Volume, V1VolumeMount } from '@kubernetes/client-node';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useConfigMapApi } from '/@/api/kubernetes/configMap';
 import { useSecretApi } from '/@/api/kubernetes/secret';
+import { V1KeyToPath } from '@kubernetes/client-node/dist/gen/model/v1KeyToPath';
+import { usePVCApi } from '/@/api/kubernetes/persitentVolumeClaim';
+import mittBus from '/@/utils/mitt';
+import { isObjectValueEqual } from '/@/utils/arrayOperation';
+import { CreateK8SVolumentData } from '/@/types/kubernetes/custom';
 
 const k8sStore = kubernetesInfo();
 const configMapApi = useConfigMapApi();
-const seceretApi = useSecretApi();
+const pvcApi = usePVCApi();
+const secretApi = useSecretApi();
+const dialogFormVisible = ref(false);
+const dialogRef = ref();
 
 const data = reactive({
-	keySet: false,
+	loadFromParent: false,
+	tmpData: {} as any,
+	index: 0,
+	keyValData: {} as { [key: string]: string } | undefined,
 	set: false,
 	show: true,
 	typeList: [
@@ -125,95 +214,285 @@ const data = reactive({
 			label: '临时目录',
 			value: 'tmp',
 		},
+		{
+			label: 'PVC',
+			value: 'persistentVolumeClaim',
+		},
 	],
-	volumeData: [],
+	volumeData: [] as Array<CreateK8SVolumentData>,
+	pvcdata: [] as V1PersistentVolumeClaim[],
+	tmpVolumes: [] as V1Volume[],
 	volumes: [] as V1Volume[],
+	volumeMount: [] as V1VolumeMount[],
 	configMapData: [] as V1ConfigMap[],
 	loading: false,
 	secretData: [] as V1Secret[],
+	form: {
+		key: '',
+		path: '',
+	},
+	items: [] as Array<V1KeyToPath>,
 });
 
-const getConfigMap = () => {
-	configMapApi.listConfigMap(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
-		data.configMapData = res.data.data;
+const addKey = () => {
+	data.items.push({
+		key: '',
+		path: '',
 	});
 };
+// 从接口获取configMap数据
+const getConfigMap = (config: any) => {
+	configMapApi.listConfigMap(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
+		data.configMapData = res.data.data;
+		config.keySetShow = true;
+	});
+};
+// 从接口获取secret数据
 const getSecret = () => {
-	seceretApi.listSecret(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
-		console.log('get secret data', res.data);
+	secretApi.listSecret(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
 		data.secretData = res.data.data;
 	});
 };
+// 从接口获取pvc数据
+const getPvc = () => {
+	pvcApi.listPVC(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
+		data.pvcdata = res.data.data;
+	});
+};
+// 打开dialog,并处理初始化选项
+const openDialog = (config: any, index: number) => {
+	if (config.type === 'configMap') {
+		if (config.configMap.items != undefined) {
+			data.items = config.configMap.items;
+		}
+		dialogFormVisible.value = true;
+		if (dialogFormVisible.value) {
+			data.configMapData.forEach((item: V1ConfigMap) => {
+				if (item.metadata?.name === config.configMap.name) {
+					data.keyValData = item.data;
+				}
+			});
+			data.index = index;
+			data.tmpData = config;
+		}
+	} else if (config.type === 'secret') {
+		if (config.secret.items != undefined) {
+			data.items = config.secret.items;
+		}
+		dialogFormVisible.value = true;
+		if (dialogFormVisible.value) {
+			data.secretData.forEach((item) => {
+				if (item.metadata?.name === config.secret.secretName) {
+					data.keyValData = item.data;
+				}
+			});
+			data.index = index;
+			data.tmpData = config;
+		}
+	}
+};
+// 关闭dialog
+const handleClose = () => {
+	dialogFormVisible.value = false;
+	//置空数据
+	data.tmpData = {};
+	data.index = 0;
+	data.items = [];
+};
+// 确认指定特定的键值
+const handleConfirm = () => {
+	if (data.tmpData.type === 'configMap') {
+		data.volumeData[data.index].configMap!.items = data.items;
+	} else if (data.tmpData.type === 'secret') {
+		data.volumeData[data.index].secret!.items = data.items;
+	}
+	handleClose();
+};
+
+// 转换volumeData 为k8s所需类型的数据
+const handleVolumeData = () => {
+	const tmpVolume = [] as V1Volume[];
+	const tempVolumeMount = [] as V1VolumeMount[];
+
+	data.volumeData.forEach((item: any, index: number) => {
+		if (tempVolumeMount.length === index) {
+			tempVolumeMount.push({} as V1VolumeMount);
+		}
+		if (tmpVolume.length === index) {
+			tmpVolume.push({} as V1Volume);
+		}
+		tmpVolume[index].name = item.name;
+		tempVolumeMount[index].name = item.name;
+		tempVolumeMount[index].mountPath = item.volumeMountData.mountPath;
+		tempVolumeMount[index].subPath = item.volumeMountData.subPath;
+		switch (item.type) {
+			case 'configMap':
+				tmpVolume[index].configMap = item.configMap;
+				break;
+			case 'secret':
+				tmpVolume[index].secret = item.secret;
+				break;
+			case 'hostPath':
+				tmpVolume[index].hostPath = item.hostPath;
+				break;
+			case 'persistentVolumeClaim':
+				tmpVolume[index].persistentVolumeClaim = item.persistentVolumeClaim;
+				break;
+			case 'tmp':
+				tmpVolume[index].emptyDir = item.emptyDir;
+				break;
+		}
+	});
+	data.volumeMount = tempVolumeMount;
+	data.tmpVolumes = tmpVolume;
+	data.volumes = tmpVolume;
+};
+
+// 添加volumeData数据
 const handleSet = () => {
-	// data.set = !data.set;
 	const name = 'volume-' + uuid().toString().split('-')[1];
 	data.volumeData.push({
 		type: 'hostPath',
 		name: name,
-		mountSource: {},
-		containerPath: '',
-		subPath: '',
-		hostPath: {} as V1HostPathVolumeSource,
-		secret: {} as V1SecretVolumeSource,
-		configMap: {} as V1ConfigMapVolumeSource,
+		hostPath: {
+			path: '',
+		},
 		volumeMountData: {
 			name: name,
 			mountPath: '',
-			subPath: '',
-		} as V1VolumeMount,
-	});
+		},
+	} as CreateK8SVolumentData);
 };
-const props = defineProps({});
 
-const handleArr = (source: Array<String>) => {
-	const dataCopy = deepClone(source);
-	let str = '';
-	dataCopy.forEach((item, index) => {
-		if (index == dataCopy.length - 1) {
-			str = str + item;
-		} else {
-			str = str + item + ',';
-		}
-	});
-	return str;
+// 根据不同的type初始化volumeData的值
+const handleTypeChange = (type: string, index: number) => {
+	// 切换type类型时初始化不同的值
+	switch (type) {
+		case 'hostPth':
+			data.volumeData[index].hostPath = {
+				path: '',
+			};
+			break;
+		case 'secret':
+			data.volumeData[index].secret = {};
+			break;
+		case 'configMap':
+			data.volumeData[index].configMap = {};
+			break;
+		case 'tmp':
+			data.volumeData[index].emptyDir = {};
+			break;
+		case 'persistentVolumeClaim':
+			data.volumeData[index].persistentVolumeClaim = {
+				claimName: '',
+			};
+			break;
+	}
 };
-// watch(
-//     () => [props.args, props.commands],
-//     () => {
-//       if (props.args) {
-//         data.args = handleArr(props.args);
-//       }
-//       if (props.commands) {
-//         data.commands = handleArr(props.commands);
-//       }
-//     },
-//     {
-//       immediate: true,
-//       deep: true,
-//     }
-// );
-// const emit = defineEmits(['updateCommand']);
-// watch(
-//     () => [data.args, data.commands, data.commandSet],
-//     () => {
-//       if (!data.commandSet) {
-//         data.k8s.args = [];
-//         data.k8s.commands = [];
-//       } else {
-//         if (data.args) {
-//           data.k8s.args = data.args.split(',');
-//         }
-//         if (props.commands) {
-//           data.k8s.commands = data.commands.split(',');
-//         }
-//       }
-//       emit('updateCommand', data.k8s);
-//     },
-//     {
-//       immediate: true,
-//       deep: true,
-//     }
-// );
+// 监听从根组件传递的volume变化
+mittBus.on('updateDeploymentVolumes', (volumes: any) => {
+	if (!isObjectValueEqual(volumes, data.volumes)) {
+		console.log('---------------------->>>>>>>>', volumes);
+
+		data.loadFromParent = true;
+		data.tmpVolumes = volumes;
+		parseVolumeMount(data.volumeMount);
+		setTimeout(() => {
+			data.loadFromParent = false;
+		}, 100);
+	}
+});
+
+onUnmounted(() => {
+	//卸载
+	mittBus.off('updateDeploymentVolumes', () => {});
+});
+
+//接受父组件传递的值
+const props = defineProps({
+	volumeMounts: Array<V1VolumeMount>,
+});
+
+//解析volumeMount为所需要的CreateK8SVolumentData 类型
+const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
+	const tmpVolumeData = [] as Array<CreateK8SVolumentData>;
+	volumeMount.forEach((item: V1VolumeMount) => {
+		data.tmpVolumes.forEach((v: V1Volume) => {
+			let volumeType = '';
+
+			if (v.hostPath) {
+				volumeType = 'hostPath';
+			}
+			if (v.secret) {
+				volumeType = 'secret';
+			}
+			if (v.configMap) {
+				volumeType = 'configMap';
+			}
+			if (v.emptyDir) {
+				volumeType = 'tmp';
+			}
+			if (v.persistentVolumeClaim) {
+				volumeType = 'persistentVolumeClaim';
+			}
+
+			if (item.name === v.name) {
+				tmpVolumeData.push({
+					name: item.name,
+					type: volumeType,
+					emptyDir: v.emptyDir,
+					secret: v.secret,
+					configMap: v.configMap,
+					persistentVolumeClaim: v.persistentVolumeClaim,
+					hostPath: v.hostPath,
+					volumeMountData: {
+						name: item.name,
+						mountPath: item.mountPath,
+						subPath: item.subPath,
+					} as V1VolumeMount,
+				});
+			}
+		});
+	});
+	if (!isObjectValueEqual(data.volumeData, tmpVolumeData)) data.volumeData = tmpVolumeData;
+};
+
+watch(
+	() => [props.volumeMounts, data.tmpVolumes],
+	() => {
+		if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0) {
+			console.log('接收到父组件的值： volume', props.volumeMounts);
+
+			data.loadFromParent = true;
+			parseVolumeMount(props.volumeMounts);
+			setTimeout(() => {
+				data.loadFromParent = false;
+			}, 100);
+		}
+		console.log('>>>>>>>>>>>>>>', data.volumeData);
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
+
+// 派发更新事件
+const emit = defineEmits(['updateVolumeMount']);
+watch(
+	() => [data.volumeData],
+	() => {
+		if (!data.loadFromParent) {
+			// handleVolumeData();
+			emit('updateVolumeMount', data.volumeMount);
+			mittBus.emit('updateVolumes', data.volumes);
+		}
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
 </script>
 
 <style scoped>

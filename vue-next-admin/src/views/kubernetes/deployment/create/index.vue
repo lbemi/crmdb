@@ -4,6 +4,7 @@
 			<el-backtop :right="100" :bottom="100" />
 
 			<div>
+				<el-button type="primary" @click="edit">编辑</el-button>
 				<el-steps :active="data.active" finish-status="success" simple>
 					<el-step title="基本信息" description="Some description" />
 					<el-step title="容器配置" description="Some description" />
@@ -18,7 +19,10 @@
 								<Meta :bindData="data.bindMetaData" @updateData="getMeta" />
 							</div>
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-								<Containers :containers="data.deployment.spec.template.spec.containers" @updateContainers="getContainers" />
+								<Containers
+									:containers="deepClone(data.deployment.spec!.template.spec!.containers) as Array< V1Container>"
+									@updateContainers="getContainers"
+								/>
 							</div>
 							<div style="margin-top: 10px" id="2" v-show="data.active === 2">
 								<h1>asdj</h1>
@@ -53,14 +57,11 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, reactive, watch } from 'vue';
-
-import { ref } from 'vue-demi';
+import { defineAsyncComponent, onBeforeMount, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { Codemirror } from 'vue-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { V1Container, V1Deployment, V1DeploymentSpec, V1LabelSelector } from '@kubernetes/client-node';
-import yaml from 'js-yaml';
+import { V1Container, V1Deployment } from '@kubernetes/client-node';
+import yamlJs from 'js-yaml';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
@@ -68,77 +69,125 @@ import router from '/@/router';
 import { useRoute } from 'vue-router';
 import mittBus from '/@/utils/mitt';
 import { deepClone } from '/@/utils/other';
-const kubeInfo = kubernetesInfo();
-const deployApi = useDeploymentApi();
+import { CreateK8SBindData, CreateK8SMetaData } from '/@/types/kubernetes/custom';
+import type { FormInstance } from 'element-plus';
+import { StreamLanguage } from '@codemirror/language';
+import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
-// 格式化 env
+
+const kubeInfo = kubernetesInfo();
+const deployApi = useDeploymentApi();
+
+const edit = () => {
+	const dep = kubeInfo.state.activeDeployment;
+	delete dep.metadata?.resourceVersion;
+	delete dep.metadata?.managedFields;
+	delete dep.status;
+	data.code = yamlJs.dump(dep);
+};
+const metaRef = ref<FormInstance>();
 const data = reactive({
-	active: 1,
-	deployment: {
+	loadCode: false,
+	active: 0,
+	//初始化deployment
+	deployment: <V1Deployment>{
 		apiVersion: 'apps/v1',
 		kind: 'Deployment',
 		metadata: {
-			name: '',
+			// name: '',
 			namespace: 'default',
 		},
 		spec: {
+			replicas: 1,
 			selector: {
 				matchLabels: {},
 			},
-			replicas: 1,
 			template: {
 				metadata: {
 					labels: {},
 				},
 				spec: {
+					serviceAccount: 'default',
 					containers: [],
+					// volumes: [],
+				},
+			},
+			strategy: {
+				type: 'RollingUpdate',
+				rollingUpdate: {
+					maxUnavailable: '25%',
+					maxSurge: '25%',
 				},
 			},
 		},
 	},
 	code: '',
 	// 绑定初始值
-	bindMetaData: {
-		metadata: {
-			namespace: 'default',
-			labels: { app: '' },
-		} as V1DeploymentSpec,
-		replicas: 1,
+	bindMetaData: <CreateK8SBindData>{
 		resourceType: 'deployment',
 	},
 });
-const extensions = [javascript(), oneDark];
+const extensions = [oneDark, StreamLanguage.define(yaml)];
 const getContainers = (containers: Array<V1Container>) => {
-	data.deployment.spec.template.spec.containers = containers;
-	data.code = yaml.dump(data.deployment);
+	data.deployment.spec!.template.spec!.containers = containers;
+	console.log('4.接收到容器发生变化。。。。。', containers);
+	updateCodeMirror();
 };
-const getMeta = (newData) => {
-	// console.log('获取到的deployment数据:', newData, data, isObjectValueEqual(data.deployment.metadata, newData.meta));
-	// if (!isObjectValueEqual(data.deployment.metadata,newData.meta )  || data.deployment.spec!.replicas != newData.replicas) {
+
+const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
+	metaRef.value = metaRefs;
 	const dep = deepClone(newData);
 	const metaLabels = deepClone(newData);
 	data.deployment.metadata = newData.meta;
-	data.deployment.spec.selector.matchLabels = dep.meta.labels;
-	data.deployment.spec.template.metadata.labels = metaLabels.meta.labels;
+	//更新labels
+	if (dep.meta.name) data.deployment.metadata!.labels!.app = dep.meta.name;
+	//更新selector.matchLabels
+	data.deployment.spec!.selector.matchLabels = dep.meta.labels;
+	data.deployment.spec!.template.metadata!.labels = metaLabels.meta.labels;
 	data.deployment.spec!.replicas = newData.replicas;
-	data.code = yaml.dump(data.deployment);
-	// }
+	updateCodeMirror();
 };
-const jumpTo = (id) => {
+const nextStep = (formEl: FormInstance | undefined) => {
+	if (!formEl) {
+		ElMessage.error('请输入必填项');
+		return;
+	}
+	formEl.validate((valid) => {
+		if (valid) {
+			if (data.active++ > 2) data.active = 0;
+		} else {
+			ElMessage.error('请输检查字段');
+		}
+	});
+};
+const jumpTo = (id: number) => {
 	data.active = id;
-	document.getElementById(id).scrollIntoView(true);
+
+	document.getElementById(id + '')!.scrollIntoView(true);
 };
 const next = () => {
 	// data.deployment.metadata = metaRef.value.data.meta;
 	// data.deployment.spec!.replicas = metaRef.value.data.replicas;
 	// data.code = yaml.dump(data.deployment);
-	if (data.active++ > 2) data.active = 0;
+	nextStep(metaRef.value);
+	// if (data.active === 0) {
+	// 	if (nextStep(metaRef.value)) {
+	// 		data.active += 1;
+	// if (data.active++ > 2) data.active = 0;
+	// 	}
+	// }
+
+	// if (data.active++ > 2) data.active = 0;
 };
 
 // 定义变量内容
 const route = useRoute();
+mittBus.on('updateVolumes', (res) => {
+	data.deployment.spec!.template.spec!.volumes = res;
+	updateCodeMirror();
+});
 
 const confirm = () => {
 	// data.code = yaml.dump(data.deployment);
@@ -156,26 +205,46 @@ const confirm = () => {
 			ElMessage.error(e.message);
 		});
 };
-
+const updateCodeMirror = () => {
+	data.loadCode = true;
+	data.code = yamlJs.dump(data.deployment);
+	setTimeout(() => {
+		data.loadCode = false;
+	}, 1);
+};
 watch(
 	() => data.code,
 	(newValue, oldValue) => {
-		// console.log("Code ----新的：",newValue, "老的:",oldValue)
-		if (newValue) {
+		if (newValue && !data.loadCode) {
 			if (newValue != oldValue) {
-				const newData = yaml.load(newValue);
-				console.log('code变化了，回填数据', newData, 'oldCPde:', oldValue);
-				data.bindMetaData.metadata = newData.metadata;
-				data.bindMetaData.replicas = newData.spec?.replicas!;
-				data.deployment.spec.template.spec.containers = newData.spec.template.spec.containers;
+				const newData = yamlJs.load(newValue) as V1Deployment;
+				if (typeof newData === 'object' && newData != null) {
+					console.log('code变化了，回填数据', newValue);
+					data.bindMetaData.metadata = newData.metadata!;
+					data.bindMetaData.replicas = newData.spec?.replicas!;
+					data.deployment = newData;
+					mittBus.emit('updateDeploymentVolumes', newData.spec!.template.spec!.volumes);
+					//重新更新一下关联字段，并更新cide
+					data.deployment.metadata!.labels!.app = newData.metadata!.name!;
+					data.deployment.spec!.selector.matchLabels = deepClone(newData).metadata!.labels;
+					data.deployment.spec!.template.metadata!.labels = deepClone(newData).metadata!.labels;
+					updateCodeMirror();
+				}
 			}
 		}
 	},
 	{
-		immediate: true,
 		deep: true,
 	}
 );
+
+onBeforeMount(() => {
+	updateCodeMirror();
+});
+onUnmounted(() => {
+	//卸载
+	mittBus.off('updateVolumes', () => {});
+});
 </script>
 
 <style scoped lang="scss">

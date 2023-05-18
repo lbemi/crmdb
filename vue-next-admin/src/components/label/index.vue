@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<el-table :data="table.tableData" style="width: 100%; font-size: 12px" size="small">
-			<el-table-column :prop="item.prop" :label="item.label" v-for="item in table.tableHeader" :key="item.prop" >
+			<el-table-column :prop="item.prop" :label="item.label" v-for="item in table.tableHeader" :key="item.prop">
 				<template #default="scope">
 					<div v-show="item.editable || scope.row.editable">
 						<template v-if="item.type === 'input'">
@@ -10,8 +10,7 @@
 								size="small"
 								v-model="scope.row[item.prop]"
 								:placeholder="`${item.label}`"
-								@change="handleEdit(scope.$index, scope.row)
-								"
+								@change="handleEdit(scope.$index, scope.row)"
 							/>
 						</template>
 					</div>
@@ -39,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, reactive, watch} from 'vue';
+import { onMounted, reactive, watch } from 'vue';
 interface label {
 	key: string;
 	value: string;
@@ -89,7 +88,6 @@ onMounted(() => {
 		item.addStatus = true;
 		table.tableData.splice(0, 0, item);
 	}
-
 });
 const handleEdit = (index: number, row: header) => {
 	row.editable = true;
@@ -101,17 +99,17 @@ const handleDelete = (index: number) => {
 };
 
 const data = reactive({
-  labels: {} as {[key:string]:string}
-})
+	labels: {} as { [key: string]: string },
+});
 const emit = defineEmits(['on-click']);
 const clickTap = () => {
 	data.labels = {} as { [index: string]: string };
 	for (const k in table.tableData) {
 		if (table.tableData[k].key != '') {
-      data.labels[table.tableData[k].key] = table.tableData[k].value;
+			data.labels[table.tableData[k].key] = table.tableData[k].value;
 		}
 	}
-  emit('on-click', data.labels);
+	emit('on-click', data.labels);
 };
 const append = (index: number) => {
 	item.editable = false;
@@ -126,24 +124,30 @@ const append = (index: number) => {
 	table.tableData.splice(table.tableData.length + 1, 0, item);
 	clickTap();
 };
-
-watch(()=>props.labelData,()=>{
-	if(props.labelData) {
-		table.tableData = props.labelData;
-	}
-},{
-  immediate: true,
-  deep: true
-})
-watch(()=>data,()=>{
-
-},{
-  immediate: true,
-  deep: true
-})
 const add = (header: header) => {
 	header.editable = false;
 };
+
+watch(
+	() => props.labelData,
+	() => {
+		if (props.labelData) {
+			table.tableData = props.labelData;
+		}
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
+watch(
+	() => data,
+	() => {},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
 </script>
 
 <style scoped lang="scss">

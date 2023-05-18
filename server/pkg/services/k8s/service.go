@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/handler/types"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -15,6 +17,7 @@ type ServiceImp interface {
 	Delete(ctx context.Context, name string) error
 	Create(ctx context.Context, node *v1.Service) (*v1.Service, error)
 	Update(ctx context.Context, service *v1.Service) (*v1.Service, error)
+	ListWorkLoad(ctx context.Context, name string) (*types.ServiceWorkLoad, error)
 }
 
 type service struct {
@@ -23,12 +26,69 @@ type service struct {
 }
 
 func (s *service) List(ctx context.Context) ([]*v1.Service, error) {
-	nodeList, err := s.client.SharedInformerFactory.Core().V1().Services().Lister().Services(s.ns).List(labels.Everything())
+	list, err := s.client.SharedInformerFactory.Core().V1().Services().Lister().Services(s.ns).List(labels.Everything())
 
 	if err != nil {
 		log.Logger.Error(err)
 	}
-	return nodeList, err
+	return list, err
+}
+func (s *service) ListWorkLoad(ctx context.Context, name string) (*types.ServiceWorkLoad, error) {
+	workLoad := &types.ServiceWorkLoad{
+		Deployments:  make([]*appsv1.Deployment, 0),
+		StatefulSets: make([]*appsv1.StatefulSet, 0),
+		DaemonSets:   make([]*appsv1.DaemonSet, 0),
+		Events:       make([]*v1.Event, 0),
+	}
+	svc, err := s.Get(ctx, name)
+	if err != nil {
+		log.Logger.Error(err)
+		return workLoad, err
+	}
+
+	selector := labels.SelectorFromSet(svc.Spec.Selector)
+
+	if selector.Empty() {
+		return workLoad, nil
+	}
+	eventList, err := s.client.SharedInformerFactory.Core().V1().Events().Lister().Events(s.ns).List(labels.Everything())
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	for _, item := range eventList {
+		if item.InvolvedObject.Kind == "Service" && item.InvolvedObject.Name == name {
+			workLoad.Events = append(workLoad.Events, item)
+		}
+	}
+	endpoints, err := s.client.ClientSet.CoreV1().Endpoints(s.ns).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		log.Logger.Error(err)
+		return workLoad, err
+	}
+	deployments, err := s.client.SharedInformerFactory.Apps().V1().Deployments().Lister().List(selector)
+	if err != nil {
+		log.Logger.Error(err)
+		return workLoad, err
+	}
+
+	daemonSets, err := s.client.SharedInformerFactory.Apps().V1().DaemonSets().Lister().List(selector)
+	if err != nil {
+		log.Logger.Error(err)
+		return workLoad, err
+	}
+
+	statefulSets, err := s.client.SharedInformerFactory.Apps().V1().StatefulSets().Lister().List(selector)
+	if err != nil {
+		log.Logger.Error(err)
+		return workLoad, err
+	}
+
+	workLoad.Deployments = deployments
+	workLoad.StatefulSets = statefulSets
+	workLoad.DaemonSets = daemonSets
+	workLoad.EndPoints = endpoints
+
+	return workLoad, nil
 }
 
 func (s *service) Get(ctx context.Context, name string) (*v1.Service, error) {
@@ -60,9 +120,28 @@ func (s *service) Update(ctx context.Context, service *v1.Service) (*v1.Service,
 	if err != nil {
 		log.Logger.Error(err)
 	}
+
 	return res, err
 }
 
 func newService(client *store.Clients, namespace string) *service {
 	return &service{client: client, ns: namespace}
+}
+
+type ServiceHandle struct{}
+
+func NewServiceHandle() *ServiceHandle {
+	return &ServiceHandle{}
+}
+
+func (s *ServiceHandle) OnAdd(obj interface{}) {
+	//TODO implement me
+}
+
+func (s *ServiceHandle) OnUpdate(oldObj, newObj interface{}) {
+	//TODO implement me
+}
+
+func (s *ServiceHandle) OnDelete(obj interface{}) {
+	//TODO implement me
 }

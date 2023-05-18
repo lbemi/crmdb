@@ -5,6 +5,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sort"
 )
 
@@ -15,6 +16,7 @@ type EventGetter interface {
 type IEvent interface {
 	List(ctx context.Context) ([]*v1.Event, error)
 	Get(ctx context.Context, name string) (*v1.Event, error)
+	ListByLabels(ctx context.Context, labelsData labels.Set) ([]*v1.Event, error)
 }
 
 type event struct {
@@ -36,6 +38,13 @@ func (e *event) List(ctx context.Context) ([]*v1.Event, error) {
 	return eventList, err
 }
 
+func (e *event) ListByLabels(ctx context.Context, labelsData labels.Set) ([]*v1.Event, error) {
+	events, err := e.k8s.Event().ListByLabels(ctx, labelsData)
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	return events, err
+}
 func (e *event) Get(ctx context.Context, name string) (*v1.Event, error) {
 	event, err := e.k8s.Event().Get(ctx, name)
 	if err != nil {

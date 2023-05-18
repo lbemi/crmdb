@@ -20,6 +20,19 @@
 				</el-breadcrumb-item>
 			</transition-group>
 		</el-breadcrumb>
+		<!-- <div style="margin-left: 10px" v-if="route.path.startsWith('/kubernetes') && route.path != '/kubernetes/cluster'">
+			<a style="font-size: 10px">命名空间：</a>
+			<el-select
+				v-model="k8sStore.state.activeNamespace"
+				style="max-width: 180px"
+				class="m-2"
+				placeholder="Select"
+				size="small"
+				@change="handleChange"
+				><el-option key="all" label="所有命名空间" value="all"></el-option>
+				<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
+			</el-select>
+		</div> -->
 	</div>
 </template>
 
@@ -31,8 +44,11 @@ import other from '/@/utils/other';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import { useRoutesList } from '/@/stores/routesList';
+import { kubernetesInfo } from '/@/stores/kubernetes';
+import mittBus from '/@/utils/mitt';
 
 // 定义变量内容
+const k8sStore = kubernetesInfo();
 const stores = useRoutesList();
 const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
@@ -46,6 +62,9 @@ const state = reactive<BreadcrumbState>({
 	routeSplitIndex: 1,
 });
 
+const handleChange = () => {
+	mittBus.emit('changeNamespace');
+};
 // 动态设置经典、横向布局不显示
 const isShowBreadcrumb = computed(() => {
 	initRouteSplit(route.path);

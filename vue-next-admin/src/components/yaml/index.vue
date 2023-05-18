@@ -1,17 +1,14 @@
 <template>
 	<div class="system-user-dialog-container">
-		<el-dialog title="YAML" v-model="state.dialogVisible" width="769px">
-			<codemirror
-				v-model="code"
-				:style="{ height: '100%' }"
-				:autofocus="true"
-				:tabSize="2"
-				:extensions="extensions"
-			/>
+		<el-dialog v-model="dialogVisible" width="800px" @close="handleClose()">
+			<template #header>
+				<h3>YAML</h3>
+			</template>
+			<Codemirror v-model="code" style="height: 100%" :autofocus="true" :tabSize="2" :extensions="extensions" :disabled="disabledUpdate" />
 			<template #footer>
 				<span class="dialog-footer">
-					<el-button size="default">取 消</el-button>
-					<el-button type="primary" size="default">更新</el-button>
+					<el-button size="small" @click="handleClose">关闭</el-button>
+					<el-button type="primary" size="small" @click="update" v-if="!disabledUpdate">更新</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -20,28 +17,68 @@
 
 <script setup lang="ts">
 import YAML from 'js-yaml';
-import { reactive, ref } from 'vue';
-import  {Codemirror} from "vue-codemirror";
-import { javascript } from "@codemirror/lang-javascript";
-import { oneDark } from "@codemirror/theme-one-dark";
+import { ref, watch } from 'vue';
+import { Codemirror } from 'vue-codemirror';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { StreamLanguage } from '@codemirror/language';
+import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
-const code = ref();
-const extensions = [javascript(), oneDark];
-const state = reactive({
-	dialogVisible: false,
-});
-
-const openDialog = (data: any) => {
-	state.dialogVisible = true;
-  code.value = `apiVersion: apps/v1
-kind: Deployment\n`
-	code.value += YAML.dump(data);
-
+const code = ref('');
+const extensions = [oneDark, StreamLanguage.define(yaml)];
+const dialogVisible = ref(false);
+const handleClose = () => {
+	emit('update:dialogVisible', false);
 };
 
-defineExpose({
-	openDialog,
+const emit = defineEmits(['update', 'update:dialogVisible']);
+
+const update = () => {
+	emit('update', code.value);
+};
+
+const props = defineProps({
+	codeData: Object,
+	dialogVisible: Boolean,
+	resourceType: String,
+	disabledUpdate: Boolean,
 });
+
+watch(
+	() => [props.resourceType, props.codeData],
+	() => {
+		dialogVisible.value = props.dialogVisible;
+		if (props.resourceType) {
+			switch (props.resourceType) {
+				case 'deployment':
+					code.value = `apiVersion: apps/v1\nkind: Deployment\n`;
+					break;
+				case 'statefulSet':
+					code.value = `apiVersion: apps/v1\nkind: DaemonSet\n`;
+					break;
+				case 'pod':
+					code.value = `apiVersion: v1\nkind: Pod\n`;
+					break;
+				case 'node':
+					code.value = `apiVersion: v1\nkind: Node\n`;
+					break;
+				case 'ingress':
+					code.value = `apiVersion: networking.k8s.io/v1\nkind: Ingress\n`;
+					break;
+				case 'service':
+					code.value = `apiVersion: v1\nkind: Service\n`;
+					break;
+				default:
+					code.value = '';
+			}
+		}
+		if (props.codeData) {
+			code.value += YAML.dump(props.codeData);
+		}
+	},
+	{
+		immediate: true,
+	}
+);
 </script>
 
 <style scoped></style>
