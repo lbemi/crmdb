@@ -37,7 +37,7 @@
 					</template>
 				</el-input>
 				<el-button type="primary" size="small" class="ml10" @click="createService" :icon="Edit">创建</el-button>
-				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete">批量删除</el-button>
+				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete" @click="deleteServices">批量删除</el-button>
 				<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
 					<el-icon>
 						<ele-RefreshRight />
@@ -253,6 +253,16 @@ const createService = () => {
 	data.activeService = {}
 	data.serviceDialog = true;
 };
+
+const deleteServices = () =>{
+	data.selectData.forEach(async (service: V1Service) =>{
+	await	servieApi
+				.deleteService({ cloud: k8sStore.state.activeCluster }, service.metadata!.name!, service.metadata!.namespace!)
+	})
+	setTimeout(()=>{
+		listService();
+	},100)
+}
 
 const deleteService = (service: V1Service) => {
 	ElMessageBox({
