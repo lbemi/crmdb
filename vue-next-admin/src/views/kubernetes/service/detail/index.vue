@@ -355,6 +355,8 @@ const updateServiceYaml = async (svc: any) => {
 		.updateService({ cloud: k8sStore.state.activeCluster }, updateData)
 		.then((res) => {
 			if (res.code == 200) {
+				// 同步更新store数据,刷新当前页面数据
+				getService()
 				ElMessage.success('更新成功');
 			} else {
 				ElMessage.error(res.message);
@@ -366,6 +368,13 @@ const updateServiceYaml = async (svc: any) => {
 	data.dialogVisible = false;
 };
 
+const getService = ()=>{
+	servieApi.getService(k8sStore.state.activeService!.metadata!.namespace!,k8sStore.state.activeService!.metadata!.name!,{cloud: k8sStore.state.activeCluster}).then((res)=>{
+		if(res.code === 200 ) {
+			k8sStore.state.activeService = res.data
+		}
+	})
+}
 const backRoute = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));
 	router.push({

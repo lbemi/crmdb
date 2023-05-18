@@ -2,6 +2,8 @@ package kubernetes
 
 import (
 	"context"
+	"sort"
+
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
@@ -30,12 +32,17 @@ func NewService(k8s *k8s.Factory) *service {
 }
 
 func (s *service) List(ctx context.Context) ([]*v1.Service, error) {
-	nodeList, err := s.k8s.Service().List(ctx)
+	serviceList, err := s.k8s.Service().List(ctx)
 
 	if err != nil {
 		log.Logger.Error(err)
 	}
-	return nodeList, err
+	//按时间排序
+	sort.Slice(serviceList, func(i, j int) bool {
+		return serviceList[j].ObjectMeta.GetCreationTimestamp().Time.Before(serviceList[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
+
+	return serviceList, err
 }
 
 func (s *service) ListWorkLoad(ctx context.Context, name string) (*types.ServiceWorkLoad, error) {

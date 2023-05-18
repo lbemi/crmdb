@@ -13,7 +13,7 @@
 						<el-input-number v-model="item.nodePort" size="small" placeholder="eg: 3000" :min="1" />
 					</el-form-item> -->
 				<el-form-item label="服务端口" style="margin-left: 10px">
-					<el-input-number v-model="item.port" size="small" placeholder="eg: 80 " />
+					<el-input v-model.number="item.port" size="small" placeholder="eg: 80 " />
 				</el-form-item>
 				<el-form-item label="容器端口" style="margin-left: 10px">
 					<el-input v-model="item.targetPort" size="small" placeholder="eg: 80 或 http" />
@@ -71,10 +71,19 @@ watch(
 	}
 );
 
+const parseTargetPort = () =>{
+	data.ports.forEach((item: V1ServicePort) =>{
+		if( item.targetPort && typeof(item.targetPort) === 'string' && !isNaN(parseInt(item.targetPort))) {
+			item.targetPort = parseInt(item.targetPort)
+		}
+	})
+}
+
 watch(
 	() => data.ports,
 	() => {
 		if (!data.loadFromParent) {
+			parseTargetPort();
 			emit('updatePort', data.ports);
 		}
 	},

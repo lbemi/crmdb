@@ -2,89 +2,113 @@
 	<div class="system-user-dialog-container">
 		<el-dialog v-model="dialogVisible" width="780px" :title="title" @close="handleClose()">
 			<el-form ref="ruleFormRef" :model="data.service" label-width="120px" class="demo-ruleForm" status-icon>
-				<el-form-item label="服务名称" prop="name">
-					<el-input v-model="data.service.metadata!.name" style="width: 190px" />
-					<el-form-item label="命名空间">
-						<el-select v-model="data.service.metadata!.namespace" placeholder="指定命名空间">
-							<el-option
-								v-for="item in k8sStore.state.namespace"
-								:key="item.metadata!.name"
-								:label="item.metadata!.name"
-								:value="item.metadata!.name!"
-							/>
+				<el-card class="card">
+					<el-form-item label="类型" prop="type">
+						<el-select v-model="data.service.spec!.type" :disabled="data.updateFlag">
+							<el-option v-for="item in data.serviceType" :key="item.key" :label="item.key" :value="item.value" />
 						</el-select>
-					</el-form-item>
-				</el-form-item>
-				<el-form-item v-if="data.service.spec?.type === 'ClusterIP'" style="margin-top: 5px">
-					<div style="display: flex; justify-items: center">
-						<el-checkbox v-model="data.headless" style="margin-right: 5px" />
-						<el-tooltip
-							class="box-item"
-							effect="light"
-							content="<div>不为服务分配IP地址,可以通过集群DNS机制机制在集群内部访问服务</div>"
-							placement="top-start"
-							raw-content
-						>
-							无头服务(用户实例间服务发现)
-						</el-tooltip>
-					</div>
-				</el-form-item>
 
-				<el-form-item label="类型">
-					<el-select v-model="data.service.spec!.type">
-						<el-option v-for="item in data.serviceType" :key="item.key" :label="item.key" :value="item.value" />
-					</el-select>
-
-					<el-form-item label="负载均衡供应商" v-if="data.service.spec?.type === 'LoadBalance'">
-						<el-select v-model="data.loadBalancerProvider">
-							<el-option v-for="item in data.loadBalancerProviders" :key="item.key" :label="item.key" :value="item.value" />
-						</el-select>
+						<el-form-item label="负载均衡供应商" v-if="data.service.spec?.type === 'LoadBalance'" prop="loadBalancerProvider">
+							<el-select v-model="data.loadBalancerProvider">
+								<el-option v-for="item in data.loadBalancerProviders" :key="item.key" :label="item.key" :value="item.value" />
+							</el-select>
+						</el-form-item>
 					</el-form-item>
-				</el-form-item>
+					<el-form-item label="服务名称" prop="name">
+						<el-input v-model="data.service.metadata!.name" style="width: 190px" :disabled="data.updateFlag" />
+						<el-form-item label="命名空间">
+							<el-select v-model="data.service.metadata!.namespace" placeholder="指定命名空间" :disabled="data.updateFlag">
+								<el-option
+									v-for="item in k8sStore.state.namespace"
+									:key="item.metadata!.name"
+									:label="item.metadata!.name"
+									:value="item.metadata!.name!"
+								/>
+							</el-select>
+						</el-form-item>
+					</el-form-item>
+					<el-form-item v-if="data.service.spec?.type === 'ClusterIP'" style="margin-top: 5px" prop="headless">
+						<div style="display: flex; justify-items: center">
+							<el-checkbox v-model="data.headless" style="margin-right: 5px" />
+							<el-tooltip
+								class="box-item"
+								effect="light"
+								content="<div>不为服务分配IP地址,可以通过集群DNS机制机制在集群内部访问服务</div>"
+								placement="right"
+								raw-content
+							>
+								无头服务(用于实例间服务发现)
+							</el-tooltip>
+						</div>
+					</el-form-item>
+				</el-card>
+
 				<!-- <el-form-item label="负载均衡供应商" v-if="data.service.spec?.type === 'LoadBalance'">
 					<el-select v-model="data.loadBalancerProvider">
 						<el-option v-for="item in data.loadBalancerProviders" :key="item.key" :label="item.key" :value="item.value" />
 					</el-select>
 				</el-form-item> -->
-				<el-form-item label="标签选择器">
-					<Label :labelData="data.service.spec!.selector!" @update-labels="getLabels" />
-				</el-form-item>
 
-				<el-form-item label="关联后端">
-					<el-popover :visible="data.visible" placement="right" :width="400">
-						<el-text class="mx-1" type="info">使用工作负载的标签作为选择器</el-text>
-						<el-tabs
-							v-model="data.activeName"
-							type="border-card"
-							style="margin-top: 8px; margin-bottom: 8px"
-							@tab-change="(TabPaneName) => chanageTab(TabPaneName)"
-						>
-							<el-tab-pane label="无状态" name="deployment">
-								请选择:
-								<el-select class="m-2" placeholder="Select" v-model="data.selectWorkLoad">
-									<el-option v-for="item in data.deployments" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name!" />
-								</el-select>
-							</el-tab-pane>
-							<el-tab-pane label="守护进程" name="daemonSet">daemonSet</el-tab-pane>
-							<el-tab-pane label="有状态" name="statefulSets">statefulSets</el-tab-pane>
-						</el-tabs>
-						<div style="text-align: right; margin: 0">
-							<el-button size="small" text @click="data.visible = false">取消</el-button>
-							<el-button size="small" type="primary" @click="confirmSelect">确定</el-button>
-						</div>
-						<template #reference>
-							<el-button type="primary" plain size="small" @click="selectWorkLoad">选择后端</el-button>
-						</template>
-					</el-popover>
-				</el-form-item>
-				<!-- ServicePort 端口设置 -->
-				<ServicePort :ports="data.service.spec?.ports" @updatePort="getServicePorts" />
-				<el-form-item label="标签">
-					<Label :labelData="data.service.metadata!.labels!" @update-labels="getMetaLabels" />
-				</el-form-item>
-				<el-form-item label="注解">
-					<Label :labelData="data.service.metadata!.annotations!" @update-labels="getAnnotations" />
-				</el-form-item>
+				<el-card class="card">
+					<el-form-item label="关联后端">
+						<el-popover :visible="data.visible" placement="right" :width="400">
+							<el-text class="mx-1" type="info">使用工作负载的标签作为选择器</el-text>
+							<el-tabs
+								v-model="data.activeName"
+								type="border-card"
+								style="margin-top: 8px; margin-bottom: 8px"
+								@tab-change="(TabPaneName) => chanageTab(TabPaneName)"
+							>
+								<el-tab-pane label="无状态" name="deployment">
+									请选择:
+									<el-select class="m-2" placeholder="Select" v-model="data.selectWorkLoad">
+										<el-option
+											v-for="item in data.deployments"
+											:key="item.metadata!.name"
+											:label="item.metadata!.name"
+											:value="item.metadata!.name!"
+										/>
+									</el-select>
+								</el-tab-pane>
+								<el-tab-pane label="守护进程" name="daemonSet">daemonSet</el-tab-pane>
+								<el-tab-pane label="有状态" name="statefulSets">statefulSets</el-tab-pane>
+							</el-tabs>
+							<div style="text-align: right; margin: 0">
+								<el-button size="small" text @click="data.visible = false">取消</el-button>
+								<el-button size="small" type="primary" @click="confirmSelect">确定</el-button>
+							</div>
+							<template #reference>
+								<el-button type="primary" plain size="small" @click="selectWorkLoad">选择后端</el-button>
+							</template>
+						</el-popover>
+					</el-form-item>
+					<el-form-item label="标签选择器" prop="selector">
+						<Label :labelData="data.service.spec!.selector!" @update-labels="getLabels" />
+					</el-form-item>
+				</el-card>
+
+				<el-card class="card">
+					<el-form-item label="会话保持" style="margin-top: 5px" prop="keepAlive">
+						<el-checkbox v-model="data.keepAlive" style="margin-right: 150px" />
+					</el-form-item>
+					<el-form-item label="最长回话保持时间" label-width="150" v-if="data.keepAlive" prop="keepAliveTime">
+						<el-input v-model.number="data.keepAliveTime" style="width: 190px" />
+					</el-form-item>
+					<div v-if="data.keepAlive" style="font-size: 8px; margin-left: 150px">设置最大会话保持时间。取值范围为 0 到 86400，默认值 10800。</div>
+				</el-card>
+
+				<el-card class="card">
+					<!-- ServicePort 端口设置 -->
+					<ServicePort :ports="data.service.spec?.ports" @updatePort="getServicePorts" />
+				</el-card>
+				<el-card class="card">
+					<el-form-item label="标签">
+						<Label :labelData="data.service.metadata!.labels!" @update-labels="getMetaLabels" />
+					</el-form-item>
+					<el-form-item label="注解">
+						<Label :labelData="data.service.metadata!.annotations!" @update-labels="getAnnotations" />
+					</el-form-item>
+				</el-card>
 			</el-form>
 			<template #footer>
 				<span class="dialog-footer">
@@ -97,30 +121,29 @@
 </template>
 
 <script setup lang="ts">
-import { V1DaemonSet, V1Deployment, V1ObjectMeta, V1Service, V1StatefulSet } from '@kubernetes/client-node';
+import { V1DaemonSet, V1Deployment, V1Service, V1StatefulSet } from '@kubernetes/client-node';
 import { defineAsyncComponent, reactive, ref, watch } from 'vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { ElMessage } from 'element-plus';
-
-const code = ref('');
-const dialogVisible = ref(false);
-const k8sStore = kubernetesInfo();
-const deploymentApi = useDeploymentApi();
+import { useServiceApi } from '/@/api/kubernetes/service';
+import { isObjectValueEqual } from '/@/utils/arrayOperation';
 
 const Label = defineAsyncComponent(() => import('/@/components/kubernetes/labels.vue'));
 const ServicePort = defineAsyncComponent(() => import('/@/components/kubernetes/servicePort.vue'));
-const handleClose = () => {
-	emit('update:dialogVisible', false);
-};
 
-const emit = defineEmits(['update', 'update:dialogVisible']);
+const dialogVisible = ref(false);
+const k8sStore = kubernetesInfo();
+const deploymentApi = useDeploymentApi();
+const serviceApi = useServiceApi();
+const ruleFormRef = ref();
 
-const update = () => {
-	emit('update', code.value);
-};
+const emit = defineEmits(['update', 'update:dialogVisible', 'refresh']);
 
 const data = reactive({
+	updateFlag: false,
+	keepAliveTime: 10800,
+	keepAlive: false,
 	headless: false,
 	visible: false,
 	deployments: [] as V1Deployment[],
@@ -139,6 +162,7 @@ const data = reactive({
 			selector: {},
 			type: 'ClusterIP',
 			ports: [],
+			sessionAffinity: 'None',
 		},
 	},
 	loadBalancerProvider: 'aliyun',
@@ -152,6 +176,11 @@ const data = reactive({
 		{ key: '负载均衡', value: 'LoadBalance' },
 	],
 });
+
+const handleClose = () => {
+	emit('update:dialogVisible', false);
+	ruleFormRef.value.resetFields();
+};
 
 const selectWorkLoad = () => {
 	data.visible = true;
@@ -171,6 +200,35 @@ const getDeployments = () => {
 		});
 };
 
+const createService = () => {
+	serviceApi
+		.createService({ cloud: k8sStore.state.activeCluster }, data.service)
+		.then((res: any) => {
+			if (res.code == 200) {
+				ElMessage.success('创建成功');
+			}
+		})
+		.catch((e: any) => {
+			ElMessage.error(e);
+		});
+	handleClose();
+	emit('refresh');
+
+};
+const updateService = () => {
+	serviceApi
+		.updateService({ cloud: k8sStore.state.activeCluster }, data.service)
+		.then((res: any) => {
+			if (res.code == 200) {
+				ElMessage.success('更新成');
+			}
+		})
+		.catch((e: any) => {
+			ElMessage.error(e);
+		});
+	handleClose();
+	emit('refresh');
+};
 const confirmSelect = () => {
 	if (data.activeName === 'deployment') {
 		let res = data.deployments.filter((item) => item.metadata!.name === data.selectWorkLoad);
@@ -200,20 +258,43 @@ const chanageTab = (chanageTab: string | number) => {
 const confirm = () => {
 	if (data.service.spec?.type === 'ClusterIP' && data.headless) {
 		data.service.spec!.clusterIP = 'None';
+	} else {
+		delete data.service.spec?.clusterIP;
 	}
-	console.log(data.service);
+	if (data.keepAlive) {
+		data.service.spec!.sessionAffinity = 'ClientIP';
+		data.service.spec!.sessionAffinityConfig! = {
+			clientIP: {
+				timeoutSeconds: data.keepAliveTime,
+			},
+		};
+	} else {
+		delete data.service.spec?.sessionAffinity;
+		delete data.service.spec?.sessionAffinityConfig;
+	}
+	if (data.updateFlag) {
+		updateService();
+	} else {
+		createService();
+	}
 };
 
 const props = defineProps({
 	title: String,
 	codeData: Object,
 	dialogVisible: Boolean,
+	service: Object,
 });
 
 watch(
 	() => props,
 	() => {
 		dialogVisible.value = props.dialogVisible;
+
+		if (!isObjectValueEqual(props.service, {})) {
+			data.service = props.service as V1Service;
+			data.updateFlag = true;
+		}
 	},
 	{
 		immediate: true,
@@ -221,4 +302,8 @@ watch(
 );
 </script>
 
-<style scoped></style>
+<style scoped>
+.card {
+	margin-bottom: 10px;
+}
+</style>

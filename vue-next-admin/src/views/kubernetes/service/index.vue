@@ -154,7 +154,7 @@
 			@update="updateServiceYaml"
 			v-if="data.dialogVisible"
 		/>
-		<ServiceDialog v-model:dialogVisible="data.serviceDialog" :title="data.title" @update="updateService" v-if="data.serviceDialog" />
+		<ServiceDialog v-model:dialogVisible="data.serviceDialog" :service="data.activeService"  :title="data.title" @refresh="listService()" v-if="data.serviceDialog" />
 	</div>
 </template>
 
@@ -184,6 +184,8 @@ const route = useRoute();
 
 const data = reactive({
 	title: '',
+	editDialog: false,
+	activeService: {},
 	serviceDialog: false,
 	dialogVisible: false,
 	codeData: {} as V1Service,
@@ -248,6 +250,7 @@ const filterService = (services: Array<V1Service>) => {
 };
 const createService = () => {
 	data.title = '创建service';
+	data.activeService = {}
 	data.serviceDialog = true;
 };
 
@@ -267,7 +270,6 @@ const deleteService = (service: V1Service) => {
 		draggable: true,
 	})
 		.then(() => {
-			data.loading = true;
 			servieApi
 				.deleteService({ cloud: k8sStore.state.activeCluster }, service.metadata!.name!, service.metadata!.namespace!)
 				.then((res) => {
@@ -281,12 +283,18 @@ const deleteService = (service: V1Service) => {
 		.catch(() => {
 			ElMessage.info('取消');
 		});
-	data.loading = false;
 };
 const handleSelectionChange = (value: any) => {
 	data.selectData = value;
 };
-const updateService = (ervice: V1Service) => {};
+const updateService = (service: V1Service) => {
+	
+	data.activeService = service
+	data.title = '更新< ' + service.metadata?.name + ' >服务'
+	data.serviceDialog = true;
+
+};
+
 const updateServiceYaml = async (svc: any) => {
 	const updateData = YAML.load(svc) as V1Service;
 	delete updateData.status;
@@ -313,20 +321,24 @@ const handlePageChange = (page: PageInfo) => {
 	data.query.limit = page.limit;
 	listService();
 };
+
 const listService = () => {
+	data.loading = true
 	servieApi
 		.listService(k8sStore.state.activeNamespace, data.query)
 		.then((res: ResponseType) => {
 			if (res.code === 200) {
 				data.services = res.data.data;
-				data.tmpService = res.data.data;
 				data.total = res.data.total;
+				data.tmpService = res.data.data;
 			}
 		})
 		.catch((e) => {
 			ElMessage.error(e);
 		});
+		data.loading = false
 };
+
 const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
 };
