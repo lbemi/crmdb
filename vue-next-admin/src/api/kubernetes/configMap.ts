@@ -9,5 +9,13 @@ export function useConfigMapApi() {
 				params: param,
 			});
 		},
+		deleteConfigMap: (namespace: string,name: string, param: any) => {
+			return request({
+				url: `/configmap/${namespace}/${name}`,
+				method: 'delete',
+				params: param,
+			});
+		},
+		
 	};
 }
