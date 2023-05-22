@@ -246,7 +246,8 @@ import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, h } fr
 import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, Refresh } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { V1ContainerStatus, V1Deployment, V1Pod, V1PodCondition, V1PodStatus, V1ReplicaSet, V1ReplicaSetCondition } from '@kubernetes/client-node';
+import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
+import { Deployment, ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -275,19 +276,19 @@ const data = reactive({
 	RsdialogVisible: false,
 	rscode: {},
 	dialogVisible: false,
-	codeData: {} as V1Deployment,
+	codeData: {} as Deployment,
 	param: {
 		cloud: k8sStore.state.activeCluster,
 	},
-	replicasets: [] as V1ReplicaSet[],
-	pods: [] as V1Pod[],
+	replicasets: [] as ReplicaSet[],
+	pods: [] as Pod[],
 	iShow: false,
 	activeName: 'first',
 	deployment: [],
-	events: [] as V1ReplicaSetCondition[],
+	events: [] as ReplicaSetCondition[],
 });
 
-const rollBack = (rs: V1ReplicaSet) => {
+const rollBack = (rs: ReplicaSet) => {
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
@@ -385,10 +386,10 @@ const scaleDeploy = (action: string) => {
 };
 
 const handleEnvent = () => {
-	data.replicasets.forEach((item: V1ReplicaSet) => {
+	data.replicasets.forEach((item: ReplicaSet) => {
 		if (item.status) {
 			if (item.status.conditions) {
-				item.status.conditions.forEach((it: V1ReplicaSetCondition) => {
+				item.status.conditions.forEach((it: ReplicaSetCondition) => {
 					data.events.push(it);
 				});
 			}
@@ -396,7 +397,7 @@ const handleEnvent = () => {
 	});
 };
 
-const podRestart = (status: V1PodStatus) => {
+const podRestart = (status: PodStatus) => {
 	let count = 0;
 	status.containerStatuses!.forEach((item) => {
 		count += item.restartCount;
@@ -404,13 +405,13 @@ const podRestart = (status: V1PodStatus) => {
 	return count;
 };
 // FIXME
-const podStatus = (status: V1PodStatus) => {
+const podStatus = (status: PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
 	if (status.phase === 'Running') {
-		status.conditions!.forEach((item: V1PodCondition) => {
+		status.conditions!.forEach((item: PodCondition) => {
 			if (item.status != 'True') {
 				let res = '';
-				status.containerStatuses?.forEach((c: V1ContainerStatus) => {
+				status.containerStatuses?.forEach((c: ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
 							res = `<div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
@@ -442,7 +443,7 @@ onMounted(() => {
 	});
 });
 const updateDeployment = async (codeData: any) => {
-	const updateData = YAML.load(codeData) as V1Deployment;
+	const updateData = YAML.load(codeData) as Deployment;
 	delete updateData.status;
 	delete updateData.metadata?.managedFields;
 
@@ -479,19 +480,19 @@ const getEvents = async () => {
 	);
 	data.events = res.data;
 };
-const jumpPodDetail = (p: V1Pod) => {
+const jumpPodDetail = (p: Pod) => {
 	podStore.state.podDetail = p;
 	router.push({
 		name: 'podDetail',
 	});
 };
-const jumpPodExec = (p: V1Pod) => {
+const jumpPodExec = (p: Pod) => {
 	podStore.state.podShell = p;
 	router.push({
 		name: 'podShell',
 	});
 };
-const jumpPodLog = (p: V1Pod) => {
+const jumpPodLog = (p: Pod) => {
 	podStore.state.podShell = p;
 	router.push({
 		name: 'podLog',
@@ -503,7 +504,7 @@ const backRoute = () => {
 		name: 'k8sDeployment',
 	});
 };
-const deletePod = async (pod: V1Pod) => {
+const deletePod = async (pod: Pod) => {
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
@@ -530,7 +531,7 @@ const deletePod = async (pod: V1Pod) => {
 			ElMessage.info('取消');
 		});
 };
-const showRsYaml = async (replicaSets: V1ReplicaSet) => {
+const showRsYaml = async (replicaSets: ReplicaSet) => {
 	data.RsdialogVisible = true;
 	const codeData = deepClone(replicaSets);
 	delete codeData.metadata.managedFields;
@@ -556,7 +557,7 @@ const buildWebsocket = () => {
 				object.cluster == k8sStore.state.activeCluster
 			) {
 				data.deployment = object.result.data;
-				data.deployment.forEach((item: V1Deployment) => {
+				data.deployment.forEach((item: Deployment) => {
 					if (item.metadata!.name == k8sStore.state.activeDeployment?.metadata?.name) {
 						k8sStore.state.activeDeployment = item;
 						return;

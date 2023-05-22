@@ -1,5 +1,4 @@
-import * as k8s from '@kubernetes/client-node';
-declare interface EventData extends QueryType{
-    events: k8s.CoreV1Event[]
+import { Event } from 'kubernetes-types/core/v1';
+declare interface EventData extends QueryType {
+	events: Event[];
 }
-

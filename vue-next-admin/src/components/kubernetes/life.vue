@@ -80,7 +80,7 @@ import { reactive, ref, watch } from 'vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { deepClone } from '/@/utils/other';
-import { V1LifecycleHandler } from '@kubernetes/client-node/dist/gen/model/v1LifecycleHandler';
+import { LifecycleHandler } from 'kubernetes-types/core/v1';
 import { CaretBottom, CaretTop } from '@element-plus/icons-vue';
 
 const data = reactive({

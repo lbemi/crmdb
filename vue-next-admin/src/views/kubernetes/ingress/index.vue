@@ -148,7 +148,7 @@
 </template>
 
 <script setup lang="ts" name="k8sIngress">
-import { V1Ingress } from '@kubernetes/client-node';
+import { Ingress } from 'kubernetes-types/networking/v1';
 import { defineAsyncComponent, h, onMounted, reactive, ref } from 'vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { ResponseType } from '/@/types/response';
@@ -170,11 +170,11 @@ const route = useRoute();
 const theme = useThemeConfig();
 const data = reactive({
 	dialogVisible: false,
-	codeData: {} as V1Ingress,
+	codeData: {} as Ingress,
 	loading: false,
-	selectData: [] as V1Ingress[],
-	services: [] as V1Ingress[],
-	tmpIngress: [] as V1Ingress[],
+	selectData: [] as Ingress[],
+	services: [] as Ingress[],
+	tmpIngress: [] as Ingress[],
 	total: 0,
 	query: {
 		page: 1,
@@ -194,16 +194,16 @@ const search = () => {
 const handleChange = () => {
 	listIngress();
 };
-const filterIngress = (services: Array<V1Ingress>) => {
-	const serviceList = [] as V1Ingress[];
+const filterIngress = (services: Array<Ingress>) => {
+	const serviceList = [] as Ingress[];
 	if (data.query.type === '1') {
-		services.forEach((service: V1Ingress) => {
+		services.forEach((service: Ingress) => {
 			if (service.metadata?.name?.includes(data.query.key)) {
 				serviceList.push(service);
 			}
 		});
 	} else {
-		services.forEach((service: V1Ingress) => {
+		services.forEach((service: Ingress) => {
 			if (service.metadata?.labels) {
 				for (let k in service.metadata.labels) {
 					if (k.includes(data.query.key) || service.metadata.labels[k].includes(data.query.key)) {
@@ -217,7 +217,7 @@ const filterIngress = (services: Array<V1Ingress>) => {
 	data.services = serviceList;
 };
 const createIngress = () => {};
-const deleteIngress = (service: V1Ingress) => {
+const deleteIngress = (service: Ingress) => {
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
@@ -249,7 +249,7 @@ const deleteIngress = (service: V1Ingress) => {
 		});
 	data.loading = false;
 };
-const showYaml = (ingress: V1Ingress) => {
+const showYaml = (ingress: Ingress) => {
 	data.dialogVisible = true;
 	delete ingress.metadata?.managedFields;
 	data.codeData = ingress;
@@ -260,7 +260,7 @@ const updateIngressYaml = (code: any) => {
 };
 
 const handleSelectionChange = () => {};
-const updateIngress = (ervice: V1Ingress) => {};
+const updateIngress = (ervice: Ingress) => {};
 const handlePageChange = (page: PageInfo) => {
 	data.query.page = page.page;
 	data.query.limit = page.limit;

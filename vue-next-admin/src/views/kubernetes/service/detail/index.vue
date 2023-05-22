@@ -258,17 +258,8 @@
 import { reactive, onMounted, defineAsyncComponent, h } from 'vue';
 import { ArrowLeft, Edit, View, InfoFilled } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
-import {
-	CoreV1Event,
-	V1DaemonSet,
-	V1Deployment,
-	V1Endpoints,
-	V1Pod,
-	V1ReplicaSet,
-	V1ReplicaSetCondition,
-	V1Service,
-	V1StatefulSet,
-} from '@kubernetes/client-node';
+import { Event, Pod, Service, Endpoints } from 'kubernetes-types/core/v1';
+import { DaemonSet, Deployment, ReplicaSet, ReplicaSetCondition, StatefulSet } from 'kubernetes-types/apps/v1';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -279,6 +270,7 @@ import { useServiceApi } from '/@/api/kubernetes/service';
 import { usePodApi } from '/@/api/kubernetes/pod';
 import { ResponseType } from '/@/types/response';
 import { podInfo } from '/@/stores/pod';
+import { deepClone } from '/@/utils/other';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
@@ -290,26 +282,26 @@ const podStore = podInfo();
 const podApi = usePodApi();
 const data = reactive({
 	serviceInfo: {
-		deployments: [] as V1Deployment[],
-		daemonSets: [] as V1DaemonSet[],
-		statefulSets: [] as V1StatefulSet[],
-		events: [] as CoreV1Event[],
-		endPoints: {} as V1Endpoints,
+		deployments: [] as Deployment[],
+		daemonSets: [] as DaemonSet[],
+		statefulSets: [] as StatefulSet[],
+		events: [] as Event[],
+		endPoints: {} as Endpoints,
 	},
 	dialogVisible: false,
-	codeData: {} as V1Service,
+	codeData: {} as Service,
 	param: {
 		cloud: k8sStore.state.activeCluster,
 	},
-	replicasets: [] as V1ReplicaSet[],
-	pods: [] as V1Pod[],
+	replicasets: [] as ReplicaSet[],
+	pods: [] as Pod[],
 	iShow: false,
 	activeName: 'workload',
 	deployment: [],
-	events: [] as V1ReplicaSetCondition[],
+	events: [] as ReplicaSetCondition[],
 });
 
-const deployDetail = async (dep: V1Deployment) => {
+const deployDetail = async (dep: Deployment) => {
 	k8sStore.state.activeDeployment = dep;
 	router.push({
 		name: 'k8sDeploymentDetail',
@@ -347,7 +339,7 @@ onMounted(() => {
 });
 
 const updateServiceYaml = async (svc: any) => {
-	const updateData = YAML.load(svc) as V1Service;
+	const updateData = deepClone(YAML.load(svc) as Service);
 	delete updateData.status;
 	delete updateData.metadata?.managedFields;
 
@@ -356,7 +348,7 @@ const updateServiceYaml = async (svc: any) => {
 		.then((res) => {
 			if (res.code == 200) {
 				// 同步更新store数据,刷新当前页面数据
-				getService()
+				getService();
 				ElMessage.success('更新成功');
 			} else {
 				ElMessage.error(res.message);
@@ -368,13 +360,17 @@ const updateServiceYaml = async (svc: any) => {
 	data.dialogVisible = false;
 };
 
-const getService = ()=>{
-	servieApi.getService(k8sStore.state.activeService!.metadata!.namespace!,k8sStore.state.activeService!.metadata!.name!,{cloud: k8sStore.state.activeCluster}).then((res)=>{
-		if(res.code === 200 ) {
-			k8sStore.state.activeService = res.data
-		}
-	})
-}
+const getService = () => {
+	servieApi
+		.getService(k8sStore.state.activeService!.metadata!.namespace!, k8sStore.state.activeService!.metadata!.name!, {
+			cloud: k8sStore.state.activeCluster,
+		})
+		.then((res) => {
+			if (res.code === 200) {
+				k8sStore.state.activeService = res.data;
+			}
+		});
+};
 const backRoute = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));
 	router.push({

@@ -153,12 +153,13 @@
 import { reactive, onMounted, defineAsyncComponent } from 'vue';
 import { InfoFilled, CaretBottom, List } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
-import { V1Node } from '@kubernetes/client-node';
+
 import { useNodeApi } from '/@/api/kubernetes/node';
 import { PageInfo } from '/@/types/kubernetes/common';
 import router from '/@/router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Node } from '/@/types/kubernetes/cluster';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const Labels = defineAsyncComponent(() => import('./component/labels.vue'));

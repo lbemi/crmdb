@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts" name="namespaceDialog">
-import { V1Namespace } from '@kubernetes/client-node';
+import { Namespace } from 'kubernetes-types/core/v1';
 import { FormRules, FormInstance, ElMessage } from 'element-plus';
 import { reactive, watch, ref, onMounted } from 'vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
@@ -123,7 +123,7 @@ const add = (header: header) => {
 const props = defineProps<{
 	visible: boolean;
 	title: string;
-	namespace?: V1Namespace;
+	namespace?: Namespace;
 }>();
 
 const emits = defineEmits(['update:visible', 'valueChange']);
@@ -135,7 +135,7 @@ const data = reactive({
 		metadata: {
 			name: '',
 		},
-	} as V1Namespace,
+	} as Namespace,
 	name: '',
 	labels: {} as { [index: string]: string },
 });

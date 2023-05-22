@@ -131,13 +131,14 @@ import { ElMessageBox, ElMessage } from 'element-plus';
 import router from '/@/router';
 import { podInfo } from '/@/stores/pod';
 import { kubernetesInfo } from '/@/stores/kubernetes';
-import { V1ContainerStatus, V1Pod, V1PodCondition, V1PodStatus } from '@kubernetes/client-node';
+import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
 import { useWebsocketApi } from '/@/api/kubernetes/websocket';
 import { PageInfo } from '/@/types/kubernetes/common';
 import YAML from 'js-yaml';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '/@/utils/formatTime';
+import { deepClone } from '/@/utils/other';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
@@ -162,7 +163,7 @@ const handleChange = () => {
 	podStore.state.loading = false;
 };
 
-const podRestart = (status: V1PodStatus) => {
+const podRestart = (status: PodStatus) => {
 	let count = 0;
 	status.containerStatuses!.forEach((item) => {
 		count += item.restartCount;
@@ -173,13 +174,13 @@ const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
 };
 // FIXME
-const podStatus = (status: V1PodStatus) => {
+const podStatus = (status: PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
 	if (status.phase === 'Running') {
-		status.conditions!.forEach((item: V1PodCondition) => {
+		status.conditions!.forEach((item: PodCondition) => {
 			if (item.status != 'True') {
 				let res = '';
-				status.containerStatuses?.forEach((c: V1ContainerStatus) => {
+				status.containerStatuses?.forEach((c: ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
 							res = ` </div> <div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
@@ -209,27 +210,27 @@ const handlePageChange = (pageInfo: PageInfo) => {
 };
 
 const updatePod = () => {
-	const updateData = YAML.load(yamlRef.value.code) as V1Pod;
+	const updateData = deepClone(YAML.load(yamlRef.value.code) as Pod);
 	delete updateData.status;
 	yamlRef.value.handleClose();
 };
-const editPod = (pod: V1Pod) => {
+const editPod = (pod: Pod) => {
 	delete pod.metadata?.managedFields;
 	yamlRef.value.openDialog(pod);
 };
-const jumpPodExec = (p: V1Pod) => {
+const jumpPodExec = (p: Pod) => {
 	podStore.state.podShell = p;
 	router.push({
 		name: 'podShell',
 	});
 };
-const jumpPodDetail = (pod: V1Pod) => {
+const jumpPodDetail = (pod: Pod) => {
 	podStore.state.podDetail = pod;
 	router.push({
 		name: 'podDetail',
 	});
 };
-const jumpPodLog = (p: V1Pod) => {
+const jumpPodLog = (p: Pod) => {
 	podStore.state.podShell = p;
 	router.push({
 		name: 'podLog',
@@ -238,12 +239,12 @@ const jumpPodLog = (p: V1Pod) => {
 
 const deletePods = async () => {
 	podStore.state.loading = true;
-	podStore.state.selectData.forEach((pod: V1Pod) => {
+	podStore.state.selectData.forEach((pod: Pod) => {
 		podStore.deletePod(pod);
 	});
 	podStore.state.loading = false;
 };
-const deletePod = async (p: V1Pod) => {
+const deletePod = async (p: Pod) => {
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
@@ -271,16 +272,16 @@ const deletePod = async (p: V1Pod) => {
 		});
 };
 
-const filterPod = (pods: Array<V1Pod>) => {
-	const podList = [] as V1Pod[];
+const filterPod = (pods: Array<Pod>) => {
+	const podList = [] as Pod[];
 	if (podStore.state.query.type === '1') {
-		pods.forEach((pod: V1Pod) => {
+		pods.forEach((pod: Pod) => {
 			if (pod.metadata?.name?.includes(podStore.state.query.key)) {
 				podList.push(pod);
 			}
 		});
 	} else {
-		pods.forEach((pod: V1Pod) => {
+		pods.forEach((pod: Pod) => {
 			if (pod.metadata?.labels) {
 				for (let k in pod.metadata.labels) {
 					if (k.includes(podStore.state.query.key) || pod.metadata.labels[k].includes(podStore.state.query.key)) {

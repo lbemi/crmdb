@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { defineAsyncComponent, reactive, watch } from 'vue';
 import { ref } from 'vue-demi';
-import { V1Container } from '@kubernetes/client-node';
+import { Container } from 'kubernetes-types/core/v1';
 import type { TabPaneName } from 'element-plus';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { deepClone } from '/@/utils/other';
@@ -65,8 +65,8 @@ const data = reactive({
 			startupProbe: {},
 			lifecycle: {},
 		},
-	] as Array<V1Container>,
-	container: <V1Container>{
+	] as Array<Container>,
+	container: <Container>{
 		name: '',
 		image: '',
 		imagePullPolicy: 'IfNotPresent',
@@ -83,15 +83,15 @@ const data = reactive({
 	},
 });
 
-const getContainer = (index: number, container: V1Container) => {
+const getContainer = (index: number, container: Container) => {
 	if (index === editableTabsValue.value) {
 		// // FIXME  初始化container name
-		data.containers[index] = deepClone(container) as V1Container;
+		data.containers[index] = deepClone(container) as Container;
 	}
 };
 
 const props = defineProps({
-	containers: Array<V1Container>,
+	containers: Array<Container>,
 });
 
 watch(
@@ -99,7 +99,7 @@ watch(
 	() => {
 		if (props.containers && props.containers.length != 0 && !isObjectValueEqual(data.containers, props.containers)) {
 			data.loadFromParent = true;
-			data.containers = deepClone(props.containers) as V1Container[];
+			data.containers = deepClone(props.containers) as Container[];
 			setTimeout(() => {
 				// 延迟一下，不然会触发循环更新
 				data.loadFromParent = false;

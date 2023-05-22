@@ -107,7 +107,7 @@
 <script setup lang="ts" name="k8sNamespace">
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
-import { V1Namespace } from '@kubernetes/client-node';
+import { Namespace } from 'kubernetes-types/core/v1';
 import { dateStrFormat } from '/@/utils/formatTime';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -123,13 +123,13 @@ const namespaceApi = useNamespaceApi();
 const k8sStore = kubernetesInfo();
 const route = useRoute();
 const data = reactive({
-	activeNamespace: {} as V1Namespace,
-	selectData: [] as V1Namespace[],
+	activeNamespace: {} as Namespace,
+	selectData: [] as Namespace[],
 	total: 0,
 	title: '',
 	visible: false,
 	loading: false,
-	namespace: [] as V1Namespace[],
+	namespace: [] as Namespace[],
 	query: {
 		key: '',
 		type: '1',
@@ -165,7 +165,7 @@ const createNamespace = () => {
 	data.title = '创建命名空间';
 	data.visible = true;
 };
-const updateNamespace = (namespace: V1Namespace) => {
+const updateNamespace = (namespace: Namespace) => {
 	data.title = '更新命名空间';
 	data.activeNamespace = namespace;
 	data.visible = true;
@@ -175,7 +175,7 @@ const handlePageChange = (pageInfo: PageInfo) => {
 	data.query.limit = pageInfo.limit;
 	listNamespace();
 };
-const deleteNamespace = (namespace: V1Namespace) => {
+const deleteNamespace = (namespace: Namespace) => {
 	ElMessageBox.confirm(`此操作将删除[ ${namespace.metadata!.name} ]命名空间 . 是否继续?`, '提示', {
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
@@ -204,15 +204,15 @@ const deleteNamespaces = () => {
 };
 
 const filterPod = () => {
-	const nsList = [] as V1Namespace[];
+	const nsList = [] as Namespace[];
 	if (data.query.type === '1') {
-		data.namespace.forEach((namespace: V1Namespace) => {
+		data.namespace.forEach((namespace: Namespace) => {
 			if (namespace.metadata?.name?.includes(data.query.key)) {
 				nsList.push(namespace);
 			}
 		});
 	} else {
-		data.namespace.forEach((namespace: V1Namespace) => {
+		data.namespace.forEach((namespace: Namespace) => {
 			if (namespace.metadata?.labels) {
 				for (let k in namespace.metadata.labels) {
 					if (k.includes(data.query.key) || namespace.metadata.labels[k].includes(data.query.key)) {

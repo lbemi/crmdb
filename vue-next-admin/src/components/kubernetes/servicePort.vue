@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { V1ServicePort } from '@kubernetes/client-node';
+import { Service, ServicePort } from 'kubernetes-types/core/v1';
 import { reactive, watch } from 'vue';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
@@ -41,11 +41,11 @@ import { deepClone } from '/@/utils/other';
 
 const data = reactive({
 	loadFromParent: false,
-	ports: <Array<V1ServicePort>>[],
+	ports: <Array<ServicePort>>[],
 	headless: false,
 });
 const props = defineProps({
-	ports: Array<V1ServicePort>,
+	ports: Array<ServicePort>,
 	serviceType: String,
 });
 const emit = defineEmits(['updatePort']);
@@ -59,7 +59,7 @@ watch(
 	() => {
 		if (props.ports) {
 			data.loadFromParent = true;
-			data.ports = deepClone(props.ports) as Array<V1ServicePort>;
+			data.ports = deepClone(props.ports) as Array<ServicePort>;
 			setTimeout(() => {
 				data.loadFromParent = false;
 			}, 2);
@@ -71,13 +71,13 @@ watch(
 	}
 );
 
-const parseTargetPort = () =>{
-	data.ports.forEach((item: V1ServicePort) =>{
-		if( item.targetPort && typeof(item.targetPort) === 'string' && !isNaN(parseInt(item.targetPort))) {
-			item.targetPort = parseInt(item.targetPort)
+const parseTargetPort = () => {
+	data.ports.forEach((item: ServicePort) => {
+		if (item.targetPort && typeof item.targetPort === 'string' && !isNaN(parseInt(item.targetPort))) {
+			item.targetPort = parseInt(item.targetPort);
 		}
-	})
-}
+	});
+};
 
 watch(
 	() => data.ports,

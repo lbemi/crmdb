@@ -218,11 +218,12 @@
 	</div>
 </template>
 <script lang="ts" setup name="nodeDetail">
-import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, onUnmounted } from 'vue';
-import { ArrowLeft, CaretBottom, View, Delete, Edit, RefreshRight } from '@element-plus/icons-vue';
+import { reactive, onMounted, ref, defineAsyncComponent } from 'vue';
+import { ArrowLeft, CaretBottom, View, Delete, Edit } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { V1ContainerStatus, V1Pod, V1PodCondition, V1PodStatus, V1ReplicaSet, V1ReplicaSetCondition } from '@kubernetes/client-node';
+import { Pod, ContainerStatus, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
+import { ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -258,13 +259,13 @@ const data = reactive({
 	param: {
 		cloud: k8sStore.state.activeCluster,
 	},
-	replicasets: [] as V1ReplicaSet[],
-	pods: [] as V1Pod[],
+	replicasets: [] as ReplicaSet[],
+	pods: [] as Pod[],
 	total: 0,
 	iShow: false,
 	activeName: 'dashboard',
 	deployment: [],
-	events: [] as V1ReplicaSetCondition[],
+	events: [] as ReplicaSetCondition[],
 	query: {
 		cloud: k8sStore.state.activeCluster,
 		page: 1,
@@ -424,7 +425,7 @@ const podUsage = () => {
 	};
 	cpuChar.setOption(option);
 };
-const podRestart = (status: V1PodStatus) => {
+const podRestart = (status: PodStatus) => {
 	let count = 0;
 	status.containerStatuses!.forEach((item) => {
 		count += item.restartCount;
@@ -432,13 +433,13 @@ const podRestart = (status: V1PodStatus) => {
 	return count;
 };
 // FIXME
-const podStatus = (status: V1PodStatus) => {
+const podStatus = (status: PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
 	if (status.phase === 'Running') {
-		status.conditions!.forEach((item: V1PodCondition) => {
+		status.conditions!.forEach((item: PodCondition) => {
 			if (item.status != 'True') {
 				let res = '';
-				status.containerStatuses?.forEach((c: V1ContainerStatus) => {
+				status.containerStatuses?.forEach((c: ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
 							res = ` </div> <div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
@@ -485,25 +486,25 @@ const getEvents = async () => {
 	const res = await podApi.podEvents(pod.metadata!.namespace, pod.metadata!.name, data.param);
 	data.events = res.data;
 };
-const jumpPodExec = (p: V1Pod) => {
+const jumpPodExec = (p: Pod) => {
 	podStore.state.podShell = podStore.state.podDetail;
 	router.push({
 		name: 'podShell',
 	});
 };
-const jumpPodLog = (p: V1Pod) => {
+const jumpPodLog = (p: Pod) => {
 	podStore.state.podShell = podStore.state.podDetail;
 	router.push({
 		name: 'podLog',
 	});
 };
-const jumpPodDetail = (pod: V1Pod) => {
+const jumpPodDetail = (pod: Pod) => {
 	podStore.state.podDetail = pod;
 	router.push({
 		name: 'podDetail',
 	});
 };
-const deletePod = async (p: V1Pod) => {
+const deletePod = async (p: Pod) => {
 	ElMessageBox.confirm(`此操作将删除[ ${p.metadata?.name} ] 容器 . 是否继续?`, '警告', {
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
@@ -526,7 +527,7 @@ const handlePageChange = (pageInfo: PageInfo) => {
 	getPodsByNode();
 	data.loading = false;
 };
-const editPod = (pod: V1Pod) => {
+const editPod = (pod: Pod) => {
 	delete pod.metadata?.managedFields;
 	yamlRef.value.openDialog(pod);
 };

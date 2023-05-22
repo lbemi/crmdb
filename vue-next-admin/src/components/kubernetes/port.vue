@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { V1ContainerPort } from '@kubernetes/client-node';
+import { ContainerPort } from 'kubernetes-types/core/v1';
 import { reactive, watch } from 'vue';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
@@ -36,10 +36,10 @@ import { deepClone } from '/@/utils/other';
 
 const data = reactive({
 	loadFromParent: false,
-	ports: <Array<V1ContainerPort>>[],
+	ports: <Array<ContainerPort>>[],
 });
 const props = defineProps({
-	ports: Array<V1ContainerPort>,
+	ports: Array<ContainerPort>,
 });
 const emit = defineEmits(['updatePort']);
 const pushPort = () => {
@@ -52,7 +52,7 @@ watch(
 	() => {
 		if (props.ports) {
 			data.loadFromParent = true;
-			data.ports = deepClone(props.ports) as Array<V1ContainerPort>;
+			data.ports = deepClone(props.ports) as Array<ContainerPort>;
 			setTimeout(() => {
 				data.loadFromParent = false;
 			}, 2);

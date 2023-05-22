@@ -20,10 +20,10 @@
 </template>
 
 <script setup lang="ts">
-import { V1ObjectMeta } from '@kubernetes/client-node';
+import { ObjectMeta } from 'kubernetes-types/meta/v1';
 
 const props = defineProps({
-	metaData: Object<V1ObjectMeta>,
+	metaData: Object<ObjectMeta>,
 });
 </script>
 

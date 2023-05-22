@@ -1,4 +1,5 @@
-import { V1Namespace } from '@kubernetes/client-node';
+import { Namespace } from 'kubernetes-types/core/v1';
+
 import request from '/@/utils/request';
 
 export function useNamespaceApi() {
@@ -10,7 +11,7 @@ export function useNamespaceApi() {
 				params: param,
 			});
 		},
-		updateNamespace: (param: Object, namespace: V1Namespace) => {
+		updateNamespace: (param: Object, namespace: Namespace) => {
 			return request({
 				url: '/namespace',
 				method: 'put',
@@ -18,7 +19,7 @@ export function useNamespaceApi() {
 				data: namespace,
 			});
 		},
-		createNamespace: (param: Object, namespace: V1Namespace) => {
+		createNamespace: (param: Object, namespace: Namespace) => {
 			return request({
 				url: '/namespace',
 				method: 'post',

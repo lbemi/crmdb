@@ -110,12 +110,12 @@
 			v-if="data.dialogVisible"
 		/>
 
-		<DrawDialog :visible="data.draw.visible" />
+		<!-- <DrawDialog :visible="data.draw.visible" /> -->
 	</div>
 </template>
 
 <script setup lang="ts" name="k8sConfigMap">
-import { V1ConfigMap } from '@kubernetes/client-node';
+import { ConfigMap } from 'kubernetes-types/core/v1';
 import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { ResponseType } from '/@/types/response';
@@ -140,14 +140,14 @@ const theme = useThemeConfig();
 const data = reactive({
 	draw: {
 		visible: false,
-		configMap: {} as V1ConfigMap,
+		configMap: {} as ConfigMap,
 	},
 	dialogVisible: false,
-	codeData: {} as V1ConfigMap,
+	codeData: {} as ConfigMap,
 	loading: false,
-	selectData: [] as V1ConfigMap[],
-	configMaps: [] as V1ConfigMap[],
-	tmpConfigMap: [] as V1ConfigMap[],
+	selectData: [] as ConfigMap[],
+	configMaps: [] as ConfigMap[],
+	tmpConfigMap: [] as ConfigMap[],
 	total: 0,
 	query: {
 		page: 1,
@@ -167,16 +167,16 @@ const search = () => {
 const handleChange = () => {
 	listConfigMap();
 };
-const filterConfigMap = (configMaps: Array<V1ConfigMap>) => {
-	const configMapList = [] as V1ConfigMap[];
+const filterConfigMap = (configMaps: Array<ConfigMap>) => {
+	const configMapList = [] as ConfigMap[];
 	if (data.query.type === '1') {
-		configMaps.forEach((configMap: V1ConfigMap) => {
+		configMaps.forEach((configMap: ConfigMap) => {
 			if (configMap.metadata?.name?.includes(data.query.key)) {
 				configMapList.push(configMap);
 			}
 		});
 	} else {
-		configMaps.forEach((configMap: V1ConfigMap) => {
+		configMaps.forEach((configMap: ConfigMap) => {
 			if (configMap.metadata?.labels) {
 				for (let k in configMap.metadata.labels) {
 					if (k.includes(data.query.key) || configMap.metadata.labels[k].includes(data.query.key)) {
@@ -190,7 +190,7 @@ const filterConfigMap = (configMaps: Array<V1ConfigMap>) => {
 	data.configMaps = configMapList;
 };
 const createConfigMap = () => {};
-const deleteConfigMap = (configMap: V1ConfigMap) => {
+const deleteConfigMap = (configMap: ConfigMap) => {
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
@@ -221,12 +221,12 @@ const deleteConfigMap = (configMap: V1ConfigMap) => {
 		});
 	data.loading = false;
 };
-const configMapDetail = (configMap: V1ConfigMap) => {
+const configMapDetail = (configMap: ConfigMap) => {
 	data.draw.configMap = configMap;
 	data.draw.visible = true;
 };
 
-const showYaml = (ConfigMap: V1ConfigMap) => {
+const showYaml = (ConfigMap: ConfigMap) => {
 	data.dialogVisible = true;
 	delete ConfigMap.metadata?.managedFields;
 	data.codeData = ConfigMap;
@@ -237,7 +237,7 @@ const updateConfigMapYaml = (code: any) => {
 };
 
 const handleSelectionChange = () => {};
-const updateConfigMap = (ervice: V1ConfigMap) => {};
+const updateConfigMap = (ervice: ConfigMap) => {};
 const handlePageChange = (page: PageInfo) => {
 	data.query.page = page.page;
 	data.query.limit = page.limit;
