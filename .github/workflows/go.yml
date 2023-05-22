@@ -27,4 +27,6 @@ jobs:
       run: cd ./server && make build
     - name: Push
       run: cd ./server && make push
+    - name: Clean
+      run: c ./server && make clean
  
