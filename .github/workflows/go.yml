@@ -5,26 +5,37 @@ name: Go
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
-
-  build:
+  build-server:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.19
-    - name: Login to Docker registry
-      run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOKCER_USER }} --password-stdin registry.cn-hangzhou.aliyuncs.com
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - name: Login to Docker registry
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOKCER_USER }} --password-stdin registry.cn-hangzhou.aliyuncs.com
+      - name: Build-Server
+        run: make build-server
+      - name: Push-Server-Image
+        run: make push-server
 
-    - name: Build
-      run: cd ./server && make build
-    - name: Push
-      run: cd ./server && make push
- 
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # 指定 node 版本
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+      - name: Login to Docker registry
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOKCER_USER }} --password-stdin registry.cn-hangzhou.aliyuncs.com
+      - name: Build-Web
+        run: make build-web
+      - name: Push-Web-Image
+        run: make push-web
