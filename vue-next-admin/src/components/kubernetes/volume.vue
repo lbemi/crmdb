@@ -59,7 +59,7 @@
 						/>
 						<div v-if="scope.row.type === 'persistentVolumeClaim'" style="display: flex">
 							<el-select v-model="scope.row.persistentVolumeClaim.name" size="small" :loading="data.loading" @click="getPvc" show-overflow-tooltip>
-								<el-option v-for="item in data.pvcdata" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name" />
+								<el-option v-for="item in data.pvcdata" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name!" />
 							</el-select>
 						</div>
 						<div v-if="scope.row.type === 'configMap'" style="display: flex">
@@ -70,7 +70,7 @@
 								@click="getConfigMap(scope.row)"
 								show-overflow-tooltip
 							>
-								<el-option v-for="item in data.configMapData" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name" />
+								<el-option v-for="item in data.configMapData" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name!" />
 							</el-select>
 							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
 								<el-tooltip placement="top" effect="light">
@@ -90,7 +90,7 @@
 						</div>
 						<div v-if="scope.row.type === 'secret'" style="display: flex">
 							<el-select v-model="scope.row.secret.secretName" size="small" :loading="data.loading" @click="getSecret" show-overflow-tooltip>
-								<el-option v-for="item in data.secretData" :key="item.metadata!.uid" :label="item.metadata!.name" :value="item.metadata!.name" />
+								<el-option v-for="item in data.secretData" :key="item.metadata!.uid" :label="item.metadata!.name" :value="item.metadata!.name!" />
 							</el-select>
 							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
 								<el-tooltip placement="top" effect="dark">
@@ -171,13 +171,12 @@
 <script setup lang="ts">
 import { CaretBottom, CaretTop, CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { onUnmounted, reactive, ref, watch } from 'vue';
-import { V1ConfigMap, V1PersistentVolumeClaim, V1Secret, V1Volume, V1VolumeMount } from '@kubernetes/client-node';
+import { ConfigMap, PersistentVolumeClaim, Secret, Volume, VolumeMount, KeyToPath } from 'kubernetes-types/core/v1';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useConfigMapApi } from '/@/api/kubernetes/configMap';
 import { useSecretApi } from '/@/api/kubernetes/secret';
-import { V1KeyToPath } from '@kubernetes/client-node/dist/gen/model/v1KeyToPath';
 import { usePVCApi } from '/@/api/kubernetes/persitentVolumeClaim';
 import mittBus from '/@/utils/mitt';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
@@ -220,18 +219,18 @@ const data = reactive({
 		},
 	],
 	volumeData: [] as Array<CreateK8SVolumentData>,
-	pvcdata: [] as V1PersistentVolumeClaim[],
-	tmpVolumes: [] as V1Volume[],
-	volumes: [] as V1Volume[],
-	volumeMount: [] as V1VolumeMount[],
-	configMapData: [] as V1ConfigMap[],
+	pvcdata: [] as PersistentVolumeClaim[],
+	tmpVolumes: [] as Volume[],
+	volumes: [] as Volume[],
+	volumeMount: [] as VolumeMount[],
+	configMapData: [] as ConfigMap[],
 	loading: false,
-	secretData: [] as V1Secret[],
+	secretData: [] as Secret[],
 	form: {
 		key: '',
 		path: '',
 	},
-	items: [] as Array<V1KeyToPath>,
+	items: [] as Array<KeyToPath>,
 });
 
 const addKey = () => {
@@ -267,7 +266,7 @@ const openDialog = (config: any, index: number) => {
 		}
 		dialogFormVisible.value = true;
 		if (dialogFormVisible.value) {
-			data.configMapData.forEach((item: V1ConfigMap) => {
+			data.configMapData.forEach((item: ConfigMap) => {
 				if (item.metadata?.name === config.configMap.name) {
 					data.keyValData = item.data;
 				}
@@ -311,15 +310,15 @@ const handleConfirm = () => {
 
 // 转换volumeData 为k8s所需类型的数据
 const handleVolumeData = () => {
-	const tmpVolume = [] as V1Volume[];
-	const tempVolumeMount = [] as V1VolumeMount[];
+	const tmpVolume = [] as Volume[];
+	const tempVolumeMount = [] as VolumeMount[];
 
 	data.volumeData.forEach((item: any, index: number) => {
 		if (tempVolumeMount.length === index) {
-			tempVolumeMount.push({} as V1VolumeMount);
+			tempVolumeMount.push({} as VolumeMount);
 		}
 		if (tmpVolume.length === index) {
-			tmpVolume.push({} as V1Volume);
+			tmpVolume.push({} as Volume);
 		}
 		tmpVolume[index].name = item.name;
 		tempVolumeMount[index].name = item.name;
@@ -410,14 +409,14 @@ onUnmounted(() => {
 
 //接受父组件传递的值
 const props = defineProps({
-	volumeMounts: Array<V1VolumeMount>,
+	volumeMounts: Array<VolumeMount>,
 });
 
 //解析volumeMount为所需要的CreateK8SVolumentData 类型
-const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
+const parseVolumeMount = (volumeMount: Array<VolumeMount>) => {
 	const tmpVolumeData = [] as Array<CreateK8SVolumentData>;
-	volumeMount.forEach((item: V1VolumeMount) => {
-		data.tmpVolumes.forEach((v: V1Volume) => {
+	volumeMount.forEach((item: VolumeMount) => {
+		data.tmpVolumes.forEach((v: Volume) => {
 			let volumeType = '';
 
 			if (v.hostPath) {
@@ -449,7 +448,7 @@ const parseVolumeMount = (volumeMount: Array<V1VolumeMount>) => {
 						name: item.name,
 						mountPath: item.mountPath,
 						subPath: item.subPath,
-					} as V1VolumeMount,
+					} as VolumeMount,
 				});
 			}
 		});

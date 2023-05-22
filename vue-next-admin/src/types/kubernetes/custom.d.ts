@@ -6,20 +6,19 @@ export enum ResourceType {
 	StatefulSet = 'statefulSet',
 }
 
+import { ObjectMeta } from 'kubernetes-types/meta/v1';
 import {
-	V1ObjectMeta,
-	V1VolumeMount,
-	V1HostPathVolumeSource,
-	V1SecretVolumeSource,
-	V1ConfigMapVolumeSource,
-	V1PersistentVolumeClaimVolumeSource,
-	V1EmptyDirVolumeSource,
-} from '@kubernetes/client-node';
-
+	VolumeMount,
+	HostPathVolumeSource,
+	SecretVolumeSource,
+	ConfigMapVolumeSource,
+	PersistentVolumeClaimVolumeSource,
+	EmptyDirVolumeSource,
+} from 'kubernetes-types/core/v1';
 export declare type ResourceType = 'deployment' | 'daemonSet' | 'statefulSet' | 'job' | 'cronJob';
 
 export declare type CreateK8SBindData = {
-	metadata?: V1ObjectMeta;
+	metadata?: ObjectMeta;
 	replicas?: number;
 	resourceType?: ResourceType;
 };
@@ -35,16 +34,16 @@ export declare type CreateK8SMetaData = {
 	annotationsData?: Array<CreateK8SLabel>;
 	replicas?: number;
 	resourceType?: ResourceType;
-	meta?: V1ObjectMeta;
+	meta?: ObjectMeta;
 };
 
 export declare type CreateK8SVolumentData = {
 	type: string;
 	name: string;
-	hostPath?: V1HostPathVolumeSource | undefined;
-	secret?: V1SecretVolumeSource | undefined;
-	configMap?: V1ConfigMapVolumeSource | undefined;
-	persistentVolumeClaim?: V1PersistentVolumeClaimVolumeSource | undefined;
-	emptyDir?: V1EmptyDirVolumeSource | undefined;
-	volumeMountData?: V1VolumeMount | undefined;
+	hostPath?: HostPathVolumeSource | undefined;
+	secret?: SecretVolumeSource | undefined;
+	configMap?: ConfigMapVolumeSource | undefined;
+	persistentVolumeClaim?: PersistentVolumeClaimVolumeSource | undefined;
+	emptyDir?: EmptyDirVolumeSource | undefined;
+	volumeMountData?: VolumeMount | undefined;
 };

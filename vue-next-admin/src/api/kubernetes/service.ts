@@ -1,4 +1,4 @@
-import { V1Service } from '@kubernetes/client-node';
+import { Service } from 'kubernetes-types/core/v1';
 import request from '/@/utils/request';
 
 export function useServiceApi() {
@@ -10,9 +10,9 @@ export function useServiceApi() {
 				params: param,
 			});
 		},
-		getService:(namespace: string,name: string, param: any) => {
+		getService: (namespace: string, name: string, param: any) => {
 			return request({
-				url: `/service/${namespace}/${name}` ,
+				url: `/service/${namespace}/${name}`,
 				method: 'get',
 				params: param,
 			});
@@ -31,7 +31,7 @@ export function useServiceApi() {
 				params: param,
 			});
 		},
-		updateService: (param: any, data: V1Service) => {
+		updateService: (param: any, data: Service) => {
 			return request({
 				url: `/service`,
 				method: 'put',
@@ -39,7 +39,7 @@ export function useServiceApi() {
 				data: data,
 			});
 		},
-		createService: (param: any, data: V1Service) => {
+		createService: (param: any, data: Service) => {
 			return request({
 				url: `/service`,
 				method: 'post',

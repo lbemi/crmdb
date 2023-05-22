@@ -1,4 +1,5 @@
-import { V1Node, V1NodeSpec, V1ObjectMeta, V1NodeStatus } from '@kubernetes/client-node';
+import { Node, NodeSpec, NodeStatus } from 'kubernetes-types/core/v1';
+import { ObjectMeta } from 'kubernetes-types/meta/v1';
 import { UploadFile } from 'element-plus';
 
 export interface ClusterInfo {
@@ -26,9 +27,9 @@ export interface ClusterForm {
 export interface Node {
 	apiVersion?: string;
 	kind?: string;
-	metadata?: V1ObjectMeta;
-	spec?: V1NodeSpec;
-	status?: V1NodeStatus;
+	metadata?: ObjectMeta;
+	spec?: NodeSpec;
+	status?: NodeStatus;
 	usage?: {
 		cpu: number;
 		memory: number;

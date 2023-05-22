@@ -94,7 +94,7 @@
 			<el-tab-pane label="Exec模式" name="exec">
 				<el-form :model="data.probe.exec" label-width="120px" v-show="data.probe.exec">
 					<el-form-item label="命令">
-						<el-input v-model="data.probe.exec!.command" size="default" style="width: 200px" />
+						<el-input v-model="data.probe!.exec!.command" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="延迟探测时间(s)">
 						<el-input-number v-model="data.probe.initialDelaySeconds" size="default" style="width: 200px" />
@@ -120,16 +120,15 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
 import { CaretBottom, CaretTop } from '@element-plus/icons-vue';
-import { V1Probe } from '@kubernetes/client-node';
+import { Probe } from 'kubernetes-types/core/v1';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { deepClone } from '/@/utils/other';
-
 const data = reactive({
 	loadFromParent: false,
 	set: false,
 	show: true,
-	probe: <V1Probe>{
+	probe: <Probe>{
 		httpGet: {
 			// httpHeaders: [],
 			scheme: 'HTTP',

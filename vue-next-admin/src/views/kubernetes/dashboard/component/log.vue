@@ -51,19 +51,21 @@
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import type { ElTableColumn } from 'element-plus';
-import { EventData, PageInfo } from '/@/types/kubernetes/common';
+import { PageInfo } from '/@/types/kubernetes/common';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useEventApi } from '/@/api/kubernetes/event';
-import * as k8s from '@kubernetes/client-node';
+import { Event } from 'kubernetes-types/core/v1';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 
-const state = reactive<EventData>({
-	events: [] as k8s.CoreV1Event[],
+const state = reactive({
+	events: [] as Event[],
 	query: {
 		cloud: '',
 		page: 1,
 		limit: 10,
+		namespace: '',
 	},
 	total: 0,
 	loading: false,

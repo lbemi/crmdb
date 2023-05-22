@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { V1EnvVar } from '@kubernetes/client-node';
+import { EnvVar } from 'kubernetes-types/core/v1';
 import { reactive, watch } from 'vue';
 import { deepClone } from '/@/utils/other';
 
@@ -68,24 +68,24 @@ const data = reactive({
 });
 
 const props = defineProps({
-	env: Array<V1EnvVar>,
+	env: Array<EnvVar>,
 });
 
 const emit = defineEmits(['updateEnv']);
 
 const buildEnv = () => {
-	const envData = [] as V1EnvVar[];
+	const envData = [] as EnvVar[];
 	const envTup = deepClone(data.env);
 	envTup.forEach((item: any, index: number) => {
 		if (item.type === 'custom') {
 			//自定义变量
-			const envVar: V1EnvVar = {
+			const envVar: EnvVar = {
 				name: item.name,
 				value: item.value,
 			};
 			envData[index] = envVar;
 		} else if (item.type === 'fieldRef') {
-			const envVar: V1EnvVar = {
+			const envVar: EnvVar = {
 				name: item.name,
 				valueFrom: {
 					fieldRef: {
@@ -95,7 +95,7 @@ const buildEnv = () => {
 			};
 			envData[index] = envVar;
 		} else if (item.type === 'resourceFieldRef') {
-			const envVar: V1EnvVar = {
+			const envVar: EnvVar = {
 				name: item.name,
 				valueFrom: {
 					resourceFieldRef: {
@@ -106,7 +106,7 @@ const buildEnv = () => {
 			};
 			envData[index] = envVar;
 		} else if (item.type === 'configMapKeyRef') {
-			const envVar: V1EnvVar = {
+			const envVar: EnvVar = {
 				name: item.name,
 				valueFrom: {
 					configMapKeyRef: {
@@ -117,7 +117,7 @@ const buildEnv = () => {
 			};
 			envData[index] = envVar;
 		} else if (item.type === 'secretKeyRef') {
-			const envVar: V1EnvVar = {
+			const envVar: EnvVar = {
 				name: item.name,
 				valueFrom: {
 					secretKeyRef: {
@@ -133,7 +133,7 @@ const buildEnv = () => {
 	return envData;
 };
 
-const parseEnv = (envs: Array<V1EnvVar>) => {
+const parseEnv = (envs: Array<EnvVar>) => {
 	const envData = [] as envImp[];
 	envs.forEach((env, index) => {
 		envData.push({

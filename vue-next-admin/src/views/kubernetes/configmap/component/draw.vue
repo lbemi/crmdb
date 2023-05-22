@@ -72,22 +72,24 @@
 </template>
 
 <script lang="ts" setup>
-import { ElButton, ElDrawer } from 'element-plus';
-import { CircleCloseFilled } from '@element-plus/icons-vue';
-import { V1ConfigMap } from '@kubernetes/client-node';
+import { ElDrawer } from 'element-plus';
+
+import { ConfigMap } from 'kubernetes-types/core/v1';
 import { computed, reactive } from 'vue';
 import { watch } from 'vue';
 
 const data = reactive({
 	visible: false,
-	configMap: {} as V1ConfigMap,
+	configMap: {} as ConfigMap,
 });
 
 const emit = defineEmits(['update:visible']);
 
 const props = defineProps({
 	visible: Boolean,
-	configMap: V1ConfigMap,
+	configMap: {
+		type: Object as () => ConfigMap,
+	},
 	title: String,
 });
 

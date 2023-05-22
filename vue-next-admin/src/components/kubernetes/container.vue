@@ -152,10 +152,9 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, reactive, watch } from 'vue';
-import { V1Container, V1ContainerPort, V1EnvVar, V1Lifecycle, V1Probe, V1VolumeMount } from '@kubernetes/client-node';
+import { Container, ContainerPort, Lifecycle, Probe, VolumeMount, LifecycleHandler, EnvVar } from 'kubernetes-types/core/v1';
 import { Delete, Edit, InfoFilled } from '@element-plus/icons-vue';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
-import { V1LifecycleHandler } from '@kubernetes/client-node/dist/gen/model/v1LifecycleHandler';
 import { deepClone } from '/@/utils/other';
 
 //子组件引用
@@ -174,14 +173,14 @@ const data = reactive({
 	lifeShow: true,
 	resourceHasSet: false,
 	resourceSet: false,
-	containers: [] as V1Container[],
-	container: <V1Container>{
+	containers: [] as Container[],
+	container: <Container>{
 		name: '',
 		imagePullPolicy: 'ifNotPresent',
 		securityContext: {
 			privileged: false,
 		},
-		lifecycle: {} as V1Lifecycle,
+		lifecycle: {} as Lifecycle,
 		livenessProbe: {},
 		readinessProbe: {},
 	},
@@ -195,51 +194,51 @@ const data = reactive({
 	},
 });
 
-const getPorts = (ports: Array<V1ContainerPort>) => {
+const getPorts = (ports: Array<ContainerPort>) => {
 	if (ports && ports.length != 0) {
-		data.container.ports = deepClone(ports) as Array<V1ContainerPort>;
+		data.container.ports = deepClone(ports) as Array<ContainerPort>;
 	} else {
 		delete data.container.ports;
 	}
 };
 
-const getEnvs = (envs: Array<V1EnvVar>) => {
+const getEnvs = (envs: Array<EnvVar>) => {
 	if (envs && envs.length != 0) {
-		data.container.env = deepClone(envs) as Array<V1EnvVar>;
+		data.container.env = deepClone(envs) as Array<EnvVar>;
 	} else {
 		delete data.container.env;
 	}
 };
 // 更新存活检查数据
-const getLivenessData = (liveData: V1Probe) => {
+const getLivenessData = (liveData: Probe) => {
 	if (isObjectValueEqual(liveData, {})) {
 		delete data.container.livenessProbe;
 		return;
 	}
 	data.container.livenessProbe = liveData;
 };
-const getReadinessData = (readData: V1Probe) => {
+const getReadinessData = (readData: Probe) => {
 	if (isObjectValueEqual(readData, {})) {
 		delete data.container.readinessProbe;
 		return;
 	}
 	data.container.readinessProbe = readData;
 };
-const getStartupData = (startData: V1Probe) => {
+const getStartupData = (startData: Probe) => {
 	if (isObjectValueEqual(startData, {})) {
 		delete data.container.startupProbe;
 		return;
 	}
 	data.container.startupProbe = startData;
 };
-const getPostStart = (postStart: V1LifecycleHandler) => {
+const getPostStart = (postStart: LifecycleHandler) => {
 	if (isObjectValueEqual(postStart, {})) {
 		delete data.container.lifecycle?.postStart;
 		return;
 	}
 	data.container.lifecycle!.postStart = postStart;
 };
-const getPreStop = (preStop: V1LifecycleHandler) => {
+const getPreStop = (preStop: LifecycleHandler) => {
 	if (isObjectValueEqual(preStop, {})) {
 		delete data.container.lifecycle?.preStop;
 		return;
@@ -292,9 +291,9 @@ watch(
 			data.loadFromParent = true;
 
 			console.log('b.处理父组件传递的container', props.container);
-			const copyData = deepClone(props.container) as V1Container;
+			const copyData = deepClone(props.container) as Container;
 			if (!copyData.volumeMounts) {
-				copyData.volumeMounts = [] as V1VolumeMount[];
+				copyData.volumeMounts = [] as VolumeMount[];
 			}
 
 			if (copyData.resources?.limits || copyData.resources?.requests) {

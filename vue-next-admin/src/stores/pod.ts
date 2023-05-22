@@ -1,8 +1,6 @@
-import { formData } from './../views/pages/dynamicForm/mock';
-import { dateStrFormat } from '/@/utils/formatTime';
 import { defineStore } from 'pinia';
 import { reactive } from 'vue';
-import { V1Pod } from '@kubernetes/client-node';
+import { Pod } from 'kubernetes-types/core/v1';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { usePodApi } from '/@/api/kubernetes/pod';
 
@@ -17,8 +15,8 @@ export const podInfo = defineStore(
 		const k8sStore = kubernetesInfo();
 		const podApi = usePodApi();
 		const state = reactive({
-			podDetail: {} as V1Pod,
-			pods: [] as V1Pod[],
+			podDetail: {} as Pod,
+			pods: [] as Pod[],
 			query: {
 				cloud: k8sStore.state.activeCluster,
 				page: 1,
@@ -29,7 +27,7 @@ export const podInfo = defineStore(
 			total: 0,
 			loading: false,
 			selectData: [],
-			podShell: {} as V1Pod,
+			podShell: {} as Pod,
 		});
 		const listPod = async () => {
 			state.query.cloud = k8sStore.state.activeCluster;
@@ -38,7 +36,7 @@ export const podInfo = defineStore(
 				state.total = res.data.total;
 			});
 		};
-		const deletePod = async (pod: V1Pod) => {
+		const deletePod = async (pod: Pod) => {
 			state.query.cloud = k8sStore.state.activeCluster;
 			await podApi.deletePod(pod.metadata?.namespace, pod.metadata?.name, { cloud: k8sStore.state.activeCluster });
 		};

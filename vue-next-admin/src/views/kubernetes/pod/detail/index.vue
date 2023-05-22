@@ -229,11 +229,12 @@
 	</div>
 </template>
 <script lang="ts" setup name="podDetail">
-import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, h } from 'vue';
-import { ArrowLeft, CaretBottom, Edit, View, Delete, Plus, RefreshRight } from '@element-plus/icons-vue';
+import { reactive, defineAsyncComponent, h } from 'vue';
+import { ArrowLeft, CaretBottom, Edit, View, Delete } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { V1ContainerStatus, V1Deployment, V1Pod, V1PodCondition, V1PodStatus, V1ReplicaSet, V1ReplicaSetCondition } from '@kubernetes/client-node';
+import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
+import { Deployment, ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -253,16 +254,16 @@ const podApi = usePodApi();
 const deploymentApi = useDeploymentApi();
 const data = reactive({
 	dialogVisible: false,
-	codeData: {} as V1Pod,
+	codeData: {} as Pod,
 	param: {
 		cloud: k8sStore.state.activeCluster,
 	},
-	replicasets: [] as V1ReplicaSet[],
-	pods: [] as V1Pod[],
+	replicasets: [] as ReplicaSet[],
+	pods: [] as Pod[],
 	iShow: false,
 	activeName: 'first',
 	deployment: [],
-	events: [] as V1ReplicaSetCondition[],
+	events: [] as ReplicaSetCondition[],
 });
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
@@ -271,7 +272,7 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 	}
 };
 
-const podRestart = (status: V1PodStatus) => {
+const podRestart = (status: PodStatus) => {
 	let count = 0;
 	status.containerStatuses!.forEach((item) => {
 		count += item.restartCount;
@@ -279,13 +280,13 @@ const podRestart = (status: V1PodStatus) => {
 	return count;
 };
 // FIXME
-const podStatus = (status: V1PodStatus) => {
+const podStatus = (status: PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
 	if (status.phase === 'Running') {
-		status.conditions!.forEach((item: V1PodCondition) => {
+		status.conditions!.forEach((item: PodCondition) => {
 			if (item.status != 'True') {
 				let res = '';
-				status.containerStatuses?.forEach((c: V1ContainerStatus) => {
+				status.containerStatuses?.forEach((c: ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
 							res = `<div>${c.state.waiting.reason}</div>`;
@@ -310,7 +311,7 @@ const podStatus = (status: V1PodStatus) => {
 const updatePod = (podData: any) => {
 	// TODO 完善功能
 	ElMessage.success('更新成功');
-	// const updateData = YAML.load(yamlRef.value.code) as V1Deployment;
+	// const updateData = YAML.load(yamlRef.value.code) as Deployment;
 	// delete updateData.status;
 	// delete updateData.metadata?.managedFields;
 	// deploymentApi
@@ -343,13 +344,13 @@ const getEvents = async () => {
 	const res = await podApi.podEvents(pod.metadata!.namespace, pod.metadata!.name, data.param);
 	data.events = res.data;
 };
-const jumpPodExec = (p: V1Pod) => {
+const jumpPodExec = (p: Pod) => {
 	podStore.state.podShell = podStore.state.podDetail;
 	router.push({
 		name: 'podShell',
 	});
 };
-const jumpPodLog = (p: V1Pod) => {
+const jumpPodLog = (p: Pod) => {
 	podStore.state.podShell = podStore.state.podDetail;
 	router.push({
 		name: 'podLog',
@@ -361,7 +362,7 @@ const backRoute = () => {
 		name: 'k8sPod',
 	});
 };
-const deletePod = async (pod: V1Pod) => {
+const deletePod = async (pod: Pod) => {
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [

@@ -37,7 +37,9 @@
 					</template>
 				</el-input>
 				<el-button type="primary" size="small" class="ml10" @click="createService" :icon="Edit">创建</el-button>
-				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete" @click="deleteServices">批量删除</el-button>
+				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete" @click="deleteServices"
+					>批量删除</el-button
+				>
 				<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
 					<el-icon>
 						<ele-RefreshRight />
@@ -154,12 +156,18 @@
 			@update="updateServiceYaml"
 			v-if="data.dialogVisible"
 		/>
-		<ServiceDialog v-model:dialogVisible="data.serviceDialog" :service="data.activeService"  :title="data.title" @refresh="listService()" v-if="data.serviceDialog" />
+		<ServiceDialog
+			v-model:dialogVisible="data.serviceDialog"
+			:service="data.activeService"
+			:title="data.title"
+			@refresh="listService()"
+			v-if="data.serviceDialog"
+		/>
 	</div>
 </template>
 
 <script setup lang="ts" name="k8sService">
-import { V1Service } from '@kubernetes/client-node';
+import { Service } from 'kubernetes-types/core/v1';
 import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useServiceApi } from '/@/api/kubernetes/service';
@@ -188,11 +196,11 @@ const data = reactive({
 	activeService: {},
 	serviceDialog: false,
 	dialogVisible: false,
-	codeData: {} as V1Service,
+	codeData: {} as Service,
 	loading: false,
-	selectData: [] as V1Service[],
-	services: [] as V1Service[],
-	tmpService: [] as V1Service[],
+	selectData: [] as Service[],
+	services: [] as Service[],
+	tmpService: [] as Service[],
 	total: 0,
 	query: {
 		page: 1,
@@ -212,30 +220,30 @@ const handleChange = () => {
 	listService();
 };
 
-const serviceDetail = (service: V1Service) => {
+const serviceDetail = (service: Service) => {
 	k8sStore.state.activeService = service;
 	router.push({
 		name: 'k8sServiceDetail',
 	});
 };
 
-const showYaml = async (service: V1Service) => {
+const showYaml = async (service: Service) => {
 	const svc = deepClone(service);
 	delete svc.metadata?.managedFields;
 	data.codeData = svc;
 	data.dialogVisible = true;
 };
 
-const filterService = (services: Array<V1Service>) => {
-	const serviceList = [] as V1Service[];
+const filterService = (services: Array<Service>) => {
+	const serviceList = [] as Service[];
 	if (data.query.type === '1') {
-		services.forEach((service: V1Service) => {
+		services.forEach((service: Service) => {
 			if (service.metadata?.name?.includes(data.query.key)) {
 				serviceList.push(service);
 			}
 		});
 	} else {
-		services.forEach((service: V1Service) => {
+		services.forEach((service: Service) => {
 			if (service.metadata?.labels) {
 				for (let k in service.metadata.labels) {
 					if (k.includes(data.query.key) || service.metadata.labels[k].includes(data.query.key)) {
@@ -250,21 +258,20 @@ const filterService = (services: Array<V1Service>) => {
 };
 const createService = () => {
 	data.title = '创建service';
-	data.activeService = {}
+	data.activeService = {};
 	data.serviceDialog = true;
 };
 
-const deleteServices = () =>{
-	data.selectData.forEach(async (service: V1Service) =>{
-	await	servieApi
-				.deleteService({ cloud: k8sStore.state.activeCluster }, service.metadata!.name!, service.metadata!.namespace!)
-	})
-	setTimeout(()=>{
+const deleteServices = () => {
+	data.selectData.forEach(async (service: Service) => {
+		await servieApi.deleteService({ cloud: k8sStore.state.activeCluster }, service.metadata!.name!, service.metadata!.namespace!);
+	});
+	setTimeout(() => {
 		listService();
-	},100)
-}
+	}, 100);
+};
 
-const deleteService = (service: V1Service) => {
+const deleteService = (service: Service) => {
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
@@ -297,16 +304,14 @@ const deleteService = (service: V1Service) => {
 const handleSelectionChange = (value: any) => {
 	data.selectData = value;
 };
-const updateService = (service: V1Service) => {
-	
-	data.activeService = service
-	data.title = '更新< ' + service.metadata?.name + ' >服务'
+const updateService = (service: Service) => {
+	data.activeService = service;
+	data.title = '更新< ' + service.metadata?.name + ' >服务';
 	data.serviceDialog = true;
-
 };
 
 const updateServiceYaml = async (svc: any) => {
-	const updateData = YAML.load(svc) as V1Service;
+	const updateData = deepClone(YAML.load(svc) as Service);
 	delete updateData.status;
 	delete updateData.metadata?.managedFields;
 
@@ -333,7 +338,7 @@ const handlePageChange = (page: PageInfo) => {
 };
 
 const listService = () => {
-	data.loading = true
+	data.loading = true;
 	servieApi
 		.listService(k8sStore.state.activeNamespace, data.query)
 		.then((res: ResponseType) => {
@@ -346,7 +351,7 @@ const listService = () => {
 		.catch((e) => {
 			ElMessage.error(e);
 		});
-		data.loading = false
+	data.loading = false;
 };
 
 const refreshCurrentTagsView = () => {

@@ -215,10 +215,10 @@
 
 <script setup lang="ts" name="k8sDeployment">
 import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref, computed, onUnmounted, h } from 'vue';
-import { Check, Close, Delete, Edit, Search } from '@element-plus/icons-vue';
+import { Delete, Edit } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { V1Deployment } from '@kubernetes/client-node';
+import { Deployment } from 'kubernetes-types/apps/v1';
 import { PageInfo } from '/@/types/kubernetes/common';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import router from '/@/router';
@@ -236,12 +236,12 @@ const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.v
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 
 const data = reactive({
-	codeData: {} as V1Deployment,
+	codeData: {} as Deployment,
 	searchType: '1',
 	search: '',
 	dialogVisible: false,
 	visible: false,
-	scaleDeploy: <V1Deployment>{},
+	scaleDeploy: <Deployment>{},
 	query: {
 		cloud: '',
 		page: 1,
@@ -251,8 +251,8 @@ const data = reactive({
 	},
 	namespace: '',
 	loading: false,
-	deployments: [] as V1Deployment[],
-	selectData: [] as V1Deployment[],
+	deployments: [] as Deployment[],
+	selectData: [] as Deployment[],
 	total: 0,
 });
 const route = useRoute();
@@ -295,8 +295,8 @@ const search = () => {
 	data.loading = false;
 };
 
-const deploymentStatus = computed((dep: V1Deployment) => {});
-const rollBack = (deployment: V1Deployment) => {
+const deploymentStatus = computed((dep: Deployment) => {});
+const rollBack = (deployment: Deployment) => {
 	const reversion = deployment.metadata?.annotations!['deployment.kubernetes.io/revision']!;
 	parseInt(reversion, 10);
 	deploymentApi
@@ -314,7 +314,7 @@ const rollBack = (deployment: V1Deployment) => {
 			ElMessage.error('回滚失败,' + res.message);
 		});
 };
-const reDeploy = (deployment: V1Deployment) => {
+const reDeploy = (deployment: Deployment) => {
 	deploymentApi
 		.reDeployDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, { cloud: k8sStore.state.activeCluster })
 		.then((res) => {
@@ -333,7 +333,7 @@ const handleChange = () => {
 	listDeployment();
 };
 const updateDeployment = async (codeData: any) => {
-	const updateData = YAML.load(codeData) as V1Deployment;
+	const updateData = YAML.load(codeData) as Deployment;
 	delete updateData.status;
 	delete updateData.metadata?.managedFields;
 	await deploymentApi
@@ -351,7 +351,7 @@ const updateDeployment = async (codeData: any) => {
 	data.dialogVisible = false;
 };
 
-const deleteDeployments = (depList: Array<V1Deployment>) => {
+const deleteDeployments = (depList: Array<Deployment>) => {
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
@@ -367,7 +367,7 @@ const deleteDeployments = (depList: Array<V1Deployment>) => {
 		draggable: true,
 	})
 		.then(() => {
-			depList.forEach((dep: V1Deployment) => {
+			depList.forEach((dep: Deployment) => {
 				if (dep.metadata) {
 					deploymentApi
 						.deleteDeployment(dep.metadata?.namespace!, dep.metadata?.name!, { cloud: k8sStore.state.activeCluster })
@@ -382,7 +382,7 @@ const deleteDeployments = (depList: Array<V1Deployment>) => {
 			ElMessage.info('取消');
 		});
 };
-const deleteDeployment = (dep: V1Deployment) => {
+const deleteDeployment = (dep: Deployment) => {
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
@@ -411,13 +411,13 @@ const deleteDeployment = (dep: V1Deployment) => {
 		});
 };
 
-const showYaml = async (deployment: V1Deployment) => {
+const showYaml = async (deployment: Deployment) => {
 	const dep = deepClone(deployment);
 	delete dep.metadata?.managedFields;
 	data.codeData = dep;
 	data.dialogVisible = true;
 };
-const openScaleDialog = (dep: V1Deployment) => {
+const openScaleDialog = (dep: Deployment) => {
 	data.scaleDeploy = deepClone(dep);
 	data.visible = true;
 };
@@ -477,7 +477,7 @@ const handlePageChange = (pageInfo: PageInfo) => {
 		listDeployment();
 	}
 };
-const deployDetail = async (dep: V1Deployment) => {
+const deployDetail = async (dep: Deployment) => {
 	k8sStore.state.activeDeployment = dep;
 	router.push({
 		name: 'k8sDeploymentDetail',

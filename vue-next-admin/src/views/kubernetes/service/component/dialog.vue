@@ -121,7 +121,8 @@
 </template>
 
 <script setup lang="ts">
-import { V1DaemonSet, V1Deployment, V1Service, V1StatefulSet } from '@kubernetes/client-node';
+import { Service } from 'kubernetes-types/core/v1';
+import { DaemonSet, Deployment, StatefulSet } from 'kubernetes-types/apps/v1';
 import { defineAsyncComponent, reactive, ref, watch } from 'vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
@@ -146,12 +147,12 @@ const data = reactive({
 	keepAlive: false,
 	headless: false,
 	visible: false,
-	deployments: [] as V1Deployment[],
-	daemonSets: [] as V1DaemonSet[],
-	statefulSets: [] as V1StatefulSet[],
+	deployments: [] as Deployment[],
+	daemonSets: [] as DaemonSet[],
+	statefulSets: [] as StatefulSet[],
 	activeName: 'deployment',
 	selectWorkLoad: '',
-	service: <V1Service>{
+	service: <Service>{
 		metadata: {
 			name: '',
 			namespace: 'default',
@@ -213,7 +214,6 @@ const createService = () => {
 		});
 	handleClose();
 	emit('refresh');
-
 };
 const updateService = () => {
 	serviceApi
@@ -292,7 +292,7 @@ watch(
 		dialogVisible.value = props.dialogVisible;
 
 		if (!isObjectValueEqual(props.service, {})) {
-			data.service = props.service as V1Service;
+			data.service = props.service as Service;
 			data.updateFlag = true;
 		}
 	},

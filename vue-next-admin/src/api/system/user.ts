@@ -1,42 +1,40 @@
 import request from '/@/utils/request';
 
-
 export function useUserApi() {
 	return {
 		listUser: (query: any) => {
 			return request({
 				url: '/user',
 				method: 'get',
-                params: query
+				params: query,
 			});
 		},
-        updateUser: ( id: number , data :any) => {
+		updateUser: (id: number, data: any) => {
 			return request({
-				url: '/user/' + id ,
+				url: '/user/' + id,
 				method: 'put',
-                data: data
+				data: data,
 			});
 		},
-        addUser: (data: any) => {
+		addUser: (data: any) => {
 			return request({
 				url: '/user/register',
 				method: 'post',
-                data: data
+				data: data,
 			});
 		},
-        deleteUser: (id: number) => {
+		deleteUser: (id: number) => {
 			return request({
 				url: '/user/' + id,
 				method: 'delete',
 			});
 		},
 
-        updateStatus: (id: number, status: number) => {
-            return request({
+		updateStatus: (id: number, status: number) => {
+			return request({
 				url: '/user/' + id + '/status/' + status,
 				method: 'put',
 			});
-        },
-	
+		},
 	};
 }

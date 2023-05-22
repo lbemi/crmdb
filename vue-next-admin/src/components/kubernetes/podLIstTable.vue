@@ -73,24 +73,25 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { defineAsyncComponent, reactive, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import router from '/@/router';
-import { podInfo } from '/@/stores/pod';
 import { kubernetesInfo } from '/@/stores/kubernetes';
-import { V1ContainerStatus, V1Pod, V1PodCondition, V1PodStatus } from '@kubernetes/client-node';
-import { useWebsocketApi } from '/@/api/kubernetes/websocket';
+import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
 import { PageInfo } from '/@/types/kubernetes/common';
-import YAML from 'js-yaml';
+import { dateStrFormat } from '/@/utils/formatTime';
+import { podInfo } from '/@/stores/pod';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 
 const yamlRef = ref();
 const k8sStore = kubernetesInfo();
-
+const podStore = podInfo();
 const data = reactive({
-	pods: [] as V1Pod[],
+	podShell: {} as Pod,
+	podDetail: {} as Pod,
+	pods: [] as Pod[],
 	query: {
 		cloud: k8sStore.state.activeCluster,
 		page: 1,
@@ -101,7 +102,7 @@ const data = reactive({
 	selectData: [],
 });
 
-const podRestart = (status: V1PodStatus) => {
+const podRestart = (status: PodStatus) => {
 	let count = 0;
 	status.containerStatuses!.forEach((item) => {
 		count += item.restartCount;
@@ -109,13 +110,13 @@ const podRestart = (status: V1PodStatus) => {
 	return count;
 };
 // FIXME
-const podStatus = (status: V1PodStatus) => {
+const podStatus = (status: PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
 	if (status.phase === 'Running') {
-		status.conditions!.forEach((item: V1PodCondition) => {
+		status.conditions!.forEach((item: PodCondition) => {
 			if (item.status != 'True') {
 				let res = '';
-				status.containerStatuses?.forEach((c: V1ContainerStatus) => {
+				status.containerStatuses?.forEach((c: ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
 							res = ` </div> <div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
@@ -143,30 +144,30 @@ const handlePageChange = (pageInfo: PageInfo) => {
 	podStore.listPod();
 	data.loading = false;
 };
-const editPod = (pod: V1Pod) => {
+const editPod = (pod: Pod) => {
 	delete pod.metadata?.managedFields;
 	yamlRef.value.openDialog(pod);
 };
-const jumpPodExec = (p: V1Pod) => {
+const jumpPodExec = (p: Pod) => {
 	data.podShell = p;
 	router.push({
 		name: 'podShell',
 	});
 };
-const jumpPodDetail = (pod: V1Pod) => {
+const jumpPodDetail = (pod: Pod) => {
 	data.podDetail = pod;
 	router.push({
 		name: 'podDetail',
 	});
 };
-const jumpPodLog = (p: V1Pod) => {
+const jumpPodLog = (p: Pod) => {
 	data.podShell = p;
 	router.push({
 		name: 'podLog',
 	});
 };
 
-const deletePod = async (p: V1Pod) => {
+const deletePod = async (p: Pod) => {
 	ElMessageBox.confirm(`此操作将删除[ ${p.metadata?.name} ] 容器 . 是否继续?`, '警告', {
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',

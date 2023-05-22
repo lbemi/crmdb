@@ -18,8 +18,8 @@ import Labels from '/@/components/label/index.vue';
 
 import { ElMessage } from 'element-plus';
 import { ref, watch, reactive, toRefs } from 'vue';
-import { V1Node } from '@kubernetes/client-node';
 import { useNodeApi } from '/@/api/kubernetes/node';
+import { Node } from '/@/types/kubernetes/cluster';
 
 interface label {
 	key: string;
@@ -28,7 +28,7 @@ interface label {
 const props = defineProps<{
 	visible: boolean;
 	title: string;
-	data: V1Node;
+	data: Node;
 	cloud: string;
 }>();
 const { visible } = toRefs(props);
