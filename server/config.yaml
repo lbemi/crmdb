@@ -17,7 +17,7 @@ log:
   compress: true        # 是否压缩文件
 database:
   driver: mysql
-  host: 42.192.54.11
+  host: 10.0.12.8
   user: lbemi
   password: Admin_1234
   port: 3333
@@ -34,6 +34,6 @@ jwt:
   ttl: 30 #过期时间 :天
 
 Redis:
-  addr: 42.192.54.11
+  addr: 10.0.12.8
   port: 6399
   password: admin_1234
