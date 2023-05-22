@@ -3,9 +3,9 @@ WORKDIR /app
 ENV GOPROXY=https://goproxy.cn
 COPY . .
 RUN go mod download
-RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o lbemi-server ./cmd
+RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o lbemi-server ./cmd && chmod +x /app/lbemi-server
 
 FROM busybox as runner
 COPY --from=builder /app/lbemi-server /app
 COPY --from=builder /app/config.yaml /app
-ENTRYPOINT ["./lbemi-server"]
+ENTRYPOINT ["/app/lbemi-server"]
