@@ -1,13 +1,13 @@
 .PHONY: run build image push clean
 
 tag = v0.1
-releaseName = crmdb
+releaseName = lbemi-server
 image = registry.cn-hangzhou.aliyuncs.com/lbemi/crmdb
 
 ALL: run
 
 run: build
-	./crmdb
+	./lbemi-server
 
 build:
 	go build -o $(releaseName) ./cmd/
