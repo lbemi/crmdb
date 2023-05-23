@@ -16,6 +16,6 @@ func PassThroughRoutes(router *gin.RouterGroup) {
 	router.GET("/host/:id/ws", asset.WsShell)
 	router.GET("/ws/:cluster/:type", cloud.Ws)
 	router.GET("/ws/send", cloud.WsSendAll)
-	router.GET("/pod/:namespace/:podName/:container", cloud.PodExec)
-	router.GET("/pod/:namespace/:podName/:container/log", cloud.GetPodLog)
+	router.GET("/ws/pod/:namespace/:podName/:container", cloud.PodExec)
+	router.GET("/ws/pod/:namespace/:podName/:container/log", cloud.GetPodLog)
 }

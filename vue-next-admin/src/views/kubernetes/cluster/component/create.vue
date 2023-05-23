@@ -1,38 +1,37 @@
 /** * Created by lei on 2022/11/16 */
 <template>
-<!--	<div class="system-dept-dialog-container">-->
-		<el-dialog v-model="dialogVisible" style="width: 500px">
-			<template #header="{ titleId, titleClass }">
-				<div class="my-header">
-					<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
-					<el-divider />
-				</div>
-			</template>
-			<div class="dialog-body">
-				<el-form ref="ruleFormRef" :model="state" status-icon label-width="80px" class="demo-ruleForm"  :rules="clusterRule">
-					<el-form-item label="集群名称" prop="clusterName">
-						<el-input v-model="state.clusterName" autocomplete="off" />
-					</el-form-item>
-					<el-form-item label="配置文件">
-						<el-upload :limit="1" drag :auto-upload="false" :on-change="handleChange" multiple>
-							<el-icon class="el-icon--upload"><upload-filled /></el-icon>
-							<div class="el-upload__text">Drop file here or <em>click to upload</em></div>
-							<template #tip>
-								<div class="el-upload__tip">kube config files with a size less than 500kb</div>
-							</template>
-						</el-upload>
-					</el-form-item>
-				</el-form>
-
+	<!--	<div class="system-dept-dialog-container">-->
+	<el-dialog v-model="dialogVisible" style="width: 500px" v-loading="loading">
+		<template #header="{ titleId, titleClass }">
+			<div class="my-header">
+				<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
+				<el-divider />
 			</div>
-			<template #footer>
-				<span class="dialog-footer">
-					<el-button type="primary" @click="submitForm(ruleFormRef)">创建</el-button>
-						<el-button @click="resetForm(ruleFormRef)">重置</el-button>
-				</span>
-			</template>
-		</el-dialog>
-<!--	</div>-->
+		</template>
+		<div class="dialog-body">
+			<el-form ref="ruleFormRef" :model="state" status-icon label-width="80px" class="demo-ruleForm" :rules="clusterRule">
+				<el-form-item label="集群名称" prop="clusterName">
+					<el-input v-model="state.clusterName" autocomplete="off" />
+				</el-form-item>
+				<el-form-item label="配置文件">
+					<el-upload :limit="1" drag :auto-upload="false" :on-change="handleChange" multiple>
+						<el-icon class="el-icon--upload"><upload-filled /></el-icon>
+						<div class="el-upload__text">Drop file here or <em>click to upload</em></div>
+						<template #tip>
+							<div class="el-upload__tip">kube config files with a size less than 500kb</div>
+						</template>
+					</el-upload>
+				</el-form-item>
+			</el-form>
+		</div>
+		<template #footer>
+			<span class="dialog-footer">
+				<el-button type="primary" @click="submitForm(ruleFormRef)">创建</el-button>
+				<el-button @click="resetForm(ruleFormRef)">重置</el-button>
+			</span>
+		</template>
+	</el-dialog>
+	<!--	</div>-->
 </template>
 
 <script setup lang="ts" name="kubernetesDialog">
@@ -45,7 +44,7 @@ import { useClusterApi } from '/@/api/kubernetes/cluster';
 const clusterApi = useClusterApi();
 const ruleFormRef = ref();
 const newFormData = new FormData();
-
+const loading = ref(false);
 // 定义子组件向父组件传值/事件
 const emits = defineEmits(['update:dialogVisible', 'valueChange']);
 // 获取父组件传递的值
@@ -81,15 +80,23 @@ const submitForm = (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	formEl.validate(async (valid) => {
 		if (valid) {
+			loading.value = true;
 			newFormData.append('name', state.clusterName);
 			await clusterApi
 				.createCluster(newFormData, requestConfig.headers)
-				.then(() => {
-					emits('valueChange');
-					handleClose(formEl);
-					ElMessage.success('添加成功');
+				.then((res: any) => {
+					if (res.code === 200) {
+						emits('valueChange');
+						handleClose(formEl);
+						ElMessage.success('添加成功');
+					} else {
+						ElMessage.error(res.message);
+						newFormData.delete('file');
+						newFormData.delete('name');
+					}
 				})
-				.catch(() => {
+				.catch((e) => {
+					ElMessage.error(e);
 					newFormData.delete('file');
 					newFormData.delete('name');
 				});
@@ -97,6 +104,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
 			ElMessage.error('请正确填写!');
 			return false;
 		}
+		loading.value = false;
 	});
 };
 
@@ -113,7 +121,6 @@ const handleClose = (formEl: FormInstance | undefined) => {
 onMounted(() => {
 	console.log('--', dialogVisible.value);
 });
-
 </script>
 
 <style scoped lang="less"></style>
