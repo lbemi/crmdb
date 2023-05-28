@@ -1,17 +1,41 @@
 package response
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/lbemi/lbemi/pkg/ginx"
 	"net/http"
 )
 
+const SuccessMsg = "success"
+
 type Response struct {
-	Code    int         `json:"code"`
+	Code    int16       `json:"code"`
 	Data    interface{} `json:"data,omitempty"`
 	Message interface{} `json:"message,omitempty"`
 }
 
-func Success(c *gin.Context, code int, data interface{}) {
+func (r *Response) ToJson() string {
+	marshalData, err := json.Marshal(r.Data)
+	if err != nil {
+		fmt.Println("marshal data to json failed")
+	}
+	return string(marshalData)
+}
+func (r *Response) IsSuccess() bool {
+	return r.Code == http.StatusOK
+}
+
+func SuccessX(data interface{}) *Response {
+	return &Response{Code: StatusOK, Message: SuccessMsg, Data: data}
+}
+
+func Error(ge ginx.GinError) *Response {
+	return &Response{Code: ge.Code(), Message: ge.Error()}
+}
+
+func Success(c *gin.Context, code int16, data interface{}) {
 	c.JSON(http.StatusOK, Response{
 		code,
 		data,
@@ -19,7 +43,7 @@ func Success(c *gin.Context, code int, data interface{}) {
 	})
 }
 
-func Fail(c *gin.Context, code int) {
+func Fail(c *gin.Context, code int16) {
 	c.JSON(http.StatusOK, Response{
 		code,
 		nil,
@@ -27,7 +51,7 @@ func Fail(c *gin.Context, code int) {
 	})
 }
 
-func FailWithMessage(c *gin.Context, code int, message string) {
+func FailWithMessage(c *gin.Context, code int16, message string) {
 	c.JSON(http.StatusOK, Response{
 		code,
 		nil,

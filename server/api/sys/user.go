@@ -6,10 +6,11 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/ginx"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/model/form"
+	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/util"
-	"strconv"
 	"time"
 )
 
@@ -116,27 +117,16 @@ func GetUserInfoById(c *gin.Context) {
 	response.Success(c, response.StatusOK, user)
 }
 
-func GetUserList(c *gin.Context) {
-	pageStr := c.DefaultQuery("page", "0")
-	page, err := strconv.Atoi(pageStr)
-	if err != nil {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-	limitStr := c.DefaultQuery("limit", "0")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
+func GetUserList(c *rctx.ReqCtx) {
+	pageParam := ginx.QueryPageParam(c.GinCtx)
+	c.ResData = core.V1.User().GetUserList(c.GinCtx, pageParam.Page, pageParam.Limit)
 
-	user, err := core.V1.User().GetUserList(c, page, limit)
-	if err != nil {
-		log.Logger.Error(err)
-		response.Fail(c, response.ErrCodeNotFount)
-		return
-	}
-	response.Success(c, response.StatusOK, user)
+	//if err != nil {
+	//	log.Logger.Error(err)
+	//	response.Fail(c, response.ErrCodeNotFount)
+	//	return
+	//}
+	//response.Success(c, response.StatusOK, user)
 }
 
 func DeleteUserByUserId(c *gin.Context) {

@@ -13,7 +13,7 @@ func WithErrorLog(err error) {
 	}
 }
 
-func GinError(c *gin.Context, err error, code int) {
+func GinError(c *gin.Context, err error, code int16) {
 	if err != nil {
 		response.Fail(c, code)
 		panic(err)

@@ -18,7 +18,7 @@ type IUSer interface {
 	Register(c context.Context, params *form.RegisterUserForm) (err error)
 	Update(c context.Context, userID uint64, params *form.UpdateUserFrom) (err error)
 	GetUserInfoById(c context.Context, id uint64) (user *sys.User, err error)
-	GetUserList(c context.Context, page, limit int) (*form.PageUser, error)
+	GetUserList(c context.Context, page, limit int) *form.PageUser
 	DeleteUserByUserId(c context.Context, id uint64) error
 	CheckUserExist(c context.Context, userName string) bool
 	GetByName(c context.Context, name string) (*sys.User, error)
@@ -85,13 +85,13 @@ func (u *user) GetUserInfoById(c context.Context, id uint64) (user *sys.User, er
 	return
 }
 
-func (u *user) GetUserList(c context.Context, page, limit int) (*form.PageUser, error) {
+func (u *user) GetUserList(c context.Context, page, limit int) *form.PageUser {
 	res, err := u.factory.User().GetUserList(page, limit)
 	if err != nil {
 		log.Logger.Error(err)
-		return nil, err
+		return nil
 	}
-	return res, nil
+	return res
 }
 
 func (u *user) DeleteUserByUserId(c context.Context, id uint64) (err error) {

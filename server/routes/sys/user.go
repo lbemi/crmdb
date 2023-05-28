@@ -3,6 +3,7 @@ package sys
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/api/sys"
+	"github.com/lbemi/lbemi/pkg/rctx"
 )
 
 func NewUserRouter(router *gin.RouterGroup) {
@@ -15,7 +16,9 @@ func NewUserRouter(router *gin.RouterGroup) {
 		// 根据ID获取用户信息
 		user.GET("/:id", sys.GetUserInfoById)
 		// 获取用户列表
-		user.GET("", sys.GetUserList)
+		user.GET("", func(c *gin.Context) {
+			rctx.NewReqCtx(c).Handle(sys.GetUserList)
+		})
 		// 删除
 		user.DELETE("/:id", sys.DeleteUserByUserId)
 		// 更新
