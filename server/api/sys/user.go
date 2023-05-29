@@ -8,6 +8,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/model/form"
+	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/util"
 	"time"
 )
@@ -59,11 +60,8 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if err = core.V1.Redis().Set("key", tokenStr.Token, time.Duration(time.Hour*30)); err != nil {
-		log.Logger.Error(err.Error())
-		response.Fail(c, response.StatusInternalServerError)
-		return
-	}
+	core.V1.Redis().Set("key", tokenStr.Token, time.Duration(time.Hour*30))
+
 	res := map[string]interface{}{
 		"token": tokenStr.Token,
 		"user":  user,
@@ -94,14 +92,8 @@ func Register(c *gin.Context) {
 
 }
 
-func Logout(c *gin.Context) {
-	err := middleware.JoinBlackList(c.Keys["token"].(*jwt.Token))
-	if err != nil {
-		log.Logger.Error(err.Error())
-		response.Fail(c, response.StatusInternalServerError)
-		return
-	}
-	response.Success(c, 200, nil)
+func Logout(rc *rctx.ReqCtx) {
+	middleware.JoinBlackList(rc.Keys["token"].(*jwt.Token))
 }
 
 func GetUserInfoById(c *gin.Context) {

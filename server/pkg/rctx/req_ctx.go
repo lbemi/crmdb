@@ -11,6 +11,7 @@ import (
 type HandlerFunc func(ctx *ReqCtx)
 
 type ReqCtx struct {
+	Keys     map[string]any
 	Request  *restful.Request
 	Response *restful.Response
 

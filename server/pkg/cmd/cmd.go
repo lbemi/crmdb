@@ -5,15 +5,15 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	"github.com/go-openapi/spec"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/routes"
+	"github.com/lbemi/lbemi/routes/sys"
 
 	//"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/cmd/app/option"
 	"github.com/lbemi/lbemi/pkg/cmd/server"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/rctx"
-	"github.com/lbemi/lbemi/routes"
 	"github.com/spf13/cobra"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -45,18 +45,7 @@ func run(cmd *cobra.Command, args []string) {
 	httpSever := server.NewHttpSever(":" + completedOptions.Config.App.Port)
 	container := httpSever.Container
 	container.Filter(middleware.Cors(container).Filter)
-	routes.RegisterTestRouter(container)
-
-	config := restfulspec.Config{
-		WebServices:                   restful.RegisteredWebServices(), // you control what services are visible
-		APIPath:                       "/apidocs.json",
-		PostBuildSwaggerObjectHandler: enrichSwaggerObject}
-	container.Add(restfulspec.NewOpenAPIService(config))
-
-	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API
-	// You need to download the Swagger HTML5 assets and change the FilePath location in the config below.
-	// Open http://localhost:8080/apidocs/?url=http://localhost:8080/apidocs.json
-	http.Handle("/apidocs/", http.StripPrefix("/apidocs/", http.FileServer(http.Dir("/Users/lei/Documents/GitHub/lbemi/server/docs"))))
+	initRoutes(container)
 
 	httpSever.Start()
 
@@ -70,16 +59,29 @@ func run(cmd *cobra.Command, args []string) {
 	}
 }
 
+func initRoutes(container *restful.Container) {
+	// 注册测试路由
+	routes.RegisterTestRouter(container)
+	//注册user路由
+	sys.RegisterUserRouter(container)
+
+	config := restfulspec.Config{
+		WebServices:                   container.RegisteredWebServices(), // you control what services are visible
+		APIPath:                       "/apidocs.json",
+		PostBuildSwaggerObjectHandler: enrichSwaggerObject}
+	container.Add(restfulspec.NewOpenAPIService(config))
+}
+
 func enrichSwaggerObject(swo *spec.Swagger) {
 	swo.Info = &spec.Info{
 		InfoProps: spec.InfoProps{
-			Title:       "UserService",
-			Description: "Resource for managing Users",
+			Title:       "GO-OPS",
+			Description: "GO-OPS API",
 			Contact: &spec.ContactInfo{
 				ContactInfoProps: spec.ContactInfoProps{
-					Name:  "john",
-					Email: "john@doe.rp",
-					URL:   "http://johndoe.org",
+					Name:  "lbemi",
+					Email: "81576870@qq.com",
+					URL:   "https://github.com/lbemi/lbemi",
 				},
 			},
 			License: &spec.License{
@@ -92,6 +94,6 @@ func enrichSwaggerObject(swo *spec.Swagger) {
 		},
 	}
 	swo.Tags = []spec.Tag{spec.Tag{TagProps: spec.TagProps{
-		Name:        "users",
+		Name:        "users***",
 		Description: "Managing users"}}}
 }

@@ -34,11 +34,10 @@ func getBlackListKey(tokenStr string) string {
 	return "jwt_black_list:" + util.MD5([]byte(tokenStr))
 }
 
-func JoinBlackList(token *jwt.Token) (err error) {
+func JoinBlackList(token *jwt.Token) {
 	nowUnix := time.Now().Unix()
 	timer := time.Duration(token.Claims.(*util.CustomClaims).ExpiresAt-nowUnix) * time.Second
-	return core.V1.Redis().SetNX(getBlackListKey(token.Raw), nowUnix, timer)
-	return nil
+	core.V1.Redis().SetNX(getBlackListKey(token.Raw), nowUnix, timer)
 }
 
 func isInBlacklist(tokenStr string) bool {
