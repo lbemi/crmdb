@@ -1,24 +1,23 @@
 package ginx
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/emicklei/go-restful/v3"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"net/http"
 )
 
-func SuccessRes(c *gin.Context, data interface{}) {
-	c.JSON(http.StatusOK, SuccessX(data))
+func SuccessRes(r *restful.Response, data interface{}) {
+	r.WriteEntity(SuccessX(data))
 }
 
-func ErrorRes(c *gin.Context, err interface{}) {
+func ErrorRes(r *restful.Response, err interface{}) {
 	switch t := err.(type) {
 	case GinError:
-		c.JSON(http.StatusOK, Error(t))
+		r.WriteEntity(Error(t))
 	case error:
-		c.JSON(http.StatusOK, ServerError())
+		r.WriteEntity(ServerError())
 		log.Logger.Error(err)
 	case string:
-		c.JSON(http.StatusOK, ServerError())
+		r.WriteEntity(ServerError())
 		log.Logger.Error(err)
 	default:
 		log.Logger.Error(err)

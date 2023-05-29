@@ -25,9 +25,19 @@ func NewOptions() *Options {
 	return &Options{}
 }
 
+func (o *Options) WithConfig(configFile string) *Options {
+	// 加载配置文件
+	o.Config = bootstrap.InitializeConfig(configFile)
+	return o
+}
+func (o *Options) WithLog() *Options {
+	// 加载配置文件
+	log.Register(&o.Config.Log)
+	return o
+}
 func (o *Options) Complete() *Options {
 	// 加载配置文件
-	o.Config = bootstrap.InitializeConfig()
+	//o.Config = bootstrap.InitializeConfig()
 	// 初始化日志
 	log.Register(&o.Config.Log)
 	// 初始化数据库
@@ -37,7 +47,7 @@ func (o *Options) Complete() *Options {
 	// 注册校验器
 	bootstrap.InitializeValidator()
 	// 初始化ginEngine
-	o.GinEngine = gin.New()
+	//o.GinEngine = gin.New()
 	// 初始化casbin enforcer
 	o.Enforcer = bootstrap.InitPolicyEnforcer(o.DB)
 	// 初始化client store

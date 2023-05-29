@@ -30,7 +30,13 @@ require (
 	k8s.io/metrics v0.26.2
 )
 
-require github.com/moby/spdystream v0.2.0 // indirect
+require (
+	github.com/emicklei/go-restful-openapi/v2 v2.9.1 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/moby/spdystream v0.2.0 // indirect
+	github.com/mssola/useragent v1.0.0 // indirect
+	github.com/spf13/cobra v1.7.0 // indirect
+)
 
 require (
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect

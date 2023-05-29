@@ -2,6 +2,8 @@ package sys
 
 import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/ginx"
+	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"gorm.io/gorm"
@@ -12,7 +14,7 @@ type IUSer interface {
 	Register(params *sys.User) (err error)
 	Update(userID uint64, user *sys.User) (err error)
 	GetUserInfoById(id uint64) (user *sys.User, err error)
-	GetUserList(page, limit int) (*form.PageUser, error)
+	GetUserList(pageParam *model.PageParam) *form.PageUser
 	DeleteUserByUserId(id uint64) error
 	CheckUserExist(userName string) bool
 	GetByName(name string) (*sys.User, error)
@@ -47,45 +49,37 @@ func (u *user) GetUserInfoById(id uint64) (user *sys.User, err error) {
 	return
 }
 
-func (u *user) GetUserList(page, limit int) (*form.PageUser, error) {
+func (u *user) GetUserList(pageParam *model.PageParam) *form.PageUser {
+	const errMsg = "get user list failed"
+
 	var (
 		userList []sys.User
 		total    int64
-		err      error
 	)
 
 	// 全量查询
-	if page == 0 && limit == 0 {
-		if tx := u.db.Find(&userList); tx.Error != nil {
-			return nil, tx.Error
-		}
+	if pageParam.Page == 0 && pageParam.Limit == 0 {
+		tx := u.db.Find(&userList)
+		ginx.ErrIsNil(tx.Error, errMsg)
 
-		if err := u.db.Model(&sys.User{}).Count(&total).Error; err != nil {
-			return nil, err
-		}
+		ginx.ErrIsNil(u.db.Model(&sys.User{}).Count(&total).Error, errMsg)
 
 		res := &form.PageUser{
 			Users: userList,
 			Total: total,
 		}
-		return res, err
+		return res
 	}
 
 	//分页数据
-	if err := u.db.Limit(limit).Offset((page - 1) * limit).
-		Find(&userList).Error; err != nil {
-		return nil, err
-	}
-
-	if err := u.db.Model(&sys.User{}).Count(&total).Error; err != nil {
-		return nil, err
-	}
-
+	ginx.ErrIsNil(u.db.Limit(pageParam.Limit).Offset((pageParam.Page-1)*pageParam.Limit).
+		Find(&userList).Error, errMsg)
+	ginx.ErrIsNil(u.db.Model(&sys.User{}).Count(&total).Error, errMsg)
 	res := &form.PageUser{
 		Users: userList,
 		Total: total,
 	}
-	return res, err
+	return res
 
 }
 

@@ -2,13 +2,13 @@ app:
   env: local
   addr: 127.0.0.1
   port: 8080
-  app_name: lbemi-app
+  app_name: lbemi-server
   app_url: http://localhost
 log:
-  level: info
+  level: debug
   root_dir: ./log
   is_file: false        #是否写入文件
-  file_name: app.log
+  file_name: server.log
   format:          # 格式化： json
   show_line: true      # 是否显示打印行
   max_backup: 10       # 最大备份文件个数

@@ -1,18 +1,19 @@
 package rctx
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/emicklei/go-restful/v3"
 	"github.com/lbemi/lbemi/pkg/ginx"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/util"
-	"net/http"
 	"time"
 )
 
 type HandlerFunc func(ctx *ReqCtx)
 
 type ReqCtx struct {
-	GinCtx            *gin.Context
+	Request  *restful.Request
+	Response *restful.Response
+
 	RequirePermission *Permission
 
 	LoginAccount *sys.User
@@ -22,12 +23,17 @@ type ReqCtx struct {
 	ResData  any
 	Err      any
 
-	Timed int64
+	Timed time.Duration
 	NoRes bool
+
+	Handler HandlerFunc
 }
 
-func NewReqCtx(ginCtx *gin.Context) *ReqCtx {
-	return &ReqCtx{GinCtx: ginCtx, LogInfo: NewLogInfo(), RequirePermission: NewPermission()}
+func NewReqCtx() *ReqCtx {
+	return &ReqCtx{
+		LogInfo:           NewLogInfo(),
+		RequirePermission: NewPermission(),
+	}
 }
 
 // WithLog 指定log日志属于那个模块
@@ -48,29 +54,38 @@ func (rc *ReqCtx) WithCasbin(flag bool) *ReqCtx {
 	return rc
 }
 
-// Handle 处理handle
-func (rc *ReqCtx) Handle(handler HandlerFunc) {
-	defer func() {
-		if err := recover(); err != nil {
-			rc.Err = err
-			rc.GinCtx.JSON(http.StatusOK, err)
-		}
-		ApplyHandlerInterceptor(afterHandlers, rc)
-	}()
-	// 如果rc.GinCtx 为nil，则panic
-	util.IsTrue(rc.GinCtx != nil, "ginContext == nil")
+func (rc *ReqCtx) WithHandle(handler HandlerFunc) *ReqCtx {
+	rc.Handler = handler
+	return rc
+}
 
-	rc.ReqParam = 0
-	rc.ResData = nil
-	err := ApplyHandlerInterceptor(beforeHandlers, rc)
-	if err != nil {
-		panic(err)
-	}
-	begin := time.Now()
-	handler(rc)
-	rc.Timed = time.Since(begin).Milliseconds()
-	if !rc.NoRes {
-		ginx.SuccessRes(rc.GinCtx, rc.ResData)
+// Handle 处理handle
+func (rc *ReqCtx) Do() restful.RouteFunction {
+	return func(request *restful.Request, response *restful.Response) {
+		rc.Request = request
+		rc.Response = response
+		defer func() {
+			if err := recover(); err != nil {
+				rc.Err = err
+				ginx.ErrorRes(rc.Response, err)
+			}
+			ApplyHandlerInterceptor(afterHandlers, rc)
+		}()
+		// 如果rc.GinCtx 为nil，则panic
+		util.IsTrue(rc.Response != nil, "Response == nil")
+
+		rc.ReqParam = 0
+		rc.ResData = nil
+		err := ApplyHandlerInterceptor(beforeHandlers, rc)
+		if err != nil {
+			panic(err)
+		}
+		begin := time.Now()
+		rc.Handler(rc)
+		rc.Timed = time.Since(begin)
+		if !rc.NoRes {
+			ginx.SuccessRes(rc.Response, rc.ResData)
+		}
 	}
 }
 
