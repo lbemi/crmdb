@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/cmd/app/option"
+	"github.com/lbemi/lbemi/pkg/cmd/app/option"
 	"github.com/lbemi/lbemi/routes"
 	"github.com/lbemi/lbemi/routes/asset"
 	"github.com/lbemi/lbemi/routes/cloud"

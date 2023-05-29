@@ -18,7 +18,7 @@ func NewUserResource() *UserResource {
 	return &UserResource{map[string]User{}}
 }
 
-func InitTestRouter(container *restful.Container) {
+func RegisterTestRouter(container *restful.Container) {
 	u := NewUserResource()
 	ws := new(restful.WebService)
 	ws.

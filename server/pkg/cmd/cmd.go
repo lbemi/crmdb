@@ -1,13 +1,19 @@
 package cmd
 
 import (
-	"github.com/lbemi/lbemi/cmd/app/option"
+	restfulspec "github.com/emicklei/go-restful-openapi/v2"
+	"github.com/emicklei/go-restful/v3"
+	"github.com/go-openapi/spec"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+
+	//"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/cmd/app/option"
 	"github.com/lbemi/lbemi/pkg/cmd/server"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/routes"
 	"github.com/spf13/cobra"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -39,7 +45,19 @@ func run(cmd *cobra.Command, args []string) {
 	httpSever := server.NewHttpSever(":" + completedOptions.Config.App.Port)
 	container := httpSever.Container
 	container.Filter(middleware.Cors(container).Filter)
-	routes.InitTestRouter(container)
+	routes.RegisterTestRouter(container)
+
+	config := restfulspec.Config{
+		WebServices:                   restful.RegisteredWebServices(), // you control what services are visible
+		APIPath:                       "/apidocs.json",
+		PostBuildSwaggerObjectHandler: enrichSwaggerObject}
+	container.Add(restfulspec.NewOpenAPIService(config))
+
+	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API
+	// You need to download the Swagger HTML5 assets and change the FilePath location in the config below.
+	// Open http://localhost:8080/apidocs/?url=http://localhost:8080/apidocs.json
+	http.Handle("/apidocs/", http.StripPrefix("/apidocs/", http.FileServer(http.Dir("/Users/lei/Documents/GitHub/lbemi/server/docs"))))
+
 	httpSever.Start()
 
 	quit := make(chan os.Signal, 1)
@@ -50,4 +68,30 @@ func run(cmd *cobra.Command, args []string) {
 		log.Logger.Errorf("fault stop server. %s", err)
 		os.Exit(-3)
 	}
+}
+
+func enrichSwaggerObject(swo *spec.Swagger) {
+	swo.Info = &spec.Info{
+		InfoProps: spec.InfoProps{
+			Title:       "UserService",
+			Description: "Resource for managing Users",
+			Contact: &spec.ContactInfo{
+				ContactInfoProps: spec.ContactInfoProps{
+					Name:  "john",
+					Email: "john@doe.rp",
+					URL:   "http://johndoe.org",
+				},
+			},
+			License: &spec.License{
+				LicenseProps: spec.LicenseProps{
+					Name: "MIT",
+					URL:  "http://mit.org",
+				},
+			},
+			Version: "1.0.0",
+		},
+	}
+	swo.Tags = []spec.Tag{spec.Tag{TagProps: spec.TagProps{
+		Name:        "users",
+		Description: "Managing users"}}}
 }
