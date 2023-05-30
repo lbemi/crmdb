@@ -2,7 +2,7 @@ package redis
 
 import (
 	"github.com/go-redis/redis"
-	"github.com/lbemi/lbemi/pkg/ginx"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"time"
 )
 
@@ -31,9 +31,9 @@ func (r *Redis) Get(key string) *redis.StringCmd {
 }
 
 func (r *Redis) Set(key string, value interface{}, expiration time.Duration) {
-	ginx.ErrIsNil(r.cli.Set(key, value, expiration).Err(), "set redis failed")
+	restfulx.ErrIsNil(r.cli.Set(key, value, expiration).Err(), "set redis failed")
 }
 
 func (r *Redis) SetNX(key string, value interface{}, expiration time.Duration) {
-	ginx.ErrIsNil(r.cli.SetNX(key, value, expiration).Err(), "set expiration key failed")
+	restfulx.ErrIsNil(r.cli.SetNX(key, value, expiration).Err(), "set expiration key failed")
 }

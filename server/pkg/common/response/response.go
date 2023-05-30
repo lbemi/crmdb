@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/pkg/ginx"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"net/http"
 )
 
@@ -31,7 +31,7 @@ func SuccessX(data interface{}) *Response {
 	return &Response{Code: StatusOK, Message: SuccessMsg, Data: data}
 }
 
-func Error(ge ginx.GinError) *Response {
+func Error(ge restfulx.OpsError) *Response {
 	return &Response{Code: ge.Code(), Message: ge.Error()}
 }
 

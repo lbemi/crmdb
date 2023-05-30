@@ -15,7 +15,7 @@ type UserGetter interface {
 }
 
 type IUSer interface {
-	Login(c context.Context, params *form.UserLoginForm) (user *sys.User, err error)
+	Login(params *form.UserLoginForm) (user *sys.User)
 	Register(c context.Context, params *form.RegisterUserForm) (err error)
 	Update(c context.Context, userID uint64, params *form.UpdateUserFrom) (err error)
 	GetUserInfoById(c context.Context, id uint64) (user *sys.User, err error)
@@ -40,12 +40,9 @@ func NewUser(f services.FactoryImp) IUSer {
 	}
 }
 
-func (u *user) Login(c context.Context, params *form.UserLoginForm) (user *sys.User, err error) {
-	user, err = u.factory.User().Login(params)
-	if err != nil {
-		return
-	}
-	return
+func (u *user) Login(params *form.UserLoginForm) (user *sys.User) {
+	return u.factory.User().Login(params)
+
 }
 
 func (u *user) Register(c context.Context, params *form.RegisterUserForm) (err error) {

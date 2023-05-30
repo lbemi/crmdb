@@ -2,11 +2,10 @@ package util
 
 import (
 	"errors"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"time"
 
 	"github.com/golang-jwt/jwt"
-
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 )
 
 type JwtUser interface {
@@ -35,7 +34,7 @@ type TokenOutPut struct {
 }
 
 // CreateToken 生成token
-func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err error) {
+func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		CustomClaims{
@@ -49,9 +48,9 @@ func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err erro
 	)
 	tokenStr, err := token.SignedString([]byte(Key))
 	if err != nil {
-		log.Logger.Error(err)
-
+		restfulx.ErrIsNil(err, "generate token failed")
 	}
+
 	tokenOut.Token = tokenStr
 	return
 }
@@ -98,7 +97,7 @@ func RefreshToken(tokenStr string, user JwtUser) (tokenOut TokenOutPut, err erro
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
 		jwt.TimeFunc = time.Now
 		claims.StandardClaims.ExpiresAt = time.Now().Add(10 * time.Hour).Unix()
-		return CreateToken(AppGuardName, user)
+		CreateToken(AppGuardName, user)
 	}
 	return tokenOut, TokenInvalid
 }

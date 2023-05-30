@@ -50,6 +50,12 @@ func (h *HttpSever) Stop() error {
 	return h.srv.Shutdown(ctx)
 }
 
+func (h *HttpSever) RegisterRoutes(routes ...*restful.WebService) {
+	for _, route := range routes {
+		h.Container.Add(route)
+	}
+}
+
 type httpLog struct{}
 
 func (t *httpLog) Print(v ...any) {

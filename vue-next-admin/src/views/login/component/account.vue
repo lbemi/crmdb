@@ -31,7 +31,7 @@
 			<el-col :span="15">
 				<el-input
 					text
-					maxlength="4"
+					maxlength="5"
 					:placeholder="$t('message.account.accountPlaceholder3')"
 					v-model="state.ruleForm.captcha"
 					clearable
@@ -115,12 +115,12 @@ const onSignIn = async () => {
 		.then(async (res) => {
 			// 存储 token 到浏览器缓存
 			Session.set('token', res.data.token);
-			Session.set('userInfo',res.data.user)
+			Session.set('userInfo', res.data.user);
 			// 模拟数据，对接接口时，记得删除多余代码及对应依赖的引入。用于 `/src/stores/userInfo.ts` 中不同用户登录判断（模拟数据）
 			Session.set('userName', state.ruleForm.user_name);
 			if (!themeConfig.value.isRequestRoutes) {
 				// 前端控制路由，2、请注意执行顺序
-				const isNoPower =  await initFrontEndControlRoutes();
+				const isNoPower = await initFrontEndControlRoutes();
 				signInSuccess(isNoPower);
 			} else {
 				// 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
@@ -132,9 +132,8 @@ const onSignIn = async () => {
 		})
 		.catch((e) => {
 			ElMessage.error(e.message);
-
 		});
-        state.loading.signIn = false;
+	state.loading.signIn = false;
 	// // 存储 token 到浏览器缓存
 	// Session.set('token', res.token);
 	// // 模拟数据，对接接口时，记得删除多余代码及对应依赖的引入。用于 `/src/stores/userInfo.ts` 中不同用户登录判断（模拟数据）

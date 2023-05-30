@@ -2,9 +2,9 @@ package rctx
 
 import (
 	"github.com/emicklei/go-restful/v3"
-	"github.com/lbemi/lbemi/pkg/ginx"
 	"github.com/lbemi/lbemi/pkg/model/sys"
-	"github.com/lbemi/lbemi/pkg/util"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	"sync"
 	"time"
 )
 
@@ -12,6 +12,7 @@ type HandlerFunc func(ctx *ReqCtx)
 
 type ReqCtx struct {
 	Keys     map[string]any
+	mu       sync.RWMutex
 	Request  *restful.Request
 	Response *restful.Response
 
@@ -68,12 +69,13 @@ func (rc *ReqCtx) Do() restful.RouteFunction {
 		defer func() {
 			if err := recover(); err != nil {
 				rc.Err = err
-				ginx.ErrorRes(rc.Response, err)
+				restfulx.ErrorRes(rc.Response, err)
 			}
 			ApplyHandlerInterceptor(afterHandlers, rc)
 		}()
 		// 如果rc.GinCtx 为nil，则panic
-		util.IsTrue(rc.Response != nil, "Response == nil")
+		restfulx.ErrNotTrue(rc.Response != nil, restfulx.NewErr("Response == nil"))
+		//util.IsTrue(rc.Response != nil, "Response == nil")
 
 		rc.ReqParam = 0
 		rc.ResData = nil
@@ -85,9 +87,30 @@ func (rc *ReqCtx) Do() restful.RouteFunction {
 		rc.Handler(rc)
 		rc.Timed = time.Since(begin)
 		if !rc.NoRes {
-			ginx.SuccessRes(rc.Response, rc.ResData)
+			restfulx.SuccessRes(rc.Response, rc.ResData)
 		}
 	}
+}
+
+// Set is used to store a new key/value pair exclusively for this context.
+// It also lazy initializes  c.Keys if it was not used previously.
+func (rc *ReqCtx) Set(key string, value any) {
+	rc.mu.Lock()
+	if rc.Keys == nil {
+		rc.Keys = make(map[string]any)
+	}
+
+	rc.Keys[key] = value
+	rc.mu.Unlock()
+}
+
+// Get returns the value for the given key, ie: (value, true).
+// If the value does not exist it returns (nil, false)
+func (rc *ReqCtx) Get(key string) (value any, exists bool) {
+	rc.mu.RLock()
+	value, exists = rc.Keys[key]
+	rc.mu.RUnlock()
+	return
 }
 
 type HandlerInterceptorFunc func(ctx *ReqCtx) error

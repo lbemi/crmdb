@@ -2,15 +2,16 @@ package sys
 
 import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/ginx"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	"github.com/lbemi/lbemi/pkg/util"
 	"gorm.io/gorm"
 )
 
 type IUSer interface {
-	Login(params *form.UserLoginForm) (user *sys.User, err error)
+	Login(params *form.UserLoginForm) (user *sys.User)
 	Register(params *sys.User) (err error)
 	Update(userID uint64, user *sys.User) (err error)
 	GetUserInfoById(id uint64) (user *sys.User, err error)
@@ -33,9 +34,12 @@ func NewUser(db *gorm.DB) IUSer {
 	return &user{db: db}
 }
 
-func (u *user) Login(params *form.UserLoginForm) (user *sys.User, err error) {
-	err = u.db.Where("user_name = ?", params.UserName).First(&user).Error
-	return
+func (u *user) Login(params *form.UserLoginForm) (user *sys.User) {
+	err := u.db.Where("user_name = ?", params.UserName).First(&user).Error
+	restfulx.ErrIsNilRes(err, restfulx.PasswdWrong)
+	restfulx.ErrNotTrue(user.Status == 1, restfulx.UserDeny)
+	restfulx.ErrNotTrue(util.BcryptMakeCheck([]byte(params.Password), user.Password), restfulx.PasswdWrong)
+	return user
 }
 
 func (u *user) Register(params *sys.User) (err error) {
@@ -60,9 +64,9 @@ func (u *user) GetUserList(pageParam *model.PageParam) *form.PageUser {
 	// 全量查询
 	if pageParam.Page == 0 && pageParam.Limit == 0 {
 		tx := u.db.Find(&userList)
-		ginx.ErrIsNil(tx.Error, errMsg)
+		restfulx.ErrIsNil(tx.Error, errMsg)
 
-		ginx.ErrIsNil(u.db.Model(&sys.User{}).Count(&total).Error, errMsg)
+		restfulx.ErrIsNil(u.db.Model(&sys.User{}).Count(&total).Error, errMsg)
 
 		res := &form.PageUser{
 			Users: userList,
@@ -72,9 +76,9 @@ func (u *user) GetUserList(pageParam *model.PageParam) *form.PageUser {
 	}
 
 	//分页数据
-	ginx.ErrIsNil(u.db.Limit(pageParam.Limit).Offset((pageParam.Page-1)*pageParam.Limit).
+	restfulx.ErrIsNil(u.db.Limit(pageParam.Limit).Offset((pageParam.Page-1)*pageParam.Limit).
 		Find(&userList).Error, errMsg)
-	ginx.ErrIsNil(u.db.Model(&sys.User{}).Count(&total).Error, errMsg)
+	restfulx.ErrIsNil(u.db.Model(&sys.User{}).Count(&total).Error, errMsg)
 	res := &form.PageUser{
 		Users: userList,
 		Total: total,

@@ -13,9 +13,8 @@ import (
 type Fields map[string]interface{}
 
 func LogHandler(rc *rctx.ReqCtx) error {
-
 	if err := rc.Err; err != nil {
-		log.Logger.Error(err, getLogMsg(rc))
+		log.Logger.Error(getLogMsg(rc), err)
 		return nil
 	}
 	log.Logger.Info(getLogMsg(rc))
@@ -27,11 +26,11 @@ func getLogMsg(rc *rctx.ReqCtx) string {
 	ua := useragent.New(req.UserAgent())
 	bName, bVersion := ua.Browser()
 
-	msg := fmt.Sprintf("%v | %v | %dms | %v query:(%v) | %v | %v  | %v-%v",
+	msg := fmt.Sprintf("%v | %v | %dms | %v query:(%v) | %v | %v  | %v-%v | ",
 		rc.Response.StatusCode(), req.Method, rc.Timed, req.URL.Path, req.URL.Query().Encode(),
 		req.RemoteAddr, ua.OS(), bName, bVersion)
 	if rc.LoginAccount != nil {
-		msg += fmt.Sprintf("| user: %v",
+		msg += fmt.Sprintf("| user: %v | ",
 			rc.LoginAccount.UserName)
 	}
 

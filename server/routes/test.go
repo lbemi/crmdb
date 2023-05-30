@@ -18,7 +18,7 @@ func NewUserResource() *UserResource {
 	return &UserResource{map[string]User{}}
 }
 
-func RegisterTestRouter(container *restful.Container) {
+func TestRouter() *restful.WebService {
 	u := NewUserResource()
 	ws := new(restful.WebService)
 	ws.
@@ -63,7 +63,7 @@ func RegisterTestRouter(container *restful.Container) {
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
 
-	container.Add(ws)
+	return ws
 }
 
 // GET http://localhost:8080/users

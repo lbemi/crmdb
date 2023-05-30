@@ -9,64 +9,24 @@ import (
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/rctx"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
 	"time"
 )
 
-// Login 用户登录
-// @Summary 用户登录
-// @Description 用户登录
-// @Tags 登录
-// @Accept json
-// @Produce  json
-// @Param data body form.UserLoginForm true "Form表单"
-// @Success 200 {object} response.Response{}  "请求成功"
-// @Failure 2005 {object} response.Response{data=util.TokenOutPut} "请求错误"
-// @Failure 500 {object} response.Response "内部错误"
-// @Router /login [post]
-func Login(c *gin.Context) {
+func Login(rc *rctx.ReqCtx) {
 	userForm := form.UserLoginForm{}
-	if err := c.ShouldBind(&userForm); err != nil {
-		log.Logger.Error(err.Error())
-		response.FailWithMessage(c, response.ErrCodeParameter, util.GetErrorMsg(userForm, err))
-		return
-	}
+	rctx.ShouldBind(rc, &userForm)
 	//校验验证码
-	//if !store.Verify(userForm.CaptchaId, userForm.Captcha, true) {
-	//	response.Fail(c, response.ErrCaptcha)
-	//	return
-	//}
-
-	user, err := core.V1.User().Login(c, &userForm)
-	//user, err := services.Login(userForm)
-	if err != nil {
-		response.Fail(c, response.ErrCodeUserNotExist)
-		return
-	}
-	if user.Status != 1 {
-		response.Fail(c, response.ErrCodeUserForbidden)
-		return
-	}
-
-	if ok := util.BcryptMakeCheck([]byte(userForm.Password), user.Password); !ok {
-		response.Fail(c, response.ErrCodeUserOrPasswdWrong)
-		return
-	}
-
-	tokenStr, err := util.CreateToken(util.AppGuardName, user)
-	if err != nil {
-		log.Logger.Error(err.Error())
-		response.Fail(c, response.StatusInternalServerError)
-		return
-	}
-
+	restfulx.ErrNotTrue(store.Verify(userForm.CaptchaId, userForm.Captcha, true), restfulx.CaptchaErr)
+	user := core.V1.User().Login(&userForm)
+	tokenStr := util.CreateToken(util.AppGuardName, user)
 	core.V1.Redis().Set("key", tokenStr.Token, time.Duration(time.Hour*30))
-
-	res := map[string]interface{}{
-		"token": tokenStr.Token,
-		"user":  user,
+	rc.LoginAccount = user
+	rc.ResData = &form.LoginResp{
+		Token: tokenStr.Token,
+		User:  user,
 	}
-	response.Success(c, response.StatusOK, res)
 }
 
 func Register(c *gin.Context) {
@@ -108,7 +68,7 @@ func GetUserInfoById(c *gin.Context) {
 }
 
 //func GetUserList(c *rctx.ReqCtx) {
-//	pageParam := ginx.QueryPageParam(c.GinCtx)
+//	pageParam := restfulx.QueryPageParam(c.GinCtx)
 //	c.ResData = core.V1.User().GetUserList(c.GinCtx, pageParam)
 //
 //	//if err != nil {

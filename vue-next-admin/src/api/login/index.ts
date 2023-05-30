@@ -11,7 +11,7 @@ export function useLoginApi() {
 	return {
 		signIn: (data: object) => {
 			return request({
-				url: '/login',
+				url: '/users/login',
 				method: 'post',
 				data,
 			});
@@ -23,9 +23,9 @@ export function useLoginApi() {
 				data,
 			});
 		},
-        getCaptcha: () => {
+		getCaptcha: () => {
 			return request({
-				url: '/captcha',
+				url: '/users/captcha',
 				method: 'get',
 			});
 		},

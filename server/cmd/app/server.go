@@ -89,7 +89,7 @@ func initRouter(router *gin.Engine) {
 	// 注册不需要鉴权路由
 	routes.PassThroughRoutes(v1)
 	// 中间件middleware.CasbinMiddleware()
-	v1.Use(middleware.JWTAuth())
+	//v1.Use(middleware.JWTAuth())
 
 	//注册业务路由
 	sys.NewUserRouter(v1)

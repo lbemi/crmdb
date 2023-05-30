@@ -5,6 +5,7 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	"github.com/go-openapi/spec"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/routes"
 	"github.com/lbemi/lbemi/routes/sys"
 
@@ -30,8 +31,13 @@ func NewDefaultAppCommand() *cobra.Command {
 		Example: "go-ops --config config.yaml",
 		Version: "1.0.0",
 		PreRun: func(cmd *cobra.Command, args []string) {
-			completedOptions = option.NewOptions().WithConfig(configFile).WithLog()
+			//初始化
+			completedOptions = option.NewOptions().WithConfig(configFile).WithLog().Complete()
+			// 注册handler
+			core.Register(completedOptions)
+
 			rctx.UserAfterHandlerInterceptor(middleware.LogHandler)
+			rctx.UseBeforeHandlerInterceptor(middleware.JWTAuth)
 		},
 		Run: run,
 	}
@@ -45,12 +51,16 @@ func run(cmd *cobra.Command, args []string) {
 	httpSever := server.NewHttpSever(":" + completedOptions.Config.App.Port)
 	container := httpSever.Container
 	container.Filter(middleware.Cors(container).Filter)
-	initRoutes(container)
+	//注册路由
+	httpSever.RegisterRoutes(
+		routes.TestRouter(),
+		sys.UserRouter())
+
+	//注册swagger路由
+	registerSwaggerRoute(container)
 
 	httpSever.Start()
-
 	quit := make(chan os.Signal, 1)
-
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	if err := httpSever.Stop(); err != nil {
@@ -59,16 +69,13 @@ func run(cmd *cobra.Command, args []string) {
 	}
 }
 
-func initRoutes(container *restful.Container) {
-	// 注册测试路由
-	routes.RegisterTestRouter(container)
-	//注册user路由
-	sys.RegisterUserRouter(container)
-
+func registerSwaggerRoute(container *restful.Container) {
+	// 注册swagger路由，必须放到最后,否则swagger无法获取所有的路由信息
 	config := restfulspec.Config{
 		WebServices:                   container.RegisteredWebServices(), // you control what services are visible
 		APIPath:                       "/apidocs.json",
 		PostBuildSwaggerObjectHandler: enrichSwaggerObject}
+
 	container.Add(restfulspec.NewOpenAPIService(config))
 }
 

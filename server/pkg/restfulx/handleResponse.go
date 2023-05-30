@@ -1,4 +1,4 @@
-package ginx
+package restfulx
 
 import (
 	"github.com/emicklei/go-restful/v3"
@@ -11,14 +11,14 @@ func SuccessRes(r *restful.Response, data interface{}) {
 
 func ErrorRes(r *restful.Response, err interface{}) {
 	switch t := err.(type) {
-	case GinError:
+	case OpsError:
 		r.WriteEntity(Error(t))
 	case error:
 		r.WriteEntity(ServerError())
-		log.Logger.Error(err)
+		//log.Logger.Error(message)
 	case string:
 		r.WriteEntity(ServerError())
-		log.Logger.Error(err)
+		//log.Logger.Error(message)
 	default:
 		log.Logger.Error(err)
 	}

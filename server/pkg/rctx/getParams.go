@@ -1,8 +1,9 @@
-package ginx
+package rctx
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/model"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"strconv"
 )
 
@@ -16,6 +17,12 @@ func QueryInt(c *gin.Context, key string, defaultValue int) int {
 		return defaultValue
 	}
 	intRes, err := strconv.Atoi(res)
-	ErrIsNil(err, "get page param error")
+	restfulx.ErrIsNil(err, "get page param error")
 	return intRes
+}
+
+func ShouldBind(rc *ReqCtx, data any) {
+	if err := rc.Request.ReadEntity(data); err != nil {
+		panic(restfulx.NewErr(err.Error()))
+	}
 }

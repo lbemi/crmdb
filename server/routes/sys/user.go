@@ -4,8 +4,10 @@ import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/api/sys"
+	"github.com/lbemi/lbemi/api/v1/sys"
+	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/rctx"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 )
 
 func NewUserRouter(router *gin.RouterGroup) {
@@ -39,16 +41,43 @@ func NewUserRouter(router *gin.RouterGroup) {
 	}
 
 }
-func RegisterUserRouter(c *restful.Container) {
+func UserRouter() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.Path("/api/v1/users").Produces(restful.MIME_JSON)
 	tags := []string{"users"}
+	// 获取图片验证码
+	ws.Route(ws.GET("/captcha").To(
+		rctx.NewReqCtx().
+			WithToken(false).
+			WithCasbin(false).
+			WithHandle(sys.GetCaptcha).Do()).
+		Doc("captcha").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Writes(sys.CaptchaInfo{}).
+		Returns(200, "success", sys.CaptchaInfo{}).
+		Returns(500, restfulx.ServerErr.Error(), restfulx.ServerErr))
+
 	// 用户退出登录
-	//user.POST("/logout", sys.Logout)
 	ws.Route(ws.POST("/logout").To(
-		rctx.NewReqCtx().WithToken(false).WithCasbin(false).WithLog("logout").WithHandle(sys.Logout).Do()).
+		rctx.NewReqCtx().WithToken(true).WithCasbin(false).WithLog("logout").WithHandle(sys.Logout).Do()).
 		Doc("logout").
 		Metadata(restfulspec.KeyOpenAPITags, tags))
+
+	ws.Route(ws.POST("/login").To(rctx.NewReqCtx().
+		WithToken(false).
+		WithCasbin(false).
+		WithLog("login").
+		WithHandle(sys.Login).
+		Do()).
+		Doc("login").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Reads(form.UserLoginForm{}).Writes(form.LoginResp{}).
+		Returns(200, "success", form.LoginResp{}).
+		Returns(1001, restfulx.UserDeny.Error(), restfulx.UserDeny).
+		Returns(1002, restfulx.PasswdWrong.Error(), restfulx.PasswdWrong).
+		Returns(4001, restfulx.TokenExpire.Error(), restfulx.TokenExpire).
+		Returns(1002, restfulx.TokenInvalid.Error(), restfulx.TokenInvalid))
+
 	//// 注册
 	//user.POST("/register", sys.Register)
 	//// 根据ID获取用户信息
@@ -72,5 +101,5 @@ func RegisterUserRouter(c *restful.Container) {
 	////修改用户状态
 	//user.PUT("/:id/status/:status", sys.UpdateUserStatus)
 
-	c.Add(ws)
+	return ws
 }

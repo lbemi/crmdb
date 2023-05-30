@@ -2,7 +2,7 @@ package sys
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/api/sys"
+	"github.com/lbemi/lbemi/api/v1/sys"
 )
 
 func NewMenuRouter(router *gin.RouterGroup) {
