@@ -21,16 +21,17 @@ func JWTAuth(rc *rctx.ReqCtx) error {
 	tokenStr := request.Header.Get("Authorization")
 
 	if tokenStr == "" {
-		return restfulx.TokenInvalid
+		panic(restfulx.TokenInvalid)
 	}
 
 	token, claims, err := util.ParseToken(tokenStr)
 	if err != nil || isInBlacklist(tokenStr) {
-		return restfulx.TokenInvalid
+		panic(restfulx.TokenInvalid)
 	}
 	rc.Set("id", claims.Id)
 	rc.Set("token", token)
-
+	rc.LoginAccount = claims.User
+	log.Logger.Warn(rc.LoginAccount, claims.User)
 	if !permissions.NeedToken {
 		return nil
 	}
@@ -39,7 +40,7 @@ func JWTAuth(rc *rctx.ReqCtx) error {
 	// 用户ID
 	uid, isExit := rc.Get("id")
 	if !isExit {
-		return restfulx.TokenInvalid
+		panic(restfulx.TokenInvalid)
 	}
 
 	p := request.URL.Path
@@ -48,10 +49,10 @@ func JWTAuth(rc *rctx.ReqCtx) error {
 	log.Logger.Infof("permission: %v -- %v --%v", uid, p, m)
 	restfulx.ErrIsNil(err, "")
 	if err != nil {
-		return restfulx.ServerErr
+		panic(restfulx.ServerErr)
 	}
 	if !ok {
-		return restfulx.PermissionErr
+		panic(restfulx.PermissionErr)
 	}
 
 	return nil

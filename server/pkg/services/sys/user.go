@@ -21,8 +21,8 @@ type IUSer interface {
 	GetByName(name string) (*sys.User, error)
 	GetRoleIdbyUser(userID uint64) (*[]sys.Role, error)
 	SetUserRoles(userID uint64, roleIDs []uint64) error
-	GetButtonsByUserID(userID uint64) (*[]sys.Menu, error)
-	GetLeftMenusByUserID(userID uint64) (*[]sys.Menu, error)
+	GetButtonsByUserID(userID uint64) *[]sys.Menu
+	GetLeftMenusByUserID(userID uint64) *[]sys.Menu
 	UpdateStatus(userID, status uint64) error
 }
 
@@ -175,7 +175,7 @@ func (u *user) SetUserRoles(userID uint64, roleIDS []uint64) (err error) {
 }
 
 // GetButtonsByUserID 获取菜单按钮
-func (u *user) GetButtonsByUserID(userID uint64) (*[]sys.Menu, error) {
+func (u *user) GetButtonsByUserID(userID uint64) *[]sys.Menu {
 	var permissions []sys.Menu
 
 	err := u.db.Debug().Table("menus").Select(" menus.id, menus.code,menus.menuType,menus.status").
@@ -185,14 +185,12 @@ func (u *user) GetButtonsByUserID(userID uint64) (*[]sys.Menu, error) {
 				Joins("left join user_roles on user_roles.role_id = roles.id where  user_roles.user_id = ? and roles.status = 1", userID)).
 		Group("id").
 		Scan(&permissions).Error
-	if err != nil {
-		return nil, err
-	}
-	return &permissions, nil
+	restfulx.ErrIsNilRes(err, restfulx.ServerErr)
+	return &permissions
 }
 
 // GetLeftMenusByUserID 根据用户ID获取左侧菜单
-func (u *user) GetLeftMenusByUserID(userID uint64) (*[]sys.Menu, error) {
+func (u *user) GetLeftMenusByUserID(userID uint64) *[]sys.Menu {
 	var menus []sys.Menu
 	err := u.db.Debug().Table("menus").Select(" menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
 		"menus.method, menus.menuType, menus.status,menus.redirect, menus.component, menus.isK8s,menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
@@ -204,16 +202,13 @@ func (u *user) GetLeftMenusByUserID(userID uint64) (*[]sys.Menu, error) {
 		Order("sequence DESC").
 		Scan(&menus).Error
 
-	if err != nil {
-		log.Logger.Error(err)
-		return nil, err
-	}
-	if len(menus) == 0 {
-		return &menus, nil
-	}
+	restfulx.ErrIsNilRes(err, restfulx.ServerErr)
 
+	if len(menus) == 0 {
+		return &menus
+	}
 	treeMenusList := GetTreeMenus(menus, 0)
-	return &treeMenusList, nil
+	return &treeMenusList
 }
 
 func (u *user) UpdateStatus(userId, status uint64) error {

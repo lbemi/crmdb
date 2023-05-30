@@ -35,7 +35,7 @@ func NewUserRouter(router *gin.RouterGroup) {
 		// 根据菜单ID获取当前用户的权限
 		user.GET("/permissions", sys.GetButtonsByCurrentUser)
 		// 根据用户ID获取用户的菜单
-		user.GET("/menus", sys.GetLeftMenusByCurrentUser)
+		//user.GET("/menus", sys.GetLeftMenusByCurrentUser)
 		//修改用户状态
 		user.PUT("/:id/status/:status", sys.UpdateUserStatus)
 	}
@@ -77,7 +77,13 @@ func UserRouter() *restful.WebService {
 		Returns(1002, restfulx.PasswdWrong.Error(), restfulx.PasswdWrong).
 		Returns(4001, restfulx.TokenExpire.Error(), restfulx.TokenExpire).
 		Returns(1002, restfulx.TokenInvalid.Error(), restfulx.TokenInvalid))
-
+	// 根据用户ID获取用户的菜单
+	ws.Route(ws.GET("/menus").To(
+		rctx.NewReqCtx().WithLog("users").WithHandle(sys.GetLeftMenusByCurrentUser).Do()).
+		Doc("get user menus").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Returns(200, "success", form.UserPermissionResp{}))
+	//user.GET("/menus", sys.GetLeftMenusByCurrentUser)
 	//// 注册
 	//user.POST("/register", sys.Register)
 	//// 根据ID获取用户信息

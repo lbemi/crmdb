@@ -61,7 +61,7 @@ func (rc *ReqCtx) WithHandle(handler HandlerFunc) *ReqCtx {
 	return rc
 }
 
-// Handle 处理handle
+// Do 处理handles
 func (rc *ReqCtx) Do() restful.RouteFunction {
 	return func(request *restful.Request, response *restful.Response) {
 		rc.Request = request

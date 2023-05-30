@@ -63,3 +63,8 @@ type LoginResp struct {
 	Token string    `json:"token"`
 	User  *sys.User `json:"user"`
 }
+
+type UserPermissionResp struct {
+	Menus      *[]sys.Menu `json:"menus"`
+	Permission *[]string   `json:"permission"`
+}

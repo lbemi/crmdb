@@ -25,8 +25,8 @@ type IUSer interface {
 	GetByName(c context.Context, name string) (*sys.User, error)
 	GetRoleIDByUser(c context.Context, userID uint64) (*[]sys.Role, error)
 	SetUserRoles(c context.Context, userID uint64, roleIDs []uint64) error
-	GetButtonsByUserID(c context.Context, userID uint64) (*[]string, error)
-	GetLeftMenusByUserID(c context.Context, userID uint64) (*[]sys.Menu, error)
+	GetButtonsByUserID(userID uint64) *[]string
+	GetLeftMenusByUserID(userID uint64) *[]sys.Menu
 	UpdateStatus(c context.Context, userID, status uint64) error
 }
 
@@ -150,11 +150,8 @@ func (u *user) SetUserRoles(c context.Context, userID uint64, roleIDS []uint64) 
 }
 
 // GetButtonsByUserID 获取菜单按钮
-func (u *user) GetButtonsByUserID(c context.Context, userID uint64) (*[]string, error) {
-	menus, err := u.factory.User().GetButtonsByUserID(userID)
-	if err != nil {
-		log.Logger.Error(err)
-	}
+func (u *user) GetButtonsByUserID(userID uint64) *[]string {
+	menus := u.factory.User().GetButtonsByUserID(userID)
 
 	var res []string
 	for _, v := range *menus {
@@ -163,16 +160,13 @@ func (u *user) GetButtonsByUserID(c context.Context, userID uint64) (*[]string, 
 		}
 	}
 
-	return &res, nil
+	return &res
 }
 
 // GetLeftMenusByUserID 根据用户ID获取左侧菜单
-func (u *user) GetLeftMenusByUserID(c context.Context, userID uint64) (menus *[]sys.Menu, err error) {
-	menus, err = u.factory.User().GetLeftMenusByUserID(userID)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return
+func (u *user) GetLeftMenusByUserID(userID uint64) (menus *[]sys.Menu) {
+	return u.factory.User().GetLeftMenusByUserID(userID)
+
 }
 
 func (u *user) UpdateStatus(c context.Context, userId, status uint64) (err error) {

@@ -2,6 +2,7 @@ package util
 
 import (
 	"errors"
+	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"time"
 
@@ -13,6 +14,7 @@ type JwtUser interface {
 }
 
 type CustomClaims struct {
+	User *sys.User
 	jwt.StandardClaims
 }
 
@@ -34,10 +36,11 @@ type TokenOutPut struct {
 }
 
 // CreateToken 生成token
-func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut) {
+func CreateToken(guardName string, user *sys.User) (tokenOut TokenOutPut) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		CustomClaims{
+			User: user,
 			StandardClaims: jwt.StandardClaims{
 				ExpiresAt: time.Now().Unix() + 60*60*24*TTL,
 				Id:        user.GetSnowID(),
@@ -84,7 +87,7 @@ func ParseToken(tokenStr string) (token *jwt.Token, claims *CustomClaims, err er
 }
 
 // RefreshToken 刷新token
-func RefreshToken(tokenStr string, user JwtUser) (tokenOut TokenOutPut, err error) {
+func RefreshToken(tokenStr string, user *sys.User) (tokenOut TokenOutPut, err error) {
 	jwt.TimeFunc = func() time.Time {
 		return time.Unix(0, 0)
 	}

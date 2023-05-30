@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"fmt"
+	opsLog "github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model/asset"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/model/config"
@@ -52,13 +52,17 @@ func initMysqlGorm(c *config.Config) *gorm.DB {
 
 		DisableForeignKeyConstraintWhenMigrating: true, //禁用自动创建外键约束
 		Logger:                                   getGormLogger(c),
+
 		//NamingStrategy: schema.NamingStrategy{
 		//	TablePrefix:   "tb_",
 		//	SingularTable: true,
 		//},
 	}); err != nil {
-		//logs.Logger.Error("mysql connect failed. err:", err)
-		fmt.Println("mysql connect failed. err:", err)
+
+		//log.Logger.Err.Logger.Error("mysql connect failed. err:", err)
+		//fmt.Println("mysql connect failed. err:", err)
+		opsLog.Logger.Errorf("mysql connect failed. err: %v", err)
+		os.Exit(-13)
 		return nil
 	} else {
 		sqlDB, _ := db.DB()
@@ -72,7 +76,8 @@ func initMysqlGorm(c *config.Config) *gorm.DB {
 }
 
 func migration(db *gorm.DB) {
-	fmt.Println("初始化数据库...")
+	opsLog.Logger.Info("Initialized database ...")
+	//fmt.Println("初始化数据库...")
 	err := db.AutoMigrate(
 		&sys.Menu{},
 		&sys.User{},
@@ -84,7 +89,7 @@ func migration(db *gorm.DB) {
 		&cloud.Config{},
 	)
 	if err != nil {
-		fmt.Println("初始化数据库失败。。。。。", err)
+		opsLog.Logger.Errorf("Initialized database failed. err: %v", err)
 		return
 	}
 
@@ -122,7 +127,7 @@ func getGormLogger(c *config.Config) logger.Interface {
 		logMode = logger.Info
 	}
 	return logger.New(getGormLogWriter(c), logger.Config{
-		SlowThreshold:             200 * time.Millisecond,
+		SlowThreshold:             time.Second,
 		LogLevel:                  logMode,
 		IgnoreRecordNotFoundError: true,
 		Colorful:                  !c.EnableFileLogWrite,

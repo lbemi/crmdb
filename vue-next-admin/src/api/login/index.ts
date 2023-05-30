@@ -16,11 +16,10 @@ export function useLoginApi() {
 				data,
 			});
 		},
-		signOut: (data: object) => {
+		signOut: () => {
 			return request({
-				url: '/user/signOut',
+				url: '/users/logout',
 				method: 'post',
-				data,
 			});
 		},
 		getCaptcha: () => {

@@ -21,6 +21,7 @@ var (
 	ServerErr     OpsError = NewOpsError(500, "server error")
 	PermissionErr OpsError = NewOpsError(501, "no permission")
 	GinErr        OpsError = NewOpsError(400, "gin error")
+	NotLogin      OpsError = NewOpsError(401, "please login")
 
 	TokenExpire  OpsError = NewOpsError(4001, "token expired")
 	TokenInvalid OpsError = NewOpsError(4002, "token invalid")

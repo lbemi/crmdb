@@ -131,6 +131,9 @@ const onSignIn = async () => {
 			}
 		})
 		.catch((e) => {
+			if (e.code === 1003) {
+				onChangeCaptcha();
+			}
 			ElMessage.error(e.message);
 		});
 	state.loading.signIn = false;

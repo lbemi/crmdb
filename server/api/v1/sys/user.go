@@ -156,40 +156,23 @@ func GetButtonsByCurrentUser(c *gin.Context) {
 	u := uidStr.(string)
 	uid := util.ParseInt64(u)
 
-	res, err := core.V1.User().GetButtonsByUserID(c, uid)
-	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
+	res := core.V1.User().GetButtonsByUserID(uid)
 
 	response.Success(c, response.StatusOK, res)
 }
 
-func GetLeftMenusByCurrentUser(c *gin.Context) {
-	uidStr, exist := c.Get("id")
-	if !exist {
-		response.Fail(c, response.ErrCodeNotLogin)
-		return
-	}
+func GetLeftMenusByCurrentUser(rc *rctx.ReqCtx) {
+	uidStr, exist := rc.Get("id")
+	restfulx.ErrNotTrue(exist, restfulx.NotLogin)
 	u := uidStr.(string)
 	uid := util.ParseInt64(u)
+	res := core.V1.User().GetLeftMenusByUserID(uid)
+	permissions := core.V1.User().GetButtonsByUserID(uid)
 
-	res, err := core.V1.User().GetLeftMenusByUserID(c, uid)
-	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
+	rc.ResData = &form.UserPermissionResp{
+		Menus:      res,
+		Permission: permissions,
 	}
-
-	permissions, err := core.V1.User().GetButtonsByUserID(c, uid)
-	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	data := make(map[string]interface{}, 2)
-	data["menus"] = res
-	data["permission"] = permissions
-	response.Success(c, response.StatusOK, data)
 }
 func UpdateUserStatus(c *gin.Context) {
 

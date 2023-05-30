@@ -92,6 +92,7 @@ import { useThemeConfig } from '/@/stores/themeConfig';
 import other from '/@/utils/other';
 import mittBus from '/@/utils/mitt';
 import { Session, Local } from '/@/utils/storage';
+import { useLoginApi } from '/@/api/login';
 
 // 引入组件
 const UserNews = defineAsyncComponent(() => import('/@/layout/navBars/breadcrumb/userNews.vue'));
@@ -111,6 +112,7 @@ const state = reactive({
 	disabledSize: 'large',
 });
 
+const loginApi = useLoginApi();
 // 设置分割样式
 const layoutUserFlexNum = computed(() => {
 	let num: string | number = '';
@@ -154,6 +156,11 @@ const onHandleCommandClick = (path: string) => {
 					instance.confirmButtonText = t('message.user.logOutExit');
 					setTimeout(() => {
 						done();
+						loginApi.signOut().then((res) => {
+							if (res.code === 200) {
+								ElMessage.success('退出');
+							}
+						});
 						setTimeout(() => {
 							instance.confirmButtonLoading = false;
 						}, 300);
