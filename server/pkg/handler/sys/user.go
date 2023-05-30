@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/services"
 	"github.com/lbemi/lbemi/pkg/util"
 )
@@ -16,10 +17,10 @@ type UserGetter interface {
 
 type IUSer interface {
 	Login(params *form.UserLoginForm) (user *sys.User)
-	Register(c context.Context, params *form.RegisterUserForm) (err error)
+	Register(params *form.RegisterUserForm)
 	Update(c context.Context, userID uint64, params *form.UpdateUserFrom) (err error)
 	GetUserInfoById(c context.Context, id uint64) (user *sys.User, err error)
-	GetUserList(c context.Context, param *model.PageParam) *form.PageUser
+	GetUserList(param *model.PageParam) *form.PageUser
 	DeleteUserByUserId(c context.Context, id uint64) error
 	CheckUserExist(c context.Context, userName string) bool
 	GetByName(c context.Context, name string) (*sys.User, error)
@@ -45,8 +46,7 @@ func (u *user) Login(params *form.UserLoginForm) (user *sys.User) {
 
 }
 
-func (u *user) Register(c context.Context, params *form.RegisterUserForm) (err error) {
-
+func (u *user) Register(params *form.RegisterUserForm) {
 	userInfo := &sys.User{
 		UserName: params.UserName,
 		Password: util.BcryptMake([]byte(params.Password)),
@@ -55,12 +55,10 @@ func (u *user) Register(c context.Context, params *form.RegisterUserForm) (err e
 		Description: params.Description,
 		Status:      params.Status,
 	}
-	err = u.factory.User().Register(userInfo)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return nil
+	restfulx.ErrNotTrue(!u.factory.User().CheckUserExist(userInfo.UserName), restfulx.UserExist)
+	u.factory.User().Register(userInfo)
 }
+
 func (u *user) Update(c context.Context, userID uint64, params *form.UpdateUserFrom) (err error) {
 	userInfo := &sys.User{
 		UserName:    params.UserName,
@@ -83,7 +81,7 @@ func (u *user) GetUserInfoById(c context.Context, id uint64) (user *sys.User, er
 	return
 }
 
-func (u *user) GetUserList(c context.Context, pageParam *model.PageParam) *form.PageUser {
+func (u *user) GetUserList(pageParam *model.PageParam) *form.PageUser {
 	return u.factory.User().GetUserList(pageParam)
 
 }

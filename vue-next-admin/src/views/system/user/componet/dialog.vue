@@ -109,9 +109,12 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		if (valid) {
 			if (state.userId == 0) {
 				await userApi.addUser(state.ruleForm).then(() => {
-					ElMessage.success('添加成功');
-					closeDialog(formEl);
-					emit('refresh');
+						ElMessage.success('添加成功');
+						closeDialog(formEl);
+						emit('refresh');
+					
+				}).catch((e)=>{
+					ElMessage.error(e.message)
 				});
 			} else {
 				await userApi.updateUser(state.userId, state.ruleForm).then(() => {
@@ -180,7 +183,7 @@ const userFormRules = reactive<FormRules>({
 		{ min: 6, max: 12, message: '密码长度在6到12位之间', trigger: 'blur' },
 	],
 	confirmPassword: [{ required: true, validator: validateConfirmPass, trigger: 'blur' }],
-	email: [{ validator: validateEmail, trigger: 'blur' }],
+	email: [{ required:true, validator: validateEmail, trigger: 'blur' }],
 });
 
 // 暴露变量

@@ -17,7 +17,7 @@ func NewUserRouter(router *gin.RouterGroup) {
 		// 用户退出登录
 		//user.POST("/logout", sys.Logout)
 		// 注册
-		user.POST("/register", sys.Register)
+		//user.POST("/register", sys.Register)
 		// 根据ID获取用户信息
 		user.GET("/:id", sys.GetUserInfoById)
 		// 获取用户列表
@@ -62,7 +62,7 @@ func UserRouter() *restful.WebService {
 		rctx.NewReqCtx().WithToken(true).WithCasbin(false).WithLog("logout").WithHandle(sys.Logout).Do()).
 		Doc("logout").
 		Metadata(restfulspec.KeyOpenAPITags, tags))
-
+	// 登录
 	ws.Route(ws.POST("/login").To(rctx.NewReqCtx().
 		WithToken(false).
 		WithCasbin(false).
@@ -83,9 +83,25 @@ func UserRouter() *restful.WebService {
 		Doc("get user menus").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Returns(200, "success", form.UserPermissionResp{}))
-	//user.GET("/menus", sys.GetLeftMenusByCurrentUser)
-	//// 注册
-	//user.POST("/register", sys.Register)
+
+	// 获取用户列表
+	ws.Route(ws.GET("").To(
+		rctx.NewReqCtx().WithLog("users").WithHandle(sys.GetUserList).Do()).
+		Doc("get user menus").
+		Param(ws.QueryParameter("page", "page").DataType("int")).
+		Param(ws.QueryParameter("limit", "limit").DataType("int")).
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Returns(200, "success", form.PageUser{}))
+
+	// 注册
+	ws.Route(ws.POST("/register").To(rctx.NewReqCtx().
+		WithLog("users").
+		WithHandle(sys.Register).
+		Do()).
+		Doc("login").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Reads(form.RegisterUserForm{}).
+		Returns(200, "success", nil))
 	//// 根据ID获取用户信息
 	//user.GET("/:id", sys.GetUserInfoById)
 	//// 获取用户列表

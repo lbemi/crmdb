@@ -1,24 +1,39 @@
 package rctx
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"strconv"
 )
 
-func QueryPageParam(c *gin.Context) *model.PageParam {
-	return &model.PageParam{Page: QueryInt(c, "page", 1), Limit: QueryInt(c, "limit", 1)}
+// GetPageQueryParam 获取分页参数
+func GetPageQueryParam(rc *ReqCtx) *model.PageParam {
+	return &model.PageParam{Page: QueryInt(rc, "page", 1), Limit: QueryInt(rc, "limit", 10)}
 }
 
-func QueryInt(c *gin.Context, key string, defaultValue int) int {
-	res := c.Query(key)
-	if res == "" {
-		return defaultValue
+// QueryInt 获取查询参数中指定参数值，并转为int
+func QueryInt(rc *ReqCtx, key string, defaultInt int) int {
+	qv := rc.Request.QueryParameter(key)
+	if qv == "" {
+		return defaultInt
 	}
-	intRes, err := strconv.Atoi(res)
-	restfulx.ErrIsNil(err, "get page param error")
-	return intRes
+	qvi, err := strconv.Atoi(qv)
+	restfulx.ErrIsNil(err, "query param not int")
+	return qvi
+}
+
+// QueryParam QueryParam
+func QueryParam(rc *ReqCtx, key string) string {
+	return rc.Request.QueryParameter(key)
+}
+
+// PathParamInt 获取路径参数
+func PathParamInt(rc *ReqCtx, pm string) int {
+	value, _ := strconv.Atoi(rc.Request.PathParameter(pm))
+	return value
+}
+func PathParam(rc *ReqCtx, pm string) string {
+	return rc.Request.PathParameter(pm)
 }
 
 func ShouldBind(rc *ReqCtx, data any) {

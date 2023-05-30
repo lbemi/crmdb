@@ -29,27 +29,10 @@ func Login(rc *rctx.ReqCtx) {
 	}
 }
 
-func Register(c *gin.Context) {
+func Register(rc *rctx.ReqCtx) {
 	var registerForm form.RegisterUserForm
-	if err := c.ShouldBind(&registerForm); err != nil {
-		log.Logger.Error(err)
-		response.FailWithMessage(c, response.ErrCodeParameter, util.GetErrorMsg(registerForm, err))
-		return
-	}
-
-	if core.V1.User().CheckUserExist(c, registerForm.UserName) {
-		response.Fail(c, response.ErrCodeUserExist)
-		return
-	}
-
-	if err := core.V1.User().Register(c, &registerForm); err != nil {
-		log.Logger.Error(err)
-		response.FailWithMessage(c, response.ErrCodeRegisterFail, err.Error())
-		return
-	}
-
-	response.Success(c, response.StatusOK, nil)
-
+	rctx.ShouldBind(rc, &registerForm)
+	core.V1.User().Register(&registerForm)
 }
 
 func Logout(rc *rctx.ReqCtx) {
@@ -67,17 +50,17 @@ func GetUserInfoById(c *gin.Context) {
 	response.Success(c, response.StatusOK, user)
 }
 
-//func GetUserList(c *rctx.ReqCtx) {
-//	pageParam := restfulx.QueryPageParam(c.GinCtx)
-//	c.ResData = core.V1.User().GetUserList(c.GinCtx, pageParam)
-//
-//	//if err != nil {
-//	//	log.Logger.Error(err)
-//	//	response.Fail(c, response.ErrCodeNotFount)
-//	//	return
-//	//}
-//	//response.Success(c, response.StatusOK, user)
-//}
+func GetUserList(rc *rctx.ReqCtx) {
+	pageParam := rctx.GetPageQueryParam(rc)
+	rc.ResData = core.V1.User().GetUserList(pageParam)
+
+	//if err != nil {
+	//	log.Logger.Error(err)
+	//	response.Fail(c, response.ErrCodeNotFount)
+	//	return
+	//}
+	//response.Success(c, response.StatusOK, user)
+}
 
 func DeleteUserByUserId(c *gin.Context) {
 

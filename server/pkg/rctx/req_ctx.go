@@ -25,7 +25,7 @@ type ReqCtx struct {
 	ResData  any
 	Err      any
 
-	Timed time.Duration
+	Timed int64
 	NoRes bool
 
 	Handler HandlerFunc
@@ -85,7 +85,7 @@ func (rc *ReqCtx) Do() restful.RouteFunction {
 		}
 		begin := time.Now()
 		rc.Handler(rc)
-		rc.Timed = time.Since(begin)
+		rc.Timed = time.Since(begin).Milliseconds()
 		if !rc.NoRes {
 			restfulx.SuccessRes(rc.Response, rc.ResData)
 		}

@@ -4,7 +4,7 @@ export function useUserApi() {
 	return {
 		listUser: (query: any) => {
 			return request({
-				url: '/user',
+				url: '/users',
 				method: 'get',
 				params: query,
 			});
@@ -18,7 +18,7 @@ export function useUserApi() {
 		},
 		addUser: (data: any) => {
 			return request({
-				url: '/user/register',
+				url: '/users/register',
 				method: 'post',
 				data: data,
 			});

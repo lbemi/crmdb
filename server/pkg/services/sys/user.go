@@ -12,7 +12,7 @@ import (
 
 type IUSer interface {
 	Login(params *form.UserLoginForm) (user *sys.User)
-	Register(params *sys.User) (err error)
+	Register(params *sys.User)
 	Update(userID uint64, user *sys.User) (err error)
 	GetUserInfoById(id uint64) (user *sys.User, err error)
 	GetUserList(pageParam *model.PageParam) *form.PageUser
@@ -42,9 +42,10 @@ func (u *user) Login(params *form.UserLoginForm) (user *sys.User) {
 	return user
 }
 
-func (u *user) Register(params *sys.User) (err error) {
-	return u.db.Create(&params).Error
+func (u *user) Register(params *sys.User) {
+	restfulx.ErrIsNilRes(u.db.Create(&params).Error, restfulx.RegisterErr)
 }
+
 func (u *user) Update(userID uint64, user *sys.User) (err error) {
 	return u.db.Model(&sys.User{}).Where("id = ?", userID).Updates(&user).Error
 }
@@ -91,6 +92,7 @@ func (u *user) DeleteUserByUserId(userID uint64) error {
 	return u.db.Where("id = ?", userID).Delete(&sys.User{}).Error
 }
 
+// CheckUserExist 检查用户是否存在，存在返回true，否则false
 func (u *user) CheckUserExist(userName string) bool {
 	err := u.db.Where("user_name = ?", userName).First(&sys.User{}).Error
 	if err != nil {
@@ -178,7 +180,7 @@ func (u *user) SetUserRoles(userID uint64, roleIDS []uint64) (err error) {
 func (u *user) GetButtonsByUserID(userID uint64) *[]sys.Menu {
 	var permissions []sys.Menu
 
-	err := u.db.Debug().Table("menus").Select(" menus.id, menus.code,menus.menuType,menus.status").
+	err := u.db.Table("menus").Select(" menus.id, menus.code,menus.menuType,menus.status").
 		Joins("left join role_menus on menus.id = role_menus.menuID ").
 		Joins("left join user_roles on user_roles.role_id = role_menus.roleID where role_menus.roleID in (?) and menus.menuType in (2,3) and menus.status = 1",
 			u.db.Table("roles").Select("roles.id").
@@ -192,7 +194,7 @@ func (u *user) GetButtonsByUserID(userID uint64) *[]sys.Menu {
 // GetLeftMenusByUserID 根据用户ID获取左侧菜单
 func (u *user) GetLeftMenusByUserID(userID uint64) *[]sys.Menu {
 	var menus []sys.Menu
-	err := u.db.Debug().Table("menus").Select(" menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
+	err := u.db.Table("menus").Select(" menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
 		"menus.method, menus.menuType, menus.status,menus.redirect, menus.component, menus.isK8s,menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
 		Joins("left join role_menus on menus.id = role_menus.menuID where role_menus.roleID in (?) and menus.menuType = 1 and menus.status = 1",
 			u.db.Table("roles").Select("roles.id").

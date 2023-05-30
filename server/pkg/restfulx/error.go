@@ -29,6 +29,8 @@ var (
 	UserDeny    OpsError = NewOpsError(1001, "The user has been disabled. Please contact the administrator")
 	PasswdWrong OpsError = NewOpsError(1002, "login failed. please input right password or user")
 	CaptchaErr  OpsError = NewOpsError(1003, "captcha error")
+	RegisterErr OpsError = NewOpsError(1004, "register error")
+	UserExist   OpsError = NewOpsError(1005, "user existed")
 )
 
 func (oe OpsError) Code() int16 {
