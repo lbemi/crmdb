@@ -73,12 +73,14 @@ func (rc *ReqCtx) Do() restful.RouteFunction {
 			}
 			ApplyHandlerInterceptor(afterHandlers, rc)
 		}()
-		// 如果rc.GinCtx 为nil，则panic
-		restfulx.ErrNotTrue(rc.Response != nil, restfulx.NewErr("Response == nil"))
+		// 如果rc.Response 为nil，则panic
+		restfulx.ErrNotTrue(rc.Request != nil, restfulx.NewErr("Request == nil"))
 		//util.IsTrue(rc.Response != nil, "Response == nil")
 
 		rc.ReqParam = 0
 		rc.ResData = nil
+		rc.Err = nil
+
 		err := ApplyHandlerInterceptor(beforeHandlers, rc)
 		if err != nil {
 			panic(err)

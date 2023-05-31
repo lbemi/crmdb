@@ -32,7 +32,7 @@ var (
 	PasswdWrong OpsError = NewOpsError(1002, "登录失败，请输入正确的账号和密码")
 	CaptchaErr  OpsError = NewOpsError(1003, "验证码错误")
 	RegisterErr OpsError = NewOpsError(1004, "注册失败")
-	UserExist   OpsError = NewOpsError(1005, "user existed")
+	UserExist   OpsError = NewOpsError(1005, "用户已存在")
 )
 
 func (oe OpsError) Code() int16 {
