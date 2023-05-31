@@ -5,6 +5,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/asset"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/model/config"
+	"github.com/lbemi/lbemi/pkg/model/logsys"
 	"github.com/lbemi/lbemi/pkg/model/rules"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -77,7 +78,6 @@ func initMysqlGorm(c *config.Config) *gorm.DB {
 
 func migration(db *gorm.DB) {
 	opsLog.Logger.Info("Initialized database ...")
-	//fmt.Println("初始化数据库...")
 	err := db.AutoMigrate(
 		&sys.Menu{},
 		&sys.User{},
@@ -86,7 +86,10 @@ func migration(db *gorm.DB) {
 		&sys.UserRole{},
 		&rules.Rule{},
 		&asset.Host{},
-		&cloud.Config{},
+		&cloud.Cluster{},
+		&sys.UserResource{},
+		&logsys.LogLogin{},
+		&logsys.LogOperator{},
 	)
 	if err != nil {
 		opsLog.Logger.Errorf("Initialized database failed. err: %v", err)

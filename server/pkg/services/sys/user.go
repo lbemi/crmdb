@@ -6,12 +6,11 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/restfulx"
-	"github.com/lbemi/lbemi/pkg/util"
 	"gorm.io/gorm"
 )
 
 type IUSer interface {
-	Login(params *form.UserLoginForm) (user *sys.User)
+	Login(params *form.UserLoginForm) (user *sys.User, err error)
 	Register(params *sys.User)
 	Update(userID uint64, user *sys.User) (err error)
 	GetUserInfoById(id uint64) (user *sys.User, err error)
@@ -34,12 +33,10 @@ func NewUser(db *gorm.DB) IUSer {
 	return &user{db: db}
 }
 
-func (u *user) Login(params *form.UserLoginForm) (user *sys.User) {
-	err := u.db.Where("user_name = ?", params.UserName).First(&user).Error
-	restfulx.ErrIsNilRes(err, restfulx.PasswdWrong)
-	restfulx.ErrNotTrue(user.Status == 1, restfulx.UserDeny)
-	restfulx.ErrNotTrue(util.BcryptMakeCheck([]byte(params.Password), user.Password), restfulx.PasswdWrong)
-	return user
+func (u *user) Login(params *form.UserLoginForm) (user *sys.User, err error) {
+	err = u.db.Where("user_name = ?", params.UserName).First(&user).Error
+
+	return user, err
 }
 
 func (u *user) Register(params *sys.User) {

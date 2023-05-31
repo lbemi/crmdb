@@ -4,25 +4,76 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/model/logsys"
 	"github.com/lbemi/lbemi/pkg/rctx"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
 	"github.com/mssola/useragent"
+	"net/http"
 	"reflect"
+	"runtime/debug"
 )
 
 type Fields map[string]interface{}
 
 func LogHandler(rc *rctx.ReqCtx) error {
+	// 记录日志
+	go func() {
+		c := rc.Request
+		// 请求操作不做记录
+		if c.Request.Method == http.MethodGet || rc.LoginAccount == nil {
+			return
+		}
+		if rc.RequirePermission == nil || !rc.RequirePermission.NeedToken {
+			return
+		}
 
+		log := &logsys.LogOperator{
+			Title:        rc.LogInfo.LogModule,
+			BusinessType: "01",
+			Method:       c.Request.Method,
+			Name:         rc.LoginAccount.UserName,
+			Url:          c.Request.URL.Path,
+			Ip:           c.Request.RemoteAddr,
+			Status:       200,
+		}
+		if rc.Err != nil {
+			fmt.Println("----->", reflect.TypeOf(rc.Err))
+			switch t := rc.Err.(type) {
+			case restfulx.OpsError:
+				log.Status = t.Code()
+				log.ErrMsg = t.Error()
+			case error:
+				log.Status = 500
+				log.ErrMsg = "服务器内部错误"
+			case string:
+				log.Status = 500
+				log.ErrMsg = rc.Err.(string)
+			}
+		}
+		if c.Request.Method == "POST" {
+			log.BusinessType = "01"
+		} else if c.Request.Method == "PUT" {
+			log.BusinessType = "02"
+		} else if c.Request.Method == "DELETE" {
+			log.BusinessType = "03"
+		} else {
+			log.BusinessType = "04"
+		}
+		core.V1.Operator().Add(log)
+	}()
+	msg := getLogMsg(rc)
 	if err := rc.Err; err != nil {
-		log.Logger.Error(getLogMsg(rc), err)
+		log.Logger.Error(msg, err, "\n", string(debug.Stack()))
 		return nil
 	}
-	log.Logger.Info(getLogMsg(rc))
+	log.Logger.Info(msg)
 	return nil
 }
 
 func getLogMsg(rc *rctx.ReqCtx) string {
+
 	req := rc.Request.Request
 	ua := useragent.New(req.UserAgent())
 	bName, bVersion := ua.Browser()

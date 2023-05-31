@@ -5,10 +5,14 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
+	"github.com/lbemi/lbemi/pkg/model/logsys"
 	"github.com/lbemi/lbemi/pkg/model/sys"
+	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/services"
 	"github.com/lbemi/lbemi/pkg/util"
+	"github.com/mssola/useragent"
+	"time"
 )
 
 type UserGetter interface {
@@ -16,7 +20,7 @@ type UserGetter interface {
 }
 
 type IUSer interface {
-	Login(params *form.UserLoginForm) (user *sys.User)
+	Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *sys.User)
 	Register(params *form.RegisterUserForm)
 	Update(c context.Context, userID uint64, params *form.UpdateUserFrom) (err error)
 	GetUserInfoById(c context.Context, id uint64) (user *sys.User, err error)
@@ -41,9 +45,37 @@ func NewUser(f services.FactoryImp) IUSer {
 	}
 }
 
-func (u *user) Login(params *form.UserLoginForm) (user *sys.User) {
-	return u.factory.User().Login(params)
+func (u *user) Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *sys.User) {
+	user, err := u.factory.User().Login(params)
+	restfulx.ErrIsNilRes(err, restfulx.PasswdWrong)
+	pass := util.BcryptMakeCheck([]byte(params.Password), user.Password)
+	go func() {
+		req := rc.Request.Request
+		ua := useragent.New(req.UserAgent())
+		bName, bVersion := ua.Browser()
+		log := &logsys.LogLogin{
+			Username:      params.UserName,
+			Ipaddr:        req.RemoteAddr,
+			LoginLocation: "",
+			Browser:       bName + ":" + bVersion,
+			Os:            ua.OS(),
+			Platform:      ua.Platform(),
+			LoginTime:     time.Now(),
+			Remark:        req.UserAgent(),
+		}
+		if pass && err == nil {
+			log.Status = "1"
+			log.Msg = "登录成功"
+		} else {
+			log.Status = "-1"
+			log.Msg = "登录失败"
+		}
 
+		u.factory.Log().Add(log)
+	}()
+	restfulx.ErrNotTrue(user.Status == 1, restfulx.UserDeny)
+	restfulx.ErrNotTrue(pass, restfulx.PasswdWrong)
+	return user
 }
 
 func (u *user) Register(params *form.RegisterUserForm) {

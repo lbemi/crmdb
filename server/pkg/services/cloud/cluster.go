@@ -18,15 +18,15 @@ import (
 )
 
 type ICluster interface {
-	GenerateClient(name, config string) (*store.Clients, *cloud.Config, error)
+	GenerateClient(name, config string) (*store.Clients, *cloud.Cluster, error)
 	CheckCusterHealth(name string) bool
 
-	Create(config *cloud.Config) error
+	Create(config *cloud.Cluster) error
 	Delete(id uint64) error
-	Update(id uint64, config *cloud.Config) error
-	Get(id uint64) (*cloud.Config, error)
-	GetByName(name string) (*cloud.Config, error)
-	List() (*[]cloud.Config, error)
+	Update(id uint64, config *cloud.Cluster) error
+	Get(id uint64) (*cloud.Cluster, error)
+	GetByName(name string) (*cloud.Cluster, error)
+	List() (*[]cloud.Cluster, error)
 	GetClient(name string) *store.Clients
 	ChangeStatus(id uint64, status bool) error
 
@@ -63,7 +63,7 @@ func (c *cluster) CheckCusterHealth(name string) bool {
 	return true
 }
 
-func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Config, error) {
+func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Cluster, error) {
 
 	//如果已经存在或者已经初始化client则退出
 	clients := c.store.Get(name)
@@ -87,7 +87,7 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Co
 		return nil, nil, err
 	}
 
-	var conf cloud.Config
+	var conf cloud.Cluster
 
 	withTimeout, cancelFunc := context.WithTimeout(context.TODO(), time.Second*3)
 	defer cancelFunc()
@@ -138,12 +138,12 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Co
 	return &client, &conf, nil
 }
 
-func (c *cluster) Create(config *cloud.Config) error {
+func (c *cluster) Create(config *cloud.Cluster) error {
 
 	sec := util.Encrypt(config.KubeConfig)
 	config.KubeConfig = sec
 
-	err := c.db.Model(&cloud.Config{}).Create(&config).Error
+	err := c.db.Model(&cloud.Cluster{}).Create(&config).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return err
@@ -154,7 +154,7 @@ func (c *cluster) Create(config *cloud.Config) error {
 
 func (c *cluster) Delete(id uint64) error {
 
-	err := c.db.Where("id = ?", id).Delete(&cloud.Config{}).Error
+	err := c.db.Where("id = ?", id).Delete(&cloud.Cluster{}).Error
 	if err != nil {
 		return err
 	}
@@ -162,12 +162,12 @@ func (c *cluster) Delete(id uint64) error {
 	return nil
 }
 
-func (c *cluster) Update(id uint64, config *cloud.Config) error {
+func (c *cluster) Update(id uint64, config *cloud.Cluster) error {
 	return c.db.Where("id = ?", id).Updates(&config).Error
 }
 
-func (c *cluster) Get(id uint64) (*cloud.Config, error) {
-	var clu cloud.Config
+func (c *cluster) Get(id uint64) (*cloud.Cluster, error) {
+	var clu cloud.Cluster
 	err := c.db.Where("id = ?", id).First(&clu).Error
 	if err != nil {
 		return nil, err
@@ -175,16 +175,16 @@ func (c *cluster) Get(id uint64) (*cloud.Config, error) {
 	return &clu, err
 }
 
-func (c *cluster) GetByName(name string) (*cloud.Config, error) {
-	var clu cloud.Config
+func (c *cluster) GetByName(name string) (*cloud.Cluster, error) {
+	var clu cloud.Cluster
 	err := c.db.Where("name = ?", name).First(&clu).Error
 	if err != nil {
 		return nil, err
 	}
 	return &clu, err
 }
-func (c *cluster) List() (*[]cloud.Config, error) {
-	var clu []cloud.Config
+func (c *cluster) List() (*[]cloud.Cluster, error) {
+	var clu []cloud.Cluster
 	err := c.db.Find(&clu).Error
 	if err != nil {
 		return nil, err
@@ -197,7 +197,7 @@ func (c *cluster) GetClient(name string) *store.Clients {
 }
 
 func (c *cluster) ChangeStatus(id uint64, status bool) error {
-	return c.db.Model(&cloud.Config{}).Where("id = ?", id).Update("status", status).Error
+	return c.db.Model(&cloud.Cluster{}).Where("id = ?", id).Update("status", status).Error
 }
 
 func (c *cluster) RemoveFromStore(name string) {

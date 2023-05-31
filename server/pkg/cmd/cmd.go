@@ -6,12 +6,12 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/core/server"
 	"github.com/lbemi/lbemi/routes"
 	"github.com/lbemi/lbemi/routes/sys"
 
 	//"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/cmd/app/option"
-	"github.com/lbemi/lbemi/pkg/cmd/server"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/spf13/cobra"

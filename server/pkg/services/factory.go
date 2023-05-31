@@ -7,6 +7,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/asset"
 	"github.com/lbemi/lbemi/pkg/services/auth"
 	"github.com/lbemi/lbemi/pkg/services/cloud"
+	"github.com/lbemi/lbemi/pkg/services/logsys"
 	"github.com/lbemi/lbemi/pkg/services/sys"
 	"gorm.io/gorm"
 )
@@ -18,6 +19,8 @@ type FactoryImp interface {
 	Menu() sys.IMenu
 	Host() asset.IHost
 	Cluster() cloud.ICluster
+	Log() logsys.ILoginLog
+	Operator() logsys.IOperatorLog
 }
 
 type DbFactory struct {
@@ -49,6 +52,13 @@ func (f *DbFactory) Host() asset.IHost {
 
 func (f *DbFactory) Cluster() cloud.ICluster {
 	return cloud.NewCluster(f.db, f.store)
+}
+
+func (f *DbFactory) Log() logsys.ILoginLog {
+	return logsys.NewLoginLog(f.db)
+}
+func (f *DbFactory) Operator() logsys.IOperatorLog {
+	return logsys.NewOperatorLog(f.db)
 }
 
 func NewDbFactory(db *gorm.DB, enforcer *casbin.Enforcer, store *store.ClientStore) FactoryImp {

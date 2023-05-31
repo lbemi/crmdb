@@ -8,9 +8,11 @@ import (
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/model/form"
+	"github.com/lbemi/lbemi/pkg/model/logsys"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
+	"github.com/mssola/useragent"
 	"time"
 )
 
@@ -19,7 +21,7 @@ func Login(rc *rctx.ReqCtx) {
 	rctx.ShouldBind(rc, &userForm)
 	//校验验证码
 	restfulx.ErrNotTrue(store.Verify(userForm.CaptchaId, userForm.Captcha, true), restfulx.CaptchaErr)
-	user := core.V1.User().Login(&userForm)
+	user := core.V1.User().Login(rc, &userForm)
 	tokenStr := util.CreateToken(util.AppGuardName, user)
 	core.V1.Redis().Set("key", tokenStr.Token, time.Duration(time.Hour*30))
 	rc.LoginAccount = user
@@ -37,6 +39,25 @@ func Register(rc *rctx.ReqCtx) {
 
 func Logout(rc *rctx.ReqCtx) {
 	middleware.JoinBlackList(rc.Keys["token"].(*jwt.Token))
+	go func() {
+		req := rc.Request.Request
+		ua := useragent.New(req.UserAgent())
+		bName, bVersion := ua.Browser()
+		log := &logsys.LogLogin{
+			Username:      rc.LoginAccount.UserName,
+			Ipaddr:        req.RemoteAddr,
+			LoginLocation: "",
+			Browser:       bName + ":" + bVersion,
+			Os:            ua.OS(),
+			Platform:      ua.Platform(),
+			LoginTime:     time.Now(),
+			Remark:        req.UserAgent(),
+		}
+		log.Status = "1"
+		log.Msg = "退出登录"
+		core.V1.Login().Add(log)
+	}()
+
 }
 
 func GetUserInfoById(c *gin.Context) {

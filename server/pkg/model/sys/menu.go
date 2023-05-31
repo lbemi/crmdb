@@ -28,8 +28,8 @@ type Menu struct {
 }
 
 type Meta struct {
-	Title       string `json:"title" gorm:"column:title;size:128;not null;comment:标题"`
-	IsLink      string `json:"isLink" gorm:"column:isLink"`
+	Title       string `json:"title" gorm:"column:title;comment:标题"`
+	IsLink      string `json:"isLink" gorm:"column:isLink;type:varchar(256)"`
 	IsHide      bool   `json:"isHide" gorm:"column:isHide"`
 	IsKeepAlive bool   `json:"isKeepAlive" gorm:"column:isKeepAlive"`
 	IsAffix     bool   `json:"isAffix" gorm:"column:isAffix"`

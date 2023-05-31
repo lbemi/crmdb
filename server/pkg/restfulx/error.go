@@ -19,17 +19,19 @@ func NewOpsError(code int16, err string) OpsError {
 var (
 	Success       OpsError = NewOpsError(200, "success")
 	ServerErr     OpsError = NewOpsError(500, "server error")
-	PermissionErr OpsError = NewOpsError(501, "no permission")
-	GinErr        OpsError = NewOpsError(400, "gin error")
-	NotLogin      OpsError = NewOpsError(401, "please login")
+	PermissionErr OpsError = NewOpsError(501, "无权限")
+	NotLogin      OpsError = NewOpsError(401, "未登录")
 
-	TokenExpire  OpsError = NewOpsError(4001, "token expired")
-	TokenInvalid OpsError = NewOpsError(4002, "token invalid")
+	GetResourceErr OpsError = NewOpsError(2001, "获取资源失败")
+	OperatorErr    OpsError = NewOpsError(2001, "操作失败")
 
-	UserDeny    OpsError = NewOpsError(1001, "The user has been disabled. Please contact the administrator")
-	PasswdWrong OpsError = NewOpsError(1002, "login failed. please input right password or user")
-	CaptchaErr  OpsError = NewOpsError(1003, "captcha error")
-	RegisterErr OpsError = NewOpsError(1004, "register error")
+	TokenExpire  OpsError = NewOpsError(4001, "token过期，请重新登录")
+	TokenInvalid OpsError = NewOpsError(4002, "token无效")
+
+	UserDeny    OpsError = NewOpsError(1001, "用户已被锁定，请联系管理员")
+	PasswdWrong OpsError = NewOpsError(1002, "登录失败，请输入正确的账号和密码")
+	CaptchaErr  OpsError = NewOpsError(1003, "验证码错误")
+	RegisterErr OpsError = NewOpsError(1004, "注册失败")
 	UserExist   OpsError = NewOpsError(1005, "user existed")
 )
 
