@@ -121,6 +121,8 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 					ElMessage.success('修改成功');
 					closeDialog(formEl);
 					emit('refresh');
+				}).catch((e)=>{
+					ElMessage.error(e.message)
 				});
 			}
 		} else {

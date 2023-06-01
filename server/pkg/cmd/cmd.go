@@ -7,7 +7,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/core/server"
-	"github.com/lbemi/lbemi/routes"
 	"github.com/lbemi/lbemi/routes/sys"
 
 	//"github.com/lbemi/lbemi/pkg/bootstrap/log"
@@ -53,8 +52,8 @@ func run(cmd *cobra.Command, args []string) {
 	container.Filter(middleware.Cors(container).Filter)
 	//注册路由
 	httpSever.RegisterRoutes(
-		routes.TestRouter(),
-		sys.UserRouter())
+		sys.UserRoutes(),
+		sys.RoleRoutes())
 
 	//注册swagger路由
 	registerSwaggerRoute(container)

@@ -102,7 +102,7 @@ const state = reactive<SysRoleState>({
 const getTableData = async () => {
 	state.tableData.loading = true;
 	await roleApi.listRole(state.tableData.param).then((res: any) => {
-		state.tableData.data = res.data.roles;
+		state.tableData.data = res.data.data;
 		state.tableData.total = res.data.total;
 	});
 	setTimeout(() => {

@@ -1,192 +1,73 @@
 package sys
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/util"
+	"github.com/lbemi/lbemi/pkg/model/sys"
+	"github.com/lbemi/lbemi/pkg/rctx"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"strconv"
 	"strings"
 )
 
-func AddRole(c *gin.Context) {
+func AddRole(rc *rctx.ReqCtx) {
 	var role form.RoleReq
-	if err := c.ShouldBind(&role); err != nil {
-		log.Logger.Error(err)
-		response.FailWithMessage(c, response.ErrCodeParameter, util.GetErrorMsg(role, err))
-		return
-	}
-
-	exist := core.V1.Role().CheckRoleIsExist(c, role.Name)
-	if exist {
-		response.Fail(c, response.ErrCodeFount)
-		return
-	}
-
-	if _, err := core.V1.Role().Create(c, &role); err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-	response.Success(c, response.StatusOK, nil)
+	rctx.ShouldBind(rc, &role)
+	core.V1.Role().Create(&role)
 }
 
-func UpdateRole(c *gin.Context) {
-
+func UpdateRole(rc *rctx.ReqCtx) {
 	var role form.UpdateRoleReq
-	if err := c.ShouldBindJSON(&role); err != nil {
-		log.Logger.Error(err)
-		response.FailWithMessage(c, response.ErrCodeParameter, util.GetErrorMsg(role, err))
-		return
-	}
-
-	roleID := util.GetQueryToUint64(c, "id")
-
-	_, err := core.V1.Role().Get(c, roleID)
-	if err != nil {
-		log.Logger.Error(err)
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	if err = core.V1.Role().Update(c, &role, roleID); err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	response.Success(c, response.StatusOK, nil)
+	rctx.ShouldBind(rc, &role)
+	roleID := rctx.ParamUint64(rc, "id")
+	core.V1.Role().Update(&role, roleID)
 }
 
-func DeleteRole(c *gin.Context) {
-
-	rid := util.GetQueryToUint64(c, "id")
-
-	_, err := core.V1.Role().Get(c, rid)
-	if err != nil {
-		log.Logger.Error(err)
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	if err = core.V1.Role().Delete(c, rid); err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-	response.Success(c, response.StatusOK, nil)
+func DeleteRole(rc *rctx.ReqCtx) {
+	rid := rctx.ParamUint64(rc, "id")
+	core.V1.Role().Delete(rid)
 }
 
-func GetRole(c *gin.Context) {
-
-	rid := util.GetQueryToUint64(c, "id")
-
-	res, err := core.V1.Role().Get(c, rid)
-	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	response.Success(c, response.StatusOK, res)
+func GetRole(rc *rctx.ReqCtx) {
+	rid := rctx.ParamUint64(rc, "id")
+	rc.ResData = core.V1.Role().Get(rid)
 }
 
-func ListRoles(c *gin.Context) {
-
-	pageStr := c.DefaultQuery("page", "0")
-	page, err := strconv.Atoi(pageStr)
-	if err != nil {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
-	limitStr := c.DefaultQuery("limit", "0")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
-	res, err := core.V1.Role().List(c, page, limit)
-	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	response.Success(c, response.StatusOK, res)
+func ListRoles(rc *rctx.ReqCtx) {
+	condition := &sys.Role{}
+	query := &model.PageParam{}
+	query.Page = rctx.QueryDefaultInt(rc, "page", 0)
+	query.Limit = rctx.QueryDefaultInt(rc, "limit", 0)
+	condition.Name = rctx.QueryParam(rc, "name")
+	rc.ResData = core.V1.Role().List(query, condition)
 }
 
-func GetMenusByRole(c *gin.Context) {
-
-	rid := util.GetQueryToUint(c, "id")
-
-	//
-	menuTypeStr := c.DefaultQuery("menuType", "1,2,3")
+func GetMenusByRole(rc *rctx.ReqCtx) {
+	rid := rctx.ParamUint64(rc, "id")
+	menuTypeStr := rctx.QueryDefault(rc, "menuType", "1,2,3")
 	var menuType []int8
 	menuTypeSlice := strings.Split(menuTypeStr, ",")
 	for _, t := range menuTypeSlice {
 		res, err := strconv.Atoi(t)
 		if err != nil {
-			response.Fail(c, response.ErrCodeParameter)
+			restfulx.ErrIsNilRes(err, restfulx.ParamErr)
 			return
 		}
 		menuType = append(menuType, int8(res))
 	}
-
-	_, err := core.V1.Role().Get(c, rid)
-	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	res, err := core.V1.Role().GetMenusByRoleID(c, rid, menuType)
-	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	response.Success(c, response.StatusOK, res)
+	rc.ResData = core.V1.Role().GetMenusByRoleID(rid, menuType)
 }
 
-func SetRoleMenus(c *gin.Context) {
-
-	rid := util.GetQueryToUint(c, "id")
-
-	_, err := core.V1.Role().Get(c, rid)
-	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
+func SetRoleMenus(rc *rctx.ReqCtx) {
+	rid := rctx.ParamUint64(rc, "id")
 	var menuIDs form.Menus
-	if err = c.ShouldBindJSON(&menuIDs); err != nil {
-		log.Logger.Error(err)
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	if err = core.V1.Role().SetRole(c, rid, menuIDs.MenuIDS); err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	response.Success(c, response.StatusOK, nil)
+	rctx.ShouldBind(rc, &menuIDs)
+	core.V1.Role().SetRole(rid, menuIDs.MenuIDS)
 }
 
-func UpdateRoleStatus(c *gin.Context) {
-
-	status := util.GetQueryToUint64(c, "status")
-
-	roleID := util.GetQueryToUint64(c, "id")
-
-	_, err := core.V1.Role().Get(c, roleID)
-	if err != nil {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
-	if err = core.V1.Role().UpdateStatus(c, roleID, status); err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	response.Success(c, response.StatusOK, nil)
+func UpdateRoleStatus(rc *rctx.ReqCtx) {
+	status := rctx.ParamUint64(rc, "status")
+	roleID := rctx.ParamUint64(rc, "id")
+	core.V1.Role().UpdateStatus(roleID, status)
 }

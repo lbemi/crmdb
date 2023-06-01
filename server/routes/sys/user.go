@@ -3,7 +3,6 @@ package sys
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
-	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/api/v1/sys"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	model "github.com/lbemi/lbemi/pkg/model/sys"
@@ -11,29 +10,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/restfulx"
 )
 
-func NewUserRouter(router *gin.RouterGroup) {
-
-	user := router.Group("/user")
-	{
-		// 根据ID获取用户信息
-		user.GET("/:id", sys.GetUserInfoById)
-
-		// 更新
-		user.PUT("/:id", sys.UpdateUser)
-
-		user.GET("/:id/roles", sys.GetUserRoles)  // 查询当前用户角色
-		user.POST("/:id/roles", sys.SetUserRoles) // 根据用户id分配角色
-
-		// 根据菜单ID获取当前用户的权限
-		user.GET("/permissions", sys.GetButtonsByCurrentUser)
-		// 根据用户ID获取用户的菜单
-		//user.GET("/menus", sys.GetLeftMenusByCurrentUser)
-		//修改用户状态
-		user.PUT("/:id/status/:status", sys.UpdateUserStatus)
-	}
-
-}
-func UserRouter() *restful.WebService {
+func UserRoutes() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.Path("/api/v1/users").Produces(restful.MIME_JSON)
 	tags := []string{"users"}
@@ -103,7 +80,7 @@ func UserRouter() *restful.WebService {
 		Returns(200, "success", nil))
 
 	// 根据ID获取用户信息
-	ws.Route(ws.DELETE("/{id}").To(rctx.NewReqCtx().
+	ws.Route(ws.GET("/{id}").To(rctx.NewReqCtx().
 		WithLog("users").
 		WithHandle(sys.GetUserInfoById).
 		Do()).
@@ -111,20 +88,59 @@ func UserRouter() *restful.WebService {
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("id", "用户id").DataType("string")).
 		Writes(model.User{}).
-		Returns(200, "success", nil))
+		Returns(200, "success", model.User{}))
 
 	// 更新
-	user.PUT("/:id", sys.UpdateUser)
+	ws.Route(ws.PUT("/{id}").To(rctx.NewReqCtx().
+		WithLog("users").
+		WithHandle(sys.UpdateUser).
+		Do()).
+		Doc("修改取用户信息").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.PathParameter("id", "用户id").DataType("string")).
+		Reads(form.UpdateUserFrom{}).
+		Returns(200, "success", nil))
 
-	user.GET("/:id/roles", sys.GetUserRoles)  // 查询当前用户角色
-	user.POST("/:id/roles", sys.SetUserRoles) // 根据用户id分配角色
+	ws.Route(ws.GET("/{id}/roles").To(rctx.NewReqCtx().
+		WithLog("users").
+		WithHandle(sys.GetUserRoles).
+		Do()).
+		Doc("查询当前用户角色").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.PathParameter("id", "用户id").DataType("string")).
+		Writes(model.Role{}).
+		Returns(200, "success", model.Role{}))
 
-	// 根据菜单ID获取当前用户的权限
-	user.GET("/permissions", sys.GetButtonsByCurrentUser)
-	// 根据用户ID获取用户的菜单
-	//user.GET("/menus", sys.GetLeftMenusByCurrentUser)
+	ws.Route(ws.POST("/{id}/roles").To(rctx.NewReqCtx().
+		WithLog("users").
+		WithHandle(sys.SetUserRoles).
+		Do()).
+		Doc("根据用户id分配角色").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.PathParameter("id", "用户id").DataType("string")).
+		Reads(form.Roles{}).
+		Returns(200, "success", nil))
+
+	ws.Route(ws.GET("/permissions").To(rctx.NewReqCtx().
+		WithLog("users").
+		WithHandle(sys.GetButtonsByCurrentUser).
+		Do()).
+		Doc("根据用户ID获取当前用户的权限").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.PathParameter("id", "用户id").DataType("string")).
+		Writes([]string{}).
+		Returns(200, "success", []string{}))
+
 	//修改用户状态
-	user.PUT("/:id/status/:status", sys.UpdateUserStatus)
+	ws.Route(ws.PUT("/{id}/status/{status}").To(rctx.NewReqCtx().
+		WithLog("users").
+		WithHandle(sys.UpdateUserStatus).
+		Do()).
+		Doc("修改用户状态").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.PathParameter("id", "用户id").DataType("string")).
+		Reads([]string{}).
+		Returns(200, "success", nil))
 
 	return ws
 }

@@ -8,11 +8,11 @@ import (
 
 // GetPageQueryParam 获取分页参数
 func GetPageQueryParam(rc *ReqCtx) *model.PageParam {
-	return &model.PageParam{Page: QueryInt(rc, "page", 1), Limit: QueryInt(rc, "limit", 10)}
+	return &model.PageParam{Page: QueryDefaultInt(rc, "page", 1), Limit: QueryDefaultInt(rc, "limit", 10)}
 }
 
-// QueryInt 获取查询参数中指定参数值，并转为int
-func QueryInt(rc *ReqCtx, key string, defaultInt int) int {
+// QueryDefaultInt 获取查询参数中指定参数值，并转为int
+func QueryDefaultInt(rc *ReqCtx, key string, defaultInt int) int {
 	qv := rc.Request.QueryParameter(key)
 	if qv == "" {
 		return defaultInt
@@ -20,6 +20,14 @@ func QueryInt(rc *ReqCtx, key string, defaultInt int) int {
 	qvi, err := strconv.Atoi(qv)
 	restfulx.ErrIsNilRes(err, restfulx.ParamErr)
 	return qvi
+}
+
+func QueryDefault(rc *ReqCtx, key string, defaultStr string) string {
+	qv := rc.Request.QueryParameter(key)
+	if qv == "" {
+		return defaultStr
+	}
+	return qv
 }
 
 // QueryParam QueryParam

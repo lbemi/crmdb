@@ -1,7 +1,6 @@
 package sys
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
@@ -117,8 +116,8 @@ func GetLeftMenusByCurrentUser(rc *rctx.ReqCtx) {
 	}
 }
 
-func UpdateUserStatus(c *gin.Context) {
-	userId := util.GetQueryToUint64(c, "id")
-	status := util.GetQueryToUint64(c, "status")
+func UpdateUserStatus(rc *rctx.ReqCtx) {
+	userId := rctx.ParamUint64(rc, "id")
+	status := rctx.ParamUint64(rc, "status")
 	core.V1.User().UpdateStatus(userId, status)
 }

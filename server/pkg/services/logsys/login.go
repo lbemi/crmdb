@@ -44,6 +44,7 @@ func (l *loginLog) List(query *model.PageParam, condition *logsys.LogLogin) (res
 
 	restfulx.ErrIsNilRes(db.Model(&logsys.LogLogin{}).
 		Offset(offset).
+		Limit(query.Limit).
 		Find(&logs).Error,
 		restfulx.GetResourceErr)
 	result.Data = logs
