@@ -17,13 +17,10 @@ func NewOpsError(code int16, err string) OpsError {
 }
 
 var (
-	Success       OpsError = NewOpsError(200, "success")
-	ServerErr     OpsError = NewOpsError(500, "server error")
-	PermissionErr OpsError = NewOpsError(501, "无权限")
-	NotLogin      OpsError = NewOpsError(401, "未登录")
-
-	GetResourceErr OpsError = NewOpsError(2001, "获取资源失败")
-	OperatorErr    OpsError = NewOpsError(2001, "操作失败")
+	Success      OpsError = NewOpsError(200, "success")
+	ServerErr    OpsError = NewOpsError(500, "server error")
+	NoPermission OpsError = NewOpsError(501, "无权限")
+	NotLogin     OpsError = NewOpsError(401, "未登录")
 
 	TokenExpire  OpsError = NewOpsError(4001, "token过期，请重新登录")
 	TokenInvalid OpsError = NewOpsError(4002, "token无效")
@@ -33,6 +30,11 @@ var (
 	CaptchaErr  OpsError = NewOpsError(1003, "验证码错误")
 	RegisterErr OpsError = NewOpsError(1004, "注册失败")
 	UserExist   OpsError = NewOpsError(1005, "用户已存在")
+
+	GetResourceErr OpsError = NewOpsError(2001, "获取资源失败")
+	OperatorErr    OpsError = NewOpsError(2001, "操作失败")
+
+	ParamErr OpsError = NewOpsError(3001, "参数错误")
 )
 
 func (oe OpsError) Code() int16 {
@@ -76,10 +78,6 @@ func Error(oe OpsError) *Response {
 
 func ServerError() *Response {
 	return Error(ServerErr)
-}
-
-func PermissionError() *Response {
-	return Error(PermissionErr)
 }
 
 func ErrIsNil(err error, msg string, param ...any) {

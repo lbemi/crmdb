@@ -17,7 +17,7 @@ type Options struct {
 	Config    *config.Config
 	DB        *gorm.DB
 	Redis     *redis.Client
-	Enforcer  *casbin.Enforcer
+	Enforcer  *casbin.SyncedEnforcer
 	GinEngine *gin.Engine
 }
 

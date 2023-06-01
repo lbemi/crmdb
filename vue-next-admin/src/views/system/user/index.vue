@@ -34,7 +34,7 @@
 							inactive-text="禁用"
 							width="45px"
 							@click="changeStatus(scope.row)"
-              v-auth="'sys:user:status'"
+							v-auth="'sys:user:status'"
 						/>
 					</template>
 				</el-table-column>
@@ -71,7 +71,8 @@
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useUserApi } from '/@/api/system/user';
-import {RowUserType, SysUserState} from "/@/types/views";
+import { RowUserType, SysUserState } from '/@/types/views';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 // 引入组件
 const UserDialog = defineAsyncComponent(() => import('./componet/dialog.vue'));
@@ -132,13 +133,22 @@ const onRowDel = (row: RowUserType) => {
 		type: 'warning',
 	})
 		.then(() => {
-			userApi.deleteUser(row.id).then(() => {
-				ElMessage.success('删除成功');
-				getTableData();
-			});
+			userApi
+				.deleteUser(row.id)
+				.then((res) => {
+					if (res.code === 200) {
+						ElMessage.success('删除成功');
+						getTableData();
+					} else {
+						ElMessage.error(res.message);
+					}
+				})
+				.catch((e) => {
+					ElMessage.error(e.message);
+				});
 		})
 		.catch(() => {
-			ElMessage.error('删除失败');
+			ElMessage.info('取消');
 		});
 };
 // 分页改变

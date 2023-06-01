@@ -1,8 +1,6 @@
 package sys
 
 import (
-	"context"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/logsys"
@@ -22,17 +20,17 @@ type UserGetter interface {
 type IUSer interface {
 	Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *sys.User)
 	Register(params *form.RegisterUserForm)
-	Update(c context.Context, userID uint64, params *form.UpdateUserFrom) (err error)
-	GetUserInfoById(c context.Context, id uint64) (user *sys.User, err error)
+	Update(userID uint64, params *form.UpdateUserFrom)
+	GetUserInfoById(id uint64) (user *sys.User)
 	GetUserList(param *model.PageParam) *form.PageUser
-	DeleteUserByUserId(c context.Context, id uint64) error
-	CheckUserExist(c context.Context, userName string) bool
-	GetByName(c context.Context, name string) (*sys.User, error)
-	GetRoleIDByUser(c context.Context, userID uint64) (*[]sys.Role, error)
-	SetUserRoles(c context.Context, userID uint64, roleIDs []uint64) error
+	DeleteUserByUserId(id uint64)
+	CheckUserExist(userName string) bool
+	GetByName(name string) *sys.User
+	GetRoleIDByUser(userID uint64) *[]sys.Role
+	SetUserRoles(userID uint64, roleIDs []uint64)
 	GetButtonsByUserID(userID uint64) *[]string
 	GetLeftMenusByUserID(userID uint64) *[]sys.Menu
-	UpdateStatus(c context.Context, userID, status uint64) error
+	UpdateStatus(userID, status uint64)
 }
 
 type user struct {
@@ -91,92 +89,54 @@ func (u *user) Register(params *form.RegisterUserForm) {
 	u.factory.User().Register(userInfo)
 }
 
-func (u *user) Update(c context.Context, userID uint64, params *form.UpdateUserFrom) (err error) {
+func (u *user) Update(userID uint64, params *form.UpdateUserFrom) {
 	userInfo := &sys.User{
 		UserName:    params.UserName,
 		Email:       params.Email,
 		Description: params.Description,
 		Status:      params.Status,
 	}
-	err = u.factory.User().Update(userID, userInfo)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return nil
+	u.factory.User().Update(userID, userInfo)
+
 }
 
-func (u *user) GetUserInfoById(c context.Context, id uint64) (user *sys.User, err error) {
-	user, err = u.factory.User().GetUserInfoById(id)
-	if err != nil {
-		return nil, err
-	}
-	return
+func (u *user) GetUserInfoById(id uint64) (user *sys.User) {
+	return u.factory.User().GetUserInfoById(id)
 }
 
 func (u *user) GetUserList(pageParam *model.PageParam) *form.PageUser {
 	return u.factory.User().GetUserList(pageParam)
-
 }
 
-func (u *user) DeleteUserByUserId(c context.Context, id uint64) (err error) {
-
-	if err = u.factory.User().DeleteUserByUserId(id); err != nil {
-		log.Logger.Error(err)
-		return
-	}
-
-	if err = u.factory.Authentication().DeleteUser(id); err != nil {
-		log.Logger.Error(err)
-		return
-	}
-
-	return
+func (u *user) DeleteUserByUserId(id uint64) {
+	u.factory.User().DeleteUserByUserId(id)
+	u.factory.Authentication().DeleteUser(id)
 }
 
-func (u *user) CheckUserExist(c context.Context, userName string) bool {
+func (u *user) CheckUserExist(userName string) bool {
 	return u.factory.User().CheckUserExist(userName)
 }
 
-func (u *user) GetByName(c context.Context, name string) (user *sys.User, err error) {
-	user, err = u.factory.User().GetByName(name)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return
+func (u *user) GetByName(name string) (user *sys.User) {
+	return u.factory.User().GetByName(name)
 }
 
 // GetRoleIDByUser 查询用户角色
-func (u *user) GetRoleIDByUser(c context.Context, userID uint64) (roles *[]sys.Role, err error) {
-	roles, err = u.factory.User().GetRoleIdbyUser(userID)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return
+func (u *user) GetRoleIDByUser(userID uint64) (roles *[]sys.Role) {
+	return u.factory.User().GetRoleIdbyUser(userID)
 }
 
 // SetUserRoles 分配用户角色
-func (u *user) SetUserRoles(c context.Context, userID uint64, roleIDS []uint64) (err error) {
+func (u *user) SetUserRoles(userID uint64, roleIDS []uint64) {
 	// 添加规则到rules表
-	err = u.factory.Authentication().AddRoleForUser(userID, roleIDS)
-	if err != nil {
-		log.Logger.Error(err)
-		return err
-	}
+	u.factory.Authentication().AddRoleForUser(userID, roleIDS)
 
 	// 配置role_users表
-	err = u.factory.User().SetUserRoles(userID, roleIDS)
-	if err != nil { // 如果失败,则清除rules已添加的规则
-		log.Logger.Error(err)
-		for _, roleId := range roleIDS {
-			err = u.factory.Authentication().DeleteRoleWithUser(userID, roleId)
-			if err != nil {
-				log.Logger.Error(err)
-				break
-			}
-		}
-		return
+	u.factory.User().SetUserRoles(userID, roleIDS)
+
+	for _, roleId := range roleIDS {
+		u.factory.Authentication().DeleteRoleWithUser(userID, roleId)
 	}
-	return
 }
 
 // GetButtonsByUserID 获取菜单按钮
@@ -199,10 +159,6 @@ func (u *user) GetLeftMenusByUserID(userID uint64) (menus *[]sys.Menu) {
 
 }
 
-func (u *user) UpdateStatus(c context.Context, userId, status uint64) (err error) {
-	err = u.factory.User().UpdateStatus(userId, status)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return
+func (u *user) UpdateStatus(userId, status uint64) {
+	u.factory.User().UpdateStatus(userId, status)
 }

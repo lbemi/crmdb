@@ -39,7 +39,6 @@ func LogHandler(rc *rctx.ReqCtx) error {
 			Status:       200,
 		}
 		if rc.Err != nil {
-			fmt.Println("----->", reflect.TypeOf(rc.Err))
 			switch t := rc.Err.(type) {
 			case restfulx.OpsError:
 				log.Status = t.Code()
@@ -64,10 +63,20 @@ func LogHandler(rc *rctx.ReqCtx) error {
 		core.V1.Operator().Add(log)
 	}()
 	msg := getLogMsg(rc)
-	if err := rc.Err; err != nil {
-		log.Logger.Error(msg, err, "\n", string(debug.Stack()))
+
+	if rc.Err != nil {
+		// 如果是非自定义错误日志，则打印堆栈信息
+		switch t := rc.Err.(type) {
+		case restfulx.OpsError:
+			log.Logger.Error(msg, "|", t.Code(), " - "+t.Error())
+		case error:
+			log.Logger.Error(msg, t, "\n", string(debug.Stack()))
+		case string:
+			log.Logger.Error(msg, t, "\n", string(debug.Stack()))
+		}
 		return nil
 	}
+
 	log.Logger.Info(msg)
 	return nil
 }

@@ -25,7 +25,7 @@ type FactoryImp interface {
 
 type DbFactory struct {
 	db      *gorm.DB
-	enforce *casbin.Enforcer
+	enforce *casbin.SyncedEnforcer
 	client  *client.KubernetesClient
 	store   *store.ClientStore
 }
@@ -61,7 +61,7 @@ func (f *DbFactory) Operator() logsys.IOperatorLog {
 	return logsys.NewOperatorLog(f.db)
 }
 
-func NewDbFactory(db *gorm.DB, enforcer *casbin.Enforcer, store *store.ClientStore) FactoryImp {
+func NewDbFactory(db *gorm.DB, enforcer *casbin.SyncedEnforcer, store *store.ClientStore) FactoryImp {
 	return &DbFactory{
 		db:      db,
 		enforce: enforcer,

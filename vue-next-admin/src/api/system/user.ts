@@ -11,7 +11,7 @@ export function useUserApi() {
 		},
 		updateUser: (id: number, data: any) => {
 			return request({
-				url: '/user/' + id,
+				url: '/users/' + id,
 				method: 'put',
 				data: data,
 			});
@@ -25,14 +25,14 @@ export function useUserApi() {
 		},
 		deleteUser: (id: number) => {
 			return request({
-				url: '/user/' + id,
+				url: '/users/' + id,
 				method: 'delete',
 			});
 		},
 
 		updateStatus: (id: number, status: number) => {
 			return request({
-				url: '/user/' + id + '/status/' + status,
+				url: '/users/' + id + '/status/' + status,
 				method: 'put',
 			});
 		},

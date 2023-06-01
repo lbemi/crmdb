@@ -4,6 +4,7 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/lbemi/lbemi/pkg/model/rules"
 	"github.com/lbemi/lbemi/pkg/model/sys"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	"gorm.io/gorm"
 
@@ -13,7 +14,7 @@ import (
 // TODO: 整体优化
 
 type AuthenticationInterface interface {
-	GetEnforce() *casbin.Enforcer
+	GetEnforce() *casbin.SyncedEnforcer
 	AddRoleForUser(userID uint64, roleIDs []uint64) (err error)
 	SetRolePermission(roleId uint64, menus *[]sys.Menu) (bool, error)
 	DeleteRole(roleId uint64) error
@@ -21,19 +22,19 @@ type AuthenticationInterface interface {
 	DeleteRoleWithUser(uid, roleId uint64) error
 	DeleteRolePermissionWithRole(roleId uint64, resource ...string) error
 	UpdatePermissions(oldPath, oldMethod, newPath, newMethod string) error
-	DeleteUser(userID uint64) error
+	DeleteUser(userID uint64)
 }
 
 type authentication struct {
 	db       *gorm.DB
-	enforcer *casbin.Enforcer
+	enforcer *casbin.SyncedEnforcer
 }
 
-func NewAuthentication(db *gorm.DB, e *casbin.Enforcer) *authentication {
+func NewAuthentication(db *gorm.DB, e *casbin.SyncedEnforcer) *authentication {
 	return &authentication{db, e}
 }
 
-func (c *authentication) GetEnforce() *casbin.Enforcer {
+func (c *authentication) GetEnforce() *casbin.SyncedEnforcer {
 	return c.enforcer
 }
 
@@ -131,10 +132,7 @@ func (c *authentication) UpdatePermissions(oldPath, oldMethod, newPath, newMetho
 	//return nil
 }
 
-func (c *authentication) DeleteUser(userID uint64) error {
+func (c *authentication) DeleteUser(userID uint64) {
 	_, err := c.enforcer.DeleteUser(strconv.FormatUint(userID, 10))
-	if err != nil {
-		return err
-	}
-	return nil
+	restfulx.ErrIsNilRes(err, restfulx.OperatorErr)
 }
