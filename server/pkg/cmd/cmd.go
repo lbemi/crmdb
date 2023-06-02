@@ -53,7 +53,8 @@ func run(cmd *cobra.Command, args []string) {
 	//注册路由
 	httpSever.RegisterRoutes(
 		sys.UserRoutes(),
-		sys.RoleRoutes())
+		sys.RoleRoutes(),
+		sys.MenuRoutes())
 
 	//注册swagger路由
 	registerSwaggerRoute(container)

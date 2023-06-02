@@ -135,10 +135,15 @@ const state = reactive({
 // 获取路由数据，真实请从接口获取
 const getTableData = async () => {
 	state.tableData.loading = true;
-	await menuApi.listMenu(state.tableData.param).then((res) => {
-		state.tableData.data = res.data.menus;
-		state.tableData.total = res.data.total;
-	});
+	await menuApi
+		.listMenu(state.tableData.param)
+		.then((res) => {
+			state.tableData.data = res.data.menus;
+			state.tableData.total = res.data.total;
+		})
+		.catch((e) => {
+			ElMessage.error(e.message);
+		});
 	// state.tableData.data = routesList.value;
 	setTimeout(() => {
 		state.tableData.loading = false;

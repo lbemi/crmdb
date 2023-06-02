@@ -19,11 +19,12 @@ var (
 	TokenExpire  *OpsError = NewOpsErrCode(4001, "token过期，请重新登录")
 	TokenInvalid *OpsError = NewOpsErrCode(4002, "token无效")
 
-	UserDeny    *OpsError = NewOpsErrCode(1001, "用户已被锁定，请联系管理员")
-	PasswdWrong *OpsError = NewOpsErrCode(1002, "登录失败，请输入正确的账号和密码")
-	CaptchaErr  *OpsError = NewOpsErrCode(1003, "验证码错误")
-	RegisterErr *OpsError = NewOpsErrCode(1004, "注册失败")
-	UserExist   *OpsError = NewOpsErrCode(1005, "用户已存在")
+	UserDeny      *OpsError = NewOpsErrCode(1001, "用户已被锁定，请联系管理员")
+	PasswdWrong   *OpsError = NewOpsErrCode(1002, "登录失败，请输入正确的账号和密码")
+	CaptchaErr    *OpsError = NewOpsErrCode(1003, "验证码错误")
+	RegisterErr   *OpsError = NewOpsErrCode(1004, "注册失败")
+	UserExist     *OpsError = NewOpsErrCode(1005, "用户已存在")
+	ResourceExist *OpsError = NewOpsErrCode(1006, "资源已存在")
 
 	GetResourceErr *OpsError = NewOpsErrCode(2001, "获取资源失败")
 	OperatorErr    *OpsError = NewOpsErrCode(2001, "操作失败")

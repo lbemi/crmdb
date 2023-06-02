@@ -14,7 +14,7 @@ export function useMenuApi() {
 	return {
 		addMenu: (data: object) => {
 			return request({
-				url: '/menu',
+				url: '/menus',
 				method: 'post',
 				data,
 			});
@@ -34,20 +34,20 @@ export function useMenuApi() {
 		},
 		listMenu: (params?: any) => {
 			return request({
-				url: '/menu',
+				url: '/menus',
 				method: 'get',
 				params: params,
 			});
 		},
 		updateMenuStatu: (id: number, status: number) => {
 			return request({
-				url: '/menu/' + id + '/status/' + status,
+				url: '/menus/' + id + '/status/' + status,
 				method: 'put',
 			});
 		},
 		deleteMenu: (id: number) => {
 			return request({
-				url: '/menu/' + id,
+				url: '/menus/' + id,
 				method: 'delete',
 			});
 		},

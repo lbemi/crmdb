@@ -55,7 +55,7 @@
 					<template #default="scope">
 						<el-switch
 							v-model="scope.row.status"
-              v-auth="'sys:menu:status'"
+							v-auth="'sys:menu:status'"
 							class="ml-2"
 							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
 							:active-value="1"
@@ -94,6 +94,7 @@ import { defineAsyncComponent, ref, onMounted, reactive } from 'vue';
 import { RouteRecordRaw } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMenuApi } from '/@/api/system/menu';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 // import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";
 
@@ -116,9 +117,14 @@ const state = reactive({
 // 获取路由数据，真实请从接口获取
 const getTableData = async () => {
 	state.tableData.loading = true;
-	await menuApi.listMenu(state.params).then((res) => {
-		state.tableData.data = res.data.menus;
-	});
+	await menuApi
+		.listMenu(state.params)
+		.then((res) => {
+			state.tableData.data = res.data.menus;
+		})
+		.catch((e) => {
+			ElMessage.error(e.message);
+		});
 	// state.tableData.data = routesList.value;
 	setTimeout(() => {
 		state.tableData.loading = false;
@@ -162,7 +168,9 @@ const changeStatus = async (obj: any) => {
 		cancelButtonText: '取消',
 	})
 		.then(async () => {
-			return await menuApi.updateMenuStatu(obj.id, obj.status);
+			await menuApi.updateMenuStatu(obj.id, obj.status).catch((e) => {
+				ElMessage.error(e.message);
+			});
 		})
 		.then(() => {
 			ElMessage.success(text + '成功');

@@ -31,6 +31,7 @@ func NewMenu(db *gorm.DB) *menu {
 }
 
 func (m *menu) Create(obj *sys.Menu) (*sys.Menu, error) {
+
 	if err := m.db.Create(obj).Error; err != nil {
 		return nil, err
 	}
