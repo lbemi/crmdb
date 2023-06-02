@@ -21,7 +21,7 @@ export function useMenuApi() {
 		},
 		updateMenu: (id: number, data: object) => {
 			return request({
-				url: '/menu/' + id,
+				url: '/menus/' + id,
 				method: 'put',
 				data: data,
 			});
