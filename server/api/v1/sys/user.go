@@ -2,6 +2,7 @@ package sys
 
 import (
 	"github.com/golang-jwt/jwt"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/model/form"
@@ -37,6 +38,18 @@ func Register(rc *rctx.ReqCtx) {
 func Logout(rc *rctx.ReqCtx) {
 	middleware.JoinBlackList(rc.Keys["token"].(*jwt.Token))
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				switch t := r.(type) {
+				case *restfulx.OpsError:
+					log.Logger.Error(t.Error())
+				case error:
+					log.Logger.Error(t)
+				case string:
+					log.Logger.Error(t)
+				}
+			}
+		}()
 		req := rc.Request.Request
 		ua := useragent.New(req.UserAgent())
 		bName, bVersion := ua.Browser()

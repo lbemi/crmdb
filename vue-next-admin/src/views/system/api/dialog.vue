@@ -79,7 +79,7 @@ const state = reactive({
 	// 参数请参考 `/src/router/route.ts` 中的 `dynamicRoutes` 路由菜单格式
 	ruleForm: {
 		id: 0,
-		menuType: 1, // 菜单类型 1为菜单 2为按钮
+		menuType: 3, // 菜单类型 1为菜单 2为按钮 3为API
 		name: '', // 路由名称
 		memo: '', //显示的名称
 		sequence: 1, // 菜单排序
@@ -119,7 +119,6 @@ const state = reactive({
 	},
 });
 
-
 // 打开弹窗
 const openDialog = (type: string, row?: any) => {
 	if (type === 'edit') {
@@ -130,7 +129,6 @@ const openDialog = (type: string, row?: any) => {
 	} else {
 		state.dialog.title = '新增API';
 		state.dialog.submitTxt = '新 增';
-
 	}
 	state.dialog.type = type;
 	state.dialog.isShowDialog = true;
@@ -138,7 +136,7 @@ const openDialog = (type: string, row?: any) => {
 // 关闭弹窗
 const closeDialog = () => {
 	state.dialog.isShowDialog = false;
-  apiDialogFormRef.value.resetFields();
+	apiDialogFormRef.value.resetFields();
 };
 
 // 取消
@@ -151,7 +149,7 @@ const onSubmit = async () => {
 		await menuApi
 			.addMenu(state.ruleForm)
 			.then(() => {
-				ElMessage.success("添加成功");
+				ElMessage.success('添加成功');
 				closeDialog(); // 关闭弹窗
 				emit('refresh');
 			})
@@ -163,7 +161,7 @@ const onSubmit = async () => {
 		await menuApi
 			.updateMenu(state.ruleForm.id, state.ruleForm)
 			.then(() => {
-				ElMessage.success("修改成功");
+				ElMessage.success('修改成功');
 				closeDialog(); // 关闭弹窗
 				emit('refresh');
 			})

@@ -2,7 +2,9 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"net"
 	"net/http"
 	"time"
 
@@ -32,13 +34,12 @@ func (h *HttpSever) Type() Type {
 }
 
 func (h *HttpSever) Start() error {
-	log.Logger.Infof("HTTP Server listen: %s", h.Addr)
+	h.welcomeMsg()
 	go func() {
 		if err := h.srv.ListenAndServe(); err != nil {
 			log.Logger.Infof("error http serve: %s", err)
 		}
 	}()
-
 	return nil
 }
 
@@ -64,4 +65,51 @@ func (t *httpLog) Print(v ...any) {
 
 func (t *httpLog) Printf(format string, v ...any) {
 	log.Logger.Infof(format, v...)
+}
+
+func getIP() *[]string {
+	ips := make([]string, 0)
+	netInterfaces, err := net.Interfaces()
+	if err != nil {
+		fmt.Println("net.Interfaces failed, err:", err.Error())
+	}
+
+	for i := 0; i < len(netInterfaces); i++ {
+		if (netInterfaces[i].Flags & net.FlagUp) != 0 {
+			addrs, _ := netInterfaces[i].Addrs()
+
+			for _, address := range addrs {
+				if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+					if ipnet.IP.To4() != nil {
+						ips = append(ips, ipnet.IP.String())
+					}
+				}
+			}
+		}
+	}
+	return &ips
+}
+
+func (h *HttpSever) welcomeMsg() {
+	ips := getIP()
+	msg := `
+----------------------------------------------------
+                  欢迎使用GO-OPS
+----------------------------------------------------
+服务器监听地址：
+`
+	for _, i := range *ips {
+		msg = msg + "  http://" + i + h.Addr
+	}
+
+	msg += `
+swagger:
+`
+	for _, i := range *ips {
+		msg = msg + "  http://" + i + h.Addr + "/apidocs.json"
+	}
+	msg += `
+----------------------------------------------------
+`
+	log.Logger.Infof(msg)
 }

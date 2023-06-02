@@ -21,7 +21,7 @@ type operatorLog struct {
 }
 
 func (l *operatorLog) Get(id uint64) (log *logsys.LogOperator) {
-	restfulx.ErrIsNilRes(l.db.Where("id = ?", id).First(&log).Error, restfulx.GetResourceErr)
+	restfulx.ErrNotNilDebug(l.db.Where("id = ?", id).First(&log).Error, restfulx.GetResourceErr)
 	return log
 }
 
@@ -42,12 +42,12 @@ func (l *operatorLog) List(query *model.PageParam, condition *logsys.LogOperator
 		db = db.Where("name like ?", "%"+condition.Name+"%")
 	}
 
-	restfulx.ErrIsNilRes(db.Model(&logsys.LogOperator{}).
+	restfulx.ErrNotNilDebug(db.Model(&logsys.LogOperator{}).
 		Count(&result.Total).
 		Error,
 		restfulx.GetResourceErr)
 
-	restfulx.ErrIsNilRes(db.Model(&logsys.LogOperator{}).
+	restfulx.ErrNotNilDebug(db.Model(&logsys.LogOperator{}).
 		Offset(offset).
 		Find(&logs).Error,
 		restfulx.GetResourceErr)
@@ -57,15 +57,15 @@ func (l *operatorLog) List(query *model.PageParam, condition *logsys.LogOperator
 }
 
 func (l *operatorLog) Add(ol *logsys.LogOperator) {
-	restfulx.ErrIsNilRes(l.db.Create(ol).Error, restfulx.OperatorErr)
+	restfulx.ErrNotNilDebug(l.db.Create(ol).Error, restfulx.OperatorErr)
 }
 
 func (l *operatorLog) Delete(ids []uint64) {
-	restfulx.ErrIsNilRes(l.db.Delete(&logsys.LogOperator{}).Where("id in (?)", ids).Error, restfulx.OperatorErr)
+	restfulx.ErrNotNilDebug(l.db.Delete(&logsys.LogOperator{}).Where("id in (?)", ids).Error, restfulx.OperatorErr)
 }
 
 func (l *operatorLog) DeleteAll() {
-	restfulx.ErrIsNilRes(l.db.Exec("DELETE FROM log_operator ").Error, restfulx.OperatorErr)
+	restfulx.ErrNotNilDebug(l.db.Exec("DELETE FROM log_operator ").Error, restfulx.OperatorErr)
 }
 
 func NewOperatorLog(db *gorm.DB) *operatorLog {

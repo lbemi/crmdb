@@ -18,7 +18,7 @@ func QueryDefaultInt(rc *ReqCtx, key string, defaultInt int) int {
 		return defaultInt
 	}
 	qvi, err := strconv.Atoi(qv)
-	restfulx.ErrIsNilRes(err, restfulx.ParamErr)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 	return qvi
 }
 
@@ -38,14 +38,14 @@ func QueryParam(rc *ReqCtx, key string) string {
 // ParamInt 获取路径参数
 func ParamInt(rc *ReqCtx, key string) int {
 	value, err := strconv.Atoi(rc.Request.PathParameter(key))
-	restfulx.ErrIsNilRes(err, restfulx.ParamErr)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 	return value
 }
 
 // ParamUint64 获取路径参数
 func ParamUint64(rc *ReqCtx, key string) uint64 {
 	value, err := strconv.ParseUint(rc.Request.PathParameter(key), 10, 64)
-	restfulx.ErrIsNilRes(err, restfulx.ParamErr)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 	return value
 }
 func PathParam(rc *ReqCtx, pm string) string {
@@ -54,6 +54,6 @@ func PathParam(rc *ReqCtx, pm string) string {
 
 func ShouldBind(rc *ReqCtx, data any) {
 	if err := rc.Request.ReadEntity(data); err != nil {
-		restfulx.ErrIsNilRes(err, restfulx.ParamErr)
+		restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 	}
 }

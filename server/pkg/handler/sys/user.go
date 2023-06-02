@@ -1,6 +1,7 @@
 package sys
 
 import (
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/logsys"
@@ -45,9 +46,21 @@ func NewUser(f services.FactoryImp) IUSer {
 
 func (u *user) Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *sys.User) {
 	user, err := u.factory.User().Login(params)
-	restfulx.ErrIsNilRes(err, restfulx.PasswdWrong)
+	restfulx.ErrNotNilDebug(err, restfulx.PasswdWrong)
 	pass := util.BcryptMakeCheck([]byte(params.Password), user.Password)
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				switch t := r.(type) {
+				case *restfulx.OpsError:
+					log.Logger.Error(t.Error())
+				case error:
+					log.Logger.Error(t)
+				case string:
+					log.Logger.Error(t)
+				}
+			}
+		}()
 		req := rc.Request.Request
 		ua := useragent.New(req.UserAgent())
 		bName, bVersion := ua.Browser()
@@ -68,7 +81,6 @@ func (u *user) Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *sys.Use
 			log.Status = "-1"
 			log.Msg = "登录失败"
 		}
-
 		u.factory.Log().Add(log)
 	}()
 	restfulx.ErrNotTrue(user.Status == 1, restfulx.UserDeny)
@@ -85,8 +97,10 @@ func (u *user) Register(params *form.RegisterUserForm) {
 		Description: params.Description,
 		Status:      params.Status,
 	}
+
 	restfulx.ErrNotTrue(!u.factory.User().CheckUserExist(userInfo.UserName), restfulx.UserExist)
-	u.factory.User().Register(userInfo)
+
+	restfulx.ErrNotNilDebug(u.factory.User().Register(userInfo), restfulx.OperatorErr)
 }
 
 func (u *user) Update(userID uint64, params *form.UpdateUserFrom) {
@@ -96,20 +110,25 @@ func (u *user) Update(userID uint64, params *form.UpdateUserFrom) {
 		Description: params.Description,
 		Status:      params.Status,
 	}
-	u.factory.User().Update(userID, userInfo)
-
+	restfulx.ErrNotNilDebug(u.factory.User().Update(userID, userInfo), restfulx.OperatorErr)
 }
 
-func (u *user) GetUserInfoById(id uint64) (user *sys.User) {
-	return u.factory.User().GetUserInfoById(id)
+func (u *user) GetUserInfoById(id uint64) *sys.User {
+	res, err := u.factory.User().GetUserInfoById(id)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
 func (u *user) GetUserList(pageParam *model.PageParam) *form.PageUser {
-	return u.factory.User().GetUserList(pageParam)
+	res, err := u.factory.User().GetUserList(pageParam)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
 func (u *user) DeleteUserByUserId(id uint64) {
-	u.factory.User().DeleteUserByUserId(id)
+	err := u.factory.User().DeleteUserByUserId(id)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
 	u.factory.Authentication().DeleteUser(id)
 }
 
@@ -117,31 +136,44 @@ func (u *user) CheckUserExist(userName string) bool {
 	return u.factory.User().CheckUserExist(userName)
 }
 
-func (u *user) GetByName(name string) (user *sys.User) {
-	return u.factory.User().GetByName(name)
+func (u *user) GetByName(name string) *sys.User {
+	res, err := u.factory.User().GetByName(name)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
 // GetRoleIDByUser 查询用户角色
-func (u *user) GetRoleIDByUser(userID uint64) (roles *[]sys.Role) {
-	return u.factory.User().GetRoleIdbyUser(userID)
+func (u *user) GetRoleIDByUser(userID uint64) *[]sys.Role {
+	res, err := u.factory.User().GetRoleIdbyUser(userID)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
 // SetUserRoles 分配用户角色
 func (u *user) SetUserRoles(userID uint64, roleIDS []uint64) {
-	// 添加规则到rules表
-	u.factory.Authentication().AddRoleForUser(userID, roleIDS)
 
 	// 配置role_users表
-	u.factory.User().SetUserRoles(userID, roleIDS)
-
-	for _, roleId := range roleIDS {
-		u.factory.Authentication().DeleteRoleWithUser(userID, roleId)
+	tx, err := u.factory.User().SetUserRoles(userID, roleIDS)
+	if err != nil {
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
+
+	// 添加规则到rules表
+	err = u.factory.Authentication().AddRoleForUser(userID, roleIDS)
+	if err != nil {
+		// 报错则回退数据
+		tx.Rollback()
+		for _, roleId := range roleIDS {
+			u.factory.Authentication().DeleteRoleWithUser(userID, roleId)
+		}
+	}
+
 }
 
 // GetButtonsByUserID 获取菜单按钮
 func (u *user) GetButtonsByUserID(userID uint64) *[]string {
-	menus := u.factory.User().GetButtonsByUserID(userID)
+	menus, err := u.factory.User().GetButtonsByUserID(userID)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 
 	var res []string
 	for _, v := range *menus {
@@ -154,11 +186,12 @@ func (u *user) GetButtonsByUserID(userID uint64) *[]string {
 }
 
 // GetLeftMenusByUserID 根据用户ID获取左侧菜单
-func (u *user) GetLeftMenusByUserID(userID uint64) (menus *[]sys.Menu) {
-	return u.factory.User().GetLeftMenusByUserID(userID)
-
+func (u *user) GetLeftMenusByUserID(userID uint64) *[]sys.Menu {
+	res, err := u.factory.User().GetLeftMenusByUserID(userID)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
 func (u *user) UpdateStatus(userId, status uint64) {
-	u.factory.User().UpdateStatus(userId, status)
+	restfulx.ErrNotNilDebug(u.factory.User().UpdateStatus(userId, status), restfulx.OperatorErr)
 }

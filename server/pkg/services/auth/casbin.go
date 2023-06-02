@@ -134,5 +134,5 @@ func (c *authentication) UpdatePermissions(oldPath, oldMethod, newPath, newMetho
 
 func (c *authentication) DeleteUser(userID uint64) {
 	_, err := c.enforcer.DeleteUser(strconv.FormatUint(userID, 10))
-	restfulx.ErrIsNilRes(err, restfulx.OperatorErr)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }

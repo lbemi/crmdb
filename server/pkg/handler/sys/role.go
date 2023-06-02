@@ -1,10 +1,10 @@
 package sys
 
 import (
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/services"
 )
 
@@ -52,48 +52,55 @@ func (r *role) Update(role *form.UpdateRoleReq, roleID uint64) {
 }
 
 func (r *role) Delete(roleID uint64) {
-	// 1.先清除rule
-	r.factory.Authentication().DeleteRole(roleID)
+	// 1.删除user_role
+	tx, err := r.factory.Role().Delete(roleID)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 
-	// 2.删除user_role
-	r.factory.Role().Delete(roleID)
+	// 2.先清除rule
+	err = r.factory.Authentication().DeleteRole(roleID)
+	if err != nil {
+		tx.Rollback()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
 }
 
 func (r *role) Get(roleID uint64) *[]sys.Role {
-	return r.factory.Role().Get(roleID)
+	res, err := r.factory.Role().Get(roleID)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
 func (r *role) List(query *model.PageParam, condition *sys.Role) *form.PageResult {
-	return r.factory.Role().List(query, condition)
+	res, err := r.factory.Role().List(query, condition)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
 func (r *role) GetMenusByRoleID(roleID uint64, menuType []int8) *[]sys.Menu {
-	return r.factory.Role().GetMenusByRoleID(roleID, menuType)
+	res, err := r.factory.Role().GetMenusByRoleID(roleID, menuType)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
 // SetRole 设置角色菜单权限
 func (r *role) SetRole(roleID uint64, menuIDs []uint64) {
 	// 查询menus信息
 	menus, err := r.factory.Menu().GetByIds(menuIDs)
-	if err != nil {
-		log.Logger.Error(err)
-		panic(err)
-	}
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 
 	// 添加rule规则
 	ok, err := r.factory.Authentication().SetRolePermission(roleID, menus)
-	if !ok || err != nil {
-		log.Logger.Error(err)
-		panic(err)
-	}
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	restfulx.ErrNotTrue(ok, restfulx.OperatorErr)
 
 	// 配置role_menus, 如果操作失败，则将rule表中规则清除
-	r.factory.Role().SetRole(roleID, menuIDs)
+	err = r.factory.Role().SetRole(roleID, menuIDs)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	//清除rule表中规则
 	for _, menu := range *menus {
 		err := r.factory.Authentication().DeleteRolePermissionWithRole(roleID, menu.Path, menu.Method)
 		if err != nil {
-			log.Logger.Error(err)
+			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 			break
 		}
 	}
@@ -101,22 +108,26 @@ func (r *role) SetRole(roleID uint64, menuIDs []uint64) {
 }
 
 func (r *role) GetRolesByMenuID(menuID uint64) *[]uint64 {
-	return r.factory.Role().GetRolesByMenuID(menuID)
+	res, err := r.factory.Role().GetRolesByMenuID(menuID)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
 func (r *role) GetRoleByRoleName(roleName string) *sys.Role {
-	return r.factory.Role().GetRoleByRoleName(roleName)
+	res, err := r.factory.Role().GetRoleByRoleName(roleName)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
 func (r *role) UpdateStatus(roleID, status uint64) {
-	r.factory.Role().UpdateStatus(roleID, status)
+	restfulx.ErrNotNilDebug(r.factory.Role().UpdateStatus(roleID, status), restfulx.OperatorErr)
 }
 
 // CheckRoleIsExist 判断角色是否存在
 func (r *role) CheckRoleIsExist(name string) bool {
-	if r := recover(); r != nil {
+	_, err := r.factory.Role().GetRoleByRoleName(name)
+	if err != nil {
 		return false
 	}
-	r.factory.Role().GetRoleByRoleName(name)
 	return true
 }

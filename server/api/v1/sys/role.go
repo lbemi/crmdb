@@ -51,7 +51,7 @@ func GetMenusByRole(rc *rctx.ReqCtx) {
 	for _, t := range menuTypeSlice {
 		res, err := strconv.Atoi(t)
 		if err != nil {
-			restfulx.ErrIsNilRes(err, restfulx.ParamErr)
+			restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 			return
 		}
 		menuType = append(menuType, int8(res))

@@ -12,7 +12,6 @@ import (
 	"github.com/mssola/useragent"
 	"net/http"
 	"reflect"
-	"runtime/debug"
 )
 
 type Fields map[string]interface{}
@@ -20,6 +19,19 @@ type Fields map[string]interface{}
 func LogHandler(rc *rctx.ReqCtx) error {
 	// 记录日志
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				switch t := r.(type) {
+				case *restfulx.OpsError:
+					log.Logger.Error(t.Error())
+				case error:
+					log.Logger.Error(t)
+				case string:
+					log.Logger.Error(t)
+				}
+			}
+		}()
+
 		c := rc.Request
 		// 请求操作不做记录
 		if c.Request.Method == http.MethodGet || rc.LoginAccount == nil {
@@ -40,7 +52,7 @@ func LogHandler(rc *rctx.ReqCtx) error {
 		}
 		if rc.Err != nil {
 			switch t := rc.Err.(type) {
-			case restfulx.OpsError:
+			case *restfulx.OpsError:
 				log.Status = t.Code()
 				log.ErrMsg = t.Error()
 			case error:
@@ -67,12 +79,12 @@ func LogHandler(rc *rctx.ReqCtx) error {
 	if rc.Err != nil {
 		// 如果是非自定义错误日志，则打印堆栈信息
 		switch t := rc.Err.(type) {
-		case restfulx.OpsError:
+		case *restfulx.OpsError:
 			log.Logger.Error(msg, "|", t.Code(), " - "+t.Error())
 		case error:
-			log.Logger.Error(msg, t, "\n", string(debug.Stack()))
+			log.Logger.Error(msg, t)
 		case string:
-			log.Logger.Error(msg, t, "\n", string(debug.Stack()))
+			log.Logger.Error(msg, t)
 		}
 		return nil
 	}

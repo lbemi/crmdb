@@ -20,36 +20,32 @@
 				<el-table-column prop="id" label="角色ID" width="130" />
 				<el-table-column prop="name" label="角色名称" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="sequence" label="排序" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="status" label="状态" width="80">
-          <template #default="scope">
-            <el-switch
-                v-model="scope.row.status"
-                v-auth="'sys:role:status'"
-                class="ml-2"
-                style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
-                :active-value="1"
-                :inactive-value="2"
-                size="small"
-                inline-prompt
-                active-text="启用"
-                inactive-text="禁用"
-                width="45px"
-                @change="changeStatus(scope.row)"
-            />
-          </template>
-        </el-table-column>
+				<el-table-column prop="status" label="状态" width="80">
+					<template #default="scope">
+						<el-switch
+							v-model="scope.row.status"
+							v-auth="'sys:role:status'"
+							class="ml-2"
+							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
+							:active-value="1"
+							:inactive-value="2"
+							size="small"
+							inline-prompt
+							active-text="启用"
+							inactive-text="禁用"
+							width="45px"
+							@change="changeStatus(scope.row)"
+						/>
+					</template>
+				</el-table-column>
 				<el-table-column prop="memo" label="角色描述" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="created_at" label="创建时间" show-overflow-tooltip>
 					<template #default="scope"> {{ dateStrFormat(scope.row.created_at) }}</template>
 				</el-table-column>
 				<el-table-column label="操作" width="140">
 					<template #default="scope">
-						<el-button  size="small" text type="primary" @click="onOpenEditRole('edit', scope.row)" v-auth="'sys:role:edit'"
-							>修改</el-button
-						>
-            <el-button  size="small" text type="primary" @click="onOpenAuthRole(scope.row)" v-auth="'sys:role:set'"
-            >授权</el-button
-            >
+						<el-button size="small" text type="primary" @click="onOpenEditRole('edit', scope.row)" v-auth="'sys:role:edit'">修改</el-button>
+						<el-button size="small" text type="primary" @click="onOpenAuthRole(scope.row)" v-auth="'sys:role:set'">授权</el-button>
 						<el-button size="small" text type="primary" @click="onRowDel(scope.row)" v-auth="'sys:role:del'">删除</el-button>
 					</template>
 				</el-table-column>
@@ -69,19 +65,20 @@
 			</el-pagination>
 		</div>
 		<RoleDialog ref="roleDialogRef" @refresh="getTableData()" />
-    <RoleAuthDialog  ref="roleAuthDialogRef" @refresh="getTableData()"/>
+		<RoleAuthDialog ref="roleAuthDialogRef" @refresh="getTableData()" />
 	</div>
 </template>
 
 <script setup lang="ts" name="systemRole">
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
-import {ElMessageBox, ElMessage} from 'element-plus';
+import { ElMessageBox, ElMessage } from 'element-plus';
 import { useRoleApi } from '/@/api/system/role';
-import {SysRoleState,RoleType} from "/@/types/views";
+import { SysRoleState, RoleType } from '/@/types/views';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 // 引入组件
 const RoleDialog = defineAsyncComponent(() => import('/@/views/system/role/component/dialog.vue'));
-const RoleAuthDialog = defineAsyncComponent(()=> import('/@/views/system/role/component/authDialog.vue'))
+const RoleAuthDialog = defineAsyncComponent(() => import('/@/views/system/role/component/authDialog.vue'));
 // 定义变量内容
 const roleApi = useRoleApi();
 const roleDialogRef = ref();
@@ -117,30 +114,31 @@ const onOpenAddRole = (type: string) => {
 const onOpenEditRole = (type: string, row: Object) => {
 	roleDialogRef.value.openDialog(type, row);
 };
-const onOpenAuthRole =(row: object) => {
-  roleAuthDialogRef.value.openAuthDialog(row);
-}
+const onOpenAuthRole = (row: object) => {
+	roleAuthDialogRef.value.openAuthDialog(row);
+};
 //修改状态
 const changeStatus = async (obj: any) => {
-  let text = obj.status === 1 ? '启用' : '停用';
-  ElMessageBox({
-    closeOnClickModal: false,
-    closeOnPressEscape: false,
-    title: '警告',
-    message: '确认要 ' + text + ' "' + obj.name + '"角色吗?',
-    showCancelButton: true,
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-  })
-      .then(async () => {
-        return await roleApi.updateRoleStatus(obj.id, obj.status);
-      })
-      .then(() => {
-        ElMessage.success(text + '成功');
-      })
-      .catch(() => {
-        obj.status = obj.status === 1 ? 2 : 1;
-      });
+	let text = obj.status === 1 ? '启用' : '停用';
+	ElMessageBox({
+		closeOnClickModal: false,
+		closeOnPressEscape: false,
+		title: '警告',
+		message: '确认要 ' + text + ' "' + obj.name + '"角色吗?',
+		showCancelButton: true,
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+	}).then(async () => {
+		await roleApi
+			.updateRoleStatus(obj.id, obj.status)
+			.then(() => {
+				ElMessage.success(text + '成功');
+			})
+			.catch((e) => {
+				obj.status = obj.status === 1 ? 2 : 1;
+				ElMessage.error(e.message);
+			});
+	});
 };
 // 删除角色
 const onRowDel = (row: RoleType) => {
@@ -149,8 +147,8 @@ const onRowDel = (row: RoleType) => {
 		cancelButtonText: '取消',
 		type: 'warning',
 	})
-		.then( async () => {
-      await roleApi.deleteRole(row.id)
+		.then(async () => {
+			await roleApi.deleteRole(row.id);
 			getTableData();
 			ElMessage.success('删除成功');
 		})
