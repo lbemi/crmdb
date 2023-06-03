@@ -37,14 +37,15 @@ func (h *HttpSever) Type() Type {
 	return HTTP
 }
 
-func (h *HttpSever) Start() error {
-	h.welcomeMsg()
+func (h *HttpSever) Start() {
 	go func() {
+		h.welcomeMsg()
 		if err := h.srv.ListenAndServe(); err != nil {
 			log.Logger.Infof("error http serve: %s", err)
 		}
+		h.welcomeMsg()
 	}()
-	return nil
+
 }
 
 func (h *HttpSever) Stop() error {
@@ -115,5 +116,5 @@ swagger:
 	msg += `
 ----------------------------------------------------
 `
-	log.Logger.Infof(msg)
+	fmt.Println(msg)
 }
