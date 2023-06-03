@@ -71,43 +71,36 @@ func Logout(rc *rctx.ReqCtx) {
 }
 
 func GetUserInfoById(rc *rctx.ReqCtx) {
-	id := rctx.ParamUint64(rc, "id")
+	id := rctx.PathParamUint64(rc, "id")
 	rc.ResData = core.V1.User().GetUserInfoById(id)
 }
 
 func GetUserList(rc *rctx.ReqCtx) {
 	pageParam := rctx.GetPageQueryParam(rc)
 	rc.ResData = core.V1.User().GetUserList(pageParam)
-
-	//if err != nil {
-	//	log.Logger.Error(err)
-	//	response.Fail(c, response.ErrCodeNotFount)
-	//	return
-	//}
-	//response.Success(c, response.StatusOK, user)
 }
 
 func DeleteUserByUserId(rc *rctx.ReqCtx) {
-	id := rctx.ParamUint64(rc, "id")
+	id := rctx.PathParamUint64(rc, "id")
 	core.V1.User().DeleteUserByUserId(id)
 }
 
 func UpdateUser(rc *rctx.ReqCtx) {
 	var user form.UpdateUserFrom
 	rctx.ShouldBind(rc, &user)
-	userID := rctx.ParamUint64(rc, "id")
+	userID := rctx.PathParamUint64(rc, "id")
 	core.V1.User().Update(userID, &user)
 }
 
 func GetUserRoles(rc *rctx.ReqCtx) {
-	uid := rctx.ParamUint64(rc, "id")
+	uid := rctx.PathParamUint64(rc, "id")
 	rc.ResData = core.V1.User().GetRoleIDByUser(uid)
 }
 
 func SetUserRoles(rc *rctx.ReqCtx) {
 	var roles form.Roles
 	rctx.ShouldBind(rc, &roles)
-	uid := rctx.ParamUint64(rc, "id")
+	uid := rctx.PathParamUint64(rc, "id")
 	core.V1.User().SetUserRoles(uid, roles.RoleIds)
 }
 
@@ -130,7 +123,7 @@ func GetLeftMenusByCurrentUser(rc *rctx.ReqCtx) {
 }
 
 func UpdateUserStatus(rc *rctx.ReqCtx) {
-	userId := rctx.ParamUint64(rc, "id")
-	status := rctx.ParamUint64(rc, "status")
+	userId := rctx.PathParamUint64(rc, "id")
+	status := rctx.PathParamUint64(rc, "status")
 	core.V1.User().UpdateStatus(userId, status)
 }

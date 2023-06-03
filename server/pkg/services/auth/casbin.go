@@ -1,11 +1,11 @@
 package auth
 
 import (
+	"fmt"
 	"github.com/casbin/casbin/v2"
 	"github.com/lbemi/lbemi/pkg/model/rules"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/restfulx"
-
 	"gorm.io/gorm"
 
 	"strconv"
@@ -41,10 +41,11 @@ func (c *authentication) GetEnforce() *casbin.SyncedEnforcer {
 // AddRoleForUser 分配用户角色
 func (c *authentication) AddRoleForUser(userID uint64, roleIDs []uint64) (err error) {
 	uidStr := strconv.FormatUint(userID, 10)
-	_, err = c.enforcer.DeleteRolesForUser(uidStr)
+	_, err = c.clearCasbin(0, uidStr)
 	if err != nil {
-		return
+		return err
 	}
+
 	for _, roleId := range roleIDs {
 		ok, err := c.enforcer.AddRoleForUser(uidStr, strconv.FormatUint(roleId, 10))
 		if err != nil || !ok {
@@ -56,7 +57,7 @@ func (c *authentication) AddRoleForUser(userID uint64, roleIDs []uint64) (err er
 
 // SetRolePermission 设置角色权限
 func (c *authentication) SetRolePermission(roleId uint64, menus *[]sys.Menu) (bool, error) {
-	_, err := c.enforcer.DeletePermissionsForUser(strconv.FormatUint(roleId, 10))
+	_, err := c.clearCasbin(0, strconv.FormatUint(roleId, 10))
 	if err != nil {
 		return false, err
 	}
@@ -69,15 +70,21 @@ func (c *authentication) SetRolePermission(roleId uint64, menus *[]sys.Menu) (bo
 
 // 设置角色权限
 func (c *authentication) setRolePermission(roleId uint64, menus *[]sys.Menu) (bool, error) {
+	rules := [][]string{}
 	for _, menu := range *menus {
 		if menu.MenuType == 2 || menu.MenuType == 3 {
-			ok, err := c.enforcer.AddPermissionForUser(strconv.FormatUint(roleId, 10), menu.Path, menu.Method)
-			if !ok || err != nil {
-				return ok, err
-			}
+			rules = append(rules, []string{strconv.FormatUint(roleId, 10), menu.Path, menu.Method})
 		}
 	}
-	return false, nil
+
+	ok, err := c.enforcer.AddPolicies(rules)
+	if !ok {
+		return false, fmt.Errorf("操作失败")
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // DeleteRole 删除角色
@@ -135,4 +142,9 @@ func (c *authentication) UpdatePermissions(oldPath, oldMethod, newPath, newMetho
 func (c *authentication) DeleteUser(userID uint64) {
 	_, err := c.enforcer.DeleteUser(strconv.FormatUint(userID, 10))
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+}
+
+func (c *authentication) clearCasbin(v int, p ...string) (bool, error) {
+	success, err := c.enforcer.RemoveFilteredPolicy(v, p...)
+	return success, err
 }

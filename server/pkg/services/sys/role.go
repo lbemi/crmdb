@@ -179,17 +179,18 @@ func (r *role) SetRole(roleID uint64, menuIDs []uint64) error {
 	}
 
 	if len(menuIDs) > 0 {
+		roleMens := make([]*sys.RoleMenu, len(menuIDs))
 		for _, mid := range menuIDs {
 			rm := new(sys.RoleMenu)
 			rm.RoleID = roleID
 			rm.MenuID = mid
-			if err := tx.Create(rm).Error; err != nil {
-				tx.Rollback()
-				return err
-			}
+			roleMens = append(roleMens, rm)
+		}
+		if err := tx.Create(&roleMens).Error; err != nil {
+			tx.Rollback()
+			return err
 		}
 	}
-
 	return tx.Commit().Error
 }
 

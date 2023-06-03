@@ -19,8 +19,9 @@ func RoleRoutes() *restful.WebService {
 	tags := []string{"roles"}
 
 	// 根据角色ID获取角色信息
-	role.Route(role.GET("/{id}").To(
-		rctx.NewReqCtx().WithLog("roles").WithHandle(sys.GetRole).Do()).
+	role.Route(role.GET("/{id}").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.GetRole).Do()
+	}).
 		Doc("根据角色ID获取角色信息").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(role.PathParameter("id", "角色id").DataType("string")).
@@ -28,8 +29,9 @@ func RoleRoutes() *restful.WebService {
 		Returns(200, "success", model.Role{}))
 
 	// 获取所有角色
-	role.Route(role.GET("").To(
-		rctx.NewReqCtx().WithLog("roles").WithHandle(sys.ListRoles).Do()).
+	role.Route(role.GET("").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.ListRoles).Do()
+	}).
 		Doc("获取角色列表").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(role.QueryParameter("page", "页码").Required(false).DataType("string")).
@@ -39,8 +41,9 @@ func RoleRoutes() *restful.WebService {
 		Returns(200, "success", form.PageResult{}))
 
 	// 根据角色ID获取角色权限
-	role.Route(role.GET("{id}/menus").To(
-		rctx.NewReqCtx().WithLog("roles").WithHandle(sys.GetMenusByRole).Do()).
+	role.Route(role.GET("{id}/menus").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.GetMenusByRole).Do()
+	}).
 		Doc("根据角色ID获取角色权限").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(role.PathParameter("id", "角色id").DataType("string")).
@@ -49,16 +52,18 @@ func RoleRoutes() *restful.WebService {
 		Returns(200, "success", form.PageResult{}))
 
 	// 添加角色
-	role.Route(role.POST("").To(
-		rctx.NewReqCtx().WithLog("roles").WithHandle(sys.AddRole).Do()).
+	role.Route(role.POST("").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.AddRole).Do()
+	}).
 		Doc("添加角色").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.RoleReq{}).
 		Returns(200, "success", nil))
 
 	// 根据角色ID设置角色权限
-	role.Route(role.POST("/{id}/menus").To(
-		rctx.NewReqCtx().WithLog("roles").WithHandle(sys.SetRoleMenus).Do()).
+	role.Route(role.POST("/{id}/menus").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.SetRoleMenus).Do()
+	}).
 		Doc("根据角色ID设置角色权限").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(role.PathParameter("id", "角色id").DataType("string")).
@@ -66,8 +71,9 @@ func RoleRoutes() *restful.WebService {
 		Returns(200, "success", nil))
 
 	// 根据角色ID更新角色信息
-	role.Route(role.PUT("/{id}").To(
-		rctx.NewReqCtx().WithLog("roles").WithHandle(sys.UpdateRole).Do()).
+	role.Route(role.PUT("/{id}").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.UpdateRole).Do()
+	}).
 		Doc("根据角色ID更新角色信息").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(role.PathParameter("id", "角色id").DataType("string")).
@@ -75,8 +81,9 @@ func RoleRoutes() *restful.WebService {
 		Returns(200, "success", nil))
 
 	// 修改角色状态
-	role.Route(role.PUT("/{id}/status/{status}").To(
-		rctx.NewReqCtx().WithLog("roles").WithHandle(sys.UpdateRoleStatus).Do()).
+	role.Route(role.PUT("/{id}/status/{status}").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.UpdateRoleStatus).Do()
+	}).
 		Doc("根据角色ID更新角色信息").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(role.PathParameter("id", "角色id").DataType("string")).
@@ -84,8 +91,9 @@ func RoleRoutes() *restful.WebService {
 		Returns(200, "success", nil))
 
 	// 删除角色
-	role.Route(role.DELETE("/{id}").To(
-		rctx.NewReqCtx().WithLog("roles").WithHandle(sys.DeleteRole).Do()).
+	role.Route(role.DELETE("/{id}").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.DeleteRole).Do()
+	}).
 		Doc("删除角色").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(role.PathParameter("id", "角色id").DataType("string")).

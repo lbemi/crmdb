@@ -31,8 +31,10 @@ type ReqCtx struct {
 	Handler HandlerFunc
 }
 
-func NewReqCtx() *ReqCtx {
+func NewReqCtx(request *restful.Request, response *restful.Response) *ReqCtx {
 	return &ReqCtx{
+		Request:           request,
+		Response:          response,
 		LogInfo:           NewLogInfo(),
 		RequirePermission: NewPermission(),
 	}
@@ -62,35 +64,28 @@ func (rc *ReqCtx) WithHandle(handler HandlerFunc) *ReqCtx {
 }
 
 // Do 处理handles
-func (rc *ReqCtx) Do() restful.RouteFunction {
-	return func(request *restful.Request, response *restful.Response) {
-		rc.Request = request
-		rc.Response = response
-		defer func() {
-			if err := recover(); err != nil {
-				rc.Err = err
-				restfulx.ErrorRes(rc.Response, err)
-			}
-			ApplyHandlerInterceptor(afterHandlers, rc)
-		}()
-		// 如果rc.Response 为nil，则panic
-		restfulx.ErrNotTrue(rc.Request != nil, restfulx.NewErr("Request == nil"))
-		//util.IsTrue(rc.Response != nil, "Response == nil")
-
-		rc.ReqParam = 0
-		rc.ResData = nil
-		rc.Err = nil
-
-		err := ApplyHandlerInterceptor(beforeHandlers, rc)
-		if err != nil {
-			panic(err)
+func (rc *ReqCtx) Do() {
+	defer func() {
+		if err := recover(); err != nil {
+			rc.Err = err
+			restfulx.ErrorRes(rc.Response, err)
 		}
-		begin := time.Now()
-		rc.Handler(rc)
-		rc.Timed = time.Since(begin).Milliseconds()
-		if !rc.NoRes {
-			restfulx.SuccessRes(rc.Response, rc.ResData)
-		}
+		ApplyHandlerInterceptor(afterHandlers, rc)
+	}()
+	// 如果rc.Response 为nil，则panic
+	restfulx.ErrNotTrue(rc.Request != nil, restfulx.NewErr("Request == nil"))
+	//util.IsTrue(rc.Response != nil, "Response == nil")
+	rc.ReqParam = 0
+	rc.ResData = nil
+	err := ApplyHandlerInterceptor(beforeHandlers, rc)
+	if err != nil {
+		panic(err)
+	}
+	begin := time.Now()
+	rc.Handler(rc)
+	rc.Timed = time.Since(begin).Milliseconds()
+	if !rc.NoRes {
+		restfulx.SuccessRes(rc.Response, rc.ResData)
 	}
 }
 

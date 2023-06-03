@@ -28,8 +28,9 @@ func MenuRoutes() *restful.WebService {
 	tags := []string{"menus"}
 
 	// 获取菜单/API/按钮列表
-	menu.Route(menu.GET("").To(
-		rctx.NewReqCtx().WithLog("menus").WithHandle(sys.ListMenus).Do()).
+	menu.Route(menu.GET("").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("menus").WithHandle(sys.ListMenus).Do()
+	}).
 		Doc("获取菜单/API/按钮列表").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(menu.QueryParameter("page", "页码").Required(false).DataType("string")).
@@ -40,8 +41,9 @@ func MenuRoutes() *restful.WebService {
 		Returns(200, "success", form.PageMenu{}))
 
 	// 根据菜单/API/按钮 ID获取详细信息
-	menu.Route(menu.GET("/{id}").To(
-		rctx.NewReqCtx().WithLog("menus").WithHandle(sys.GetMenu).Do()).
+	menu.Route(menu.GET("/{id}").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("menus").WithHandle(sys.GetMenu).Do()
+	}).
 		Doc("根据菜单/API/按钮 ID获取详细信息").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(menu.PathParameter("id", "菜单/API/按钮 id").DataType("string")).
@@ -49,15 +51,17 @@ func MenuRoutes() *restful.WebService {
 		Returns(200, "success", model.Menu{}))
 
 	// 添加菜单/API/按钮
-	menu.Route(menu.POST("").To(
-		rctx.NewReqCtx().WithLog("menus").WithHandle(sys.AddMenu).Do()).
+	menu.Route(menu.POST("").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("menus").WithHandle(sys.AddMenu).Do()
+	}).
 		Doc("添加菜单/API/按钮").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.MenusReq{}).
 		Returns(200, "success", nil))
 	// 根据角色ID更新角色信息
-	menu.Route(menu.PUT("/{id}").To(
-		rctx.NewReqCtx().WithLog("menus").WithHandle(sys.UpdateMenu).Do()).
+	menu.Route(menu.PUT("/{id}").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("menus").WithHandle(sys.UpdateMenu).Do()
+	}).
 		Doc("根据角色ID更新角色信息").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(menu.PathParameter("id", "菜单/API/按钮id").DataType("string")).
@@ -65,8 +69,9 @@ func MenuRoutes() *restful.WebService {
 		Returns(200, "success", nil))
 
 	// 修改菜单/API/按钮状态
-	menu.Route(menu.PUT("/{id}/status/{status}").To(
-		rctx.NewReqCtx().WithLog("menus").WithHandle(sys.UpdateMenuStatus).Do()).
+	menu.Route(menu.PUT("/{id}/status/{status}").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("menus").WithHandle(sys.UpdateMenuStatus).Do()
+	}).
 		Doc("根据菜单/API/按钮ID更新信息").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(menu.PathParameter("id", "菜单/API/按钮id").DataType("string")).
@@ -74,8 +79,9 @@ func MenuRoutes() *restful.WebService {
 		Returns(200, "success", nil))
 
 	// 删除菜单/API/按钮
-	menu.Route(menu.DELETE("/{id}").To(
-		rctx.NewReqCtx().WithLog("menus").WithHandle(sys.DeleteMenu).Do()).
+	menu.Route(menu.DELETE("/{id}").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("menus").WithHandle(sys.DeleteMenu).Do()
+	}).
 		Doc("删除菜单/API/按钮").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(menu.PathParameter("id", "菜单/API/按钮id").DataType("string")).

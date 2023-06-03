@@ -35,15 +35,15 @@ func QueryParam(rc *ReqCtx, key string) string {
 	return rc.Request.QueryParameter(key)
 }
 
-// ParamInt 获取路径参数
-func ParamInt(rc *ReqCtx, key string) int {
+// PathParamInt 获取路径参数
+func PathParamInt(rc *ReqCtx, key string) int {
 	value, err := strconv.Atoi(rc.Request.PathParameter(key))
 	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 	return value
 }
 
-// ParamUint64 获取路径参数
-func ParamUint64(rc *ReqCtx, key string) uint64 {
+// PathParamUint64 获取路径参数
+func PathParamUint64(rc *ReqCtx, key string) uint64 {
 	value, err := strconv.ParseUint(rc.Request.PathParameter(key), 10, 64)
 	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 	return value

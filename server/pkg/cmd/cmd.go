@@ -49,12 +49,16 @@ func run(cmd *cobra.Command, args []string) {
 
 	httpSever := server.NewHttpSever(":" + completedOptions.Config.App.Port)
 	container := httpSever.Container
+	container.Filter(func(request *restful.Request, response *restful.Response, chain *restful.FilterChain) {
+
+	})
 	container.Filter(middleware.Cors(container).Filter)
 	//注册路由
 	httpSever.RegisterRoutes(
 		sys.UserRoutes(),
 		sys.RoleRoutes(),
-		sys.MenuRoutes())
+		sys.MenuRoutes(),
+	)
 
 	//注册swagger路由
 	registerSwaggerRoute(container)

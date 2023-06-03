@@ -20,17 +20,17 @@ func AddRole(rc *rctx.ReqCtx) {
 func UpdateRole(rc *rctx.ReqCtx) {
 	var role form.UpdateRoleReq
 	rctx.ShouldBind(rc, &role)
-	roleID := rctx.ParamUint64(rc, "id")
+	roleID := rctx.PathParamUint64(rc, "id")
 	core.V1.Role().Update(&role, roleID)
 }
 
 func DeleteRole(rc *rctx.ReqCtx) {
-	rid := rctx.ParamUint64(rc, "id")
+	rid := rctx.PathParamUint64(rc, "id")
 	core.V1.Role().Delete(rid)
 }
 
 func GetRole(rc *rctx.ReqCtx) {
-	rid := rctx.ParamUint64(rc, "id")
+	rid := rctx.PathParamUint64(rc, "id")
 	rc.ResData = core.V1.Role().Get(rid)
 }
 
@@ -44,7 +44,7 @@ func ListRoles(rc *rctx.ReqCtx) {
 }
 
 func GetMenusByRole(rc *rctx.ReqCtx) {
-	rid := rctx.ParamUint64(rc, "id")
+	rid := rctx.PathParamUint64(rc, "id")
 	menuTypeStr := rctx.QueryDefault(rc, "menuType", "1,2,3")
 	var menuType []int8
 	menuTypeSlice := strings.Split(menuTypeStr, ",")
@@ -60,14 +60,14 @@ func GetMenusByRole(rc *rctx.ReqCtx) {
 }
 
 func SetRoleMenus(rc *rctx.ReqCtx) {
-	rid := rctx.ParamUint64(rc, "id")
+	rid := rctx.PathParamUint64(rc, "id")
 	var menuIDs form.Menus
 	rctx.ShouldBind(rc, &menuIDs)
 	core.V1.Role().SetRole(rid, menuIDs.MenuIDS)
 }
 
 func UpdateRoleStatus(rc *rctx.ReqCtx) {
-	status := rctx.ParamUint64(rc, "status")
-	roleID := rctx.ParamUint64(rc, "id")
+	status := rctx.PathParamUint64(rc, "status")
+	roleID := rctx.PathParamUint64(rc, "id")
 	core.V1.Role().UpdateStatus(roleID, status)
 }

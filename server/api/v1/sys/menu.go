@@ -18,17 +18,17 @@ func AddMenu(rc *rctx.ReqCtx) {
 func UpdateMenu(rc *rctx.ReqCtx) {
 	var menu form.UpdateMenusReq
 	rctx.ShouldBind(rc, &menu)
-	menuID := rctx.ParamUint64(rc, "id")
+	menuID := rctx.PathParamUint64(rc, "id")
 	core.V1.Menu().Update(&menu, menuID)
 }
 
 func DeleteMenu(rc *rctx.ReqCtx) {
-	menuID := rctx.ParamUint64(rc, "id")
+	menuID := rctx.PathParamUint64(rc, "id")
 	core.V1.Menu().Delete(menuID)
 }
 
 func GetMenu(rc *rctx.ReqCtx) {
-	menuID := rctx.ParamUint64(rc, "id")
+	menuID := rctx.PathParamUint64(rc, "id")
 	rc.ResData = core.V1.Menu().Get(menuID)
 }
 
@@ -56,7 +56,7 @@ func ListMenus(rc *rctx.ReqCtx) {
 }
 
 func UpdateMenuStatus(rc *rctx.ReqCtx) {
-	menuID := rctx.ParamUint64(rc, "id")
-	status := rctx.ParamUint64(rc, "status")
+	menuID := rctx.PathParamUint64(rc, "id")
+	status := rctx.PathParamUint64(rc, "status")
 	core.V1.Menu().UpdateStatus(menuID, status)
 }

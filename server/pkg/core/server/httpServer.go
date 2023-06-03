@@ -24,8 +24,12 @@ func NewHttpSever(addr string) *HttpSever {
 	//restful.TraceLogger(&httpLog{})
 	//restful.SetLogger(&httpLog{})
 	return &HttpSever{Addr: addr, Container: container, srv: &http.Server{
-		Addr:    addr,
-		Handler: container,
+		Addr:           addr,
+		Handler:        container,
+		IdleTimeout:    90 * time.Second, // matches http.DefaultTransport keep-alive timeout
+		ReadTimeout:    4 * 60 * time.Minute,
+		WriteTimeout:   4 * 60 * time.Minute,
+		MaxHeaderBytes: 1 << 20,
 	}}
 }
 

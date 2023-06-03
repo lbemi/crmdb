@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"github.com/golang-jwt/jwt"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
@@ -45,7 +44,7 @@ func JWTAuth(rc *rctx.ReqCtx) error {
 	p := request.URL.Path
 	m := request.Method
 	ok, err := enforcer.Enforce(uid, p, m)
-	log.Logger.Infof("permission: %v -- %v --%v", uid, p, m)
+	//log.Logger.Infof("permission: %v -- %v --%v", uid, p, m)
 	restfulx.ErrNotNilDebug(err, restfulx.ServerErr)
 	if err != nil {
 		panic(restfulx.ServerErr)

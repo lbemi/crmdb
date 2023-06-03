@@ -13,7 +13,7 @@ type OpsError struct {
 var (
 	Success      *OpsError = NewOpsErrCode(200, "success")
 	ServerErr    *OpsError = NewOpsErrCode(500, "server error")
-	NoPermission *OpsError = NewOpsErrCode(501, "无权限")
+	NoPermission *OpsError = NewOpsErrCode(403, "无权限")
 	NotLogin     *OpsError = NewOpsErrCode(401, "未登录")
 
 	TokenExpire  *OpsError = NewOpsErrCode(4001, "token过期，请重新登录")

@@ -18,7 +18,7 @@ func Cross() gin.HandlerFunc {
 
 }
 
-// 处理跨域请求,支持options访问
+// Cors 处理跨域请求
 func Cors(container *restful.Container) *restful.CrossOriginResourceSharing {
 	cors := &restful.CrossOriginResourceSharing{
 		ExposeHeaders:  []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},

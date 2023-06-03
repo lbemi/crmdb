@@ -96,14 +96,6 @@ func (r *role) SetRole(roleID uint64, menuIDs []uint64) {
 	// 配置role_menus, 如果操作失败，则将rule表中规则清除
 	err = r.factory.Role().SetRole(roleID, menuIDs)
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	//清除rule表中规则
-	for _, menu := range *menus {
-		err := r.factory.Authentication().DeleteRolePermissionWithRole(roleID, menu.Path, menu.Method)
-		if err != nil {
-			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-			break
-		}
-	}
 
 }
 
