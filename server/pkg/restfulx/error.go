@@ -12,7 +12,7 @@ type OpsError struct {
 
 var (
 	Success      *OpsError = NewOpsErrCode(200, "success")
-	ServerErr    *OpsError = NewOpsErrCode(500, "server error")
+	ServerErr    *OpsError = NewOpsErrCode(500, "服务器内部错误")
 	NoPermission *OpsError = NewOpsErrCode(403, "无权限")
 	NotLogin     *OpsError = NewOpsErrCode(401, "未登录")
 

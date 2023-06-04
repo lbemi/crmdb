@@ -116,7 +116,7 @@ const listMenuAndButton = async () => {
 const getRoleMenus = async () => {
 	roleApi.getRoleMenu(state.id, { menuType: '1,2' }).then((res) => {
 		if (res.data) {
-			res.data.forEach((item) => {
+			res.data.forEach((item:any) => {
 				state.menuCheckedKeys.push(item.id);
 				if (item.children) {
 					item.children.forEach((res) => {
@@ -217,13 +217,13 @@ const onSubmit = () => {
 		.setRoleAuth(state.id, { menuIDS: state.apiAndMenuIDs })
 		.then(() => {
 			ElMessage.success('授权成功');
-			loading.close();
-			closeDialog();
 			emit('refresh');
 		})
 		.catch((res) => {
 			ElMessage.error(res);
 		});
+		loading.close();
+		closeDialog();
 };
 
 // 所有菜单节点数据

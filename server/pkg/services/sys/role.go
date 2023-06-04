@@ -167,21 +167,15 @@ func (r *role) GetMenusByRoleID(roleID uint64, menuType []int8) (*[]sys.Menu, er
 // SetRole 设置角色菜单权限
 func (r *role) SetRole(roleID uint64, menuIDs []uint64) error {
 	tx := r.db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
 	if err := tx.Where(&sys.RoleMenu{RoleID: roleID}).Delete(&sys.RoleMenu{}).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
 	if len(menuIDs) > 0 {
-		roleMens := make([]*sys.RoleMenu, len(menuIDs))
+		roleMens := make([]sys.RoleMenu, len(menuIDs))
 		for _, mid := range menuIDs {
-			rm := new(sys.RoleMenu)
+			rm := sys.RoleMenu{}
 			rm.RoleID = roleID
 			rm.MenuID = mid
 			roleMens = append(roleMens, rm)

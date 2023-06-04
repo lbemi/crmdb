@@ -17,11 +17,11 @@ log:
   compress: true        # 是否压缩文件
 database:
   driver: mysql
-  host: 42.192.54.11
-  user: lbemi
+  host: 127.0.0.1
+  user: root
   password: Admin_1234
-  port: 3333
-  database: lbemi-admin
+  port: 3306
+  database: lbemi_dev
   charset: utf8mb4
   max_idle_conns: 10
   max_open_conns: 100

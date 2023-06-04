@@ -38,7 +38,9 @@ func NewMenu(f services.FactoryImp) IMenu {
 
 func (m *menu) Create(obj *form.MenusReq) *sys.Menu {
 	_, err := m.factory.Menu().GetMenuByMenuNameUrl(obj.Path, obj.Method)
-	restfulx.ErrNotNilDebug(err, restfulx.ResourceExist)
+	if err.Error() != "record not found" {
+		restfulx.ErrNotNilDebug(err, restfulx.ResourceExist)
+	}
 	res, err := m.factory.Menu().Create(&sys.Menu{
 		Name:     obj.Name,
 		Memo:     obj.Memo,
