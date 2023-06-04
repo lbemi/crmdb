@@ -23,6 +23,7 @@ func NewHttpSever(addr string) *HttpSever {
 	container.EnableContentEncoding(true)
 	//restful.TraceLogger(&httpLog{})
 	//restful.SetLogger(&httpLog{})
+	container.Router(restful.CurlyRouter{}) //设置路由为快速路由
 	return &HttpSever{Addr: addr, Container: container, srv: &http.Server{
 		Addr:           addr,
 		Handler:        container,
@@ -52,7 +53,6 @@ func (h *HttpSever) Stop() error {
 	// 延迟5s停止
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
 	return h.srv.Shutdown(ctx)
 }
 
@@ -117,4 +117,7 @@ swagger:
 ----------------------------------------------------
 `
 	fmt.Println(msg)
+	for _, ws := range h.Container.RegisteredWebServices() {
+		log.Logger.Infof("%s", ws.RootPath())
+	}
 }

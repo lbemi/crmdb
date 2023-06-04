@@ -96,7 +96,6 @@ func (rc *ReqCtx) Set(key string, value any) {
 	if rc.Keys == nil {
 		rc.Keys = make(map[string]any)
 	}
-
 	rc.Keys[key] = value
 	rc.mu.Unlock()
 }

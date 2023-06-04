@@ -46,7 +46,6 @@ func NewDefaultAppCommand() *cobra.Command {
 }
 
 func run(cmd *cobra.Command, args []string) {
-
 	httpSever := server.NewHttpSever(":" + completedOptions.Config.App.Port)
 	container := httpSever.Container
 	container.Filter(middleware.Cors(container).Filter)
