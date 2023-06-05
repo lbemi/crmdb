@@ -2,8 +2,13 @@
 	<div class="system-menu-container layout-pd">
 		<el-card shadow="hover">
 			<div class="system-menu-search mb15">
-				<el-input size="default" placeholder="请输入API名称" style="max-width: 180px"> </el-input>
-				<el-button size="default" type="primary" class="ml10">
+				<el-input size="default" placeholder="请输入API名称" v-model="state.searchName" clearable
+					style="max-width: 180px;margin-right: 10px;"> </el-input>
+				状态：
+				<el-select v-model.number="state.searchStatus" size="default" style="width: 100px">
+					<el-option v-for="item in status" :value="item.value" :label="item.label"> </el-option>
+				</el-select>
+				<el-button size="default" type="primary" class="ml10" @click="getTableData">
 					<el-icon>
 						<ele-Search />
 					</el-icon>
@@ -55,19 +60,10 @@
 				</el-table-column>
 				<el-table-column prop="status" label="状态" width="80">
 					<template #default="scope">
-						<el-switch
-							v-model="scope.row.status"
-							class="ml-2"
-							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
-							:active-value="1"
-							:inactive-value="2"
-							size="small"
-							inline-prompt
-							active-text="启用"
-							inactive-text="禁用"
-							width="45px"
-							@change="changeStatus(scope.row)"
-						/>
+						<el-switch v-model="scope.row.status" class="ml-2"
+							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949" :active-value="1"
+							:inactive-value="2" size="small" inline-prompt active-text="启用" inactive-text="禁用" width="45px"
+							@change="changeStatus(scope.row)" />
 					</template>
 				</el-table-column>
 				<el-table-column label="排序" show-overflow-tooltip width="80">
@@ -86,18 +82,10 @@
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination
-				@size-change="onHandleSizeChange"
-				@current-change="onHandleCurrentChange"
-				class="mt15"
-				:pager-count="5"
-				:page-sizes="[10, 20, 30]"
-				v-model:current-page="state.tableData.param.page"
-				background
-				v-model:page-size="state.tableData.param.limit"
-				layout="total, sizes, prev, pager, next, jumper"
-				:total="state.tableData.total"
-			>
+			<el-pagination @size-change="onHandleSizeChange" @current-change="onHandleCurrentChange" class="mt15"
+				:pager-count="5" :page-sizes="[10, 20, 30]" v-model:current-page="state.tableData.param.page" background
+				v-model:page-size="state.tableData.param.limit" layout="total, sizes, prev, pager, next, jumper"
+				:total="state.tableData.total">
 			</el-pagination>
 		</el-card>
 		<MenuDialog ref="menuDialogRef" @refresh="getTableData()" />
@@ -117,13 +105,21 @@ import { dateStrFormat } from '/@/utils/formatTime';
 const MenuDialog = defineAsyncComponent(() => import('./dialog.vue'));
 
 // 定义变量内容
+type query = {
+	page: number;
+	limit: number;
+	menuType: number,
+	isTree: boolean,
+	memo?: string;
+	status?: number;
+};
 const menuApi = useMenuApi();
 const menuDialogRef = ref();
 const state = reactive({
 	tableData: {
 		data: [] as RouteRecordRaw[],
 		loading: true,
-		param: {
+		param: <query>{
 			page: 1,
 			limit: 10,
 			menuType: 3,
@@ -131,11 +127,25 @@ const state = reactive({
 		},
 		total: 0,
 	},
+	searchName: '',
+	searchStatus: 0,
 });
 
 // 获取路由数据，真实请从接口获取
 const getTableData = async () => {
 	state.tableData.loading = true;
+	if (state.searchName != "") {
+		state.tableData.param.memo = state.searchName
+	} else {
+		delete state.tableData.param.memo
+	}
+
+	if (state.searchStatus != 0) {
+		state.tableData.param.status = state.searchStatus
+	} else {
+		delete state.tableData.param.status
+	}
+
 	await menuApi
 		.listMenu(state.tableData.param)
 		.then((res) => {
@@ -145,10 +155,7 @@ const getTableData = async () => {
 		.catch((e) => {
 			ElMessage.error(e.message);
 		});
-	// state.tableData.data = routesList.value;
-	setTimeout(() => {
-		state.tableData.loading = false;
-	}, 500);
+	state.tableData.loading = false;
 };
 // 打开新增菜单弹窗
 const onOpenAddApi = (type: string) => {
@@ -171,7 +178,7 @@ const onTabelRowDel = (row: any) => {
 			getTableData();
 			//await setBackEndControlRefreshRoutes() // 刷新菜单，未进行后端接口测试
 		})
-		.catch(() => {});
+		.catch(() => { });
 };
 const changeStatus = async (obj: any) => {
 	let text = obj.status === 1 ? '启用' : '停用';
@@ -204,7 +211,20 @@ const onHandleCurrentChange = (val: number) => {
 	state.tableData.param.page = val;
 	getTableData();
 };
-
+const status = [
+	{
+		label: '所有状态',
+		value: 0,
+	},
+	{
+		label: '正常',
+		value: 1,
+	},
+	{
+		label: '禁用',
+		value: 2,
+	},
+];
 // 页面加载时
 onMounted(() => {
 	getTableData();

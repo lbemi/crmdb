@@ -37,6 +37,7 @@ func RoleRoutes() *restful.WebService {
 		Param(role.QueryParameter("page", "页码").Required(false).DataType("string")).
 		Param(role.QueryParameter("limit", "每页条数").Required(false).DataType("string")).
 		Param(role.QueryParameter("name", "角色名称-模糊查询").Required(false).DataType("string")).
+		Param(role.QueryParameter("status", "过滤状态").DataType("int")).
 		Reads(form.PageResult{}).
 		Returns(200, "success", form.PageResult{}))
 

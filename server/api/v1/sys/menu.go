@@ -3,6 +3,7 @@ package sys
 import (
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/model/form"
+	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"strconv"
@@ -34,6 +35,7 @@ func GetMenu(rc *rctx.ReqCtx) {
 
 func ListMenus(rc *rctx.ReqCtx) {
 	var menuType []int8
+	condition := &sys.Menu{}
 	isTree := true
 
 	menuTypeStr := rctx.QueryDefault(rc, "menuType", "1,2,3")
@@ -51,8 +53,9 @@ func ListMenus(rc *rctx.ReqCtx) {
 	}
 	page := rctx.QueryDefaultInt(rc, "page", 0)
 	limit := rctx.QueryDefaultInt(rc, "limit", 0)
-
-	rc.ResData = core.V1.Menu().List(page, limit, menuType, isTree)
+	condition.Memo = rctx.QueryParam(rc, "memo")
+	condition.Status = rctx.QueryParamInt8(rc, "status")
+	rc.ResData = core.V1.Menu().List(page, limit, menuType, isTree, condition)
 }
 
 func UpdateMenuStatus(rc *rctx.ReqCtx) {

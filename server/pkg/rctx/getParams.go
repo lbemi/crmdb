@@ -35,6 +35,28 @@ func QueryParam(rc *ReqCtx, key string) string {
 	return rc.Request.QueryParameter(key)
 }
 
+// QueryParamUint8 QueryParam
+func QueryParamUint8(rc *ReqCtx, key string) uint8 {
+	str := rc.Request.QueryParameter(key)
+	if str == "" {
+		return uint8(0)
+	}
+	i, err := strconv.Atoi(str)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return uint8(i)
+}
+
+// QueryParamInt8 QueryParam
+func QueryParamInt8(rc *ReqCtx, key string) int8 {
+	str := rc.Request.QueryParameter(key)
+	if str == "" {
+		return int8(0)
+	}
+	i, err := strconv.Atoi(str)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return int8(i)
+}
+
 // PathParamInt 获取路径参数
 func PathParamInt(rc *ReqCtx, key string) int {
 	value, err := strconv.Atoi(rc.Request.PathParameter(key))

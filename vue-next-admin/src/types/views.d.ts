@@ -76,6 +76,8 @@ interface SysRoleTableType extends TableType {
 
 declare interface SysRoleState {
 	tableData: SysRoleTableType;
+	searchName: string
+	searchStatus: number
 }
 
 declare type TreeType = {
@@ -101,6 +103,8 @@ interface SysUserTableType extends TableType {
 
 declare interface SysUserState {
 	tableData: SysUserTableType;
+	searchName: string
+	searchStatus: number
 }
 
 declare type DeptTreeType = {

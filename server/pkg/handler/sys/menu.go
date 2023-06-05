@@ -18,7 +18,7 @@ type IMenu interface {
 	Update(menu *form.UpdateMenusReq, menuID uint64)
 	Delete(menuID uint64)
 	Get(menuID uint64) *sys.Menu
-	List(page, limit int, menuType []int8, isTree bool) *form.PageMenu
+	List(page, limit int, menuType []int8, isTree bool, condition *sys.Menu) *form.PageMenu
 
 	GetByIds(menuIDs []uint64) *[]sys.Menu
 	GetMenuByMenuNameUrl(string, string) *sys.Menu
@@ -104,8 +104,8 @@ func (m *menu) Get(menuID uint64) *sys.Menu {
 	return res
 }
 
-func (m *menu) List(page, limit int, menuType []int8, isTree bool) *form.PageMenu {
-	res, err := m.factory.Menu().List(page, limit, menuType, isTree)
+func (m *menu) List(page, limit int, menuType []int8, isTree bool, condition *sys.Menu) *form.PageMenu {
+	res, err := m.factory.Menu().List(page, limit, menuType, isTree, condition)
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return res
 }

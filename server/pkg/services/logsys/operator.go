@@ -44,6 +44,13 @@ func (l *operatorLog) List(query *model.PageParam, condition *logsys.LogOperator
 		db = db.Where("name like ?", "%"+condition.Name+"%")
 	}
 
+	if condition.Status == 200 {
+		db = db.Where("status = 200")
+	}
+	if condition.Status == 404 {
+		db = db.Where("status != 200")
+	}
+
 	restfulx.ErrNotNilDebug(db.Model(&logsys.LogOperator{}).
 		Count(&result.Total).
 		Error,

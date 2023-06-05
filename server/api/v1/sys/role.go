@@ -40,6 +40,7 @@ func ListRoles(rc *rctx.ReqCtx) {
 	query.Page = rctx.QueryDefaultInt(rc, "page", 0)
 	query.Limit = rctx.QueryDefaultInt(rc, "limit", 0)
 	condition.Name = rctx.QueryParam(rc, "name")
+	condition.Status = rctx.QueryParamInt8(rc, "status")
 	rc.ResData = core.V1.Role().List(query, condition)
 }
 

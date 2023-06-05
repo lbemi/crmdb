@@ -2,8 +2,13 @@
 	<div class="system-role-container layout-padding">
 		<div class="system-role-padding layout-padding-auto layout-padding-view">
 			<div class="system-user-search mb15">
-				<el-input v-model="state.tableData.param.search" size="default" placeholder="请输入角色名称" style="max-width: 180px"> </el-input>
-				<el-button size="default" type="primary" class="ml10">
+				<el-input size="default" placeholder="请输入角色名称"
+					style="max-width: 180px;margin-right: 10px;" v-model="state.searchName" clearable> </el-input>
+				状态：
+				<el-select v-model.number="state.searchStatus" size="default" style="width: 100px">
+					<el-option v-for="item in status" :value="item.value" :label="item.label"> </el-option>
+				</el-select>
+				<el-button size="default" type="primary" class="ml10" @click="getTableData">
 					<el-icon>
 						<ele-Search />
 					</el-icon>
@@ -22,20 +27,10 @@
 				<el-table-column prop="sequence" label="排序" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="status" label="状态" width="80">
 					<template #default="scope">
-						<el-switch
-							v-model="scope.row.status"
-							v-auth="'sys:role:status'"
-							class="ml-2"
-							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
-							:active-value="1"
-							:inactive-value="2"
-							size="small"
-							inline-prompt
-							active-text="启用"
-							inactive-text="禁用"
-							width="45px"
-							@change="changeStatus(scope.row)"
-						/>
+						<el-switch v-model="scope.row.status" v-auth="'sys:role:status'" class="ml-2"
+							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949" :active-value="1"
+							:inactive-value="2" size="small" inline-prompt active-text="启用" inactive-text="禁用" width="45px"
+							@change="changeStatus(scope.row)" />
 					</template>
 				</el-table-column>
 				<el-table-column prop="memo" label="角色描述" show-overflow-tooltip></el-table-column>
@@ -44,24 +39,19 @@
 				</el-table-column>
 				<el-table-column label="操作" width="140">
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onOpenEditRole('edit', scope.row)" v-auth="'sys:role:edit'">修改</el-button>
-						<el-button size="small" text type="primary" @click="onOpenAuthRole(scope.row)" v-auth="'sys:role:set'">授权</el-button>
-						<el-button size="small" text type="primary" @click="onRowDel(scope.row)" v-auth="'sys:role:del'">删除</el-button>
+						<el-button size="small" text type="primary" @click="onOpenEditRole('edit', scope.row)"
+							v-auth="'sys:role:edit'">修改</el-button>
+						<el-button size="small" text type="primary" @click="onOpenAuthRole(scope.row)"
+							v-auth="'sys:role:set'">授权</el-button>
+						<el-button size="small" text type="primary" @click="onRowDel(scope.row)"
+							v-auth="'sys:role:del'">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination
-				@size-change="onHandleSizeChange"
-				@current-change="onHandleCurrentChange"
-				class="mt15"
-				:pager-count="5"
-				:page-sizes="[10, 20, 30]"
-				v-model:current-page="state.tableData.param.page"
-				background
-				v-model:page-size="state.tableData.param.limit"
-				layout="total, sizes, prev, pager, next, jumper"
-				:total="state.tableData.total"
-			>
+			<el-pagination @size-change="onHandleSizeChange" @current-change="onHandleCurrentChange" class="mt15"
+				:pager-count="5" :page-sizes="[10, 20, 30]" v-model:current-page="state.tableData.param.page" background
+				v-model:page-size="state.tableData.param.limit" layout="total, sizes, prev, pager, next, jumper"
+				:total="state.tableData.total">
 			</el-pagination>
 		</div>
 		<RoleDialog ref="roleDialogRef" @refresh="getTableData()" />
@@ -80,6 +70,14 @@ import { dateStrFormat } from '/@/utils/formatTime';
 const RoleDialog = defineAsyncComponent(() => import('/@/views/system/role/component/dialog.vue'));
 const RoleAuthDialog = defineAsyncComponent(() => import('/@/views/system/role/component/authDialog.vue'));
 // 定义变量内容
+
+type query = {
+	page: number;
+	limit: number;
+	name?: string;
+	status?: number;
+};
+
 const roleApi = useRoleApi();
 const roleDialogRef = ref();
 const roleAuthDialogRef = ref();
@@ -88,23 +86,33 @@ const state = reactive<SysRoleState>({
 		data: [],
 		total: 0,
 		loading: false,
-		param: {
-			search: '',
+		param: <query>{
 			page: 1,
 			limit: 10,
 		},
 	},
+	searchName: '',
+	searchStatus: 0,
 });
 // 初始化表格数据
 const getTableData = async () => {
 	state.tableData.loading = true;
+	if (state.searchName != "") {
+		state.tableData.param.name = state.searchName
+	} else {
+		delete state.tableData.param.name
+	}
+
+	if (state.searchStatus != 0) {
+		state.tableData.param.status = state.searchStatus
+	} else {
+		delete state.tableData.param.status
+	}
 	await roleApi.listRole(state.tableData.param).then((res: any) => {
 		state.tableData.data = res.data.data;
 		state.tableData.total = res.data.total;
 	});
-	setTimeout(() => {
-		state.tableData.loading = false;
-	}, 500);
+	state.tableData.loading = false;
 };
 // 打开新增角色弹窗
 const onOpenAddRole = (type: string) => {
@@ -152,7 +160,7 @@ const onRowDel = (row: RoleType) => {
 			getTableData();
 			ElMessage.success('删除成功');
 		})
-		.catch(() => {});
+		.catch(() => { });
 };
 // 分页改变
 const onHandleSizeChange = (val: number) => {
@@ -168,12 +176,28 @@ const onHandleCurrentChange = (val: number) => {
 onMounted(() => {
 	getTableData();
 });
+
+const status = [
+	{
+		label: '所有状态',
+		value: 0,
+	},
+	{
+		label: '正常',
+		value: 1,
+	},
+	{
+		label: '禁用',
+		value: 2,
+	},
+];
 </script>
 
 <style scoped lang="scss">
 .system-role-container {
 	.system-role-padding {
 		padding: 15px;
+
 		.el-table {
 			flex: 1;
 		}

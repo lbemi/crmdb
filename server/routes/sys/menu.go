@@ -29,6 +29,8 @@ func MenuRoutes() *restful.WebService {
 		Param(menu.QueryParameter("limit", "每页条数").Required(false).DataType("string")).
 		Param(menu.QueryParameter("menuType", "菜单类型： 1:菜单，2:按钮，3:API, 默认为 1,2,3").Required(false).DataType("string")).
 		Param(menu.QueryParameter("isTree", "是否返回树形结构，true / false，默认是 true").Required(false).DataType("string")).
+		Param(menu.QueryParameter("status", "过滤状态").DataType("int")).
+		Param(menu.QueryParameter("name", "过滤描述，支持模糊查询").DataType("string")).
 		Reads(form.PageMenu{}).
 		Returns(200, "success", form.PageMenu{}))
 

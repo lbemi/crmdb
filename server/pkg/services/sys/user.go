@@ -13,7 +13,7 @@ type IUSer interface {
 	Register(params *sys.User) error
 	Update(userID uint64, user *sys.User) error
 	GetUserInfoById(id uint64) (user *sys.User, err error)
-	GetUserList(pageParam *model.PageParam) (*form.PageUser, error)
+	GetUserList(pageParam *model.PageParam, condition *sys.User) (*form.PageUser, error)
 	DeleteUserByUserId(id uint64) error
 	CheckUserExist(userName string) bool
 	GetByName(name string) (*sys.User, error)
@@ -49,7 +49,15 @@ func (u *user) GetUserInfoById(id uint64) (user *sys.User, err error) {
 	return
 }
 
-func (u *user) GetUserList(pageParam *model.PageParam) (*form.PageUser, error) {
+func (u *user) GetUserList(pageParam *model.PageParam, condition *sys.User) (*form.PageUser, error) {
+	db := u.db
+	if condition.Status != 0 {
+		db = db.Where("status = ?", condition.Status)
+	}
+
+	if condition.UserName != "" {
+		db = db.Where("user_name like ?", "%"+condition.UserName+"%")
+	}
 	var (
 		userList []sys.User
 		total    int64
@@ -57,11 +65,11 @@ func (u *user) GetUserList(pageParam *model.PageParam) (*form.PageUser, error) {
 
 	// 全量查询
 	if pageParam.Page == 0 && pageParam.Limit == 0 {
-		err := u.db.Find(&userList).Error
+		err := db.Find(&userList).Error
 		if err != nil {
 			return nil, err
 		}
-		err = u.db.Model(&sys.User{}).Count(&total).Error
+		err = db.Model(&sys.User{}).Count(&total).Error
 
 		if err != nil {
 			return nil, err
@@ -75,14 +83,14 @@ func (u *user) GetUserList(pageParam *model.PageParam) (*form.PageUser, error) {
 	}
 
 	//分页数据
-	err := u.db.Limit(pageParam.Limit).Offset((pageParam.Page - 1) * pageParam.Limit).
+	err := db.Limit(pageParam.Limit).Offset((pageParam.Page - 1) * pageParam.Limit).
 		Find(&userList).Error
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = u.db.Model(&sys.User{}).Count(&total).Error
+	err = db.Model(&sys.User{}).Count(&total).Error
 	if err != nil {
 		return nil, err
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/logsys"
+	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
@@ -76,8 +77,11 @@ func GetUserInfoById(rc *rctx.ReqCtx) {
 }
 
 func GetUserList(rc *rctx.ReqCtx) {
+	condition := &sys.User{}
 	pageParam := rctx.GetPageQueryParam(rc)
-	rc.ResData = core.V1.User().GetUserList(pageParam)
+	condition.Status = rctx.QueryParamUint8(rc, "status")
+	condition.UserName = rctx.QueryParam(rc, "name")
+	rc.ResData = core.V1.User().GetUserList(pageParam, condition)
 }
 
 func DeleteUserByUserId(rc *rctx.ReqCtx) {

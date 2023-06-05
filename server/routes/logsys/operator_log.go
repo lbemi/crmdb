@@ -23,10 +23,11 @@ func OperatorLogRoutes() *restful.WebService {
 		Param(ws.QueryParameter("page", "page").DataType("int")).
 		Param(ws.QueryParameter("limit", "limit").DataType("int")).
 		Param(ws.QueryParameter("type", "过滤状态").DataType("string")).
-		Param(ws.QueryParameter("title", "过滤名称").DataType("string")).
+		Param(ws.QueryParameter("title", "过滤模块名称").DataType("string")).
 		Param(ws.QueryParameter("name", "过滤名称").DataType("string")).
-		Writes(form.PageResult{}).
-		Returns(200, "success", form.PageResult{}))
+		Param(ws.QueryParameter("status", "过滤状态，正常：normal，失败：failed").DataType("string")).
+		Writes(form.PageResult{Data: []logModel.LogOperator{}}).
+		Returns(200, "success", form.PageResult{Data: &[]logModel.LogOperator{}}))
 
 	// 根据ID获取操作日志
 	ws.Route(ws.GET("/{id}").To(func(request *restful.Request, response *restful.Response) {

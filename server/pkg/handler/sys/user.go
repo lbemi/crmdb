@@ -23,7 +23,7 @@ type IUSer interface {
 	Register(params *form.RegisterUserForm)
 	Update(userID uint64, params *form.UpdateUserFrom)
 	GetUserInfoById(id uint64) (user *sys.User)
-	GetUserList(param *model.PageParam) *form.PageUser
+	GetUserList(param *model.PageParam, condition *sys.User) *form.PageUser
 	DeleteUserByUserId(id uint64)
 	CheckUserExist(userName string) bool
 	GetByName(name string) *sys.User
@@ -119,8 +119,8 @@ func (u *user) GetUserInfoById(id uint64) *sys.User {
 	return res
 }
 
-func (u *user) GetUserList(pageParam *model.PageParam) *form.PageUser {
-	res, err := u.factory.User().GetUserList(pageParam)
+func (u *user) GetUserList(pageParam *model.PageParam, condition *sys.User) *form.PageUser {
+	res, err := u.factory.User().GetUserList(pageParam, condition)
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return res
 }

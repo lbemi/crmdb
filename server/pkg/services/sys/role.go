@@ -96,7 +96,10 @@ func (r *role) List(query *model.PageParam, condition *sys.Role) (*form.PageResu
 	db := r.db
 	offset := (query.Page - 1) * query.Limit
 	if condition.Name != "" {
-		db = db.Where("name like ?", condition.Name)
+		db = db.Where("name like ?", "%"+condition.Name+"%")
+	}
+	if condition.Status != 0 {
+		db = db.Where("status  = ?", condition.Status)
 	}
 	res := &form.PageResult{}
 	// 全量查询

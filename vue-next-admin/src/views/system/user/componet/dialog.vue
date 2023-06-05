@@ -45,8 +45,8 @@
 			</el-form>
 			<template #footer>
 				<span class="dialog-footer">
-					<el-button @click="closeDialog(ruleFormRef)" size="default">取 消</el-button>
-					<el-button type="primary" @click="onSubmit(ruleFormRef)" size="default">{{ state.dialog.submitTxt }}</el-button>
+					<el-button @click="closeDialog(ruleFormRef)" size="small">取 消</el-button>
+					<el-button type="primary" @click="onSubmit(ruleFormRef)" size="small">{{ state.dialog.submitTxt }}</el-button>
 				</span>
 			</template>
 		</el-dialog>

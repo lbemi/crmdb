@@ -21,6 +21,13 @@ func ListOperatorLog(rc *rctx.ReqCtx) {
 	condition.BusinessType = rctx.QueryParam(rc, "type")
 	condition.Title = rctx.QueryParam(rc, "title")
 	condition.Name = rctx.QueryParam(rc, "name")
+	status := rctx.QueryParam(rc, "status")
+	if status == "normal" {
+		condition.Status = 200
+	}
+	if status == "failed" {
+		condition.Status = 404
+	}
 	rc.ResData = core.V1.Operator().List(&query, &condition)
 }
 

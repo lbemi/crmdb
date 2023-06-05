@@ -63,10 +63,11 @@ func UserRoutes() *restful.WebService {
 		Doc("获取用户列表").
 		Param(ws.QueryParameter("page", "page").DataType("int")).
 		Param(ws.QueryParameter("limit", "limit").DataType("int")).
+		Param(ws.QueryParameter("status", "过滤状态").DataType("int")).
+		Param(ws.QueryParameter("name", "过滤名称，支持模糊查询").DataType("string")).
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Returns(200, "success", form.PageUser{}))
 
-	//
 	// 注册
 	ws.Route(ws.POST("/register").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).
