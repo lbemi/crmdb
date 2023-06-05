@@ -40,7 +40,7 @@ export default {
 		k8sServiceDetail: '服务详情',
 		k8sIngress: '应用路由',
 		k8sWorkload: '工作负载',
-		k8sNetwork:'网络',
+		k8sNetwork: '网络',
 		k8sConfig: '配置',
 		k8sStorage: '存储',
 		logs: '系统日志',

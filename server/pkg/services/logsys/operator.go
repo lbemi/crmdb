@@ -21,11 +21,13 @@ type operatorLog struct {
 }
 
 func (l *operatorLog) Get(id uint64) (log *logsys.LogOperator) {
+	log = &logsys.LogOperator{}
 	restfulx.ErrNotNilDebug(l.db.Where("id = ?", id).First(&log).Error, restfulx.GetResourceErr)
 	return log
 }
 
 func (l *operatorLog) List(query *model.PageParam, condition *logsys.LogOperator) (result *form.PageResult) {
+	result = &form.PageResult{}
 	db := l.db
 	logs := make([]logsys.LogOperator, 0)
 	offset := (query.Page - 1) * query.Limit
@@ -48,9 +50,12 @@ func (l *operatorLog) List(query *model.PageParam, condition *logsys.LogOperator
 		restfulx.GetResourceErr)
 
 	restfulx.ErrNotNilDebug(db.Model(&logsys.LogOperator{}).
+		Order("updated_at DESC").
 		Offset(offset).
+		Limit(query.Limit).
 		Find(&logs).Error,
 		restfulx.GetResourceErr)
+
 	result.Data = logs
 
 	return result
@@ -61,7 +66,7 @@ func (l *operatorLog) Add(ol *logsys.LogOperator) {
 }
 
 func (l *operatorLog) Delete(ids []uint64) {
-	restfulx.ErrNotNilDebug(l.db.Delete(&logsys.LogOperator{}).Where("id in (?)", ids).Error, restfulx.OperatorErr)
+	restfulx.ErrNotNilDebug(l.db.Where("id in (?)", ids).Delete(&logsys.LogOperator{}).Error, restfulx.OperatorErr)
 }
 
 func (l *operatorLog) DeleteAll() {

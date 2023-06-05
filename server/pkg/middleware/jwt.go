@@ -30,10 +30,10 @@ func JWTAuth(rc *rctx.ReqCtx) error {
 	rc.Set("id", claims.Id)
 	rc.Set("token", token)
 	rc.LoginAccount = claims.User
+
 	if !permissions.NeedToken {
 		return nil
 	}
-
 	enforcer := core.V1.Policy().GetEnforce()
 	// 用户ID
 	uid, isExit := rc.Get("id")
@@ -46,9 +46,9 @@ func JWTAuth(rc *rctx.ReqCtx) error {
 	ok, err := enforcer.Enforce(uid, p, m)
 	//log.Logger.Infof("permission: %v -- %v --%v", uid, p, m)
 	restfulx.ErrNotNilDebug(err, restfulx.ServerErr)
-	if err != nil {
-		panic(restfulx.ServerErr)
-	}
+	//if err != nil {
+	//	panic(restfulx.ServerErr)
+	//}
 	if !ok {
 		panic(restfulx.NoPermission)
 	}

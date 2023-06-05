@@ -91,13 +91,18 @@
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="路由路径">
+							<el-input v-model="state.ruleForm.path" placeholder="路由中的 path 值" clearable></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="k8s路由">
 							<template #label>
 								<el-tooltip effect="dark" content="k8s的子路由，只会在k8s的模式下才会显示" placement="top-start">
 									<span>k8s路由</span>
 								</el-tooltip>
 							</template>
-							<el-radio-group v-model="state.ruleForm.meta.isK8S">
+							<el-radio-group v-model="state.ruleForm.meta.isK8s">
 								<el-radio :label="true">是</el-radio>
 								<el-radio :label="false">否</el-radio>
 							</el-radio-group>
@@ -209,7 +214,7 @@ const state = reactive({
 			isHide: false, // 是否隐藏
 			isKeepAlive: true, // 是否缓存
 			isAffix: false, // 是否固定
-			isK8s: false,
+			isK8s: false, //是否是k8s路由
 			isLink: '', // 外链/内嵌时链接地址（http:xxx.com），开启外链条件，`1、isLink: 链接地址不为空`
 			isIframe: false, // 是否内嵌，开启条件，`1、isIframe:true 2、isLink：链接地址不为空`
 		},

@@ -2,7 +2,7 @@ app:
   env: local
   addr: 127.0.0.1
   port: 8080
-  app_name: lbemi-server
+  app_name: GO-OPS-SERVER
   app_url: http://localhost
 log:
   level: info
@@ -17,11 +17,11 @@ log:
   compress: true        # 是否压缩文件
 database:
   driver: mysql
-  host: 127.0.0.1
-  user: root
+  host: 42.192.54.11
+  user: lbemi
   password: Admin_1234
-  port: 3306
-  database: lbemi_dev
+  port: 3333
+  database: lbemi-admin
   charset: utf8mb4
   max_idle_conns: 10
   max_open_conns: 100

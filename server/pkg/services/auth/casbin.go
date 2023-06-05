@@ -72,9 +72,13 @@ func (c *authentication) SetRolePermission(roleId uint64, menus *[]sys.Menu) (bo
 func (c *authentication) setRolePermission(roleId uint64, menus *[]sys.Menu) (bool, error) {
 	rules := [][]string{}
 	for _, menu := range *menus {
-		//if menu.MenuType == 2 || menu.MenuType == 3 {
-		rules = append(rules, []string{strconv.FormatUint(roleId, 10), menu.Path, menu.Method})
-		//}
+		if menu.MenuType == 2 || menu.MenuType == 3 {
+			rules = append(rules, []string{strconv.FormatUint(roleId, 10), menu.Path, menu.Method})
+		}
+	}
+
+	if len(rules) == 0 {
+		return true, nil
 	}
 
 	ok, err := c.enforcer.AddPolicies(rules)

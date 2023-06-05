@@ -29,7 +29,7 @@ func OperatorLogRoutes() *restful.WebService {
 		Returns(200, "success", form.PageResult{}))
 
 	// 根据ID获取操作日志
-	ws.Route(ws.POST("/{id}").To(func(request *restful.Request, response *restful.Response) {
+	ws.Route(ws.GET("/{id}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("operatorLog").WithHandle(logsys.GetOperatorLog).Do()
 	}).Doc("根据id获取操作日志").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -38,7 +38,7 @@ func OperatorLogRoutes() *restful.WebService {
 		Returns(200, "success", logModel.LogOperator{}))
 
 	// 删除指定日志
-	ws.Route(ws.DELETE("/{ids}").To(
+	ws.Route(ws.DELETE("").To(
 		func(request *restful.Request, response *restful.Response) {
 			rctx.NewReqCtx(request, response).
 				WithLog("operatorLog").
@@ -47,11 +47,11 @@ func OperatorLogRoutes() *restful.WebService {
 		}).
 		Doc("删除指定日志").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Param(ws.PathParameter("ids", "日志id列表，例如： '1,2,3' ").DataType("string")).
+		Param(ws.QueryParameter("ids", "日志id列表，例如： '1,2,3' ").DataType("string")).
 		Returns(200, "success", nil))
 
 	// 删除所有日志
-	ws.Route(ws.DELETE("").To(
+	ws.Route(ws.DELETE("/all").To(
 		func(request *restful.Request, response *restful.Response) {
 			rctx.NewReqCtx(request, response).
 				WithLog("operatorLog").

@@ -74,9 +74,6 @@ func ErrIsNil(err error, oe *OpsError) {
 }
 func ErrNotNilDebug(err error, oe *OpsError) {
 	if err != nil {
-		//if err.Error() == "record not found" {
-		//	panic(oe)
-		//}
 		debug.PrintStack()
 		panic(oe)
 	}

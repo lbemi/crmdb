@@ -14,13 +14,13 @@ func GetLoginLog(rc *rctx.ReqCtx) {
 }
 
 func ListLoginLog(rc *rctx.ReqCtx) {
-	query := model.PageParam{}
+	query := &model.PageParam{}
 	query.Page = rctx.QueryDefaultInt(rc, "page", 0)
 	query.Limit = rctx.QueryDefaultInt(rc, "limit", 10)
-	condition := logsys.LogLogin{}
+	condition := &logsys.LogLogin{}
 	condition.Status = rctx.QueryParam(rc, "status")
 	condition.Username = rctx.QueryParam(rc, "name")
-	rc.ResData = core.V1.Login().List(&query, &condition)
+	rc.ResData = core.V1.Login().List(query, condition)
 }
 
 func DeleteLoginLogs(rc *rctx.ReqCtx) {
