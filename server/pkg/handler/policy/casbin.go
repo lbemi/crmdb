@@ -14,13 +14,13 @@ type PolicyGetter interface {
 }
 
 type PolicyInterface interface {
-	GetEnforce() *casbin.Enforcer
+	GetEnforce() *casbin.SyncedEnforcer
 	AddRoleForUser(ctx context.Context, userid uint64, roleIds []uint64) (err error)
 	SetRolePermission(ctx context.Context, roleId uint64, menus *[]sys.Menu) (bool, error)
 	DeleteRole(ctx context.Context, roleId uint64) error
 	DeleteRolePermission(ctx context.Context, resource ...string) error
 	UpdatePermissions(ctx context.Context, oldPath, oldMethod, newPath, newMethod string) error
-	DeleteUser(userID uint64) error
+	DeleteUser(userID uint64)
 }
 
 type policy struct {
@@ -34,7 +34,7 @@ func NewPolicy(f services.FactoryImp) PolicyInterface {
 }
 
 // GetEnforce 获取全局enforcer
-func (c *policy) GetEnforce() *casbin.Enforcer {
+func (c *policy) GetEnforce() *casbin.SyncedEnforcer {
 	return c.factory.Authentication().GetEnforce()
 }
 
@@ -88,6 +88,6 @@ func (c *policy) UpdatePermissions(ctx context.Context, oldPath, oldMethod, newP
 	return err
 }
 
-func (c *policy) DeleteUser(userID uint64) error {
-	return c.factory.Authentication().DeleteUser(userID)
+func (c *policy) DeleteUser(userID uint64) {
+	c.factory.Authentication().DeleteUser(userID)
 }

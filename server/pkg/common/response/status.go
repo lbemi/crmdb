@@ -34,7 +34,7 @@ const (
 )
 
 // GetMessage 根据错误码返回错误信息
-func GetMessage(code int) (message string) {
+func GetMessage(code int16) (message string) {
 	switch code {
 	case ErrOperateFailed:
 		message = "操作失败"

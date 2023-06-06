@@ -10,7 +10,7 @@ import (
 )
 
 // InitPolicyEnforcer TODO: 整体优化
-func InitPolicyEnforcer(db *gorm.DB) (enforcer *casbin.Enforcer) {
+func InitPolicyEnforcer(db *gorm.DB) (enforcer *casbin.SyncedEnforcer) {
 	rbacRules :=
 		`
 	[request_definition]
@@ -41,7 +41,7 @@ func InitPolicyEnforcer(db *gorm.DB) (enforcer *casbin.Enforcer) {
 		return
 	}
 	// 创建鉴权器enforcer（使用gorm adapter）
-	enforcer, err = casbin.NewEnforcer(m, adapter)
+	enforcer, err = casbin.NewSyncedEnforcer(m, adapter)
 	if err != nil {
 		fmt.Println(err)
 		return

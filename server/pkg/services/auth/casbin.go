@@ -1,10 +1,11 @@
 package auth
 
 import (
+	"fmt"
 	"github.com/casbin/casbin/v2"
 	"github.com/lbemi/lbemi/pkg/model/rules"
 	"github.com/lbemi/lbemi/pkg/model/sys"
-
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"gorm.io/gorm"
 
 	"strconv"
@@ -13,7 +14,7 @@ import (
 // TODO: 整体优化
 
 type AuthenticationInterface interface {
-	GetEnforce() *casbin.Enforcer
+	GetEnforce() *casbin.SyncedEnforcer
 	AddRoleForUser(userID uint64, roleIDs []uint64) (err error)
 	SetRolePermission(roleId uint64, menus *[]sys.Menu) (bool, error)
 	DeleteRole(roleId uint64) error
@@ -21,29 +22,27 @@ type AuthenticationInterface interface {
 	DeleteRoleWithUser(uid, roleId uint64) error
 	DeleteRolePermissionWithRole(roleId uint64, resource ...string) error
 	UpdatePermissions(oldPath, oldMethod, newPath, newMethod string) error
-	DeleteUser(userID uint64) error
+	DeleteUser(userID uint64)
 }
 
 type authentication struct {
 	db       *gorm.DB
-	enforcer *casbin.Enforcer
+	enforcer *casbin.SyncedEnforcer
 }
 
-func NewAuthentication(db *gorm.DB, e *casbin.Enforcer) *authentication {
+func NewAuthentication(db *gorm.DB, e *casbin.SyncedEnforcer) *authentication {
 	return &authentication{db, e}
 }
 
-func (c *authentication) GetEnforce() *casbin.Enforcer {
+func (c *authentication) GetEnforce() *casbin.SyncedEnforcer {
 	return c.enforcer
 }
 
 // AddRoleForUser 分配用户角色
 func (c *authentication) AddRoleForUser(userID uint64, roleIDs []uint64) (err error) {
+	c.DeleteUser(userID)
+
 	uidStr := strconv.FormatUint(userID, 10)
-	_, err = c.enforcer.DeleteRolesForUser(uidStr)
-	if err != nil {
-		return
-	}
 	for _, roleId := range roleIDs {
 		ok, err := c.enforcer.AddRoleForUser(uidStr, strconv.FormatUint(roleId, 10))
 		if err != nil || !ok {
@@ -55,7 +54,7 @@ func (c *authentication) AddRoleForUser(userID uint64, roleIDs []uint64) (err er
 
 // SetRolePermission 设置角色权限
 func (c *authentication) SetRolePermission(roleId uint64, menus *[]sys.Menu) (bool, error) {
-	_, err := c.enforcer.DeletePermissionsForUser(strconv.FormatUint(roleId, 10))
+	_, err := c.clearCasbin(0, strconv.FormatUint(roleId, 10))
 	if err != nil {
 		return false, err
 	}
@@ -68,15 +67,25 @@ func (c *authentication) SetRolePermission(roleId uint64, menus *[]sys.Menu) (bo
 
 // 设置角色权限
 func (c *authentication) setRolePermission(roleId uint64, menus *[]sys.Menu) (bool, error) {
+	rules := [][]string{}
 	for _, menu := range *menus {
 		if menu.MenuType == 2 || menu.MenuType == 3 {
-			ok, err := c.enforcer.AddPermissionForUser(strconv.FormatUint(roleId, 10), menu.Path, menu.Method)
-			if !ok || err != nil {
-				return ok, err
-			}
+			rules = append(rules, []string{strconv.FormatUint(roleId, 10), menu.Path, menu.Method})
 		}
 	}
-	return false, nil
+
+	if len(rules) == 0 {
+		return true, nil
+	}
+
+	ok, err := c.enforcer.AddPolicies(rules)
+	if !ok {
+		return false, fmt.Errorf("操作失败")
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // DeleteRole 删除角色
@@ -131,10 +140,12 @@ func (c *authentication) UpdatePermissions(oldPath, oldMethod, newPath, newMetho
 	//return nil
 }
 
-func (c *authentication) DeleteUser(userID uint64) error {
+func (c *authentication) DeleteUser(userID uint64) {
 	_, err := c.enforcer.DeleteUser(strconv.FormatUint(userID, 10))
-	if err != nil {
-		return err
-	}
-	return nil
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+}
+
+func (c *authentication) clearCasbin(v int, p ...string) (bool, error) {
+	success, err := c.enforcer.RemoveFilteredPolicy(v, p...)
+	return success, err
 }

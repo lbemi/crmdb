@@ -76,6 +76,8 @@ interface SysRoleTableType extends TableType {
 
 declare interface SysRoleState {
 	tableData: SysRoleTableType;
+	searchName: string;
+	searchStatus: number;
 }
 
 declare type TreeType = {
@@ -86,13 +88,13 @@ declare type TreeType = {
 
 // user
 declare type RowUserType<T = any> = {
-  id: number
-  created_at: T
-  updated_at: T
-  user_name: string
-  email: string
-  status: number
-  description: string
+	id: number;
+	created_at: T;
+	updated_at: T;
+	user_name: string;
+	email: string;
+	status: number;
+	description: string;
 };
 
 interface SysUserTableType extends TableType {
@@ -101,6 +103,8 @@ interface SysUserTableType extends TableType {
 
 declare interface SysUserState {
 	tableData: SysUserTableType;
+	searchName: string;
+	searchStatus: number;
 }
 
 declare type DeptTreeType = {
@@ -112,29 +116,30 @@ declare type DeptTreeType = {
 	id: number | string;
 	children?: DeptTreeType[];
 };
-export type MenuType ={
-	id: number,
-	parentID: number // 上级菜单
-	menuType: number, // 菜单类型 1为菜单 2为按钮
-	name: string, // 路由名称
-	memo: string, //显示的名称
-	component: string, // 组件路径
-	sequence: number, // 菜单排序
-	path: string, // 路由路径
-	redirect: string, // 路由重定向，有子集 children 时
-	status: number,
-	group: string,
-	code: string, //权限标识
+export type MenuType = {
+	id: number;
+	parentID: number; // 上级菜单
+	menuType: number; // 菜单类型 1为菜单 2为按钮
+	name: string; // 路由名称
+	memo: string; //显示的名称
+	component: string; // 组件路径
+	sequence: number; // 菜单排序
+	path: string; // 路由路径
+	redirect: string; // 路由重定向，有子集 children 时
+	status: number;
+	group: string;
+	code: string; //权限标识
 	meta: {
-		title: string, // 菜单名称
-		icon: string // 菜单图标
-		isHide: boolean, // 是否隐藏
-		isKeepAlive: boolean, // 是否缓存
-		isAffix: boolean, // 是否固定
-		isLink: string, // 外链/内嵌时链接地址（http:xxx.com），开启外链条件，`1、isLink: 链接地址不为空`
-		isIframe: boolean, // 是否内嵌，开启条件，`1、isIframe:true 2、isLink：链接地址不为空`
-	},
-}
+		title: string; // 菜单名称
+		icon: string; // 菜单图标
+		isHide: boolean; // 是否隐藏
+		isKeepAlive: boolean; // 是否缓存
+		isAffix: boolean; // 是否固定
+		isLink: string; // 外链/内嵌时链接地址（http:xxx.com），开启外链条件，`1、isLink: 链接地址不为空`
+		isIframe: boolean; // 是否内嵌，开启条件，`1、isIframe:true 2、isLink：链接地址不为空`
+	};
+	children: Array<MenuType>;
+};
 
 // dept
 declare interface RowDeptType extends DeptTreeType {

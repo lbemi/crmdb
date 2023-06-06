@@ -45,8 +45,8 @@
 			</el-form>
 			<template #footer>
 				<span class="dialog-footer">
-					<el-button @click="closeDialog(ruleFormRef)" size="default">取 消</el-button>
-					<el-button type="primary" @click="onSubmit(ruleFormRef)" size="default">{{ state.dialog.submitTxt }}</el-button>
+					<el-button @click="closeDialog(ruleFormRef)" size="small">取 消</el-button>
+					<el-button type="primary" @click="onSubmit(ruleFormRef)" size="small">{{ state.dialog.submitTxt }}</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -109,15 +109,20 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		if (valid) {
 			if (state.userId == 0) {
 				await userApi.addUser(state.ruleForm).then(() => {
-					ElMessage.success('添加成功');
-					closeDialog(formEl);
-					emit('refresh');
+						ElMessage.success('添加成功');
+						closeDialog(formEl);
+						emit('refresh');
+					
+				}).catch((e)=>{
+					ElMessage.error(e.message)
 				});
 			} else {
 				await userApi.updateUser(state.userId, state.ruleForm).then(() => {
 					ElMessage.success('修改成功');
 					closeDialog(formEl);
 					emit('refresh');
+				}).catch((e)=>{
+					ElMessage.error(e.message)
 				});
 			}
 		} else {
@@ -180,7 +185,7 @@ const userFormRules = reactive<FormRules>({
 		{ min: 6, max: 12, message: '密码长度在6到12位之间', trigger: 'blur' },
 	],
 	confirmPassword: [{ required: true, validator: validateConfirmPass, trigger: 'blur' }],
-	email: [{ validator: validateEmail, trigger: 'blur' }],
+	email: [{ required:true, validator: validateEmail, trigger: 'blur' }],
 });
 
 // 暴露变量

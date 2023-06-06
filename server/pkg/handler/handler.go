@@ -4,6 +4,7 @@ import (
 	r "github.com/go-redis/redis"
 	"github.com/lbemi/lbemi/pkg/handler/asset"
 	"github.com/lbemi/lbemi/pkg/handler/cloud"
+	"github.com/lbemi/lbemi/pkg/handler/logsys"
 	"github.com/lbemi/lbemi/pkg/handler/policy"
 	"github.com/lbemi/lbemi/pkg/handler/redis"
 	"github.com/lbemi/lbemi/pkg/handler/sys"
@@ -21,6 +22,8 @@ type Getter interface {
 	asset.TerminalGetter
 	asset.WsGetter
 	cloud.ClusterGetter
+	logsys.LoginLogGetter
+	logsys.OperatorLogGetter
 	//cloud.ResourceGetter
 }
 
@@ -71,4 +74,11 @@ func (c *Handler) Ws() asset.IWs {
 
 func (c *Handler) Cluster(clusterName string) cloud.ICluster {
 	return cloud.NewCluster(c.DbFactory, clusterName)
+}
+func (c *Handler) Login() logsys.LoginLogImp {
+	return logsys.NewLogin(c.DbFactory)
+}
+
+func (c *Handler) Operator() logsys.OperatorLogImp {
+	return logsys.NewOperator(c.DbFactory)
 }

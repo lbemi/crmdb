@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-type Config struct {
+type Cluster struct {
 	basemodel.Model
 	Name        string  `json:"name" gorm:"column:name;not null;unique_index:kube_name;comment:集群名称"`
-	KubeConfig  string  `json:"-" gorm:"column:kube_config;not null;comment:cloud config"`
+	KubeConfig  string  `json:"-" gorm:"column:kube_config;not null;type:text;comment:cloud config"`
 	Version     string  `json:"version" gorm:"version:name;comment:kubernetes版本"`
 	RunTime     string  `json:"runtime" gorm:"colum:runtime;comment:运行时"`
 	ServiceCidr string  `json:"service_cidr" gorm:"colum:service_cidr;comment:service cloud ip"`
@@ -24,19 +24,19 @@ type Config struct {
 }
 
 // TableName 表名
-func (m *Config) TableName() string {
+func (m *Cluster) TableName() string {
 	return "clusters"
 }
 
 // BeforeCreate 添加前
-func (m *Config) BeforeCreate(*gorm.DB) error {
+func (m *Cluster) BeforeCreate(*gorm.DB) error {
 	m.CreatedAt = time.Now()
 	m.UpdatedAt = time.Now()
 	return nil
 }
 
 // BeforeUpdate 更新前
-func (m *Config) BeforeUpdate(*gorm.DB) error {
+func (m *Cluster) BeforeUpdate(*gorm.DB) error {
 	m.UpdatedAt = time.Now()
 	return nil
 }

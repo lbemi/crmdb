@@ -2,6 +2,7 @@ package redis
 
 import (
 	"github.com/go-redis/redis"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"time"
 )
 
@@ -21,18 +22,18 @@ func NewRedis(cli *redis.Client) IRedis {
 
 type IRedis interface {
 	Get(key string) *redis.StringCmd
-	Set(key string, value interface{}, expiration time.Duration) error
-	SetNX(key string, value interface{}, expiration time.Duration) error
+	Set(key string, value interface{}, expiration time.Duration)
+	SetNX(key string, value interface{}, expiration time.Duration)
 }
 
 func (r *Redis) Get(key string) *redis.StringCmd {
 	return r.cli.Get(key)
 }
 
-func (r *Redis) Set(key string, value interface{}, expiration time.Duration) error {
-	return r.cli.Set(key, value, expiration).Err()
+func (r *Redis) Set(key string, value interface{}, expiration time.Duration) {
+	restfulx.ErrNotNil(r.cli.Set(key, value, expiration).Err(), "set redis failed")
 }
 
-func (r *Redis) SetNX(key string, value interface{}, expiration time.Duration) error {
-	return r.cli.SetNX(key, value, expiration).Err()
+func (r *Redis) SetNX(key string, value interface{}, expiration time.Duration) {
+	restfulx.ErrNotNil(r.cli.SetNX(key, value, expiration).Err(), "set expiration key failed")
 }

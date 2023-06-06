@@ -2,8 +2,13 @@
 	<div class="system-menu-container layout-pd">
 		<el-card shadow="hover">
 			<div class="system-menu-search mb15">
-				<el-input size="default" placeholder="请输入菜单名称" style="max-width: 180px"> </el-input>
-				<el-button size="default" type="primary" class="ml10">
+				<el-input size="default" placeholder="请输入菜单描述" style="max-width: 180px; margin-right: 10px" v-model="state.searchName" clearable>
+				</el-input>
+				状态：
+				<el-select v-model.number="state.searchStatus" size="default" style="width: 100px">
+					<el-option v-for="item in status" :value="item.value" :label="item.label"> </el-option>
+				</el-select>
+				<el-button size="default" type="primary" class="ml10" @click="getTableData">
 					<el-icon>
 						<ele-Search />
 					</el-icon>
@@ -20,7 +25,7 @@
 				:data="state.tableData.data"
 				v-loading="state.tableData.loading"
 				style="width: 100%"
-				row-key="path"
+				row-key="id"
 				:tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
 			>
 				<el-table-column label="菜单描述" show-overflow-tooltip>
@@ -55,7 +60,7 @@
 					<template #default="scope">
 						<el-switch
 							v-model="scope.row.status"
-              v-auth="'sys:menu:status'"
+							v-auth="'sys:menu:status'"
 							class="ml-2"
 							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
 							:active-value="1"
@@ -74,7 +79,7 @@
 						{{ scope.row.sequence }}
 					</template>
 				</el-table-column>
-				<el-table-column prop="created_at" label="创建时间" show-overflow-tooltip>
+				<el-table-column prop="created_at" label="创建时间" sortable show-overflow-tooltip>
 					<template #default="scope"> {{ dateStrFormat(scope.row.created_at) }}</template>
 				</el-table-column>
 				<el-table-column label="操作" show-overflow-tooltip width="140">
@@ -94,6 +99,7 @@ import { defineAsyncComponent, ref, onMounted, reactive } from 'vue';
 import { RouteRecordRaw } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMenuApi } from '/@/api/system/menu';
+import { dateStrFormat } from '/@/utils/formatTime';
 
 // import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";
 
@@ -101,6 +107,11 @@ import { useMenuApi } from '/@/api/system/menu';
 const MenuDialog = defineAsyncComponent(() => import('/@/views/system/menu/dialog.vue'));
 
 // 定义变量内容
+type query = {
+	menuType: string;
+	memo?: string;
+	status?: number;
+};
 const menuApi = useMenuApi();
 const menuDialogRef = ref();
 const state = reactive({
@@ -108,21 +119,36 @@ const state = reactive({
 		data: [] as RouteRecordRaw[],
 		loading: true,
 	},
-	params: {
-		menuType: '1,2', //获取菜单,1为目录,2为菜单
+	params: <query>{
+		menuType: '1', //获取菜单,1为目录,2为菜单
 	},
+	searchName: '',
+	searchStatus: 0,
 });
 
 // 获取路由数据，真实请从接口获取
 const getTableData = async () => {
 	state.tableData.loading = true;
-	await menuApi.listMenu(state.params).then((res) => {
-		state.tableData.data = res.data.menus;
-	});
-	// state.tableData.data = routesList.value;
-	setTimeout(() => {
-		state.tableData.loading = false;
-	}, 500);
+	if (state.searchName != '') {
+		state.params.memo = state.searchName;
+	} else {
+		delete state.params.memo;
+	}
+
+	if (state.searchStatus != 0) {
+		state.params.status = state.searchStatus;
+	} else {
+		delete state.params.status;
+	}
+	await menuApi
+		.listMenu(state.params)
+		.then((res) => {
+			state.tableData.data = res.data.menus;
+		})
+		.catch((e) => {
+			ElMessage.error(e.message);
+		});
+	state.tableData.loading = false;
 };
 // 打开新增菜单弹窗
 const onOpenAddMenu = (type: string) => {
@@ -162,7 +188,9 @@ const changeStatus = async (obj: any) => {
 		cancelButtonText: '取消',
 	})
 		.then(async () => {
-			return await menuApi.updateMenuStatu(obj.id, obj.status);
+			await menuApi.updateMenuStatu(obj.id, obj.status).catch((e) => {
+				ElMessage.error(e.message);
+			});
 		})
 		.then(() => {
 			ElMessage.success(text + '成功');
@@ -175,4 +203,18 @@ const changeStatus = async (obj: any) => {
 onMounted(() => {
 	getTableData();
 });
+const status = [
+	{
+		label: '所有状态',
+		value: 0,
+	},
+	{
+		label: '正常',
+		value: 1,
+	},
+	{
+		label: '禁用',
+		value: 2,
+	},
+];
 </script>

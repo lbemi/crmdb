@@ -14,40 +14,40 @@ export function useMenuApi() {
 	return {
 		addMenu: (data: object) => {
 			return request({
-				url: '/menu',
+				url: '/menus',
 				method: 'post',
 				data,
 			});
 		},
 		updateMenu: (id: number, data: object) => {
 			return request({
-				url: '/menu/' + id,
+				url: '/menus/' + id,
 				method: 'put',
-                data: data
+				data: data,
 			});
 		},
 		getUserMenu: () => {
 			return request({
-				url: '/user/menus',
+				url: '/users/menus',
 				method: 'get',
 			});
 		},
-        listMenu: (params?: any) => {
+		listMenu: (params?: any) => {
 			return request({
-				url: '/menu',
+				url: '/menus',
 				method: 'get',
-                params: params
+				params: params,
 			});
 		},
-        updateMenuStatu: (id: number, status: number) => {
+		updateMenuStatu: (id: number, status: number) => {
 			return request({
-                url: '/menu/' +id +'/status/' + status ,
-                method: 'put',
+				url: '/menus/' + id + '/status/' + status,
+				method: 'put',
 			});
 		},
-        deleteMenu: (id: number) => {
+		deleteMenu: (id: number) => {
 			return request({
-				url: '/menu/' + id,
+				url: '/menus/' + id,
 				method: 'delete',
 			});
 		},

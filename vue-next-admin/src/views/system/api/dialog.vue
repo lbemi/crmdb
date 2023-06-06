@@ -4,6 +4,14 @@
 			<el-form ref="apiDialogFormRef" :model="state.ruleForm" size="default" label-width="80px">
 				<el-row :gutter="35">
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="菜单类型">
+							<el-radio-group v-model.number="state.ruleForm.menuType">
+								<el-radio-button label="3">API</el-radio-button>
+								<el-radio-button label="2">按钮</el-radio-button>
+							</el-radio-group>
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="显示名称">
 							<template #label>
 								<el-tooltip effect="dark" content="菜单的描述信息仅做展示使用" placement="top-start">
@@ -21,6 +29,11 @@
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="路由名称">
 							<el-input v-model="state.ruleForm.name" placeholder="路由中的 name 值" clearable></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20" v-show="state.ruleForm.menuType === 2">
+						<el-form-item label="权限标识">
+							<el-input v-model="state.ruleForm.code" placeholder="请输入权限标识" clearable></el-input>
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
@@ -54,8 +67,8 @@
 			</el-form>
 			<template #footer>
 				<span class="dialog-footer">
-					<el-button @click="onCancel" size="default">取 消</el-button>
-					<el-button type="primary" @click="onSubmit" size="default">{{ state.dialog.submitTxt }}</el-button>
+					<el-button @click="onCancel" size="small">取 消</el-button>
+					<el-button type="primary" @click="onSubmit" size="small">{{ state.dialog.submitTxt }}</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -79,14 +92,15 @@ const state = reactive({
 	// 参数请参考 `/src/router/route.ts` 中的 `dynamicRoutes` 路由菜单格式
 	ruleForm: {
 		id: 0,
-		menuType: 1, // 菜单类型 1为菜单 2为按钮
+		menuType: 3, // 菜单类型 1为菜单 2为按钮 3为API
+		code: '',
 		name: '', // 路由名称
 		memo: '', //显示的名称
 		sequence: 1, // 菜单排序
 		path: '', // 路由路径
 		redirect: '', // 路由重定向，有子集 children 时
 		status: 1,
-		group: 'API',
+		group: '未分组',
 		method: 'GET',
 	},
 	methodOptions: [
@@ -119,7 +133,6 @@ const state = reactive({
 	},
 });
 
-
 // 打开弹窗
 const openDialog = (type: string, row?: any) => {
 	if (type === 'edit') {
@@ -130,7 +143,6 @@ const openDialog = (type: string, row?: any) => {
 	} else {
 		state.dialog.title = '新增API';
 		state.dialog.submitTxt = '新 增';
-
 	}
 	state.dialog.type = type;
 	state.dialog.isShowDialog = true;
@@ -138,7 +150,7 @@ const openDialog = (type: string, row?: any) => {
 // 关闭弹窗
 const closeDialog = () => {
 	state.dialog.isShowDialog = false;
-  apiDialogFormRef.value.resetFields();
+	apiDialogFormRef.value.resetFields();
 };
 
 // 取消
@@ -151,7 +163,7 @@ const onSubmit = async () => {
 		await menuApi
 			.addMenu(state.ruleForm)
 			.then(() => {
-				ElMessage.success("添加成功");
+				ElMessage.success('添加成功');
 				closeDialog(); // 关闭弹窗
 				emit('refresh');
 			})
@@ -163,7 +175,7 @@ const onSubmit = async () => {
 		await menuApi
 			.updateMenu(state.ruleForm.id, state.ruleForm)
 			.then(() => {
-				ElMessage.success("修改成功");
+				ElMessage.success('修改成功');
 				closeDialog(); // 关闭弹窗
 				emit('refresh');
 			})

@@ -15,7 +15,7 @@ export function authDirective(app: App) {
 			const stores = useUserInfo();
 			// if (!stores.userInfos.authBtnList.some((v: string) => v === binding.value)) el.parentNode.removeChild(el); //无权限的按钮删除掉
 			// 无权限的按钮置灰色
-			if (!stores.userInfos.authBtnList.some((v: string) => v === binding.value)) {
+			if (stores.userInfos.authBtnList === null || !stores.userInfos.authBtnList.some((v: string) => v === binding.value)) {
 				el.setAttribute('disabled', 'true');
 				el.classList.add('is-disabled');
 				el.addEventListener('click', disableClickFn, true);
@@ -46,5 +46,5 @@ export function authDirective(app: App) {
 }
 
 const disableClickFn = (event: any) => {
-	event && event.stopImmediatePropagation()
-}
+	event && event.stopImmediatePropagation();
+};

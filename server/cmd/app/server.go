@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/cmd/app/option"
+	"github.com/lbemi/lbemi/pkg/cmd/app/option"
 	"github.com/lbemi/lbemi/routes"
 	"github.com/lbemi/lbemi/routes/asset"
 	"github.com/lbemi/lbemi/routes/cloud"
 	"github.com/lbemi/lbemi/routes/sys"
+	"github.com/spf13/cobra"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,6 +21,18 @@ import (
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
 )
+
+var rootCmd = &cobra.Command{
+	Use:     "GO-OPS system is for operator.",
+	Short:   "GO-OPS system is for operator",
+	Example: "go-ops --config config.yaml",
+	Version: "1.0.0",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		completedOptions := option.NewOptions().Complete()
+		initRouter(completedOptions.GinEngine)
+	},
+	Run: nil,
+}
 
 func Run() {
 
@@ -72,10 +85,11 @@ func initRouter(router *gin.Engine) {
 		middleware.Cross())
 
 	v1 := router.Group("/api/v1")
+
 	// 注册不需要鉴权路由
 	routes.PassThroughRoutes(v1)
 	// 中间件middleware.CasbinMiddleware()
-	v1.Use(middleware.JWTAuth())
+	//v1.Use(middleware.JWTAuth())
 
 	//注册业务路由
 	sys.NewUserRouter(v1)

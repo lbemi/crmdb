@@ -2,11 +2,11 @@ package util
 
 import (
 	"errors"
+	"github.com/lbemi/lbemi/pkg/model/sys"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"time"
 
 	"github.com/golang-jwt/jwt"
-
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 )
 
 type JwtUser interface {
@@ -14,11 +14,12 @@ type JwtUser interface {
 }
 
 type CustomClaims struct {
+	User *sys.User
 	jwt.StandardClaims
 }
 
 const (
-	AppGuardName = "app"
+	AppGuardName = "server"
 	Key          = "3Bde3BGEbYqtqyEUzW3ry8jKFcaPH17fRmTmqE7MDr05Lwj95uruRKrrkb44TJ4s"
 	TTL          = 30
 )
@@ -35,10 +36,11 @@ type TokenOutPut struct {
 }
 
 // CreateToken 生成token
-func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err error) {
+func CreateToken(guardName string, user *sys.User) (tokenOut TokenOutPut) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		CustomClaims{
+			User: user,
 			StandardClaims: jwt.StandardClaims{
 				ExpiresAt: time.Now().Unix() + 60*60*24*TTL,
 				Id:        user.GetSnowID(),
@@ -49,9 +51,9 @@ func CreateToken(guardName string, user JwtUser) (tokenOut TokenOutPut, err erro
 	)
 	tokenStr, err := token.SignedString([]byte(Key))
 	if err != nil {
-		log.Logger.Error(err)
-
+		restfulx.ErrNotNil(err, "generate token failed")
 	}
+
 	tokenOut.Token = tokenStr
 	return
 }
@@ -85,7 +87,7 @@ func ParseToken(tokenStr string) (token *jwt.Token, claims *CustomClaims, err er
 }
 
 // RefreshToken 刷新token
-func RefreshToken(tokenStr string, user JwtUser) (tokenOut TokenOutPut, err error) {
+func RefreshToken(tokenStr string, user *sys.User) (tokenOut TokenOutPut, err error) {
 	jwt.TimeFunc = func() time.Time {
 		return time.Unix(0, 0)
 	}
@@ -98,7 +100,7 @@ func RefreshToken(tokenStr string, user JwtUser) (tokenOut TokenOutPut, err erro
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
 		jwt.TimeFunc = time.Now
 		claims.StandardClaims.ExpiresAt = time.Now().Add(10 * time.Hour).Unix()
-		return CreateToken(AppGuardName, user)
+		CreateToken(AppGuardName, user)
 	}
 	return tokenOut, TokenInvalid
 }

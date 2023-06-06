@@ -2,6 +2,7 @@ package sys
 
 import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"gorm.io/gorm"
@@ -9,15 +10,15 @@ import (
 
 type IUSer interface {
 	Login(params *form.UserLoginForm) (user *sys.User, err error)
-	Register(params *sys.User) (err error)
-	Update(userID uint64, user *sys.User) (err error)
+	Register(params *sys.User) error
+	Update(userID uint64, user *sys.User) error
 	GetUserInfoById(id uint64) (user *sys.User, err error)
-	GetUserList(page, limit int) (*form.PageUser, error)
+	GetUserList(pageParam *model.PageParam, condition *sys.User) (*form.PageUser, error)
 	DeleteUserByUserId(id uint64) error
 	CheckUserExist(userName string) bool
 	GetByName(name string) (*sys.User, error)
 	GetRoleIdbyUser(userID uint64) (*[]sys.Role, error)
-	SetUserRoles(userID uint64, roleIDs []uint64) error
+	SetUserRoles(userID uint64, roleIDs []uint64) (*gorm.DB, error)
 	GetButtonsByUserID(userID uint64) (*[]sys.Menu, error)
 	GetLeftMenusByUserID(userID uint64) (*[]sys.Menu, error)
 	UpdateStatus(userID, status uint64) error
@@ -33,13 +34,14 @@ func NewUser(db *gorm.DB) IUSer {
 
 func (u *user) Login(params *form.UserLoginForm) (user *sys.User, err error) {
 	err = u.db.Where("user_name = ?", params.UserName).First(&user).Error
-	return
+	return user, err
 }
 
-func (u *user) Register(params *sys.User) (err error) {
+func (u *user) Register(params *sys.User) error {
 	return u.db.Create(&params).Error
 }
-func (u *user) Update(userID uint64, user *sys.User) (err error) {
+
+func (u *user) Update(userID uint64, user *sys.User) error {
 	return u.db.Model(&sys.User{}).Where("id = ?", userID).Updates(&user).Error
 }
 func (u *user) GetUserInfoById(id uint64) (user *sys.User, err error) {
@@ -47,20 +49,29 @@ func (u *user) GetUserInfoById(id uint64) (user *sys.User, err error) {
 	return
 }
 
-func (u *user) GetUserList(page, limit int) (*form.PageUser, error) {
+func (u *user) GetUserList(pageParam *model.PageParam, condition *sys.User) (*form.PageUser, error) {
+	db := u.db
+	if condition.Status != 0 {
+		db = db.Where("status = ?", condition.Status)
+	}
+
+	if condition.UserName != "" {
+		db = db.Where("user_name like ?", "%"+condition.UserName+"%")
+	}
 	var (
 		userList []sys.User
 		total    int64
-		err      error
 	)
 
 	// 全量查询
-	if page == 0 && limit == 0 {
-		if tx := u.db.Find(&userList); tx.Error != nil {
-			return nil, tx.Error
+	if pageParam.Page == 0 && pageParam.Limit == 0 {
+		err := db.Find(&userList).Error
+		if err != nil {
+			return nil, err
 		}
+		err = db.Model(&sys.User{}).Count(&total).Error
 
-		if err := u.db.Model(&sys.User{}).Count(&total).Error; err != nil {
+		if err != nil {
 			return nil, err
 		}
 
@@ -68,16 +79,19 @@ func (u *user) GetUserList(page, limit int) (*form.PageUser, error) {
 			Users: userList,
 			Total: total,
 		}
-		return res, err
+		return res, nil
 	}
 
 	//分页数据
-	if err := u.db.Limit(limit).Offset((page - 1) * limit).
-		Find(&userList).Error; err != nil {
+	err := db.Limit(pageParam.Limit).Offset((pageParam.Page - 1) * pageParam.Limit).
+		Find(&userList).Error
+
+	if err != nil {
 		return nil, err
 	}
 
-	if err := u.db.Model(&sys.User{}).Count(&total).Error; err != nil {
+	err = db.Model(&sys.User{}).Count(&total).Error
+	if err != nil {
 		return nil, err
 	}
 
@@ -85,14 +99,15 @@ func (u *user) GetUserList(page, limit int) (*form.PageUser, error) {
 		Users: userList,
 		Total: total,
 	}
-	return res, err
 
+	return res, nil
 }
 
 func (u *user) DeleteUserByUserId(userID uint64) error {
 	return u.db.Where("id = ?", userID).Delete(&sys.User{}).Error
 }
 
+// CheckUserExist 检查用户是否存在，存在返回true，否则false
 func (u *user) CheckUserExist(userName string) bool {
 	err := u.db.Where("user_name = ?", userName).First(&sys.User{}).Error
 	if err != nil {
@@ -107,10 +122,10 @@ func (u *user) CheckUserExist(userName string) bool {
 
 func (u *user) GetByName(name string) (*sys.User, error) {
 	var obj sys.User
-	if err := u.db.Where("name = ?", name).First(&obj).Error; err != nil {
+	err := u.db.Where("name = ?", name).First(&obj).Error
+	if err != nil {
 		return nil, err
 	}
-
 	return &obj, nil
 }
 
@@ -127,24 +142,22 @@ func (u *user) GetRoleIdbyUser(userID uint64) (roles *[]sys.Role, err error) {
 		Order("sequence desc").
 		Scan(&roles).Error
 	if err != nil {
-		log.Logger.Errorf(err.Error())
 		return nil, err
 	}
 
 	if roles != nil {
 		res := GetTreeRoles(*roles, 0)
-		return &res, err
+		return &res, nil
 	}
 
-	return nil, err
+	return
 }
 
 // SetUserRoles 分配用户角色
-func (u *user) SetUserRoles(userID uint64, roleIDS []uint64) (err error) {
+func (u *user) SetUserRoles(userID uint64, roleIDS []uint64) (*gorm.DB, error) {
 	tx := u.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
-			log.Logger.Errorf(err.(error).Error())
 			tx.Rollback()
 		}
 	}()
@@ -152,13 +165,13 @@ func (u *user) SetUserRoles(userID uint64, roleIDS []uint64) (err error) {
 	if err := tx.Error; err != nil {
 		log.Logger.Errorf(err.Error())
 		tx.Rollback()
-		return err
+		return tx, err
 	}
 
 	if err := tx.Where(&sys.UserRole{UserID: userID}).Delete(&sys.UserRole{}).Error; err != nil {
 		log.Logger.Errorf(err.Error())
 		tx.Rollback()
-		return err
+		return tx, err
 	}
 	if len(roleIDS) > 0 {
 		for _, rid := range roleIDS {
@@ -168,25 +181,29 @@ func (u *user) SetUserRoles(userID uint64, roleIDS []uint64) (err error) {
 			if err := tx.Create(rm).Error; err != nil {
 				log.Logger.Errorf(err.Error())
 				tx.Rollback()
-				return err
+				return tx, err
 			}
 		}
 	}
-
-	return tx.Commit().Error
+	err := tx.Commit().Error
+	if err != nil {
+		return tx, err
+	}
+	return tx, nil
 }
 
 // GetButtonsByUserID 获取菜单按钮
 func (u *user) GetButtonsByUserID(userID uint64) (*[]sys.Menu, error) {
 	var permissions []sys.Menu
 
-	err := u.db.Debug().Table("menus").Select(" menus.id, menus.code,menus.menuType,menus.status").
+	err := u.db.Table("menus").Select(" menus.id, menus.code,menus.menuType,menus.status").
 		Joins("left join role_menus on menus.id = role_menus.menuID ").
 		Joins("left join user_roles on user_roles.role_id = role_menus.roleID where role_menus.roleID in (?) and menus.menuType in (2,3) and menus.status = 1",
 			u.db.Table("roles").Select("roles.id").
 				Joins("left join user_roles on user_roles.role_id = roles.id where  user_roles.user_id = ? and roles.status = 1", userID)).
 		Group("id").
 		Scan(&permissions).Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +213,7 @@ func (u *user) GetButtonsByUserID(userID uint64) (*[]sys.Menu, error) {
 // GetLeftMenusByUserID 根据用户ID获取左侧菜单
 func (u *user) GetLeftMenusByUserID(userID uint64) (*[]sys.Menu, error) {
 	var menus []sys.Menu
-	err := u.db.Debug().Table("menus").Select(" menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
+	err := u.db.Table("menus").Select(" menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
 		"menus.method, menus.menuType, menus.status,menus.redirect, menus.component, menus.isK8s,menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
 		Joins("left join role_menus on menus.id = role_menus.menuID where role_menus.roleID in (?) and menus.menuType = 1 and menus.status = 1",
 			u.db.Table("roles").Select("roles.id").
@@ -207,13 +224,12 @@ func (u *user) GetLeftMenusByUserID(userID uint64) (*[]sys.Menu, error) {
 		Scan(&menus).Error
 
 	if err != nil {
-		log.Logger.Error(err)
 		return nil, err
 	}
+
 	if len(menus) == 0 {
 		return &menus, nil
 	}
-
 	treeMenusList := GetTreeMenus(menus, 0)
 	return &treeMenusList, nil
 }

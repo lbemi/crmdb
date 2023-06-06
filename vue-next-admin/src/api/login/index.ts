@@ -11,21 +11,20 @@ export function useLoginApi() {
 	return {
 		signIn: (data: object) => {
 			return request({
-				url: '/login',
+				url: '/users/login',
 				method: 'post',
 				data,
 			});
 		},
-		signOut: (data: object) => {
+		signOut: () => {
 			return request({
-				url: '/user/signOut',
+				url: '/users/logout',
 				method: 'post',
-				data,
 			});
 		},
-        getCaptcha: () => {
+		getCaptcha: () => {
 			return request({
-				url: '/captcha',
+				url: '/users/captcha',
 				method: 'get',
 			});
 		},

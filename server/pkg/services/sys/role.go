@@ -1,8 +1,8 @@
 package sys
 
 import (
-	"errors"
 	"github.com/fatih/structs"
+	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"gorm.io/gorm"
@@ -10,12 +10,11 @@ import (
 
 // IRole 角色操作接口
 type IRole interface {
-	Create(role *sys.Role) (*sys.Role, error)
+	Create(role *sys.Role) error
 	Update(role *form.UpdateRoleReq, roleID uint64) error
-	Delete(roleID uint64) error
+	Delete(roleID uint64) (*gorm.DB, error)
 	Get(uint64) (*[]sys.Role, error)
-	List(page, limit int) (res *form.PageRole, err error)
-
+	List(*model.PageParam, *sys.Role) (*form.PageResult, error)
 	GetMenusByRoleID(roleID uint64, menuType []int8) (*[]sys.Menu, error)
 	SetRole(roleID uint64, menuIDs []uint64) error
 	GetRolesByMenuID(menuID uint64) (*[]uint64, error)
@@ -31,25 +30,16 @@ func NewRole(db *gorm.DB) IRole {
 	return &role{db}
 }
 
-func (r *role) Create(role *sys.Role) (*sys.Role, error) {
-	if err := r.db.Create(role).Error; err != nil {
-		return nil, err
-	}
-
-	return role, nil
+func (r *role) Create(role *sys.Role) error {
+	return r.db.Create(role).Error
 }
 
 func (r *role) Update(role *form.UpdateRoleReq, rid uint64) error {
-
 	roleMap := structs.Map(role)
-	tx := r.db.Model(&sys.Role{}).Where("id = ? ", rid).Updates(roleMap)
-	if tx.RowsAffected == 0 {
-		return errors.New("update failed")
-	}
-	return tx.Error
+	return r.db.Model(&sys.Role{}).Where("id = ? ", rid).Updates(roleMap).Error
 }
 
-func (r *role) Delete(roleID uint64) error {
+func (r *role) Delete(roleID uint64) (*gorm.DB, error) {
 	tx := r.db.Begin()
 	defer func() {
 		if err := recover(); err != nil {
@@ -59,13 +49,13 @@ func (r *role) Delete(roleID uint64) error {
 
 	if err := tx.Error; err != nil {
 		tx.Rollback()
-		return err
+		return tx, err
 	}
 
 	//删除角色相关的菜单
-	if err := tx.Where("role_id = ?", roleID).Delete(&sys.RoleMenu{}).Error; err != nil {
+	if err := tx.Where("roleID = ?", roleID).Delete(&sys.RoleMenu{}).Error; err != nil {
 		tx.Rollback()
-		return err
+		return tx, err
 	}
 
 	// 删除角色及其子角色
@@ -73,17 +63,16 @@ func (r *role) Delete(roleID uint64) error {
 		Or("parent_id  = ?", roleID).
 		Delete(&sys.Role{}).Error; err != nil {
 		tx.Rollback()
-		return err
+		return tx, err
 	}
 
 	// 删除用户绑定的角色信息(用户需要重新绑定角色)
 	if err := tx.Where("role_id = ?", roleID).
 		Delete(&sys.UserRole{}).Error; err != nil {
 		tx.Rollback()
-		return err
+		return tx, err
 	}
-
-	return tx.Commit().Error
+	return tx, tx.Commit().Error
 }
 
 func (r *role) Get(roleID uint64) (roles *[]sys.Role, err error) {
@@ -91,42 +80,49 @@ func (r *role) Get(roleID uint64) (roles *[]sys.Role, err error) {
 		Or("parent_id = ?", roleID).
 		Order("sequence DESC").
 		First(&roles).Error
-
 	if err != nil {
 		return nil, err
 	}
 
 	res := GetTreeRoles(*roles, 0)
-
 	return &res, err
 }
 
-func (r *role) List(page, limit int) (res *form.PageRole, err error) {
+func (r *role) List(query *model.PageParam, condition *sys.Role) (*form.PageResult, error) {
 	var (
 		roleList []sys.Role
 		total    int64
 	)
+	db := r.db
+	offset := (query.Page - 1) * query.Limit
+	if condition.Name != "" {
+		db = db.Where("name like ?", "%"+condition.Name+"%")
+	}
+	if condition.Status != 0 {
+		db = db.Where("status  = ?", condition.Status)
+	}
+	res := &form.PageResult{}
 	// 全量查询
-	if page == 0 && limit == 0 {
-		if tx := r.db.Order("sequence DESC").Find(&roleList); tx.Error != nil {
-			return nil, tx.Error
+	if query.Page == 0 && query.Limit == 0 {
+		err := db.Order("sequence DESC").Find(&roleList).Error
+		if err != nil {
+			return nil, err
 		}
 		treeRole := GetTreeRoles(roleList, 0)
-
-		if err := r.db.Model(&sys.Role{}).Count(&total).Error; err != nil {
+		err = db.Model(&sys.Role{}).Count(&total).Error
+		if err != nil {
 			return nil, err
 		}
 
-		res = &form.PageRole{
-			Roles: treeRole,
-			Total: total,
-		}
-		return res, err
+		res.Total = total
+		res.Data = treeRole
+		return res, nil
 	}
 
 	//分页数据
-	if err := r.db.Order("sequence DESC").Where("parent_id = 0").Limit(limit).Offset((page - 1) * limit).
-		Find(&roleList).Error; err != nil {
+	err := db.Order("sequence DESC").Where("parent_id = 0").Limit(query.Limit).Offset(offset).
+		Find(&roleList).Error
+	if err != nil {
 		return nil, err
 	}
 
@@ -138,23 +134,20 @@ func (r *role) List(page, limit int) (res *form.PageRole, err error) {
 	// 查询子角色
 	if len(roleIds) != 0 {
 		var roles []sys.Role
-		if err := r.db.Where("parent_id in ?", roleIds).Find(&roles).Error; err != nil {
+		err = db.Where("parent_id in ?", roleIds).Find(&roles).Error
+		if err != nil {
 			return nil, err
 		}
 		roleList = append(roleList, roles...)
 	}
-
-	if err := r.db.Model(&sys.Role{}).Where("parent_id = 0").Count(&total).Error; err != nil {
+	err = db.Model(&sys.Role{}).Where("parent_id = 0").Count(&total).Error
+	if err != nil {
 		return nil, err
 	}
-
 	treeRoles := GetTreeRoles(roleList, 0)
-	res = &form.PageRole{
-		Roles: treeRoles,
-		Total: total,
-	}
-
-	return
+	res.Total = total
+	res.Data = treeRoles
+	return res, nil
 }
 
 func (r *role) GetMenusByRoleID(roleID uint64, menuType []int8) (*[]sys.Menu, error) {
@@ -167,53 +160,39 @@ func (r *role) GetMenusByRoleID(roleID uint64, menuType []int8) (*[]sys.Menu, er
 		Order("parentId ASC").
 		Order("sequence ASC").
 		Scan(&menus).Error
+
 	if err != nil {
 		return nil, err
 	}
-
-	//res := getTreeMenus(menus, 0)
 	return &menus, nil
 }
 
 // SetRole 设置角色菜单权限
 func (r *role) SetRole(roleID uint64, menuIDs []uint64) error {
 	tx := r.db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	if err := tx.Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
 	if err := tx.Where(&sys.RoleMenu{RoleID: roleID}).Delete(&sys.RoleMenu{}).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
 	if len(menuIDs) > 0 {
+		roleMens := make([]sys.RoleMenu, len(menuIDs))
 		for _, mid := range menuIDs {
-			rm := new(sys.RoleMenu)
+			rm := sys.RoleMenu{}
 			rm.RoleID = roleID
 			rm.MenuID = mid
-			if err := tx.Create(rm).Error; err != nil {
-				tx.Rollback()
-				return err
-			}
+			roleMens = append(roleMens, rm)
+		}
+		if err := tx.Create(&roleMens).Error; err != nil {
+			tx.Rollback()
+			return err
 		}
 	}
-
 	return tx.Commit().Error
 }
 
 func (r *role) GetRolesByMenuID(menuID uint64) (roleIds *[]uint64, err error) {
 	err = r.db.Where("menuID = ?", menuID).Table("role_menus").Pluck("roleID", &roleIds).Error
-	if err != nil {
-		return
-	}
 	return
 }
 

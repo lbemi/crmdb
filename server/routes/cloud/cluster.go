@@ -2,7 +2,7 @@ package cloud
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/api/cloud"
+	"github.com/lbemi/lbemi/api/v1/cloud"
 )
 
 func NewClusterRoutes(router *gin.RouterGroup) {

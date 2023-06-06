@@ -39,6 +39,7 @@ func GinLogger() gin.HandlerFunc {
 		log.Logger.Info(str)
 	}
 }
+
 func GinRecovery(stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
