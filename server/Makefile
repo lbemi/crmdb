@@ -1,6 +1,6 @@
 .PHONY: run build image push clean
 
-tag = v0.1
+tag = v1.0
 releaseName = crmdb
 image = registry.cn-hangzhou.aliyuncs.com/lbemi/crmdb
 
