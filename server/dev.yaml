@@ -2,13 +2,13 @@ app:
   env: local
   addr: 127.0.0.1
   port: 8080
-  app_name: lbemi-app
+  app_name: GO-OPS-SERVER
   app_url: http://localhost
 log:
   level: info
   root_dir: ./log
   is_file: false        #是否写入文件
-  file_name: app.log
+  file_name: server.log
   format:          # 格式化： json
   show_line: true      # 是否显示打印行
   max_backup: 10       # 最大备份文件个数
@@ -17,7 +17,7 @@ log:
   compress: true        # 是否压缩文件
 database:
   driver: mysql
-  host: 10.0.12.8
+  host: 42.192.54.11
   user: lbemi
   password: Admin_1234
   port: 3333
@@ -25,7 +25,7 @@ database:
   charset: utf8mb4
   max_idle_conns: 10
   max_open_conns: 100
-  log_mode: error
+  log_mode: info # silent,error,warn,info
   enable_file_log_write: false
   log_filename: sql.log
   is_initialize: false  # 是否初始化数据库表
@@ -34,6 +34,6 @@ jwt:
   ttl: 30 #过期时间 :天
 
 Redis:
-  addr: 10.0.12.8
+  addr: 42.192.54.11
   port: 6399
   password: admin_1234
