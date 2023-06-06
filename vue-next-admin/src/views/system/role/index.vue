@@ -2,8 +2,8 @@
 	<div class="system-role-container layout-padding">
 		<div class="system-role-padding layout-padding-auto layout-padding-view">
 			<div class="system-user-search mb15">
-				<el-input size="default" placeholder="请输入角色名称"
-					style="max-width: 180px;margin-right: 10px;" v-model="state.searchName" clearable> </el-input>
+				<el-input size="default" placeholder="请输入角色名称" style="max-width: 180px; margin-right: 10px" v-model="state.searchName" clearable>
+				</el-input>
 				状态：
 				<el-select v-model.number="state.searchStatus" size="default" style="width: 100px">
 					<el-option v-for="item in status" :value="item.value" :label="item.label"> </el-option>
@@ -27,10 +27,20 @@
 				<el-table-column prop="sequence" label="排序" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="status" label="状态" width="80">
 					<template #default="scope">
-						<el-switch v-model="scope.row.status" v-auth="'sys:role:status'" class="ml-2"
-							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949" :active-value="1"
-							:inactive-value="2" size="small" inline-prompt active-text="启用" inactive-text="禁用" width="45px"
-							@change="changeStatus(scope.row)" />
+						<el-switch
+							v-model="scope.row.status"
+							v-auth="'sys:role:status'"
+							class="ml-2"
+							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
+							:active-value="1"
+							:inactive-value="2"
+							size="small"
+							inline-prompt
+							active-text="启用"
+							inactive-text="禁用"
+							width="45px"
+							@change="changeStatus(scope.row)"
+						/>
 					</template>
 				</el-table-column>
 				<el-table-column prop="memo" label="角色描述" show-overflow-tooltip></el-table-column>
@@ -39,19 +49,24 @@
 				</el-table-column>
 				<el-table-column label="操作" width="140">
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onOpenEditRole('edit', scope.row)"
-							v-auth="'sys:role:edit'">修改</el-button>
-						<el-button size="small" text type="primary" @click="onOpenAuthRole(scope.row)"
-							v-auth="'sys:role:set'">授权</el-button>
-						<el-button size="small" text type="primary" @click="onRowDel(scope.row)"
-							v-auth="'sys:role:del'">删除</el-button>
+						<el-button size="small" text type="primary" @click="onOpenEditRole('edit', scope.row)" v-auth="'sys:role:edit'">修改</el-button>
+						<el-button size="small" text type="primary" @click="onOpenAuthRole(scope.row)" v-auth="'sys:role:set'">授权</el-button>
+						<el-button size="small" text type="primary" @click="onRowDel(scope.row)" v-auth="'sys:role:del'">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination @size-change="onHandleSizeChange" @current-change="onHandleCurrentChange" class="mt15"
-				:pager-count="5" :page-sizes="[10, 20, 30]" v-model:current-page="state.tableData.param.page" background
-				v-model:page-size="state.tableData.param.limit" layout="total, sizes, prev, pager, next, jumper"
-				:total="state.tableData.total">
+			<el-pagination
+				@size-change="onHandleSizeChange"
+				@current-change="onHandleCurrentChange"
+				class="mt15"
+				:pager-count="5"
+				:page-sizes="[10, 20, 30]"
+				v-model:current-page="state.tableData.param.page"
+				background
+				v-model:page-size="state.tableData.param.limit"
+				layout="total, sizes, prev, pager, next, jumper"
+				:total="state.tableData.total"
+			>
 			</el-pagination>
 		</div>
 		<RoleDialog ref="roleDialogRef" @refresh="getTableData()" />
@@ -97,16 +112,16 @@ const state = reactive<SysRoleState>({
 // 初始化表格数据
 const getTableData = async () => {
 	state.tableData.loading = true;
-	if (state.searchName != "") {
-		state.tableData.param.name = state.searchName
+	if (state.searchName != '') {
+		state.tableData.param.name = state.searchName;
 	} else {
-		delete state.tableData.param.name
+		delete state.tableData.param.name;
 	}
 
 	if (state.searchStatus != 0) {
-		state.tableData.param.status = state.searchStatus
+		state.tableData.param.status = state.searchStatus;
 	} else {
-		delete state.tableData.param.status
+		delete state.tableData.param.status;
 	}
 	await roleApi.listRole(state.tableData.param).then((res: any) => {
 		state.tableData.data = res.data.data;
@@ -156,11 +171,19 @@ const onRowDel = (row: RoleType) => {
 		type: 'warning',
 	})
 		.then(async () => {
-			await roleApi.deleteRole(row.id);
-			getTableData();
-			ElMessage.success('删除成功');
+			await roleApi
+				.deleteRole(row.id)
+				.then((res) => {
+					getTableData();
+					ElMessage.success(res.message);
+				})
+				.catch((e) => {
+					ElMessage.error(e.message);
+				});
 		})
-		.catch(() => { });
+		.catch((e) => {
+			ElMessage.info('取消');
+		});
 };
 // 分页改变
 const onHandleSizeChange = (val: number) => {

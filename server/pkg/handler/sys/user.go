@@ -166,6 +166,7 @@ func (u *user) SetUserRoles(userID uint64, roleIDS []uint64) {
 		for _, roleId := range roleIDS {
 			u.factory.Authentication().DeleteRoleWithUser(userID, roleId)
 		}
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
 
 }

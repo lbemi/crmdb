@@ -40,6 +40,7 @@ func ListMenus(rc *rctx.ReqCtx) {
 
 	menuTypeStr := rctx.QueryDefault(rc, "menuType", "1,2,3")
 	tree := rctx.QueryDefault(rc, "isTree", "true")
+	condition.Group = rctx.QueryParam(rc, "group")
 
 	if tree == "false" {
 		isTree = false

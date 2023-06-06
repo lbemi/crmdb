@@ -79,7 +79,7 @@ const router = useRouter();
 const state = reactive({
 	isShowPassword: false,
 	ruleForm: {
-		user_name: 'admin',
+		user_name: 'lbemi',
 		password: 'admin',
 		captcha: '12345',
 		captcha_id: '',

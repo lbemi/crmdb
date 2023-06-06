@@ -31,6 +31,7 @@ func MenuRoutes() *restful.WebService {
 		Param(menu.QueryParameter("isTree", "是否返回树形结构，true / false，默认是 true").Required(false).DataType("string")).
 		Param(menu.QueryParameter("status", "过滤状态").DataType("int")).
 		Param(menu.QueryParameter("name", "过滤描述，支持模糊查询").DataType("string")).
+		Param(menu.QueryParameter("group", "过滤分组，支持模糊查询").DataType("string")).
 		Reads(form.PageMenu{}).
 		Returns(200, "success", form.PageMenu{}))
 

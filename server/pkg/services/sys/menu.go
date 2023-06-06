@@ -101,7 +101,9 @@ func (m *menu) List(page, limit int, menuType []int8, isTree bool, condition *sy
 	if condition.Memo != "" {
 		db = db.Where("memo like ?", "%"+condition.Memo+"%")
 	}
-
+	if condition.Group != "" {
+		db = db.Where("`group` like ?", "%"+condition.Group+"%")
+	}
 	if condition.Status != 0 {
 		db = db.Where("status = ?", condition.Status)
 	}
@@ -136,6 +138,10 @@ func (m *menu) List(page, limit int, menuType []int8, isTree bool, condition *sy
 		Find(&menuList).Error; err != nil {
 		return nil, err
 	}
+	//查询 total 数量
+	if err = db.Model(&sys.Menu{}).Where("menuType in (?)", menuType).Count(&total).Error; err != nil {
+		return nil, err
+	}
 
 	var menuIds []uint64
 	for _, menuInfo := range menuList {
@@ -148,14 +154,13 @@ func (m *menu) List(page, limit int, menuType []int8, isTree bool, condition *sy
 		if err = db.Where("parentID in ?", menuIds).Where("menuType in (?)", menuType).Find(&menus).Error; err != nil {
 			return nil, err
 		}
-		menuList = append(menuList, menus...)
-
-		// 查询子角色的按钮及API
-		var ids []uint64
-		for _, menuInfo := range menus {
-			ids = append(ids, menuInfo.ID)
-		}
-		if len(ids) != 0 {
+		if len(menus) != 0 {
+			menuList = append(menuList, menus...)
+			// 查询子角色的按钮及API
+			var ids []uint64
+			for _, menuInfo := range menus {
+				ids = append(ids, menuInfo.ID)
+			}
 			var ms []sys.Menu
 			if err = db.Where("parentID in ?", ids).Where("menuType in (?)", menuType).Find(&ms).Error; err != nil {
 				return nil, err
@@ -165,10 +170,6 @@ func (m *menu) List(page, limit int, menuType []int8, isTree bool, condition *sy
 
 	}
 
-	//查询 total 数量
-	if err = db.Model(&sys.Menu{}).Where("menuType in (?)", menuType).Count(&total).Error; err != nil {
-		return nil, err
-	}
 	if isTree {
 		treeMenus := GetTreeMenus(menuList, 0)
 		res = &form.PageMenu{

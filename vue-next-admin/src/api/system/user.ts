@@ -36,5 +36,20 @@ export function useUserApi() {
 				method: 'put',
 			});
 		},
+
+		setUserRole: (id: number, data: any) => {
+			return request({
+				url: '/users/' + id + '/roles',
+				method: 'post',
+				data: data,
+			});
+		},
+
+		getUserRole: (id: number) => {
+			return request({
+				url: '/users/' + id + '/roles',
+				method: 'get',
+			});
+		},
 	};
 }

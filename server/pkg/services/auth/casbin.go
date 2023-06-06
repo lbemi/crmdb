@@ -40,12 +40,9 @@ func (c *authentication) GetEnforce() *casbin.SyncedEnforcer {
 
 // AddRoleForUser 分配用户角色
 func (c *authentication) AddRoleForUser(userID uint64, roleIDs []uint64) (err error) {
-	uidStr := strconv.FormatUint(userID, 10)
-	_, err = c.clearCasbin(0, uidStr)
-	if err != nil {
-		return err
-	}
+	c.DeleteUser(userID)
 
+	uidStr := strconv.FormatUint(userID, 10)
 	for _, roleId := range roleIDs {
 		ok, err := c.enforcer.AddRoleForUser(uidStr, strconv.FormatUint(roleId, 10))
 		if err != nil || !ok {

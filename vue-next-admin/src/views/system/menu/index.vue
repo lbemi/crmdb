@@ -2,13 +2,13 @@
 	<div class="system-menu-container layout-pd">
 		<el-card shadow="hover">
 			<div class="system-menu-search mb15">
-				<el-input size="default" placeholder="请输入菜单描述" style="max-width: 180px; margin-right: 10px;" v-model="state.searchName"
-					clearable> </el-input>
-					状态：
+				<el-input size="default" placeholder="请输入菜单描述" style="max-width: 180px; margin-right: 10px" v-model="state.searchName" clearable>
+				</el-input>
+				状态：
 				<el-select v-model.number="state.searchStatus" size="default" style="width: 100px">
 					<el-option v-for="item in status" :value="item.value" :label="item.label"> </el-option>
 				</el-select>
-					<el-button size="default" type="primary" class="ml10" @click="getTableData">
+				<el-button size="default" type="primary" class="ml10" @click="getTableData">
 					<el-icon>
 						<ele-Search />
 					</el-icon>
@@ -21,8 +21,13 @@
 					新增菜单
 				</el-button>
 			</div>
-			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" row-key="path"
-				:tree-props="{ children: 'children', hasChildren: 'hasChildren' }">
+			<el-table
+				:data="state.tableData.data"
+				v-loading="state.tableData.loading"
+				style="width: 100%"
+				row-key="id"
+				:tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+			>
 				<el-table-column label="菜单描述" show-overflow-tooltip>
 					<template #default="scope">
 						<SvgIcon :name="scope.row.meta.icon" />
@@ -53,10 +58,20 @@
 				</el-table-column>
 				<el-table-column prop="status" label="状态" width="80">
 					<template #default="scope">
-						<el-switch v-model="scope.row.status" v-auth="'sys:menu:status'" class="ml-2"
-							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949" :active-value="1"
-							:inactive-value="2" size="small" inline-prompt active-text="启用" inactive-text="禁用" width="45px"
-							@change="changeStatus(scope.row)" />
+						<el-switch
+							v-model="scope.row.status"
+							v-auth="'sys:menu:status'"
+							class="ml-2"
+							style="--el-switch-on-color: #409eff; --el-switch-off-color: #ff4949"
+							:active-value="1"
+							:inactive-value="2"
+							size="small"
+							inline-prompt
+							active-text="启用"
+							inactive-text="禁用"
+							width="45px"
+							@change="changeStatus(scope.row)"
+						/>
 					</template>
 				</el-table-column>
 				<el-table-column label="排序" show-overflow-tooltip width="80">
@@ -64,15 +79,13 @@
 						{{ scope.row.sequence }}
 					</template>
 				</el-table-column>
-				<el-table-column prop="created_at" label="创建时间" show-overflow-tooltip>
+				<el-table-column prop="created_at" label="创建时间" sortable show-overflow-tooltip>
 					<template #default="scope"> {{ dateStrFormat(scope.row.created_at) }}</template>
 				</el-table-column>
 				<el-table-column label="操作" show-overflow-tooltip width="140">
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onOpenEditMenu('edit', scope.row)"
-							v-auth="'sys:menu:edit'">编辑</el-button>
-						<el-button size="small" text type="primary" @click="onTabelRowDel(scope.row)"
-							v-auth="'sys:menu:del'">删除</el-button>
+						<el-button size="small" text type="primary" @click="onOpenEditMenu('edit', scope.row)" v-auth="'sys:menu:edit'">编辑</el-button>
+						<el-button size="small" text type="primary" @click="onTabelRowDel(scope.row)" v-auth="'sys:menu:del'">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -95,7 +108,7 @@ const MenuDialog = defineAsyncComponent(() => import('/@/views/system/menu/dialo
 
 // 定义变量内容
 type query = {
-	menuType: string,
+	menuType: string;
 	memo?: string;
 	status?: number;
 };
@@ -106,8 +119,8 @@ const state = reactive({
 		data: [] as RouteRecordRaw[],
 		loading: true,
 	},
-	params:<query> {
-		menuType: '1,2', //获取菜单,1为目录,2为菜单
+	params: <query>{
+		menuType: '1', //获取菜单,1为目录,2为菜单
 	},
 	searchName: '',
 	searchStatus: 0,
@@ -115,19 +128,18 @@ const state = reactive({
 
 // 获取路由数据，真实请从接口获取
 const getTableData = async () => {
-	state.tableData.loading = true
-	if (state.searchName != "") {
-		state.params.memo = state.searchName
+	state.tableData.loading = true;
+	if (state.searchName != '') {
+		state.params.memo = state.searchName;
 	} else {
-		delete state.params.memo
+		delete state.params.memo;
 	}
 
 	if (state.searchStatus != 0) {
-		state.params.status = state.searchStatus
+		state.params.status = state.searchStatus;
 	} else {
-		delete state.params.status
+		delete state.params.status;
 	}
-;
 	await menuApi
 		.listMenu(state.params)
 		.then((res) => {
@@ -160,7 +172,7 @@ const onTabelRowDel = (row: any) => {
 			getTableData();
 			//await setBackEndControlRefreshRoutes() // 刷新菜单，未进行后端接口测试
 		})
-		.catch(() => { });
+		.catch(() => {});
 };
 
 //修改状态

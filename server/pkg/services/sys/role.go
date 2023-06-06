@@ -53,7 +53,7 @@ func (r *role) Delete(roleID uint64) (*gorm.DB, error) {
 	}
 
 	//删除角色相关的菜单
-	if err := tx.Where("role_id = ?", roleID).Delete(&sys.RoleMenu{}).Error; err != nil {
+	if err := tx.Where("roleID = ?", roleID).Delete(&sys.RoleMenu{}).Error; err != nil {
 		tx.Rollback()
 		return tx, err
 	}

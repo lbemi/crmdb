@@ -20,7 +20,8 @@
 										children: 'children',
 									}"
 									:default-checked-keys="state.menuCheckedKeys"
-								></el-tree>
+								>
+								</el-tree>
 							</el-tab-pane>
 							<el-tab-pane label="API权限" name="second">
 								<el-checkbox v-model="state.apiExpand" @change="handleCheckedTreeExpand($event, 'api')">展开/折叠 </el-checkbox>
@@ -37,7 +38,16 @@
 										label: 'memo',
 									}"
 									:default-checked-keys="state.apiCheckedKeys"
-								></el-tree>
+								>
+									<template #default="{ node, data }">
+										<span
+											><a style="margin-right: 5px">
+												<el-tag size="small" v-if="data.menuType === 2">按钮</el-tag>
+												<el-tag type="success" size="small" v-if="data.menuType === 3">API</el-tag> </a
+											>{{ data.memo }}</span
+										>
+									</template>
+								</el-tree>
 							</el-tab-pane>
 						</el-tabs>
 					</el-col>
@@ -77,12 +87,12 @@ const state = reactive({
 	apiNodeAll: false,
 	menuExpand: false,
 	menuNodeAll: false,
-	apiAndMenuIDs: [],
+	apiAndMenuIDs: [] as Array<number>,
 	activeName: 'first',
-	menuCheckedKeys: [],
-	apiCheckedKeys: [],
-	menuData: [],
-	apiData: [],
+	menuCheckedKeys: [] as Array<number>,
+	apiCheckedKeys: [] as Array<number>,
+	menuData: [] as Array<MenuType>,
+	apiData: [] as any,
 	dialog: {
 		isShowDialog: false,
 		type: '',
@@ -108,20 +118,22 @@ const openAuthDialog = (row: RoleType) => {
 };
 
 const listMenuAndButton = async () => {
-	await menuApi.listMenu({ menuType: '1,2' }).then((res) => {
+	await menuApi.listMenu({ menuType: '1' }).then((res) => {
 		state.menuData = res.data.menus;
 	});
 };
 
 const getRoleMenus = async () => {
-	roleApi.getRoleMenu(state.id, { menuType: '1,2' }).then((res) => {
+	roleApi.getRoleMenu(state.id, { menuType: '1' }).then((res) => {
 		if (res.data) {
-			res.data.forEach((item:any) => {
-				state.menuCheckedKeys.push(item.id);
-				if (item.children) {
-					item.children.forEach((res) => {
-						state.menuCheckedKeys.push(res.id);
-					});
+			res.data.forEach((item: MenuType) => {
+				if (!res.data.some((same: MenuType) => same.parentID === item.id)) {
+					state.menuCheckedKeys.push(item.id);
+					if (item.children) {
+						item.children.forEach((res: MenuType) => {
+							state.menuCheckedKeys.push(res.id);
+						});
+					}
 				}
 			});
 		}
@@ -129,21 +141,23 @@ const getRoleMenus = async () => {
 	// console.log("----",state.menuCheckedKeys)
 };
 const getRoleApis = async () => {
-	roleApi.getRoleMenu(state.id, { menuType: '3' }).then((res) => {
+	roleApi.getRoleMenu(state.id, { menuType: '2,3' }).then((res) => {
 		if (res.data) {
-			res.data.forEach((item) => {
-				state.apiCheckedKeys.push(item.id);
-				if (item.children) {
-					item.children.forEach((res) => {
-						state.apiCheckedKeys.push(res.id);
-					});
+			res.data.forEach((item: MenuType) => {
+				if (!res.data.some((same: MenuType) => same.parentID === item.id)) {
+					state.apiCheckedKeys.push(item.id);
+					if (item.children) {
+						item.children.forEach((res: MenuType) => {
+							state.apiCheckedKeys.push(res.id);
+						});
+					}
 				}
 			});
 		}
 	});
 };
 const listApi = async () => {
-	await menuApi.listMenu({ menuType: '3', isTree: false }).then((res) => {
+	await menuApi.listMenu({ menuType: '2,3', isTree: false }).then((res) => {
 		state.apiData = buildApiTree(res.data.menus);
 	});
 };
@@ -222,8 +236,8 @@ const onSubmit = () => {
 		.catch((res) => {
 			ElMessage.error(res);
 		});
-		loading.close();
-		closeDialog();
+	loading.close();
+	closeDialog();
 };
 
 // 所有菜单节点数据

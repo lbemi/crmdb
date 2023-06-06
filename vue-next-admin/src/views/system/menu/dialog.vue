@@ -26,7 +26,6 @@
 						<el-form-item label="菜单类型">
 							<el-radio-group v-model.number="state.ruleForm.menuType">
 								<el-radio-button label="1">菜单</el-radio-button>
-								<el-radio-button label="2">按钮</el-radio-button>
 							</el-radio-group>
 						</el-form-item>
 					</el-col>
