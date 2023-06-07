@@ -66,7 +66,7 @@ func (u *user) Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *sys.Use
 		bName, bVersion := ua.Browser()
 		log := &logsys.LogLogin{
 			Username:      params.UserName,
-			Ipaddr:        req.RemoteAddr,
+			Ipaddr:        rc.ClientIP(),
 			LoginLocation: "",
 			Browser:       bName + ":" + bVersion,
 			Os:            ua.OS(),
