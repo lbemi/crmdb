@@ -56,7 +56,7 @@ func Logout(rc *rctx.ReqCtx) {
 		bName, bVersion := ua.Browser()
 		log := &logsys.LogLogin{
 			Username:      rc.LoginAccount.UserName,
-			Ipaddr:        req.RemoteAddr,
+			Ipaddr:        rc.ClientIP(),
 			LoginLocation: "",
 			Browser:       bName + ":" + bVersion,
 			Os:            ua.OS(),
