@@ -4,6 +4,7 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/restfulx"
+	"strings"
 	"sync"
 	"time"
 )
@@ -107,6 +108,19 @@ func (rc *ReqCtx) Get(key string) (value any, exists bool) {
 	value, exists = rc.Keys[key]
 	rc.mu.RUnlock()
 	return
+}
+func (rc *ReqCtx) ClientIP() string {
+	r := rc.Request
+	ip := r.Request.Header.Get("X-Forwarded-For")
+	if strings.Contains(ip, "127.0.0.1") || ip == "" {
+		ip = r.Request.Header.Get("X-real-ip")
+	}
+
+	if ip == "" {
+		return "127.0.0.1"
+	}
+
+	return ip
 }
 
 type HandlerInterceptorFunc func(ctx *ReqCtx) error

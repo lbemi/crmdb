@@ -75,7 +75,7 @@ func UserRoutes() *restful.WebService {
 			WithHandle(sys.Register).
 			Do()
 	}).
-		Doc("登录").
+		Doc("注册用户").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Reads(form.RegisterUserForm{}).
 		Returns(200, "success", nil))

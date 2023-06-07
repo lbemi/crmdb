@@ -47,7 +47,7 @@ func LogHandler(rc *rctx.ReqCtx) error {
 			Method:       c.Request.Method,
 			Name:         rc.LoginAccount.UserName,
 			Url:          c.Request.URL.Path,
-			Ip:           c.Request.RemoteAddr,
+			Ip:           rc.ClientIP(),
 			Status:       200,
 		}
 		if rc.Err != nil {
@@ -101,7 +101,7 @@ func getLogMsg(rc *rctx.ReqCtx) string {
 
 	msg := fmt.Sprintf("%v | %v | %dms | %v | %v query:(%v) | %v | %v  | %v-%v ",
 		rc.Response.StatusCode(), req.Method, rc.Timed, rc.LogInfo.LogModule, req.URL.Path, req.URL.Query().Encode(),
-		req.RemoteAddr, ua.OS(), bName, bVersion)
+		rc.ClientIP(), ua.OS(), bName, bVersion)
 	if rc.LoginAccount != nil {
 		msg += fmt.Sprintf("| user: %v ",
 			rc.LoginAccount.UserName)

@@ -1,5 +1,10 @@
 package util
 
+import (
+	"github.com/emicklei/go-restful/v3"
+	"strings"
+)
+
 //
 //import (
 //	"fmt"
@@ -58,3 +63,16 @@ package util
 //	}
 //	return ""
 //}
+
+func getClientIP(r *restful.Request) string {
+	ip := r.Request.Header.Get("X-Forwarded-For")
+	if strings.Contains(ip, "127.0.0.1") || ip == "" {
+		ip = r.Request.Header.Get("X-real-ip")
+	}
+
+	if ip == "" {
+		return "127.0.0.1"
+	}
+
+	return ip
+}

@@ -3,16 +3,19 @@
 		<el-card shadow="hover">
 			<div class="system-menu-search mb15">
 				操作人：
-				<el-input size="default" placeholder="请输入操作人模糊查询" style="max-width: 180px; margin-right: 10px"
-					v-model="state.searchName" clearable>
+				<el-input size="default" placeholder="请输入操作人模糊查询" style="max-width: 180px; margin-right: 10px" v-model="state.searchName" clearable>
 				</el-input>
 				模块名称：
-				<el-input size="default" placeholder="请输入模块名模糊查询" style="max-width: 180px; margin-right: 10px"
-					v-model="state.searchTitle" clearable>
+				<el-input
+					size="default"
+					placeholder="请输入模块名模糊查询"
+					style="max-width: 180px; margin-right: 10px"
+					v-model="state.searchTitle"
+					clearable
+				>
 				</el-input>
 				操作类型：
-				<el-select v-model="state.searchType" size="default"
-					style="max-width: 180px; width: 100px; margin-right: 10px">
+				<el-select v-model="state.searchType" size="default" style="max-width: 180px; width: 100px; margin-right: 10px">
 					<el-option v-for="item in type" :value="item.value" :label="item.label"> </el-option>
 				</el-select>
 				操作状态：
@@ -31,8 +34,7 @@
 					</el-icon>
 					批量删除
 				</el-button>
-				<el-button v-auth="'logs:operator:del-all'" size="default" type="danger" class="ml10"
-					@click="onDeleteAll()">
+				<el-button v-auth="'logs:operator:del-all'" size="default" type="danger" class="ml10" @click="onDeleteAll()">
 					<el-icon>
 						<ele-Delete />
 					</el-icon>
@@ -40,16 +42,20 @@
 				</el-button>
 			</div>
 
-			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" row-key="path"
-				@selection-change="handleSelectionChange">
+			<el-table
+				:data="state.tableData.data"
+				v-loading="state.tableData.loading"
+				style="width: 100%"
+				row-key="path"
+				@selection-change="handleSelectionChange"
+			>
 				<el-table-column type="selection" width="55" />
 				<el-table-column label="ID" prop="id" width="80" />
 				<el-table-column label="模块名称" prop="title" width="120" />
 				<el-table-column label="操作类型" prop="businessType" width="120">
 					<template #default="scope">
 						<div v-if="scope.row.businessType === '03'"><el-tag size="small" type="danger">删除</el-tag></div>
-						<div v-else-if="scope.row.businessType === '02'"><el-tag size="small" type="warning">修改</el-tag>
-						</div>
+						<div v-else-if="scope.row.businessType === '02'"><el-tag size="small" type="warning">修改</el-tag></div>
 						<div v-else><el-tag size="small">添加</el-tag></div>
 					</template>
 				</el-table-column>
@@ -58,13 +64,12 @@
 						<el-tag effect="plain" size="small" :type="scope.row.method === 'PUT' ? 'warning' : 'danger'">{{ scope.row.method }}</el-tag>
 					</template>
 				</el-table-column> -->
-				<el-table-column label="IP" prop="ip" width="120" />
+				<el-table-column label="IP" prop="ip" width="180" />
 				<el-table-column label="请求地址" prop="url" />
 				<el-table-column label="操作状态" width="120">
 					<template #default="scope">
 						<el-tooltip :content="'错误信息：' + scope.row.errMsg" placement="right" effect="light">
-							<el-tag size="small" :type="scope.row.status === 200 ? 'success' : 'danger'">{{ scope.row.status
-							}}</el-tag>
+							<el-tag size="small" :type="scope.row.status === 200 ? 'success' : 'danger'">{{ scope.row.status }}</el-tag>
 						</el-tooltip>
 					</template>
 				</el-table-column>
@@ -75,15 +80,22 @@
 				<el-table-column label="操作" show-overflow-tooltip width="120">
 					<template #default="scope">
 						<!-- <el-button v-auth="'logs:operator:del'" size="small" text type="primary" @click="onOpenEditApi('edit', scope.row)">详情</el-button> -->
-						<el-button v-auth="'logs:operator:del'" size="small" text type="primary"
-							@click="onTabelRowDel(scope.row)">删除</el-button>
+						<el-button v-auth="'logs:operator:del'" size="small" text type="primary" @click="onTabelRowDel(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination @size-change="onHandleSizeChange" @current-change="onHandleCurrentChange" class="mt15"
-				:pager-count="5" :page-sizes="[10, 20, 30]" v-model:current-page="state.tableData.param.page" background
-				v-model:page-size="state.tableData.param.limit" layout="total, sizes, prev, pager, next, jumper"
-				:total="state.tableData.total">
+			<el-pagination
+				@size-change="onHandleSizeChange"
+				@current-change="onHandleCurrentChange"
+				class="mt15"
+				:pager-count="5"
+				:page-sizes="[10, 20, 30]"
+				v-model:current-page="state.tableData.param.page"
+				background
+				v-model:page-size="state.tableData.param.limit"
+				layout="total, sizes, prev, pager, next, jumper"
+				:total="state.tableData.total"
+			>
 			</el-pagination>
 		</el-card>
 	</div>
@@ -218,26 +230,26 @@ const getTableData = async () => {
 	state.tableData.loading = true;
 	if (state.searchName != '') {
 		state.tableData.param.name = state.searchName;
-	}else {
-		delete state.tableData.param.name
+	} else {
+		delete state.tableData.param.name;
 	}
-	
+
 	if (state.searchStatus != '0') {
 		state.tableData.param.status = state.searchStatus;
 	} else {
-		delete state.tableData.param.status
+		delete state.tableData.param.status;
 	}
-	
+
 	if (state.searchTitle != '') {
 		state.tableData.param.title = state.searchTitle;
 	} else {
-		delete state.tableData.param.title
+		delete state.tableData.param.title;
 	}
 
 	if (state.searchType != '0') {
 		state.tableData.param.type = state.searchType;
 	} else {
-		delete state.tableData.param.type
+		delete state.tableData.param.type;
 	}
 
 	await opeatorLogApi
