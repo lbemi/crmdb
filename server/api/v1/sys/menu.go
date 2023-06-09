@@ -12,24 +12,24 @@ import (
 
 func AddMenu(rc *rctx.ReqCtx) {
 	var menu form.MenusReq
-	rctx.ShouldBind(rc, &menu)
+	rc.ShouldBind(&menu)
 	core.V1.Menu().Create(&menu)
 }
 
 func UpdateMenu(rc *rctx.ReqCtx) {
 	var menu form.UpdateMenusReq
-	rctx.ShouldBind(rc, &menu)
-	menuID := rctx.PathParamUint64(rc, "id")
+	rc.ShouldBind(&menu)
+	menuID := rc.PathParamUint64("id")
 	core.V1.Menu().Update(&menu, menuID)
 }
 
 func DeleteMenu(rc *rctx.ReqCtx) {
-	menuID := rctx.PathParamUint64(rc, "id")
+	menuID := rc.PathParamUint64("id")
 	core.V1.Menu().Delete(menuID)
 }
 
 func GetMenu(rc *rctx.ReqCtx) {
-	menuID := rctx.PathParamUint64(rc, "id")
+	menuID := rc.PathParamUint64("id")
 	rc.ResData = core.V1.Menu().Get(menuID)
 }
 
@@ -38,9 +38,9 @@ func ListMenus(rc *rctx.ReqCtx) {
 	condition := &sys.Menu{}
 	isTree := true
 
-	menuTypeStr := rctx.QueryDefault(rc, "menuType", "1,2,3")
-	tree := rctx.QueryDefault(rc, "isTree", "true")
-	condition.Group = rctx.QueryParam(rc, "group")
+	menuTypeStr := rc.QueryDefault("menuType", "1,2,3")
+	tree := rc.QueryDefault("isTree", "true")
+	condition.Group = rc.QueryParam("group")
 
 	if tree == "false" {
 		isTree = false
@@ -52,15 +52,15 @@ func ListMenus(rc *rctx.ReqCtx) {
 		restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 		menuType = append(menuType, int8(res))
 	}
-	page := rctx.QueryDefaultInt(rc, "page", 0)
-	limit := rctx.QueryDefaultInt(rc, "limit", 0)
-	condition.Memo = rctx.QueryParam(rc, "memo")
-	condition.Status = rctx.QueryParamInt8(rc, "status")
+	page := rc.QueryDefaultInt("page", 0)
+	limit := rc.QueryDefaultInt("limit", 0)
+	condition.Memo = rc.QueryParam("memo")
+	condition.Status = rc.QueryParamInt8("status")
 	rc.ResData = core.V1.Menu().List(page, limit, menuType, isTree, condition)
 }
 
 func UpdateMenuStatus(rc *rctx.ReqCtx) {
-	menuID := rctx.PathParamUint64(rc, "id")
-	status := rctx.PathParamUint64(rc, "status")
+	menuID := rc.PathParamUint64("id")
+	status := rc.PathParamUint64("status")
 	core.V1.Menu().UpdateStatus(menuID, status)
 }

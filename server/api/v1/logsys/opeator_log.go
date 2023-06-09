@@ -9,19 +9,19 @@ import (
 )
 
 func GetOperatorLog(rc *rctx.ReqCtx) {
-	id := rctx.PathParamUint64(rc, "id")
+	id := rc.PathParamUint64("id")
 	rc.ResData = core.V1.Operator().Get(id)
 }
 
 func ListOperatorLog(rc *rctx.ReqCtx) {
 	query := model.PageParam{}
-	query.Page = rctx.QueryDefaultInt(rc, "page", 0)
-	query.Limit = rctx.QueryDefaultInt(rc, "limit", 10)
+	query.Page = rc.QueryDefaultInt("page", 0)
+	query.Limit = rc.QueryDefaultInt("limit", 10)
 	condition := logsys.LogOperator{}
-	condition.BusinessType = rctx.QueryParam(rc, "type")
-	condition.Title = rctx.QueryParam(rc, "title")
-	condition.Name = rctx.QueryParam(rc, "name")
-	status := rctx.QueryParam(rc, "status")
+	condition.BusinessType = rc.QueryParam("type")
+	condition.Title = rc.QueryParam("title")
+	condition.Name = rc.QueryParam("name")
+	status := rc.QueryParam("status")
 	if status == "normal" {
 		condition.Status = 200
 	}
@@ -32,7 +32,7 @@ func ListOperatorLog(rc *rctx.ReqCtx) {
 }
 
 func DeleteOperatorLogs(rc *rctx.ReqCtx) {
-	ids := util.ParseStrInt64(rctx.QueryParam(rc, "ids"))
+	ids := util.ParseStrInt64(rc.QueryParam("ids"))
 	core.V1.Operator().Delete(ids)
 }
 

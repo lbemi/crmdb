@@ -8,10 +8,10 @@ import (
 
 func CreateCluster(rc *rctx.ReqCtx) {
 
-	bytes := rctx.FormFile(rc, "file")
+	bytes := rc.FormFile("file")
 	var req form.ClusterReq
-	//rctx.ShouldBind(rc, &req)
-	req.Name = rctx.PostForm(rc, "name")
+	//rctx.ShouldBind( &req)
+	req.Name = rc.PostForm("name")
 	req.KubeConfig = string(bytes)
 
 	core.V1.Cluster(req.Name).Create(&req)
@@ -22,11 +22,11 @@ func ListCluster(rc *rctx.ReqCtx) {
 }
 
 func GetCluster(rc *rctx.ReqCtx) {
-	clusterName := rctx.PathParam(rc, "name")
+	clusterName := rc.PathParam("name")
 	rc.ResData = core.V1.Cluster("").GetByName(clusterName)
 }
 
 func DeleteCluster(rc *rctx.ReqCtx) {
-	id := rctx.PathParamUint64(rc, "id")
+	id := rc.PathParamUint64("id")
 	core.V1.Cluster("").Delete(id)
 }

@@ -9,22 +9,22 @@ import (
 )
 
 func GetLoginLog(rc *rctx.ReqCtx) {
-	id := rctx.PathParamUint64(rc, "id")
+	id := rc.PathParamUint64("id")
 	rc.ResData = core.V1.Login().Get(id)
 }
 
 func ListLoginLog(rc *rctx.ReqCtx) {
 	query := &model.PageParam{}
-	query.Page = rctx.QueryDefaultInt(rc, "page", 0)
-	query.Limit = rctx.QueryDefaultInt(rc, "limit", 10)
+	query.Page = rc.QueryDefaultInt("page", 0)
+	query.Limit = rc.QueryDefaultInt("limit", 10)
 	condition := &logsys.LogLogin{}
-	condition.Status = rctx.QueryParam(rc, "status")
-	condition.Username = rctx.QueryParam(rc, "name")
+	condition.Status = rc.QueryParam("status")
+	condition.Username = rc.QueryParam("name")
 	rc.ResData = core.V1.Login().List(query, condition)
 }
 
 func DeleteLoginLogs(rc *rctx.ReqCtx) {
-	ids := util.ParseStrInt64(rctx.QueryParam(rc, "ids"))
+	ids := util.ParseStrInt64(rc.QueryParam("ids"))
 	core.V1.Login().Delete(ids)
 }
 
