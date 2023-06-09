@@ -32,7 +32,7 @@ func ListSecrets(c *gin.Context) {
 	}
 
 	namespace := c.Param("namespace")
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -70,7 +70,7 @@ func GetSecret(c *gin.Context) {
 
 	secretName := c.Param("secretName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -99,7 +99,7 @@ func CreateSecret(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -128,7 +128,7 @@ func UpdateSecret(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -153,7 +153,7 @@ func DeleteSecret(c *gin.Context) {
 
 	secretName := c.Param("secretName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}

@@ -32,7 +32,7 @@ func ListJobs(c *gin.Context) {
 
 	namespace := c.Param("namespace")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -67,7 +67,7 @@ func GetJob(c *gin.Context) {
 
 	jobName := c.Param("jobName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -95,7 +95,7 @@ func CreateJob(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -125,7 +125,7 @@ func UpdateJob(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -150,7 +150,7 @@ func DeleteJob(c *gin.Context) {
 
 	jobName := c.Param("jobName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}

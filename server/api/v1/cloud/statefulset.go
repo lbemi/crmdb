@@ -31,7 +31,7 @@ func ListStatefulSets(c *gin.Context) {
 
 	namespace := c.Param("namespace")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -66,7 +66,7 @@ func GetStatefulSet(c *gin.Context) {
 
 	statefulSetName := c.Param("statefulSetName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -95,7 +95,7 @@ func CreateStatefulSet(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -125,7 +125,7 @@ func UpdateStatefulSet(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -150,7 +150,7 @@ func DeleteStatefulSet(c *gin.Context) {
 
 	statefulSetName := c.Param("statefulSetName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}

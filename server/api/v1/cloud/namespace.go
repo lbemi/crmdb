@@ -30,7 +30,7 @@ func ListNamespace(c *gin.Context) {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -67,7 +67,7 @@ func GetNamespace(c *gin.Context) {
 	}
 	name := c.Param("name")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -90,7 +90,7 @@ func DeleteNamespace(c *gin.Context) {
 	}
 	name := c.Param("name")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -117,7 +117,7 @@ func CreateNamespace(c *gin.Context) {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -144,7 +144,7 @@ func UpdateNamespace(c *gin.Context) {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}

@@ -32,11 +32,11 @@ type PodImp interface {
 }
 
 type pod struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
-func newPod(cli *store.Clients, ns string) *pod {
+func newPod(cli *store.ClientConfig, ns string) *pod {
 	return &pod{cli: cli, ns: ns}
 }
 
@@ -196,11 +196,11 @@ func (p *pod) Search(ctx context.Context, key string, searchType int) ([]*corev1
 }
 
 type PodHandler struct {
-	client      *store.Clients
+	client      *store.ClientConfig
 	clusterName string
 }
 
-func NewPodHandler(client *store.Clients, clusterName string) *PodHandler {
+func NewPodHandler(client *store.ClientConfig, clusterName string) *PodHandler {
 	return &PodHandler{client: client, clusterName: clusterName}
 }
 

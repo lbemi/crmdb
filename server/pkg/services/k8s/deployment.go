@@ -25,11 +25,11 @@ type DeploymentImp interface {
 }
 
 type Deployment struct {
-	cli       *store.Clients
+	cli       *store.ClientConfig
 	namespace string
 }
 
-func newDeployment(cli *store.Clients, namespace string) *Deployment {
+func newDeployment(cli *store.ClientConfig, namespace string) *Deployment {
 	return &Deployment{cli: cli, namespace: namespace}
 }
 
@@ -130,11 +130,11 @@ func (d *Deployment) Search(ctx context.Context, key string, searchType int) ([]
 }
 
 type DeploymentHandler struct {
-	client      *store.Clients
+	client      *store.ClientConfig
 	clusterName string
 }
 
-func NewDeploymentHandler(client *store.Clients, clusterName string) *DeploymentHandler {
+func NewDeploymentHandler(client *store.ClientConfig, clusterName string) *DeploymentHandler {
 	return &DeploymentHandler{client: client, clusterName: clusterName}
 }
 

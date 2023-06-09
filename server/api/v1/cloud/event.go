@@ -30,7 +30,7 @@ func ListEvents(c *gin.Context) {
 	}
 
 	namespace := c.Param("namespace")
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -65,7 +65,7 @@ func GetEvent(c *gin.Context) {
 	namespace := c.Param("namespace")
 	eventName := c.Param("name")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}

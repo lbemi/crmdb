@@ -21,7 +21,7 @@ type ServiceImp interface {
 }
 
 type service struct {
-	client *store.Clients
+	client *store.ClientConfig
 	ns     string
 }
 
@@ -124,7 +124,7 @@ func (s *service) Update(ctx context.Context, service *v1.Service) (*v1.Service,
 	return res, err
 }
 
-func newService(client *store.Clients, namespace string) *service {
+func newService(client *store.ClientConfig, namespace string) *service {
 	return &service{client: client, ns: namespace}
 }
 

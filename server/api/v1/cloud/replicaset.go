@@ -32,7 +32,7 @@ func ListReplicaSets(c *gin.Context) {
 
 	namespace := c.Param("namespace")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -70,7 +70,7 @@ func GetReplicaSet(c *gin.Context) {
 
 	replicasetName := c.Param("name")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}

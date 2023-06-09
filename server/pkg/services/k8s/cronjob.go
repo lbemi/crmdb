@@ -18,7 +18,7 @@ type CronJobImp interface {
 }
 
 type cronJob struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
@@ -62,6 +62,6 @@ func (d *cronJob) Delete(ctx context.Context, name string) error {
 	return err
 }
 
-func newCronJob(cli *store.Clients, namespace string) *cronJob {
+func newCronJob(cli *store.ClientConfig, namespace string) *cronJob {
 	return &cronJob{cli: cli, ns: namespace}
 }

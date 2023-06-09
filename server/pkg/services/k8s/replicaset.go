@@ -16,7 +16,7 @@ type ReplicasetImp interface {
 }
 
 type Replicaset struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
@@ -38,16 +38,16 @@ func (r *Replicaset) Get(ctx context.Context, name string) (*appsv1.ReplicaSet, 
 	return replicaSet, nil
 }
 
-func newReplicaset(cli *store.Clients, ns string) *Replicaset {
+func newReplicaset(cli *store.ClientConfig, ns string) *Replicaset {
 	return &Replicaset{cli: cli, ns: ns}
 }
 
 type ReplicasetHandler struct {
-	client      *store.Clients
+	client      *store.ClientConfig
 	clusterName string
 }
 
-func NewReplicasetHandler(client *store.Clients, clusterName string) *ReplicasetHandler {
+func NewReplicasetHandler(client *store.ClientConfig, clusterName string) *ReplicasetHandler {
 	return &ReplicasetHandler{client: client, clusterName: clusterName}
 }
 

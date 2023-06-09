@@ -3,9 +3,10 @@ package cloud
 import (
 	"context"
 	"errors"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"fmt"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	"github.com/lbemi/lbemi/pkg/util"
 	"gorm.io/gorm"
@@ -18,34 +19,34 @@ import (
 )
 
 type ICluster interface {
-	GenerateClient(name, config string) (*store.Clients, *cloud.Cluster, error)
+	GenerateClient(name, config string) (*store.ClientConfig, *cloud.Cluster, error)
 	CheckCusterHealth(name string) bool
 
-	Create(config *cloud.Cluster) error
-	Delete(id uint64) error
-	Update(id uint64, config *cloud.Cluster) error
-	Get(id uint64) (*cloud.Cluster, error)
-	GetByName(name string) (*cloud.Cluster, error)
-	List() (*[]cloud.Cluster, error)
-	GetClient(name string) *store.Clients
-	ChangeStatus(id uint64, status bool) error
+	Create(config *cloud.Cluster)
+	Delete(id uint64)
+	Update(id uint64, config *cloud.Cluster)
+	Get(id uint64) *cloud.Cluster
+	GetByName(name string) *cloud.Cluster
+	List() *[]cloud.Cluster
+	GetClient(name string) *store.ClientConfig
+	ChangeStatus(id uint64, status bool)
 
 	RemoveFromStore(name string)
 	StartInformer(clusterName string)
 }
 
-type cluster struct {
+type Cluster struct {
 	db    *gorm.DB
-	store *store.ClientStore
+	store *store.ClientMap
 }
 
-func NewCluster(db *gorm.DB, store *store.ClientStore) *cluster {
-	return &cluster{
+func NewCluster(db *gorm.DB, store *store.ClientMap) *Cluster {
+	return &Cluster{
 		db:    db,
 		store: store,
 	}
 }
-func (c *cluster) CheckCusterHealth(name string) bool {
+func (c *Cluster) CheckCusterHealth(name string) bool {
 
 	clients := c.store.Get(name)
 	if clients == nil {
@@ -63,7 +64,7 @@ func (c *cluster) CheckCusterHealth(name string) bool {
 	return true
 }
 
-func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Cluster, error) {
+func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *cloud.Cluster, error) {
 
 	//如果已经存在或者已经初始化client则退出
 	clients := c.store.Get(name)
@@ -71,11 +72,10 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Cl
 		return nil, nil, errors.New("client has already been initialized")
 	}
 
-	var client store.Clients
+	var client store.ClientConfig
 	clientConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(config))
 	if err != nil {
 		c.store.Delete(name)
-		log.Logger.Error(err)
 		return nil, nil, err
 	}
 
@@ -83,7 +83,6 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Cl
 	clientSet, err := kubernetes.NewForConfig(clientConfig)
 	if err != nil {
 		c.store.Delete(name)
-		log.Logger.Error(err)
 		return nil, nil, err
 	}
 
@@ -92,11 +91,16 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Cl
 	withTimeout, cancelFunc := context.WithTimeout(context.TODO(), time.Second*3)
 	defer cancelFunc()
 
+	response := clientSet.CoreV1().RESTClient().Get().AbsPath("/healthz").Do(withTimeout)
+	//_, err = clientSet.Discovery().ServerVersion()
+	if response.Error() != nil {
+		return nil, nil, response.Error()
+	}
+
 	list, err := clientSet.CoreV1().Nodes().List(withTimeout, metav1.ListOptions{})
 	if err != nil {
 		c.store.Delete(name)
-		log.Logger.Error(err)
-		return nil, nil, errors.New("create cluster failed. please check the config file")
+		return nil, nil, err
 	}
 
 	conf.PodCidr = list.Items[0].Spec.PodCIDR
@@ -120,10 +124,7 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Cl
 
 	//初始化metricSet
 	metricSet, err := versioned.NewForConfig(clientConfig)
-	if err != nil {
-		log.Logger.Error(err)
-		return nil, nil, errors.New("create cluster failed. please check the config file")
-	}
+	restfulx.ErrNotNilDebug(err, restfulx.RegisterClusterErr)
 
 	client.MetricSet = metricSet
 	client.ClientSet = clientSet
@@ -135,79 +136,61 @@ func (c *cluster) GenerateClient(name, config string) (*store.Clients, *cloud.Cl
 
 	//go c.StartInformer(client)
 	go c.StartInformer(name)
+
 	return &client, &conf, nil
 }
 
-func (c *cluster) Create(config *cloud.Cluster) error {
+func (c *Cluster) Create(config *cloud.Cluster) {
 
 	sec := util.Encrypt(config.KubeConfig)
 	config.KubeConfig = sec
 
 	err := c.db.Model(&cloud.Cluster{}).Create(&config).Error
-	if err != nil {
-		log.Logger.Error(err)
-		return err
-	}
-
-	return nil
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func (c *cluster) Delete(id uint64) error {
-
-	err := c.db.Where("id = ?", id).Delete(&cloud.Cluster{}).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (c *Cluster) Delete(id uint64) {
+	restfulx.ErrNotNilDebug(c.db.Where("id = ?", id).Delete(&cloud.Cluster{}).Error, restfulx.OperatorErr)
 }
 
-func (c *cluster) Update(id uint64, config *cloud.Cluster) error {
-	return c.db.Where("id = ?", id).Updates(&config).Error
+func (c *Cluster) Update(id uint64, config *cloud.Cluster) {
+	restfulx.ErrNotNilDebug(c.db.Where("id = ?", id).Updates(&config).Error, restfulx.OperatorErr)
 }
 
-func (c *cluster) Get(id uint64) (*cloud.Cluster, error) {
+func (c *Cluster) Get(id uint64) *cloud.Cluster {
 	var clu cloud.Cluster
-	err := c.db.Where("id = ?", id).First(&clu).Error
-	if err != nil {
-		return nil, err
-	}
-	return &clu, err
+	restfulx.ErrNotNilDebug(c.db.Where("id = ?", id).First(&clu).Error, restfulx.OperatorErr)
+	return &clu
 }
 
-func (c *cluster) GetByName(name string) (*cloud.Cluster, error) {
+func (c *Cluster) GetByName(name string) *cloud.Cluster {
 	var clu cloud.Cluster
-	err := c.db.Where("name = ?", name).First(&clu).Error
-	if err != nil {
-		return nil, err
-	}
-	return &clu, err
+	restfulx.ErrNotNilDebug(c.db.Where("name = ?", name).First(&clu).Error, restfulx.OperatorErr)
+	return &clu
 }
-func (c *cluster) List() (*[]cloud.Cluster, error) {
+
+func (c *Cluster) List() *[]cloud.Cluster {
 	var clu []cloud.Cluster
-	err := c.db.Find(&clu).Error
-	if err != nil {
-		return nil, err
-	}
-	return &clu, nil
+	restfulx.ErrNotNilDebug(c.db.Find(&clu).Error, restfulx.OperatorErr)
+	return &clu
 }
 
-func (c *cluster) GetClient(name string) *store.Clients {
-	return c.store.Get(name)
+func (c *Cluster) ChangeStatus(id uint64, status bool) {
+	restfulx.ErrNotNilDebug(c.db.Model(&cloud.Cluster{}).Where("id = ?", id).Update("status", status).Error, restfulx.OperatorErr)
 }
 
-func (c *cluster) ChangeStatus(id uint64, status bool) error {
-	return c.db.Model(&cloud.Cluster{}).Where("id = ?", id).Update("status", status).Error
-}
-
-func (c *cluster) RemoveFromStore(name string) {
+func (c *Cluster) RemoveFromStore(name string) {
 	c.store.Delete(name)
 }
 
-func (c *cluster) StartInformer(clusterName string) {
+func (c *Cluster) GetClient(name string) *store.ClientConfig {
+	return c.store.Get(name)
+}
+
+func (c *Cluster) StartInformer(clusterName string) {
 	client := c.store.Get(clusterName)
 	if client == nil {
-		log.Logger.Error("初始化Informer失败.")
+		restfulx.ErrNotNilDebug(fmt.Errorf("初始化Informer失败"), restfulx.OperatorErr)
 	}
 
 	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(k8s.NewDeploymentHandler(client, clusterName))

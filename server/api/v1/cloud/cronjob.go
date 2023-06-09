@@ -32,7 +32,7 @@ func ListCronJobs(c *gin.Context) {
 
 	namespace := c.Param("namespace")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -66,7 +66,7 @@ func GetCronJob(c *gin.Context) {
 
 	cronJobName := c.Param("cronJobName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -94,7 +94,7 @@ func CreateCronJob(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -124,7 +124,7 @@ func UpdateCronJob(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -149,7 +149,7 @@ func DeleteCronJob(c *gin.Context) {
 
 	cronJobName := c.Param("cronJobName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}

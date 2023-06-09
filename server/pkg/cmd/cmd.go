@@ -7,6 +7,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/core/server"
+	"github.com/lbemi/lbemi/routes/cloud"
 	"github.com/lbemi/lbemi/routes/logsys"
 	"github.com/lbemi/lbemi/routes/sys"
 
@@ -57,6 +58,8 @@ func run(cmd *cobra.Command, args []string) {
 		sys.MenuRoutes(),
 		logsys.LoginLogRoutes(),
 		logsys.OperatorLogRoutes(),
+		//k8s集群
+		cloud.ClusterRoutes(),
 	)
 
 	//注册swagger路由

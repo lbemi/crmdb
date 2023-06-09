@@ -18,11 +18,11 @@ type DaemonSetImp interface {
 }
 
 type daemonSet struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
-func newDaemonSet(cli *store.Clients, ns string) *daemonSet {
+func newDaemonSet(cli *store.ClientConfig, ns string) *daemonSet {
 	return &daemonSet{cli: cli, ns: ns}
 }
 

@@ -18,7 +18,7 @@ type JobImp interface {
 }
 
 type job struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
@@ -62,6 +62,6 @@ func (d *job) Delete(ctx context.Context, name string) error {
 	return err
 }
 
-func newJob(cli *store.Clients, namespace string) *job {
+func newJob(cli *store.ClientConfig, namespace string) *job {
 	return &job{cli: cli, ns: namespace}
 }

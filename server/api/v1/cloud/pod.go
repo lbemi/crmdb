@@ -41,7 +41,7 @@ func ListPods(c *gin.Context) {
 
 	namespace := c.Param("namespace")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -76,7 +76,7 @@ func GetPod(c *gin.Context) {
 
 	podName := c.Param("podName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -105,7 +105,7 @@ func CreatePod(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -134,7 +134,7 @@ func UpdatePod(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -159,7 +159,7 @@ func DeletePod(c *gin.Context) {
 
 	podName := c.Param("podName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -184,7 +184,7 @@ func PodExec(c *gin.Context) {
 	podName := c.Param("podName")
 	containerName := c.Param("container")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -220,7 +220,7 @@ func GetPodLog(c *gin.Context) {
 	podName := c.Param("podName")
 	containerName := c.Param("container")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -265,7 +265,7 @@ func GetPodEvents(c *gin.Context) {
 	}
 	namespace := c.Param("namespace")
 	podName := c.Param("name")
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -300,7 +300,7 @@ func SearchPods(c *gin.Context) {
 
 	namespace := c.Param("namespace")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}

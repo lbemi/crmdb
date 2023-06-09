@@ -18,7 +18,7 @@ type IngressesImp interface {
 }
 
 type ingresses struct {
-	client *store.Clients
+	client *store.ClientConfig
 	ns     string
 }
 
@@ -62,7 +62,7 @@ func (s *ingresses) Update(ctx context.Context, ingresses *v1.Ingress) (*v1.Ingr
 	return res, err
 }
 
-func newIngress(client *store.Clients, namespace string) *ingresses {
+func newIngress(client *store.ClientConfig, namespace string) *ingresses {
 	return &ingresses{client: client, ns: namespace}
 }
 

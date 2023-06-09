@@ -18,7 +18,7 @@ type PersistentVolumeClaimImp interface {
 }
 
 type persistentVolumeClaim struct {
-	client *store.Clients
+	client *store.ClientConfig
 	ns     string
 }
 
@@ -62,16 +62,16 @@ func (s *persistentVolumeClaim) Update(ctx context.Context, pvc *v1.PersistentVo
 	return res, err
 }
 
-func newPersistentVolumeClaim(client *store.Clients, namespace string) *persistentVolumeClaim {
+func newPersistentVolumeClaim(client *store.ClientConfig, namespace string) *persistentVolumeClaim {
 	return &persistentVolumeClaim{client: client, ns: namespace}
 }
 
 type PersistentVolumeClaimHandler struct {
-	client      *store.Clients
+	client      *store.ClientConfig
 	clusterName string
 }
 
-func NewPersistentVolumeClaimHandler(client *store.Clients, clusterName string) *PersistentVolumeClaimHandler {
+func NewPersistentVolumeClaimHandler(client *store.ClientConfig, clusterName string) *PersistentVolumeClaimHandler {
 	return &PersistentVolumeClaimHandler{client: client, clusterName: clusterName}
 }
 

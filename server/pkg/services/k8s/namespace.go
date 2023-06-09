@@ -18,7 +18,7 @@ type NamespaceImp interface {
 }
 
 type namespace struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 }
 
 func (n *namespace) List(ctx context.Context) ([]*v1.Namespace, error) {
@@ -63,16 +63,16 @@ func (n *namespace) Delete(ctx context.Context, name string) error {
 	return err
 }
 
-func newNamespace(cli *store.Clients) *namespace {
+func newNamespace(cli *store.ClientConfig) *namespace {
 	return &namespace{cli: cli}
 }
 
 type NameSpaceHandler struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
-func NewNameSpaceHandler(cli *store.Clients, ns string) *NameSpaceHandler {
+func NewNameSpaceHandler(cli *store.ClientConfig, ns string) *NameSpaceHandler {
 	return &NameSpaceHandler{cli: cli, ns: ns}
 }
 

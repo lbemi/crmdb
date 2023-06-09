@@ -37,7 +37,7 @@ func ListDeployments(c *gin.Context) {
 
 	namespace := c.Param("namespace")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -75,7 +75,7 @@ func GetDeployment(c *gin.Context) {
 
 	deploymentName := c.Param("deploymentName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -104,7 +104,7 @@ func CreateDeployment(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -135,7 +135,7 @@ func UpdateDeployment(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -159,7 +159,7 @@ func RollBackDeployment(c *gin.Context) {
 	deploymentName := c.Param("name")
 	reversion := c.Param("reversion")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -212,7 +212,7 @@ func DeleteDeployment(c *gin.Context) {
 
 	deploymentName := c.Param("deploymentName")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -237,7 +237,7 @@ func ScaleDeployments(c *gin.Context) {
 	scale := c.Param("scale")
 	scaleNum, err := strconv.Atoi(scale)
 	util.GinError(c, err, response.ErrCodeParameter)
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -256,7 +256,7 @@ func GetDeploymentPods(c *gin.Context) {
 	}
 	namespace := c.Param("namespace")
 	deploymentName := c.Param("deploymentName")
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -278,7 +278,7 @@ func GetDeploymentEvents(c *gin.Context) {
 	}
 	namespace := c.Param("namespace")
 	deploymentName := c.Param("deploymentName")
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -321,7 +321,7 @@ func SearchDeployments(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}

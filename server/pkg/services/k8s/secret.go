@@ -18,7 +18,7 @@ type SecretImp interface {
 }
 
 type secret struct {
-	client *store.Clients
+	client *store.ClientConfig
 	ns     string
 }
 
@@ -62,7 +62,7 @@ func (s *secret) Update(ctx context.Context, secret *v1.Secret) (*v1.Secret, err
 	return res, err
 }
 
-func newSecret(client *store.Clients, namespace string) *secret {
+func newSecret(client *store.ClientConfig, namespace string) *secret {
 	return &secret{client: client, ns: namespace}
 }
 

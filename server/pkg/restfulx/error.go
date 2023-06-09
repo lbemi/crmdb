@@ -2,6 +2,7 @@ package restfulx
 
 import (
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"runtime/debug"
 )
 
@@ -30,6 +31,9 @@ var (
 	OperatorErr    *OpsError = NewOpsErrCode(2001, "操作失败")
 
 	ParamErr *OpsError = NewOpsErrCode(3001, "参数错误")
+
+	//ks8相关
+	RegisterClusterErr *OpsError = NewOpsErrCode(5001, "注册失败")
 )
 
 func (oe *OpsError) Code() int16 {
@@ -72,8 +76,10 @@ func ErrIsNil(err error, oe *OpsError) {
 		panic(oe)
 	}
 }
+
 func ErrNotNilDebug(err error, oe *OpsError) {
 	if err != nil {
+		log.Logger.Error(err)
 		debug.PrintStack()
 		panic(oe)
 	}

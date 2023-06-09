@@ -18,7 +18,7 @@ type ConfigMapImp interface {
 }
 
 type configMap struct {
-	client *store.Clients
+	client *store.ClientConfig
 	ns     string
 }
 
@@ -62,16 +62,16 @@ func (s *configMap) Update(ctx context.Context, configMap *v1.ConfigMap) (*v1.Co
 	return res, err
 }
 
-func newConfigMap(client *store.Clients, namespace string) *configMap {
+func newConfigMap(client *store.ClientConfig, namespace string) *configMap {
 	return &configMap{client: client, ns: namespace}
 }
 
 type ConfigMapHandler struct {
-	client      *store.Clients
+	client      *store.ClientConfig
 	clusterName string
 }
 
-func NewConfigMapHandler(client *store.Clients, clusterName string) *ConfigMapHandler {
+func NewConfigMapHandler(client *store.ClientConfig, clusterName string) *ConfigMapHandler {
 	return &ConfigMapHandler{client: client, clusterName: clusterName}
 }
 

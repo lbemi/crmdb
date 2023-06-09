@@ -29,7 +29,7 @@ type NodeImp interface {
 }
 
 type node struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 }
 
 func (n *node) List(ctx context.Context) ([]*types.Node, error) {
@@ -184,7 +184,7 @@ func (n *node) Drain(ctx context.Context, name string) error {
 	return nil
 }
 
-func newNode(cli *store.Clients) *node {
+func newNode(cli *store.ClientConfig) *node {
 	return &node{cli: cli}
 }
 

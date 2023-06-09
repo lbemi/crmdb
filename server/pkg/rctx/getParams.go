@@ -3,6 +3,7 @@ package rctx
 import (
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/restfulx"
+	"io"
 	"strconv"
 )
 
@@ -78,4 +79,19 @@ func ShouldBind(rc *ReqCtx, data any) {
 	if err := rc.Request.ReadEntity(data); err != nil {
 		restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 	}
+}
+
+func FormFile(rc *ReqCtx, key string) []byte {
+	_, fileHeader, err := rc.Request.Request.FormFile(key)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+
+	file, err := fileHeader.Open()
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	bytes, err := io.ReadAll(file)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return bytes
+}
+
+func PostForm(rc *ReqCtx, key string) string {
+	return rc.Request.Request.PostFormValue(key)
 }

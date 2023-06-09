@@ -31,7 +31,7 @@ func ListPersistentVolumeClaim(c *gin.Context) {
 	}
 
 	namespace := c.Param("namespace")
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -71,7 +71,7 @@ func GetPersistentVolumeClaim(c *gin.Context) {
 
 	pvcName := c.Param("name")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -100,7 +100,7 @@ func CreatePersistentVolumeClaim(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -129,7 +129,7 @@ func UpdatePersistentVolumeClaim(c *gin.Context) {
 		return
 	}
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}
@@ -154,7 +154,7 @@ func DeletePersistentVolumeClaim(c *gin.Context) {
 
 	pvcName := c.Param("name")
 
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
+	if !core.V1.Cluster(clusterName).CheckHealth() {
 		response.Fail(c, response.ClusterNoHealth)
 		return
 	}

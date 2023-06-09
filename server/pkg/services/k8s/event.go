@@ -15,7 +15,7 @@ type EventImp interface {
 }
 
 type event struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
@@ -45,7 +45,7 @@ func (e *event) Get(ctx context.Context, name string) (*corev1.Event, error) {
 	return event, err
 }
 
-func newEvent(client *store.Clients, namespace string) *event {
+func newEvent(client *store.ClientConfig, namespace string) *event {
 	return &event{cli: client, ns: namespace}
 }
 

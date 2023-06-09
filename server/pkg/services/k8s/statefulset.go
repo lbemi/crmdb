@@ -18,7 +18,7 @@ type StatefulSetImp interface {
 }
 
 type statefulSet struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
@@ -63,7 +63,7 @@ func (d *statefulSet) Delete(ctx context.Context, name string) error {
 	return err
 }
 
-func newStatefulSet(cli *store.Clients, namespace string) *statefulSet {
+func newStatefulSet(cli *store.ClientConfig, namespace string) *statefulSet {
 	return &statefulSet{cli: cli, ns: namespace}
 }
 
