@@ -10,14 +10,16 @@ import (
 
 func (c *cluster) Create(config *form.ClusterReq) {
 	_, conf, err := c.factory.Cluster().GenerateClient(config.Name, config.KubeConfig)
-	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	restfulx.ErrNotNilDebug(err, restfulx.RegisterClusterErr)
 	c.factory.Cluster().Create(conf)
 }
 
 func (c *cluster) Delete(id uint64) {
 	info := c.factory.Cluster().Get(id)
-	go c.factory.Cluster().RemoveFromStore(info.Name)
 	c.factory.Cluster().Delete(id)
+	// 停止informer监听
+	c.factory.Cluster().ShutDownInformer(c.clusterName)
+	c.factory.Cluster().RemoveFromStore(info.Name)
 }
 
 func (c *cluster) Update(id uint64, config *cloud.Cluster) {
@@ -26,7 +28,6 @@ func (c *cluster) Update(id uint64, config *cloud.Cluster) {
 
 func (c *cluster) Get(id uint64) *cloud.Cluster {
 	return c.factory.Cluster().Get(id)
-
 }
 
 func (c *cluster) List() *[]cloud.Cluster {

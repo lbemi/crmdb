@@ -40,9 +40,10 @@ func ClusterRoutes() *restful.WebService {
 
 	ws.Route(ws.POST("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("cluster").WithHandle(cloud.CreateCluster).Do()
-	}).Doc("获取集群列表").Metadata(restfulspec.KeyOpenAPITags, tags).
+	}).Doc("导入据群").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.FormParameter("name", "集群名称").Required(true).DataType("string")).
-		Param(ws.MultiPartFormParameter("file", "kube config配置文件").Required(true).DataType("file")).
+		Param(ws.FormParameter("file", "kube config配置文件").Required(true).DataType("file")).
+		//Param(ws.MultiPartFormParameter("file", "kube config配置文件").Required(true).DataType("file")).
 		Returns(200, "success", nil))
 
 	ws.Route(ws.DELETE("/{id}").To(func(request *restful.Request, response *restful.Response) {

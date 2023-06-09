@@ -7,6 +7,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
 	"github.com/lbemi/lbemi/pkg/handler/types"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -15,13 +16,13 @@ import (
 )
 
 type DeploymentImp interface {
-	List(ctx context.Context) ([]*appsv1.Deployment, error)
-	Get(ctx context.Context, name string) (*appsv1.Deployment, error)
-	Create(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error)
-	Update(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error)
-	Delete(ctx context.Context, name string) error
-	Scale(ctx context.Context, name string, replicaNum int32) error
-	Search(ctx context.Context, key string, searchType int) ([]*appsv1.Deployment, error)
+	List(ctx context.Context) []*appsv1.Deployment
+	Get(ctx context.Context, name string) *appsv1.Deployment
+	Create(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment
+	Update(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment
+	Delete(ctx context.Context, name string)
+	Scale(ctx context.Context, name string, replicaNum int32)
+	Search(ctx context.Context, key string, searchType int) []*appsv1.Deployment
 }
 
 type Deployment struct {
@@ -33,73 +34,52 @@ func newDeployment(cli *store.ClientConfig, namespace string) *Deployment {
 	return &Deployment{cli: cli, namespace: namespace}
 }
 
-func (d *Deployment) List(ctx context.Context) ([]*appsv1.Deployment, error) {
+func (d *Deployment) List(ctx context.Context) []*appsv1.Deployment {
 	list, err := d.cli.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).List(labels.Everything())
-	if err != nil {
-		log.Logger.Error(err)
-		return []*appsv1.Deployment{}, fmt.Errorf("record not found")
-	}
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+
 	//按时间排序
 	sort.Slice(list, func(i, j int) bool {
 		return list[j].ObjectMeta.GetCreationTimestamp().Time.Before(list[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
-
-	return list, nil
+	return list
 }
 
-func (d *Deployment) Get(ctx context.Context, name string) (*appsv1.Deployment, error) {
+func (d *Deployment) Get(ctx context.Context, name string) *appsv1.Deployment {
 	dep, err := d.cli.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).Get(name)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return dep, err
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return dep
 }
 
-func (d *Deployment) Create(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error) {
+func (d *Deployment) Create(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment {
 	newDeployment, err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).Create(ctx, obj, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return newDeployment, err
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return newDeployment
 }
 
-func (d *Deployment) Update(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error) {
+func (d *Deployment) Update(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment {
 	updateDeployment, err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).Update(ctx, obj, metav1.UpdateOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return updateDeployment, err
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return updateDeployment
 }
 
-func (d *Deployment) Delete(ctx context.Context, name string) error {
+func (d *Deployment) Delete(ctx context.Context, name string) {
 	err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return err
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) error {
+func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) {
 	oldScale, err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).GetScale(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-		return err
-	}
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	oldScale.Spec.Replicas = replicaNum
 	_, err = d.cli.ClientSet.AppsV1().Deployments(d.namespace).UpdateScale(ctx, name, oldScale, metav1.UpdateOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return nil
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func (d *Deployment) Search(ctx context.Context, key string, searchType int) ([]*appsv1.Deployment, error) {
+func (d *Deployment) Search(ctx context.Context, key string, searchType int) []*appsv1.Deployment {
 	var deploymentList = make([]*appsv1.Deployment, 0)
-	deployments, err := d.List(ctx)
-	if err != nil {
-		log.Logger.Error(err)
-		return nil, err
-	}
+	deployments := d.List(ctx)
+
 	switch searchType {
 	case types.SearchByName:
 		// 遍历deployment，如果name包含key则保存返回
@@ -119,14 +99,14 @@ func (d *Deployment) Search(ctx context.Context, key string, searchType int) ([]
 			}
 		}
 	default:
-		return nil, fmt.Errorf("参数错误")
+		restfulx.ErrNotNilDebug(fmt.Errorf("参数错误"), restfulx.ParamErr)
 	}
 
 	sort.Slice(deploymentList, func(i, j int) bool {
 		return deploymentList[j].ObjectMeta.GetCreationTimestamp().Time.Before(deploymentList[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 
-	return deploymentList, nil
+	return deploymentList
 }
 
 type DeploymentHandler struct {

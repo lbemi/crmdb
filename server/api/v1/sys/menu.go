@@ -49,7 +49,7 @@ func ListMenus(rc *rctx.ReqCtx) {
 	menuTypeSlice := strings.Split(menuTypeStr, ",")
 	for _, t := range menuTypeSlice {
 		res, err := strconv.Atoi(t)
-		restfulx.ErrIsNil(err, restfulx.ParamErr)
+		restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 		menuType = append(menuType, int8(res))
 	}
 	page := rctx.QueryDefaultInt(rc, "page", 0)

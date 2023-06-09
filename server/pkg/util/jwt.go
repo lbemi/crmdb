@@ -51,7 +51,7 @@ func CreateToken(guardName string, user *sys.User) (tokenOut TokenOutPut) {
 	)
 	tokenStr, err := token.SignedString([]byte(Key))
 	if err != nil {
-		restfulx.ErrNotNil(err, "generate token failed")
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
 
 	tokenOut.Token = tokenStr

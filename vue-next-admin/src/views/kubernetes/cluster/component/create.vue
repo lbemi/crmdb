@@ -1,38 +1,36 @@
 /** * Created by lei on 2022/11/16 */
 <template>
-<!--	<div class="system-dept-dialog-container">-->
-		<el-dialog v-model="dialogVisible" style="width: 500px">
-			<template #header="{ titleId, titleClass }">
-				<div class="my-header">
-					<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
-					<el-divider />
-				</div>
-			</template>
-			<div class="dialog-body">
-				<el-form ref="ruleFormRef" :model="state" status-icon label-width="80px" class="demo-ruleForm"  :rules="clusterRule">
-					<el-form-item label="集群名称" prop="clusterName">
-						<el-input v-model="state.clusterName" autocomplete="off" />
-					</el-form-item>
-					<el-form-item label="配置文件">
-						<el-upload :limit="1" drag :auto-upload="false" :on-change="handleChange" multiple>
-							<el-icon class="el-icon--upload"><upload-filled /></el-icon>
-							<div class="el-upload__text">Drop file here or <em>click to upload</em></div>
-							<template #tip>
-								<div class="el-upload__tip">kube config files with a size less than 500kb</div>
-							</template>
-						</el-upload>
-					</el-form-item>
-				</el-form>
-
+	<el-dialog v-model="dialogVisible" style="width: 500px" @close="handleClose(ruleFormRef)">
+		<template #header="{ titleId, titleClass }">
+			<div class="my-header">
+				<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 			</div>
-			<template #footer>
-				<span class="dialog-footer">
-					<el-button type="primary" @click="submitForm(ruleFormRef)">创建</el-button>
-						<el-button @click="resetForm(ruleFormRef)">重置</el-button>
-				</span>
-			</template>
-		</el-dialog>
-<!--	</div>-->
+		</template>
+		<div class="dialog-body">
+			<el-form ref="ruleFormRef" :model="state" status-icon label-width="80px" class="demo-ruleForm"
+				:rules="clusterRule">
+				<el-form-item label="集群名称" prop="clusterName">
+					<el-input v-model="state.clusterName" autocomplete="off" size="small"  style="width: 350px;"/>
+				</el-form-item>
+				<el-form-item label="配置文件">
+					<el-upload   ref="uploadRef" :limit="1" drag :auto-upload="false" :on-change="handleChange" multiple style="width: 350px;" >
+						<el-icon class="el-icon--upload"><upload-filled /></el-icon>
+						<div class="el-upload__text">拖拽文件到这里 <em>或者点击上传</em></div>
+						<template #tip>
+							<div class="el-upload__tip">kubernetes 配置文件大小小于500kb</div>
+						</template>
+					</el-upload>
+				</el-form-item>
+			</el-form>
+
+		</div>
+		<template #footer>
+			<span class="dialog-footer">
+				<el-button type="primary" size="small" @click="submitForm(ruleFormRef)">创建</el-button>
+				<el-button  size="small" @click="resetForm(ruleFormRef)">重置</el-button>
+			</span>
+		</template>
+	</el-dialog>
 </template>
 
 <script setup lang="ts" name="kubernetesDialog">
@@ -45,7 +43,7 @@ import { useClusterApi } from '/@/api/kubernetes/cluster';
 const clusterApi = useClusterApi();
 const ruleFormRef = ref();
 const newFormData = new FormData();
-
+const uploadRef = ref();
 // 定义子组件向父组件传值/事件
 const emits = defineEmits(['update:dialogVisible', 'valueChange']);
 // 获取父组件传递的值
@@ -84,14 +82,16 @@ const submitForm = (formEl: FormInstance | undefined) => {
 			newFormData.append('name', state.clusterName);
 			await clusterApi
 				.createCluster(newFormData, requestConfig.headers)
-				.then(() => {
+				.then((res) => {
 					emits('valueChange');
 					handleClose(formEl);
-					ElMessage.success('添加成功');
+					ElMessage.success(res.message);
 				})
-				.catch(() => {
+				.catch((e) => {
 					newFormData.delete('file');
 					newFormData.delete('name');
+					ElMessage.error(e.message)
+					handleClose(formEl);
 				});
 		} else {
 			ElMessage.error('请正确填写!');
@@ -103,6 +103,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
 const resetForm = (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	formEl.resetFields();
+	uploadRef.value.clearFiles();
 };
 
 const handleClose = (formEl: FormInstance | undefined) => {

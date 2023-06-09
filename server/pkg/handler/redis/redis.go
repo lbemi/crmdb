@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type RedisGeeter interface {
+type RedisGetter interface {
 	Redis() IRedis
 }
 
@@ -31,9 +31,9 @@ func (r *Redis) Get(key string) *redis.StringCmd {
 }
 
 func (r *Redis) Set(key string, value interface{}, expiration time.Duration) {
-	restfulx.ErrNotNil(r.cli.Set(key, value, expiration).Err(), "set redis failed")
+	restfulx.ErrNotNilDebug(r.cli.Set(key, value, expiration).Err(), restfulx.OperatorErr)
 }
 
 func (r *Redis) SetNX(key string, value interface{}, expiration time.Duration) {
-	restfulx.ErrNotNil(r.cli.SetNX(key, value, expiration).Err(), "set expiration key failed")
+	restfulx.ErrNotNilDebug(r.cli.SetNX(key, value, expiration).Err(), restfulx.OperatorErr)
 }

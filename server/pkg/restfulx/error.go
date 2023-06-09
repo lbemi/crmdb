@@ -6,11 +6,6 @@ import (
 	"runtime/debug"
 )
 
-type OpsError struct {
-	code    int16
-	message string
-}
-
 var (
 	Success      *OpsError = NewOpsErrCode(200, "success")
 	ServerErr    *OpsError = NewOpsErrCode(500, "服务器内部错误")
@@ -33,16 +28,17 @@ var (
 	ParamErr *OpsError = NewOpsErrCode(3001, "参数错误")
 
 	//ks8相关
-	RegisterClusterErr *OpsError = NewOpsErrCode(5001, "注册失败")
+	RegisterClusterErr *OpsError = NewOpsErrCode(5001, "导入集群失败，请检查配置文件")
+	ClusterUnHealth    *OpsError = NewOpsErrCode(5002, "集群异常，请检查")
 )
+
+type OpsError struct {
+	code    int16
+	message string
+}
 
 func (oe *OpsError) Code() int16 {
 	return oe.code
-}
-
-func (oe *OpsError) AddErrMsg(msg ...interface{}) *OpsError {
-	oe.message = fmt.Sprintf(oe.message, msg...)
-	return oe
 }
 
 func (oe *OpsError) Error() string {
@@ -87,7 +83,6 @@ func ErrNotNilDebug(err error, oe *OpsError) {
 
 func ErrNotTrue(exp bool, err *OpsError) {
 	if !exp {
-		//log.Logger.Error(message.message)
 		panic(err)
 	}
 }

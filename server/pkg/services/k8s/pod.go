@@ -7,6 +7,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
 	"github.com/lbemi/lbemi/pkg/handler/types"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	corev1 "k8s.io/api/core/v1"
 	policy "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,16 +20,16 @@ import (
 )
 
 type PodImp interface {
-	List(ctx context.Context) ([]*corev1.Pod, error)
-	Get(ctx context.Context, name string) (*corev1.Pod, error)
-	Create(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error)
-	Update(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error)
-	Delete(ctx context.Context, name string) error
-	GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) ([]*corev1.Pod, error)
-	PodExec(ctx context.Context, namespace, pod, container string, command []string) (remotecommand.Executor, error)
+	List(ctx context.Context) []*corev1.Pod
+	Get(ctx context.Context, name string) *corev1.Pod
+	Create(ctx context.Context, obj *corev1.Pod) *corev1.Pod
+	Update(ctx context.Context, obj *corev1.Pod) *corev1.Pod
+	Delete(ctx context.Context, name string)
+	GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) []*corev1.Pod
+	PodExec(ctx context.Context, namespace, pod, container string, command []string) remotecommand.Executor
 	GetPodLog(ctx context.Context, pod, container string) *rest.Request
-	EvictsPod(ctx context.Context, name, namespace string) error
-	Search(ctx context.Context, key string, searchType int) ([]*corev1.Pod, error)
+	EvictsPod(ctx context.Context, name, namespace string)
+	Search(ctx context.Context, key string, searchType int) []*corev1.Pod
 }
 
 type pod struct {
@@ -40,60 +41,45 @@ func newPod(cli *store.ClientConfig, ns string) *pod {
 	return &pod{cli: cli, ns: ns}
 }
 
-func (p *pod) List(ctx context.Context) ([]*corev1.Pod, error) {
+func (p *pod) List(ctx context.Context) []*corev1.Pod {
 	list, err := p.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(p.ns).List(labels.Everything())
-	if err != nil {
-		log.Logger.Error(err)
-	}
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 
 	sort.Slice(list, func(i, j int) bool {
 		return list[j].ObjectMeta.CreationTimestamp.Time.Before(list[i].ObjectMeta.CreationTimestamp.Time)
 	})
 
-	return list, err
+	return list
 }
 
-func (p *pod) Get(ctx context.Context, name string) (*corev1.Pod, error) {
+func (p *pod) Get(ctx context.Context, name string) *corev1.Pod {
 	dep, err := p.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(p.ns).Get(name)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return dep, err
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return dep
 }
 
-func (p *pod) Create(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error) {
+func (p *pod) Create(ctx context.Context, obj *corev1.Pod) *corev1.Pod {
 	newPod, err := p.cli.ClientSet.CoreV1().Pods(p.ns).Create(ctx, obj, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return newPod, err
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return newPod
 }
 
-func (p *pod) Update(ctx context.Context, obj *corev1.Pod) (*corev1.Pod, error) {
+func (p *pod) Update(ctx context.Context, obj *corev1.Pod) *corev1.Pod {
 	updatePod, err := p.cli.ClientSet.CoreV1().Pods(p.ns).Update(ctx, obj, metav1.UpdateOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return updatePod, err
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return updatePod
 }
 
-func (p *pod) Delete(ctx context.Context, name string) error {
+func (p *pod) Delete(ctx context.Context, name string) {
 	err := p.cli.ClientSet.CoreV1().Pods(p.ns).Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return err
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func (p *pod) GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) ([]*corev1.Pod, error) {
+func (p *pod) GetPodByLabels(ctx context.Context, namespace string, label []map[string]string) []*corev1.Pod {
 
 	res := make([]*corev1.Pod, 0)
 	pods, err := p.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(namespace).List(labels.Everything())
-
-	if err != nil {
-		log.Logger.Error(err)
-		return nil, err
-	}
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	for _, item := range pods {
 		for _, l := range label {
 			i := 0
@@ -109,10 +95,10 @@ func (p *pod) GetPodByLabels(ctx context.Context, namespace string, label []map[
 			}
 		}
 	}
-	return res, nil
+	return res
 }
 
-func (p *pod) PodExec(ctx context.Context, namespace, pod, container string, command []string) (remotecommand.Executor, error) {
+func (p *pod) PodExec(ctx context.Context, namespace, pod, container string, command []string) remotecommand.Executor {
 	option := &corev1.PodExecOptions{
 		Container: container,
 		Command:   command,
@@ -125,11 +111,8 @@ func (p *pod) PodExec(ctx context.Context, namespace, pod, container string, com
 		Name(pod).SubResource("exec").Param("color", "true").
 		VersionedParams(option, scheme.ParameterCodec)
 	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
-	if err != nil {
-		log.Logger.Error(err)
-		return nil, err
-	}
-	return executor, nil
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return executor
 }
 
 func (p *pod) GetPodLog(ctx context.Context, pod, container string) *rest.Request {
@@ -144,7 +127,7 @@ func (p *pod) GetPodLog(ctx context.Context, pod, container string) *rest.Reques
 }
 
 // EvictsPod 驱逐pod
-func (p *pod) EvictsPod(ctx context.Context, name, namespace string) error {
+func (p *pod) EvictsPod(ctx context.Context, name, namespace string) {
 	// Pod优雅退出时间, 默认退出时间30s, 如果未指定, 则默认为每个对象的值。0表示立即删除。
 	var gracePeriodSeconds int64 = 0
 	propagationPolicy := metav1.DeletePropagationForeground
@@ -152,22 +135,20 @@ func (p *pod) EvictsPod(ctx context.Context, name, namespace string) error {
 		GracePeriodSeconds: &gracePeriodSeconds,
 		PropagationPolicy:  &propagationPolicy,
 	}
-	return p.cli.ClientSet.PolicyV1beta1().Evictions(namespace).Evict(ctx, &policy.Eviction{
+	err := p.cli.ClientSet.PolicyV1beta1().Evictions(namespace).Evict(ctx, &policy.Eviction{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
 		DeleteOptions: deleteOptions,
 	})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func (p *pod) Search(ctx context.Context, key string, searchType int) ([]*corev1.Pod, error) {
+func (p *pod) Search(ctx context.Context, key string, searchType int) []*corev1.Pod {
 	var podList = make([]*corev1.Pod, 0)
-	pods, err := p.List(ctx)
-	if err != nil {
-		log.Logger.Error(err)
-		return nil, err
-	}
+	pods := p.List(ctx)
+
 	switch searchType {
 	case types.SearchByName:
 		for _, item := range pods {
@@ -185,14 +166,14 @@ func (p *pod) Search(ctx context.Context, key string, searchType int) ([]*corev1
 			}
 		}
 	default:
-		return nil, fmt.Errorf("参数错误")
+		restfulx.ErrNotNilDebug(fmt.Errorf("参数错误"), restfulx.ParamErr)
 	}
 
 	sort.Slice(podList, func(i, j int) bool {
 		return podList[j].ObjectMeta.GetCreationTimestamp().Time.Before(podList[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 
-	return podList, nil
+	return podList
 }
 
 type PodHandler struct {

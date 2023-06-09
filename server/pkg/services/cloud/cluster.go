@@ -33,6 +33,7 @@ type ICluster interface {
 
 	RemoveFromStore(name string)
 	StartInformer(clusterName string)
+	ShutDownInformer(clusterName string)
 }
 
 type Cluster struct {
@@ -184,6 +185,8 @@ func (c *Cluster) RemoveFromStore(name string) {
 }
 
 func (c *Cluster) GetClient(name string) *store.ClientConfig {
+	health := c.CheckCusterHealth(name)
+	restfulx.ErrNotTrue(health, restfulx.ClusterUnHealth)
 	return c.store.Get(name)
 }
 
@@ -211,4 +214,9 @@ func (c *Cluster) StartInformer(clusterName string) {
 	client.SharedInformerFactory.Start(stopChan)
 	// 等待informer同步完成
 	client.SharedInformerFactory.WaitForCacheSync(stopChan)
+}
+
+func (c *Cluster) ShutDownInformer(clusterName string) {
+	client := c.store.Get(clusterName)
+	client.SharedInformerFactory.Shutdown()
 }
