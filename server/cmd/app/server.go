@@ -92,7 +92,7 @@ func initRouter(router *gin.Engine) {
 	//v1.Use(middleware.JWTAuth())
 
 	//注册业务路由
-	sys.NewUserRouter(v1)
+	//sys.NewUserRouter(v1)
 	sys.NewMenuRouter(v1)
 	sys.NewRoleRouter(v1)
 	asset.NewHostRouter(v1)
