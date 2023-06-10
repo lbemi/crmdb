@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type EventImp interface {
@@ -29,6 +30,9 @@ func (e *event) ListByLabels(ctx context.Context, labelsData labels.Set) []*core
 func (e *event) List(ctx context.Context) []*corev1.Event {
 	eventList, err := e.cli.SharedInformerFactory.Core().V1().Events().Lister().Events(e.ns).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	sort.Slice(eventList, func(i, j int) bool {
+		return eventList[j].ObjectMeta.CreationTimestamp.Time.Before(eventList[i].ObjectMeta.CreationTimestamp.Time)
+	})
 	return eventList
 }
 

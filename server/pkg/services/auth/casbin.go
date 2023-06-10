@@ -132,7 +132,9 @@ func (c *authentication) DeleteRolePermissionWithRole(roleId uint64, resource ..
 }
 
 func (c *authentication) UpdatePermissions(oldPath, oldMethod, newPath, newMethod string) error {
-	return c.db.Model(&rules.Rule{}).Where("v1 =? and v2 =?", oldPath, oldMethod).Updates(&rules.Rule{Path: newPath, Method: newMethod}).Error
+	err := c.db.Model(&rules.Rule{}).Where("v1 =? and v2 =?", oldPath, oldMethod).Updates(&rules.Rule{Path: newPath, Method: newMethod}).Error
+	c.enforcer.LoadPolicy()
+	return err
 	//_, err := c.enforcer.UpdatePolicy(oldPolicy, newPolicy)
 	//if err != nil {
 	//	return err

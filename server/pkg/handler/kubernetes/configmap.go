@@ -14,7 +14,7 @@ type ConfigMapGetter interface {
 }
 
 type IConfigMap interface {
-	List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult
+	List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageConfigMap
 	Get(ctx context.Context, name string) *v1.ConfigMap
 	Delete(ctx context.Context, name string)
 	Create(ctx context.Context, node *v1.ConfigMap) *v1.ConfigMap
@@ -29,10 +29,9 @@ func NewConfigMap(k8s *k8s.Factory) *configMap {
 	return &configMap{k8s: k8s}
 }
 
-func (s *configMap) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
+func (s *configMap) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageConfigMap {
 	data := s.k8s.ConfigMap().List(ctx)
-	res := &form.PageResult{}
-
+	res := &form.PageConfigMap{}
 	var configMapList = make([]*v1.ConfigMap, 0)
 
 	if name != "" {

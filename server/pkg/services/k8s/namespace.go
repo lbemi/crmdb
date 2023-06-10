@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type NamespaceImp interface {
@@ -24,6 +25,9 @@ type namespace struct {
 func (n *namespace) List(ctx context.Context) []*v1.Namespace {
 	list, err := n.cli.SharedInformerFactory.Core().V1().Namespaces().Lister().List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	sort.Slice(list, func(i, j int) bool {
+		return list[j].ObjectMeta.CreationTimestamp.Time.Before(list[i].ObjectMeta.CreationTimestamp.Time)
+	})
 	return list
 }
 

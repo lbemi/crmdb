@@ -3,12 +3,15 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/model"
+	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
+	"strings"
 )
 
 type DeploymentGetter interface {
@@ -16,7 +19,7 @@ type DeploymentGetter interface {
 }
 
 type IDeployment interface {
-	List(ctx context.Context) []*appsv1.Deployment
+	List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult
 	Get(ctx context.Context, name string) *appsv1.Deployment
 	Create(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment
 	Update(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment
@@ -40,8 +43,44 @@ func NewDeployment(k8s *k8s.Factory) *Deployment {
 	return deployment
 }
 
-func (d *Deployment) List(ctx context.Context) []*appsv1.Deployment {
-	return d.k8s.Deployment().List(ctx)
+func (d *Deployment) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
+	data := d.k8s.Deployment().List(ctx)
+	res := &form.PageResult{}
+	total := len(data)
+	var deploymentList = make([]*appsv1.Deployment, 0)
+
+	if name != "" {
+		for _, item := range data {
+			if strings.Contains(item.Name, name) {
+				deploymentList = append(deploymentList, item)
+			}
+		}
+		data = deploymentList
+	}
+
+	if label != "" {
+		for _, item := range data {
+			if strings.Contains(item.Name, label) {
+				deploymentList = append(deploymentList, item)
+			}
+		}
+		data = deploymentList
+	}
+	// 未传递分页查询参数
+	if query.Limit == 0 && query.Page == 0 {
+		res.Data = data
+	} else {
+		if total <= query.Limit {
+			res.Data = data
+		} else if query.Page*query.Limit >= total {
+			res.Data = data[(query.Page-1)*query.Limit : total]
+		} else {
+			res.Data = data[(query.Page-1)*query.Limit : query.Page*query.Limit]
+		}
+	}
+	res.Total = int64(total)
+
+	return res
 }
 
 func (d *Deployment) Get(ctx context.Context, name string) *appsv1.Deployment {

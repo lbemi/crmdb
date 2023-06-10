@@ -24,6 +24,9 @@ type Replicaset struct {
 func (r *Replicaset) List(ctx context.Context) []*appsv1.ReplicaSet {
 	replicaSets, err := r.cli.SharedInformerFactory.Apps().V1().ReplicaSets().Lister().ReplicaSets(r.ns).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	sort.Slice(replicaSets, func(i, j int) bool {
+		return replicaSets[j].ObjectMeta.CreationTimestamp.Time.Before(replicaSets[i].ObjectMeta.CreationTimestamp.Time)
+	})
 	return replicaSets
 }
 

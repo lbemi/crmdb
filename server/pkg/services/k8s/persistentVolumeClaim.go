@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type PersistentVolumeClaimImp interface {
@@ -23,9 +24,12 @@ type persistentVolumeClaim struct {
 }
 
 func (s *persistentVolumeClaim) List(ctx context.Context) []*v1.PersistentVolumeClaim {
-	nodeList, err := s.client.SharedInformerFactory.Core().V1().PersistentVolumeClaims().Lister().PersistentVolumeClaims(s.ns).List(labels.Everything())
+	list, err := s.client.SharedInformerFactory.Core().V1().PersistentVolumeClaims().Lister().PersistentVolumeClaims(s.ns).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
-	return nodeList
+	sort.Slice(list, func(i, j int) bool {
+		return list[j].ObjectMeta.CreationTimestamp.Time.Before(list[i].ObjectMeta.CreationTimestamp.Time)
+	})
+	return list
 }
 
 func (s *persistentVolumeClaim) Get(ctx context.Context, name string) *v1.PersistentVolumeClaim {

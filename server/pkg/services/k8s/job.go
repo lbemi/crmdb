@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type JobImp interface {
@@ -25,6 +26,9 @@ type job struct {
 func (d *job) List(ctx context.Context) []*v1.Job {
 	list, err := d.cli.SharedInformerFactory.Batch().V1().Jobs().Lister().Jobs(d.ns).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	sort.Slice(list, func(i, j int) bool {
+		return list[j].ObjectMeta.CreationTimestamp.Time.Before(list[i].ObjectMeta.CreationTimestamp.Time)
+	})
 	return list
 }
 

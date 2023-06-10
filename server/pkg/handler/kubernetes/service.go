@@ -2,11 +2,12 @@ package kubernetes
 
 import (
 	"context"
-	"sort"
-
 	"github.com/lbemi/lbemi/pkg/handler/types"
+	"github.com/lbemi/lbemi/pkg/model"
+	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	v1 "k8s.io/api/core/v1"
+	"strings"
 )
 
 type ServiceGetter interface {
@@ -14,7 +15,7 @@ type ServiceGetter interface {
 }
 
 type IService interface {
-	List(ctx context.Context) []*v1.Service
+	List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult
 	Get(ctx context.Context, name string) *v1.Service
 	Delete(ctx context.Context, name string)
 	Create(ctx context.Context, node *v1.Service) *v1.Service
@@ -30,13 +31,43 @@ func NewService(k8s *k8s.Factory) *service {
 	return &service{k8s: k8s}
 }
 
-func (s *service) List(ctx context.Context) []*v1.Service {
-	serviceList := s.k8s.Service().List(ctx)
-	//按时间排序
-	sort.Slice(serviceList, func(i, j int) bool {
-		return serviceList[j].ObjectMeta.GetCreationTimestamp().Time.Before(serviceList[i].ObjectMeta.GetCreationTimestamp().Time)
-	})
-	return serviceList
+func (s *service) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
+	data := s.k8s.Service().List(ctx)
+	res := &form.PageResult{}
+	var serviceList = make([]*v1.Service, 0)
+	if name != "" {
+		for _, item := range data {
+			if strings.Contains(item.Name, name) {
+				serviceList = append(serviceList, item)
+			}
+		}
+		data = serviceList
+	}
+
+	if label != "" {
+		for _, item := range data {
+			if strings.Contains(item.Name, label) {
+				serviceList = append(serviceList, item)
+			}
+		}
+		data = serviceList
+	}
+
+	total := len(data)
+	// 未传递分页查询参数
+	if query.Limit == 0 && query.Page == 0 {
+		res.Data = data
+	} else {
+		if total <= query.Limit {
+			res.Data = data
+		} else if query.Page*query.Limit >= total {
+			res.Data = data[(query.Page-1)*query.Limit : total]
+		} else {
+			res.Data = data[(query.Page-1)*query.Limit : query.Page*query.Limit]
+		}
+	}
+	res.Total = int64(total)
+	return res
 }
 
 func (s *service) ListWorkLoad(ctx context.Context, name string) *types.ServiceWorkLoad {

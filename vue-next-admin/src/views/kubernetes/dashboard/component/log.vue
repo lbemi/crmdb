@@ -65,7 +65,6 @@ const state = reactive({
 		cloud: '',
 		page: 1,
 		limit: 10,
-		namespace: '',
 	},
 	total: 0,
 	loading: false,
@@ -78,7 +77,6 @@ const filterTag = (value: string, row: Event) => {
 const listEvent = () => {
 	state.loading = true;
 	state.query.cloud = k8sStore.state.activeCluster;
-	state.query.namespace = 'all';
 	eventApi.getEventLog('all', state.query).then((res) => {
 		if (res.data.data) {
 			state.events = res.data.data;

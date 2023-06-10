@@ -3,10 +3,6 @@ package app
 import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/cmd/app/option"
-	"github.com/lbemi/lbemi/routes"
-	"github.com/lbemi/lbemi/routes/asset"
-	"github.com/lbemi/lbemi/routes/cloud"
-	"github.com/lbemi/lbemi/routes/sys"
 	"github.com/spf13/cobra"
 	"net/http"
 	"os"
@@ -84,20 +80,20 @@ func initRouter(router *gin.Engine) {
 		middleware.GinRecovery(true),
 		middleware.Cross())
 
-	v1 := router.Group("/api/v1")
+	//v1 := router.Group("/api/v1")
 
 	// 注册不需要鉴权路由
-	routes.PassThroughRoutes(v1)
+	//routes.PassThroughRoutes(v1)
 	// 中间件middleware.CasbinMiddleware()
 	//v1.Use(middleware.JWTAuth())
 
 	//注册业务路由
 	//sys.NewUserRouter(v1)
-	sys.NewMenuRouter(v1)
-	sys.NewRoleRouter(v1)
-	asset.NewHostRouter(v1)
+	//sys.NewMenuRouter(v1)
+	//sys.NewRoleRouter(v1)
+	//asset.NewHostRouter(v1)
 
 	//注册kubernetes 路由
-	cloud.NewClusterRoutes(v1)
-	cloud.NewResourceRoute(v1)
+	//cloud.NewClusterRoutes(v1)
+	//cloud.NewResourceRoute(v1)
 }

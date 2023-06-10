@@ -4,21 +4,21 @@ export function useDeploymentApi() {
 	return {
 		listDeployment: (ns: string, param: any) => {
 			return request({
-				url: '/deployment/' + ns,
+				url: '/deployments/namespaces/' + ns,
 				method: 'get',
 				params: param,
 			});
 		},
 		searchDeployment: (ns: string, param: any) => {
 			return request({
-				url: `/deployment/${ns}/search`,
+				url: `/deployments/namespaces/${ns}/search`,
 				method: 'get',
 				params: param,
 			});
 		},
 		createDeployment: (param: any, data: any) => {
 			return request({
-				url: '/deployment',
+				url: '/deployments',
 				method: 'post',
 				params: param,
 				data: data,
@@ -26,7 +26,7 @@ export function useDeploymentApi() {
 		},
 		updateLabel: (param: any, data: any) => {
 			return request({
-				url: '/node',
+				url: '/deployments',
 				method: 'patch',
 				params: param,
 				data: data,
@@ -34,35 +34,35 @@ export function useDeploymentApi() {
 		},
 		detailDeployment: (ns: string, depName: string, param: any) => {
 			return request({
-				url: '/deployment/' + ns + '/' + depName + '/pod',
+				url: '/deployments/namespaces' + ns + '/' + depName + '/pods',
 				method: 'get',
 				params: param,
 			});
 		},
 		getDeploymentEvents: (ns: string, depName: string, param: any) => {
 			return request({
-				url: '/deployment/' + ns + '/' + depName + '/event',
+				url: '/deployments/namespaces/' + ns + '/' + depName + '/event',
 				method: 'get',
 				params: param,
 			});
 		},
 		deleteDeployment: (ns: string, name: string, param: any) => {
 			return request({
-				url: `/deployment/${ns}/${name}`,
+				url: `/deployments/namespaces/${ns}/${name}`,
 				method: 'delete',
 				params: param,
 			});
 		},
 		scaleDeployment: (ns: string, name: string, n: number, param: any) => {
 			return request({
-				url: `/deployment/${ns}/${name}/${n}`,
+				url: `/deployments/namespaces/${ns}/${name}/${n}`,
 				method: 'put',
 				params: param,
 			});
 		},
 		updateDeployment: (data: any, param: any) => {
 			return request({
-				url: `/deployment`,
+				url: `/deployments`,
 				method: 'put',
 				data: data,
 				params: param,
@@ -70,7 +70,7 @@ export function useDeploymentApi() {
 		},
 		reDeployDeployment: (ns: string, name: string, param: any) => {
 			return request({
-				url: `/deployment/redeploy/${ns}/${name}`,
+				url: `/deployments/namespaces/${ns}/redeploy/${name}`,
 				method: 'put',
 				params: param,
 			});
@@ -78,7 +78,7 @@ export function useDeploymentApi() {
 		// /rollback/:namespace/:name/:reversion
 		rollBackDeployment: (ns: string, name: string, reversion: string, param: any) => {
 			return request({
-				url: `/deployment/rollback/${ns}/${name}/${reversion}`,
+				url: `/deployments/namespaces/${ns}/rollback/${name}/${reversion}`,
 				method: 'put',
 				params: param,
 			});

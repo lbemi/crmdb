@@ -31,10 +31,10 @@ func ClusterRoutes() *restful.WebService {
 		Writes([]clusterModel.Cluster{}).
 		Returns(200, "success", []clusterModel.Cluster{}))
 
-	ws.Route(ws.GET("/{id}").To(func(request *restful.Request, response *restful.Response) {
+	ws.Route(ws.GET("/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("cluster").WithHandle(cloud.GetCluster).Do()
 	}).Doc("根据id获取集群信息").Metadata(restfulspec.KeyOpenAPITags, tags).
-		Param(ws.PathParameter("id", "集群id").DataType("string")).
+		Param(ws.PathParameter("name", "集群id").DataType("string")).
 		Writes(clusterModel.Cluster{}).
 		Returns(200, "success", clusterModel.Cluster{}))
 

@@ -53,6 +53,10 @@ func (n *node) List(ctx context.Context) []*types.Node {
 		nodes = append(nodes, item)
 	}
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	// 按创建时间排序排序
+	sort.Slice(nodeList, func(i, j int) bool {
+		return nodeList[j].ObjectMeta.GetCreationTimestamp().Time.After(nodeList[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
 	return nodes
 }
 

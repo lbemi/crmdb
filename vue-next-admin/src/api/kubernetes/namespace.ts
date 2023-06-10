@@ -6,14 +6,14 @@ export function useNamespaceApi() {
 	return {
 		listNamespace: (param: Object) => {
 			return request({
-				url: '/namespace',
+				url: '/namespaces',
 				method: 'get',
 				params: param,
 			});
 		},
 		updateNamespace: (param: Object, namespace: Namespace) => {
 			return request({
-				url: '/namespace',
+				url: '/namespaces',
 				method: 'put',
 				params: param,
 				data: namespace,
@@ -21,7 +21,7 @@ export function useNamespaceApi() {
 		},
 		createNamespace: (param: Object, namespace: Namespace) => {
 			return request({
-				url: '/namespace',
+				url: '/namespaces',
 				method: 'post',
 				params: param,
 				data: namespace,
@@ -29,7 +29,7 @@ export function useNamespaceApi() {
 		},
 		deleteNamespace: (param: Object, namespaceName: string) => {
 			return request({
-				url: `/namespace/${namespaceName}`,
+				url: `/namespaces/${namespaceName}`,
 				method: 'delete',
 				params: param,
 			});

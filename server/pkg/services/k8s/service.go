@@ -9,6 +9,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type ServiceImp interface {
@@ -26,9 +27,13 @@ type service struct {
 }
 
 func (s *service) List(ctx context.Context) []*v1.Service {
-	list, err := s.client.SharedInformerFactory.Core().V1().Services().Lister().Services(s.ns).List(labels.Everything())
+	serviceList, err := s.client.SharedInformerFactory.Core().V1().Services().Lister().Services(s.ns).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
-	return list
+	//按时间排序
+	sort.Slice(serviceList, func(i, j int) bool {
+		return serviceList[j].ObjectMeta.GetCreationTimestamp().Time.Before(serviceList[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
+	return serviceList
 }
 func (s *service) ListWorkLoad(ctx context.Context, name string) *types.ServiceWorkLoad {
 	workLoad := &types.ServiceWorkLoad{

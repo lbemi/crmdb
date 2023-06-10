@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type IngressesImp interface {
@@ -23,9 +24,12 @@ type ingresses struct {
 }
 
 func (s *ingresses) List(ctx context.Context) []*v1.Ingress {
-	list, err := s.client.SharedInformerFactory.Networking().V1().Ingresses().Lister().Ingresses(s.ns).List(labels.Everything())
+	ingressList, err := s.client.SharedInformerFactory.Networking().V1().Ingresses().Lister().Ingresses(s.ns).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
-	return list
+	sort.Slice(ingressList, func(i, j int) bool {
+		return ingressList[j].ObjectMeta.CreationTimestamp.Time.Before(ingressList[i].ObjectMeta.CreationTimestamp.Time)
+	})
+	return ingressList
 }
 
 func (s *ingresses) Get(ctx context.Context, name string) *v1.Ingress {

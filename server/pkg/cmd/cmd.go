@@ -58,8 +58,24 @@ func run(cmd *cobra.Command, args []string) {
 		sys.MenuRoutes(),
 		logsys.LoginLogRoutes(),
 		logsys.OperatorLogRoutes(),
+		cloud.WebSocketRoutes(),
 		//k8s集群
 		cloud.ClusterRoutes(),
+		cloud.KubernetesConfigMapRoutes(),
+		cloud.KubernetesCronJobRoutes(),
+		cloud.KubernetesDaemonSetRoutes(),
+		cloud.KubernetesDeploymentRoutes(),
+		cloud.KubernetesEventRoutes(),
+		cloud.KubernetesIngressRoutes(),
+		cloud.KubernetesJobRoutes(),
+		cloud.KubernetesNamespaceRoutes(),
+		cloud.KubernetesNodeRoutes(),
+		cloud.KubernetesPersistentVolumeClaimRoutes(),
+		cloud.KubernetesPodRoutes(),
+		cloud.KubernetesReplicaSetRoutes(),
+		cloud.KubernetesSecretRoutes(),
+		cloud.KubernetesServiceRoutes(),
+		cloud.KubernetesStatefulSetRoutes(),
 	)
 
 	//注册swagger路由

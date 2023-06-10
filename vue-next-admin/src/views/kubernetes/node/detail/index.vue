@@ -427,7 +427,7 @@ const podUsage = () => {
 };
 const podRestart = (status: PodStatus) => {
 	let count = 0;
-	status.containerStatuses!.forEach((item) => {
+	status.containerStatuses!.forEach((item:any) => {
 		count += item.restartCount;
 	});
 	return count;
@@ -482,8 +482,7 @@ const refreshCurrentTagsView = () => {
 };
 const handleSelectionChange = () => {};
 const getEvents = async () => {
-	const pod = podStore.state.podDetail;
-	const res = await podApi.podEvents(pod.metadata!.namespace, pod.metadata!.name, data.param);
+	const res = await nodeApi.getNodeEvents(k8sStore.state.activeNode.metadata!.name!, data.param);
 	data.events = res.data;
 };
 const jumpPodExec = (p: Pod) => {

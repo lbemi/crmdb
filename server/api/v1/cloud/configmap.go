@@ -8,11 +8,11 @@ import (
 
 func ListConfigMaps(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
-	clusterName := rc.QueryCloud("cloud")
-	pageParam := rc.GetPageQueryParam()
-	name := rc.QueryCloud("name")
-	label := rc.QueryCloud("label")
 	namespace := rc.PathParam("namespace")
+	clusterName := rc.QueryCloud()
+	pageParam := rc.GetPageQueryParam()
+	name := rc.Query("name")
+	label := rc.Query("label")
 	rc.ResData = core.V1.Cluster(clusterName).ConfigMaps(namespace).List(c, pageParam, name, label)
 }
 

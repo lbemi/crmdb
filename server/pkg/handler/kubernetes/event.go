@@ -2,10 +2,11 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/model"
+	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"sort"
 )
 
 type EventGetter interface {
@@ -13,7 +14,7 @@ type EventGetter interface {
 }
 
 type IEvent interface {
-	List(ctx context.Context) []*v1.Event
+	List(ctx context.Context, query *model.PageParam) *form.PageResult
 	Get(ctx context.Context, name string) *v1.Event
 	ListByLabels(ctx context.Context, labelsData labels.Set) []*v1.Event
 }
@@ -26,12 +27,24 @@ func NewEvent(k8s *k8s.Factory) *event {
 	return &event{k8s: k8s}
 }
 
-func (e *event) List(ctx context.Context) []*v1.Event {
-	eventList := e.k8s.Event().List(ctx)
-	sort.Slice(eventList, func(i, j int) bool {
-		return eventList[j].ObjectMeta.CreationTimestamp.Time.Before(eventList[i].ObjectMeta.CreationTimestamp.Time)
-	})
-	return eventList
+func (e *event) List(ctx context.Context, query *model.PageParam) *form.PageResult {
+	data := e.k8s.Event().List(ctx)
+	res := &form.PageResult{}
+	total := len(data)
+	// 未传递分页查询参数
+	if query.Limit == 0 && query.Page == 0 {
+		res.Data = data
+	} else {
+		if total <= query.Limit {
+			res.Data = data
+		} else if query.Page*query.Limit >= total {
+			res.Data = data[(query.Page-1)*query.Limit : total]
+		} else {
+			res.Data = data[(query.Page-1)*query.Limit : query.Page*query.Limit]
+		}
+	}
+	res.Total = int64(total)
+	return res
 }
 
 func (e *event) ListByLabels(ctx context.Context, labelsData labels.Set) []*v1.Event {

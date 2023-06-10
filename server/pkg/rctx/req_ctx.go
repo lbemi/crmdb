@@ -163,10 +163,10 @@ func (rc *ReqCtx) Query(key string) string {
 }
 
 // QueryCloud get cloud name ,if cloud is empty return param error
-func (rc *ReqCtx) QueryCloud(key string) string {
-	cloud := rc.Request.QueryParameter(key)
+func (rc *ReqCtx) QueryCloud() string {
+	cloud := rc.Request.QueryParameter("cloud")
 	if cloud == "" {
-		restfulx.ErrNotNilDebug(fmt.Errorf("cloud is empty."), restfulx.ParamErr)
+		restfulx.ErrNotNilDebug(fmt.Errorf("cloud is empty"), restfulx.ParamErr)
 	}
 	return cloud
 }
@@ -196,6 +196,13 @@ func (rc *ReqCtx) QueryParamInt8(key string) int8 {
 // PathParamInt 获取路径参数
 func (rc *ReqCtx) PathParamInt(key string) int {
 	value, err := strconv.Atoi(rc.Request.PathParameter(key))
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return value
+}
+
+// PathParamInt64 获取路径参数
+func (rc *ReqCtx) PathParamInt64(key string) int64 {
+	value, err := strconv.ParseInt(rc.Request.PathParameter(key), 10, 64)
 	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 	return value
 }

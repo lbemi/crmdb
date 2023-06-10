@@ -2,9 +2,11 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/model"
+	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	v1 "k8s.io/api/networking/v1"
-	"sort"
+	"strings"
 )
 
 type IngressesGetter interface {
@@ -12,7 +14,7 @@ type IngressesGetter interface {
 }
 
 type IIngresses interface {
-	List(ctx context.Context) []*v1.Ingress
+	List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult
 	Get(ctx context.Context, name string) *v1.Ingress
 	Delete(ctx context.Context, name string)
 	Create(ctx context.Context, node *v1.Ingress) *v1.Ingress
@@ -27,12 +29,43 @@ func NewIngresses(k8s *k8s.Factory) *ingresses {
 	return &ingresses{k8s: k8s}
 }
 
-func (s *ingresses) List(ctx context.Context) []*v1.Ingress {
-	ingressList := s.k8s.Ingress().List(ctx)
-	sort.Slice(ingressList, func(i, j int) bool {
-		return ingressList[j].ObjectMeta.CreationTimestamp.Time.Before(ingressList[i].ObjectMeta.CreationTimestamp.Time)
-	})
-	return ingressList
+func (s *ingresses) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
+	data := s.k8s.Ingress().List(ctx)
+	res := &form.PageResult{}
+	var ingressList = make([]*v1.Ingress, 0)
+	if name != "" {
+		for _, item := range data {
+			if strings.Contains(item.Name, name) {
+				ingressList = append(ingressList, item)
+			}
+		}
+		data = ingressList
+	}
+
+	if label != "" {
+		for _, item := range data {
+			if strings.Contains(item.Name, label) {
+				ingressList = append(ingressList, item)
+			}
+		}
+		data = ingressList
+	}
+
+	total := len(data)
+	// 未传递分页查询参数
+	if query.Limit == 0 && query.Page == 0 {
+		res.Data = data
+	} else {
+		if total <= query.Limit {
+			res.Data = data
+		} else if query.Page*query.Limit >= total {
+			res.Data = data[(query.Page-1)*query.Limit : total]
+		} else {
+			res.Data = data[(query.Page-1)*query.Limit : query.Page*query.Limit]
+		}
+	}
+	res.Total = int64(total)
+	return res
 }
 
 func (s *ingresses) Get(ctx context.Context, name string) *v1.Ingress {

@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type SecretImp interface {
@@ -23,9 +24,12 @@ type secret struct {
 }
 
 func (s *secret) List(ctx context.Context) []*v1.Secret {
-	nodeList, err := s.client.SharedInformerFactory.Core().V1().Secrets().Lister().Secrets(s.ns).List(labels.Everything())
+	list, err := s.client.SharedInformerFactory.Core().V1().Secrets().Lister().Secrets(s.ns).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
-	return nodeList
+	sort.Slice(list, func(i, j int) bool {
+		return list[j].ObjectMeta.GetCreationTimestamp().Time.After(list[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
+	return list
 }
 
 func (s *secret) Get(ctx context.Context, name string) *v1.Secret {
