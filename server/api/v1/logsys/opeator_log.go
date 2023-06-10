@@ -18,10 +18,10 @@ func ListOperatorLog(rc *rctx.ReqCtx) {
 	query.Page = rc.QueryDefaultInt("page", 0)
 	query.Limit = rc.QueryDefaultInt("limit", 10)
 	condition := logsys.LogOperator{}
-	condition.BusinessType = rc.QueryParam("type")
-	condition.Title = rc.QueryParam("title")
-	condition.Name = rc.QueryParam("name")
-	status := rc.QueryParam("status")
+	condition.BusinessType = rc.Query("type")
+	condition.Title = rc.Query("title")
+	condition.Name = rc.Query("name")
+	status := rc.Query("status")
 	if status == "normal" {
 		condition.Status = 200
 	}
@@ -32,7 +32,7 @@ func ListOperatorLog(rc *rctx.ReqCtx) {
 }
 
 func DeleteOperatorLogs(rc *rctx.ReqCtx) {
-	ids := util.ParseStrInt64(rc.QueryParam("ids"))
+	ids := util.ParseStrInt64(rc.Query("ids"))
 	core.V1.Operator().Delete(ids)
 }
 

@@ -68,7 +68,7 @@ import { reactive, ref } from 'vue';
 import { useMenuApi } from '/@/api/system/menu';
 import { unref } from 'vue-demi';
 import { MenuType, RoleType } from '/@/types/views';
-import { ElLoading, ElMessage } from 'element-plus';
+import { ElLoading, ElMessage, FormInstance } from 'element-plus';
 import { useRoleApi } from '/@/api/system/role';
 
 // 定义子组件向父组件传值/事件
@@ -77,9 +77,9 @@ const emit = defineEmits(['refresh']);
 // 定义变量内容
 const menuApi = useMenuApi();
 const roleApi = useRoleApi();
-const menuRef = ref<HTMLElement | null>(null);
-const apiRef = ref<HTMLElement | null>(null);
-const roleAuthDialogFormRef = ref<HTMLElement | null>(null);
+const menuRef = ref<FormInstance>();
+const apiRef = ref<FormInstance>();
+const roleAuthDialogFormRef = ref<FormInstance>();
 const state = reactive({
 	loading: false,
 	id: 0,
@@ -194,6 +194,7 @@ const handleCheckedTreeNodeAll = (value: any, type: any) => {
 		formWrap.setCheckedNodes(value ? state.apiData : []);
 	}
 };
+
 // 树权限（展开/折叠）
 const handleCheckedTreeExpand = (value: any, type: any) => {
 	if (type === 'menu') {
@@ -214,6 +215,9 @@ const handleCheckedTreeExpand = (value: any, type: any) => {
 // 关闭弹窗
 const closeDialog = () => {
 	state.dialog.isShowDialog = false;
+	menuRef.value?.resetFields();
+	roleAuthDialogFormRef.value?.resetFields();
+	apiRef.value?.resetFields();
 };
 // 取消
 const onCancel = () => {

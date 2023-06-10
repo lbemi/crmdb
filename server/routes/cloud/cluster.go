@@ -47,7 +47,7 @@ func ClusterRoutes() *restful.WebService {
 		Returns(200, "success", nil))
 
 	ws.Route(ws.DELETE("/{id}").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("cluster").WithHandle(cloud.GetCluster).Do()
+		rctx.NewReqCtx(request, response).WithLog("cluster").WithHandle(cloud.DeleteCluster).Do()
 	}).Doc("根据id删除集群").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("id", "集群id").DataType("string")).
 		Returns(200, "success", nil))

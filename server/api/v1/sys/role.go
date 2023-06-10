@@ -39,7 +39,7 @@ func ListRoles(rc *rctx.ReqCtx) {
 	query := &model.PageParam{}
 	query.Page = rc.QueryDefaultInt("page", 0)
 	query.Limit = rc.QueryDefaultInt("limit", 0)
-	condition.Name = rc.QueryParam("name")
+	condition.Name = rc.Query("name")
 	condition.Status = rc.QueryParamInt8("status")
 	rc.ResData = core.V1.Role().List(query, condition)
 }

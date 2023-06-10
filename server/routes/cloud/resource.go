@@ -1,6 +1,7 @@
 package cloud
 
 import (
+	"github.com/emicklei/go-restful/v3"
 	"github.com/gin-gonic/gin"
 )
 
@@ -170,4 +171,11 @@ func NewResourceRoute(group *gin.RouterGroup) {
 	//	persistentVolumeClaim.PUT("", cloud2.UpdatePersistentVolumeClaim)
 	//	persistentVolumeClaim.DELETE("/:namespace/:name", cloud2.DeletePersistentVolumeClaim)
 	//}
+}
+
+func KubernetesRoutes() *restful.WebService {
+
+	ws := new(restful.WebService)
+	ws.Path("/api/v1/")
+	return ws
 }

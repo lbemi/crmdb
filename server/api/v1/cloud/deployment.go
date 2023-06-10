@@ -121,7 +121,7 @@ package cloud
 //
 //func UpdateDeployment(rc *rctx.ReqCtx) {
 //	c := rc.Request.Request.Context()
-//	clusterName := rc.QueryParam("cloud")
+//	clusterName := rc.Query("cloud")
 //	var deployment *v1.Deployment
 //	rc.ShouldBind(&deployment)
 //	rc.ResData = core.V1.Cluster(clusterName).Deployments(deployment.Namespace).Update(c, deployment)

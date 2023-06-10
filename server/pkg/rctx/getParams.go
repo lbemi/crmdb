@@ -25,12 +25,12 @@ package rctx
 //	return qv
 //}
 //
-//// QueryParam QueryParam
-//func QueryParam(rc *ReqCtx, key string) string {
+//// Query Query
+//func Query(rc *ReqCtx, key string) string {
 //	return rc.Request.QueryParameter(key)
 //}
 //
-//// QueryParamUint8 QueryParam
+//// QueryParamUint8 Query
 //func QueryParamUint8(rc *ReqCtx, key string) uint8 {
 //	str := rc.Request.QueryParameter(key)
 //	if str == "" {
@@ -41,7 +41,7 @@ package rctx
 //	return uint8(i)
 //}
 //
-//// QueryParamInt8 QueryParam
+//// QueryParamInt8 Query
 //func QueryParamInt8(rc *ReqCtx, key string) int8 {
 //	str := rc.Request.QueryParameter(key)
 //	if str == "" {

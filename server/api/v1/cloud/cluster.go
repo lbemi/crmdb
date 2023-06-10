@@ -7,13 +7,10 @@ import (
 )
 
 func CreateCluster(rc *rctx.ReqCtx) {
-
 	bytes := rc.FormFile("file")
 	var req form.ClusterReq
-	//rctx.ShouldBind( &req)
 	req.Name = rc.PostForm("name")
 	req.KubeConfig = string(bytes)
-
 	core.V1.Cluster(req.Name).Create(&req)
 }
 

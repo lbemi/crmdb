@@ -80,7 +80,7 @@ func GetUserList(rc *rctx.ReqCtx) {
 	condition := &sys.User{}
 	pageParam := rc.GetPageQueryParam()
 	condition.Status = rc.QueryParamUint8("status")
-	condition.UserName = rc.QueryParam("name")
+	condition.UserName = rc.Query("name")
 	rc.ResData = core.V1.User().GetUserList(pageParam, condition)
 }
 

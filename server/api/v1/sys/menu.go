@@ -40,7 +40,7 @@ func ListMenus(rc *rctx.ReqCtx) {
 
 	menuTypeStr := rc.QueryDefault("menuType", "1,2,3")
 	tree := rc.QueryDefault("isTree", "true")
-	condition.Group = rc.QueryParam("group")
+	condition.Group = rc.Query("group")
 
 	if tree == "false" {
 		isTree = false
@@ -54,7 +54,7 @@ func ListMenus(rc *rctx.ReqCtx) {
 	}
 	page := rc.QueryDefaultInt("page", 0)
 	limit := rc.QueryDefaultInt("limit", 0)
-	condition.Memo = rc.QueryParam("memo")
+	condition.Memo = rc.Query("memo")
 	condition.Status = rc.QueryParamInt8("status")
 	rc.ResData = core.V1.Menu().List(page, limit, menuType, isTree, condition)
 }

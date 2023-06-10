@@ -1,6 +1,7 @@
 package rctx
 
 import (
+	"fmt"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/sys"
@@ -156,12 +157,21 @@ func (rc *ReqCtx) QueryDefault(key string, defaultStr string) string {
 	return qv
 }
 
-// QueryParam QueryParam
-func (rc *ReqCtx) QueryParam(key string) string {
+// Query get query param
+func (rc *ReqCtx) Query(key string) string {
 	return rc.Request.QueryParameter(key)
 }
 
-// QueryParamUint8 QueryParam
+// QueryCloud get cloud name ,if cloud is empty return param error
+func (rc *ReqCtx) QueryCloud(key string) string {
+	cloud := rc.Request.QueryParameter(key)
+	if cloud == "" {
+		restfulx.ErrNotNilDebug(fmt.Errorf("cloud is empty."), restfulx.ParamErr)
+	}
+	return cloud
+}
+
+// QueryParamUint8 Query
 func (rc *ReqCtx) QueryParamUint8(key string) uint8 {
 	str := rc.Request.QueryParameter(key)
 	if str == "" {
@@ -172,7 +182,7 @@ func (rc *ReqCtx) QueryParamUint8(key string) uint8 {
 	return uint8(i)
 }
 
-// QueryParamInt8 QueryParam
+// QueryParamInt8 Query
 func (rc *ReqCtx) QueryParamInt8(key string) int8 {
 	str := rc.Request.QueryParameter(key)
 	if str == "" {
