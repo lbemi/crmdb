@@ -10,6 +10,7 @@ func Ws(rc *rctx.ReqCtx) {
 
 	clusterName := rc.PathParam("cluster")
 	typeName := rc.PathParam("type")
+	wsstore.Upgrader.Subprotocols = []string{rc.Request.Request.Header.Get("Sec-WebSocket-Protocol")}
 	conn, err := wsstore.Upgrader.Upgrade(rc.Response.ResponseWriter, rc.Request.Request, nil)
 	if err != nil {
 		log.Logger.Error(err)

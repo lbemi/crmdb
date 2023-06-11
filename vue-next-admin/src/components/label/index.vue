@@ -41,7 +41,7 @@
 import { onMounted, reactive, watch } from 'vue';
 interface label {
 	key: string;
-	value: string;
+	value: string ;
 }
 interface header {
 	prop: string;
@@ -94,6 +94,7 @@ const handleEdit = (index: number, row: header) => {
 	clickTap();
 };
 const handleDelete = (index: number) => {
+	// table.tableData[index].value = null
 	table.tableData.splice(index, 1);
 	clickTap();
 };

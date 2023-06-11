@@ -20,7 +20,7 @@ type INode interface {
 	Delete(ctx context.Context, name string)
 	Create(ctx context.Context, node *corev1.Node) *corev1.Node
 	Update(ctx context.Context, node *corev1.Node) *corev1.Node
-	Patch(ctx context.Context, name string, playLoad map[string]interface{}) *corev1.Node
+	Patch(ctx context.Context, name string, playLoad map[string]string) *corev1.Node
 	Drain(ctx context.Context, name string) bool
 
 	Schedulable(ctx context.Context, name string, unschedulable bool) bool
@@ -90,8 +90,10 @@ func (n *node) Update(ctx context.Context, node *corev1.Node) *corev1.Node {
 	return n.k8s.Node().Update(ctx, node)
 }
 
-func (n *node) Patch(ctx context.Context, name string, labels map[string]interface{}) *corev1.Node {
-	return n.k8s.Node().Patch(ctx, name, labels)
+func (n *node) Patch(ctx context.Context, name string, labels map[string]string) *corev1.Node {
+	nodeInfo := n.k8s.Node().Get(ctx, name)
+	nodeInfo.Labels = labels
+	return n.k8s.Node().Update(ctx, nodeInfo)
 }
 
 func (n *node) Drain(ctx context.Context, name string) bool {

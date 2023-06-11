@@ -38,7 +38,7 @@ func KubernetesDeploymentRoutes() *restful.WebService {
 		Param(ws.PathParameter("name", "deployment名称").Required(true).DataType("string")).
 		Returns(200, "success", appsv1.Deployment{}))
 	//	deployment.GET("/:namespace/:deploymentName/pod", cloud2.GetDeploymentPods)
-	ws.Route(ws.GET("/namespaces/{namespace}/{name}/pod").To(func(request *restful.Request, response *restful.Response) {
+	ws.Route(ws.GET("/namespaces/{namespace}/{name}/pods").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("deployment").
 			WithHandle(cloud.GetDeploymentPods).Do()
 	}).Doc("获取deployment所属pod列表").Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -55,7 +55,7 @@ func KubernetesDeploymentRoutes() *restful.WebService {
 		}))
 
 	//	deployment.GET("/:namespace/:deploymentName/event", cloud2.GetDeploymentEvents)
-	ws.Route(ws.GET("/namespaces/{namespace}/{name}/event").To(func(request *restful.Request, response *restful.Response) {
+	ws.Route(ws.GET("/namespaces/{namespace}/{name}/events").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("deployment").
 			WithHandle(cloud.GetDeploymentEvents).Do()
 	}).Doc("获取deployment所属事件列表").Metadata(restfulspec.KeyOpenAPITags, tags).

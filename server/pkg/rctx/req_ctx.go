@@ -40,6 +40,7 @@ func NewReqCtx(request *restful.Request, response *restful.Response) *ReqCtx {
 	return &ReqCtx{
 		Request:           request,
 		Response:          response,
+		NoRes:             false,
 		LogInfo:           NewLogInfo(),
 		RequirePermission: NewPermission(),
 	}
@@ -63,6 +64,11 @@ func (rc *ReqCtx) WithCasbin(flag bool) *ReqCtx {
 	return rc
 }
 
+// WithNoRes websocket,文件下载等无需返回结果
+func (rc *ReqCtx) WithNoRes() *ReqCtx {
+	rc.NoRes = true
+	return rc
+}
 func (rc *ReqCtx) WithHandle(handler HandlerFunc) *ReqCtx {
 	rc.Handler = handler
 	return rc

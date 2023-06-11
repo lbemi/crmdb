@@ -48,7 +48,7 @@ func KubernetesPodRoutes() *restful.WebService {
 		Returns(200, "success", []*v1.Event{}))
 
 	ws.Route(ws.GET("/namespaces/{namespace}/exec/{name}/{container}").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("Pod").
+		rctx.NewReqCtx(request, response).WithLog("websocket").WithNoRes().
 			WithHandle(cloud.PodExec).Do()
 	}).Doc("pod exec命令行 websocket").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -58,7 +58,7 @@ func KubernetesPodRoutes() *restful.WebService {
 		Returns(200, "success", nil))
 
 	ws.Route(ws.GET("/namespaces/{namespace}/logs/{name}/{container}").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("Pod").
+		rctx.NewReqCtx(request, response).WithLog("websocket").WithNoRes().
 			WithHandle(cloud.GetPodLog).Do()
 	}).Doc("获取pod日志 websocket").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).

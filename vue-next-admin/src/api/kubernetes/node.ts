@@ -34,7 +34,7 @@ export function useNodeApi() {
 		updateLabel: (param: any, data: any) => {
 			return request({
 				url: '/nodes/label',
-				method: 'put',
+				method: 'patch',
 				params: param,
 				data: data,
 			});

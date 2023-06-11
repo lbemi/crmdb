@@ -3,6 +3,7 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/restfulx"
@@ -11,6 +12,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -105,7 +107,8 @@ func (d *Deployment) RollBack(ctx context.Context, depName string, reversion int
 	//找到对应的rs
 	for _, item := range replicaSets {
 		if d.isRsFromDep(dep, item) {
-			if item.ObjectMeta.Annotations["deployment.kubernetes.io/revision"] == string(reversion) {
+			log.Logger.Infof("reversion:  ---> %s", item.ObjectMeta.Annotations["deployment.kubernetes.io/revision"])
+			if item.ObjectMeta.Annotations["deployment.kubernetes.io/revision"] == strconv.FormatInt(reversion, 10) {
 				replicaSet = item
 			}
 		}

@@ -13,6 +13,6 @@ type PageConfigMap struct {
 }
 
 type PatchNode struct {
-	Name   string                 `json:"name"`
-	Labels map[string]interface{} `json:"labels"`
+	Name   string            `json:"name"`
+	Labels map[string]string `json:"labels"`
 }

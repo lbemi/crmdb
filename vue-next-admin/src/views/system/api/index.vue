@@ -71,6 +71,9 @@
 						<span v-else-if="scope.row.method === 'PUT'" style="font-size: 13px">
 							<el-tag size="small" class="ml-2" type="warning">{{ scope.row.method }}</el-tag>
 						</span>
+						<span v-else-if="scope.row.method === 'PATCH'" style="font-size: 13px">
+							<el-tag size="small" class="ml-2" >{{ scope.row.method }}</el-tag>
+						</span>
 						<span v-else style="font-size: 13px">
 							<el-tag size="small" class="ml-2">{{ scope.row.method }}</el-tag>
 						</span>

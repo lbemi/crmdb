@@ -84,6 +84,9 @@ func (n *node) Update(ctx context.Context, node *corev1.Node) *corev1.Node {
 }
 
 func (n *node) Patch(ctx context.Context, name string, labels map[string]interface{}) *corev1.Node {
+	//patchData := map[string]interface{}{"metadata": map[string]map[string]interface{}{"labels": labels}}
+	//patchData := map[string]interface{}{
+	//	"metadata": map[string]interface{}{"labels": labels}}
 	patchData := map[string]interface{}{"metadata": map[string]map[string]interface{}{"labels": labels}}
 	playLoadBytes, err := json.Marshal(patchData)
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)

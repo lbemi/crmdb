@@ -73,7 +73,7 @@ func KubernetesNodeRoutes() *restful.WebService {
 		Param(ws.QueryParameter("unschedulable", "是否可以调度").Required(true).DataType("bool")).
 		Returns(200, "success", v1.Node{}))
 
-	ws.Route(ws.PUT("/label").To(func(request *restful.Request, response *restful.Response) {
+	ws.Route(ws.PATCH("/label").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("node").
 			WithHandle(cloud.PatchNode).Do()
 	}).Doc("修改node节点标签").Metadata(restfulspec.KeyOpenAPITags, tags).

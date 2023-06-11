@@ -64,6 +64,7 @@ func PodExec(rc *rctx.ReqCtx) {
 
 	conn, err := wsstore.Upgrader.Upgrade(rc.Response.ResponseWriter, rc.Request.Request, nil)
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	wsstore.Upgrader.Subprotocols = []string{rc.Request.Request.Header.Get("Sec-WebSocket-Protocol")}
 	wsClient := wsstore.NewWsClient(conn, clusterName, "")
 	err = core.V1.Cluster(clusterName).Pods(namespace).PodExec(c, namespace, podName, containerName, []string{"sh"}).StreamWithContext(c, remotecommand.StreamOptions{
 		Stdout: wsClient,
@@ -92,7 +93,7 @@ func GetPodLog(rc *rctx.ReqCtx) {
 	conn, err := wsstore.Upgrader.Upgrade(rc.Response.ResponseWriter, rc.Request.Request, nil)
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	defer conn.Close()
-
+	wsstore.Upgrader.Subprotocols = []string{rc.Request.Request.Header.Get("Sec-WebSocket-Protocol")}
 	wsClient := wsstore.NewWsClient(conn, clusterName, "log")
 	for {
 		buf := make([]byte, 1024)

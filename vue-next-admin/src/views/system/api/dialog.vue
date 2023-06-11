@@ -120,6 +120,10 @@ const state = reactive({
 			value: 'PUT',
 			label: 'PUT',
 		},
+		{
+			value: 'PATCH',
+			label: 'PATCH',
+		},
 	],
 	menuData: [], // 上级菜单数据
 	dialog: {

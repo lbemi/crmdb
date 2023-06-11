@@ -15,7 +15,7 @@
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
 				</el-select>
 				<el-input
-					v-model="podStore.state.query.key"
+					v-model="podStore.state.inputValue"
 					placeholder="输入标签或者名称"
 					size="small"
 					clearable
@@ -23,7 +23,7 @@
 					style="width: 250px; margin-left: 10px"
 				>
 					<template #prepend>
-						<el-select v-model="podStore.state.query.type" placeholder="输入标签或者名称" style="width: 60px" size="small">
+						<el-select v-model="podStore.state.type" placeholder="输入标签或者名称" style="width: 60px" size="small">
 							<el-option label="标签" value="0" size="small" />
 							<el-option label="名称" value="1" size="small" />
 						</el-select>
@@ -150,7 +150,7 @@ const podStore = podInfo();
 const websocketApi = useWebsocketApi();
 
 const search = () => {
-	podStore.searchPods();
+	podStore.listPod();
 };
 
 const handleSelectionChange = (value: any) => {
@@ -260,12 +260,15 @@ const deletePod = async (p: Pod) => {
 		draggable: true,
 	})
 		.then(() => {
-			podStore.deletePod(p);
-			podStore.listPod();
-			ElMessage({
+			podStore.deletePod(p).then((res)=>{
+				ElMessage({
 				type: 'success',
 				message: `${p.metadata?.name} 已删`,
 			});
+			}).catch((e)=>{
+				ElMessage.error(e.message)
+			});
+			podStore.listPod();
 		})
 		.catch(() => {
 			ElMessage.info('取消');
@@ -274,9 +277,9 @@ const deletePod = async (p: Pod) => {
 
 const filterPod = (pods: Array<Pod>) => {
 	const podList = [] as Pod[];
-	if (podStore.state.query.type === '1') {
+	if (podStore.state.type === '1') {
 		pods.forEach((pod: Pod) => {
-			if (pod.metadata?.name?.includes(podStore.state.query.key)) {
+			if (pod.metadata?.name?.includes(podStore.state.inputValue)) {
 				podList.push(pod);
 			}
 		});
@@ -284,7 +287,7 @@ const filterPod = (pods: Array<Pod>) => {
 		pods.forEach((pod: Pod) => {
 			if (pod.metadata?.labels) {
 				for (let k in pod.metadata.labels) {
-					if (k.includes(podStore.state.query.key) || pod.metadata.labels[k].includes(podStore.state.query.key)) {
+					if (k.includes(podStore.state.inputValue) || pod.metadata.labels[k].includes(podStore.state.inputValue)) {
 						podList.push(pod);
 						break;
 					}

@@ -18,7 +18,9 @@ func JWTAuth(rc *rctx.ReqCtx) error {
 
 	request := rc.Request.Request
 	tokenStr := request.Header.Get("Authorization")
-
+	if rc.LogInfo.LogModule == "websocket" {
+		tokenStr = request.Header.Get("Sec-WebSocket-Protocol")
+	}
 	if tokenStr == "" {
 		panic(restfulx.TokenInvalid)
 	}

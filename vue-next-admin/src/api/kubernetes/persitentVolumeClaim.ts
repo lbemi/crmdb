@@ -4,7 +4,7 @@ export function usePVCApi() {
 	return {
 		listPVC: (namespace: string, param: any) => {
 			return request({
-				url: '/pvc/' + namespace,
+				url: '/pvcs/namespaces/' + namespace,
 				method: 'get',
 				params: param,
 			});

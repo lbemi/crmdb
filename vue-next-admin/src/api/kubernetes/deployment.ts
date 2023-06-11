@@ -34,14 +34,14 @@ export function useDeploymentApi() {
 		},
 		detailDeployment: (ns: string, depName: string, param: any) => {
 			return request({
-				url: '/deployments/namespaces' + ns + '/' + depName + '/pods',
+				url: '/deployments/namespaces/' + ns + '/' + depName + '/pods',
 				method: 'get',
 				params: param,
 			});
 		},
 		getDeploymentEvents: (ns: string, depName: string, param: any) => {
 			return request({
-				url: '/deployments/namespaces/' + ns + '/' + depName + '/event',
+				url: '/deployments/namespaces/' + ns + '/' + depName + '/events',
 				method: 'get',
 				params: param,
 			});
@@ -53,9 +53,10 @@ export function useDeploymentApi() {
 				params: param,
 			});
 		},
+		// "/namespaces/{namespace}/{name}/scale/{replica}").
 		scaleDeployment: (ns: string, name: string, n: number, param: any) => {
 			return request({
-				url: `/deployments/namespaces/${ns}/${name}/${n}`,
+				url: `/deployments/namespaces/${ns}/${name}/scale/${n}`,
 				method: 'put',
 				params: param,
 			});
