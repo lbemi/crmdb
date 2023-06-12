@@ -11,6 +11,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sort"
 	"strconv"
 	"strings"
@@ -62,7 +63,7 @@ func (d *Deployment) List(ctx context.Context, query *model.PageParam, name stri
 
 	if label != "" {
 		for _, item := range data {
-			if strings.Contains(item.Name, label) {
+			if strings.Contains(labels.FormatLabels(item.Labels), label) {
 				deploymentList = append(deploymentList, item)
 			}
 		}

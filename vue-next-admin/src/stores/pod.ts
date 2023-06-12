@@ -40,8 +40,10 @@ export const podInfo = defineStore(
 			state.loading = true;
 			if (state.type =='1') {
 				state.query.name = state.inputValue
+				delete state.query.label;
 			} else if  (state.type == "0") {
 				state.query.label = state.inputValue
+				delete state.query.name;
 			}
 			if (state.inputValue === "") {
 				delete state.query.label;

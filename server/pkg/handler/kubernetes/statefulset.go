@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	v1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"strings"
 )
 
@@ -44,7 +45,7 @@ func (d *statefulSet) List(ctx context.Context, query *model.PageParam, name str
 
 	if label != "" {
 		for _, item := range data {
-			if strings.Contains(item.Name, label) {
+			if strings.Contains(labels.FormatLabels(item.Labels), label) {
 				statefulSetList = append(statefulSetList, item)
 			}
 		}

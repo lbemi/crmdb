@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 	"strings"
@@ -51,7 +52,7 @@ func (p *pod) List(ctx context.Context, query *model.PageParam, name string, lab
 
 	if label != "" {
 		for _, item := range data {
-			if strings.Contains(item.Name, label) {
+			if strings.Contains(labels.FormatLabels(item.Labels), label) {
 				podList = append(podList, item)
 			}
 		}

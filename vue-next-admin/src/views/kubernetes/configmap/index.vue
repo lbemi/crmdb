@@ -14,7 +14,7 @@
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
 				</el-select>
 				<el-input
-					v-model="data.query.key"
+					v-model="data.inputValue"
 					placeholder="输入标签或者名称"
 					size="small"
 					clearable
@@ -22,7 +22,7 @@
 					style="max-width: 300px; margin-left: 10px"
 				>
 					<template #prepend>
-						<el-select v-model="data.query.type" placeholder="输入标签或者名称" style="max-width: 120px" size="small">
+						<el-select v-model="data.type" placeholder="输入标签或者名称" style="max-width: 120px" size="small">
 							<el-option label="标签" value="0" size="small" />
 							<el-option label="名称" value="1" size="small" />
 						</el-select>
@@ -132,6 +132,14 @@ const Pagination = defineAsyncComponent(() => import('/@/components/pagination/p
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const DrawDialog = defineAsyncComponent(() => import('./component/draw.vue'));
 
+type queryType = {
+	key: string;
+	page: number;
+	limit: number;
+	cloud: string;
+	name?: string;
+	label?: string;
+}
 const k8sStore = kubernetesInfo();
 const ConfigMapApi = useConfigMapApi();
 const configMapApi = useConfigMapApi();
@@ -149,11 +157,11 @@ const data = reactive({
 	configMaps: [] as ConfigMap[],
 	tmpConfigMap: [] as ConfigMap[],
 	total: 0,
-	query: {
+	type: "1",
+	inputValue: "",
+	query: <queryType>{
 		page: 1,
 		limit: 10,
-		key: '',
-		type: '1',
 		cloud: k8sStore.state.activeCluster,
 	},
 });
@@ -162,14 +170,26 @@ onMounted(() => {
 });
 
 const search = () => {
-	filterConfigMap(data.tmpConfigMap);
+	if (data.type =='1') {
+		data.query.name = data.inputValue
+		delete data.query.label;
+	} else if  (data.type == "0") {
+		data.query.label = data.inputValue
+		delete data.query.name;
+	}
+	if (data.inputValue === "") {
+		delete data.query.label;
+		delete data.query.name;
+	}
+
+	listConfigMap();
 };
 const handleChange = () => {
 	listConfigMap();
 };
 const filterConfigMap = (configMaps: Array<ConfigMap>) => {
 	const configMapList = [] as ConfigMap[];
-	if (data.query.type === '1') {
+	if (data.type === '1') {
 		configMaps.forEach((configMap: ConfigMap) => {
 			if (configMap.metadata?.name?.includes(data.query.key)) {
 				configMapList.push(configMap);

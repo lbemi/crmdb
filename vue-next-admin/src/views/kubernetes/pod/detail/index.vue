@@ -81,7 +81,7 @@
 			<el-tabs v-model="data.activeName" class="demo-tabs" @tab-click="handleClick">
 				<el-tab-pane label="容器" name="first">
 					<el-space wrap v-for="container in podStore.state.podDetail.status?.containerStatuses">
-						<el-card class="box-card">
+						<el-card class="box-card test">
 							<template #header>
 								<div class="card-header" @click="">
 									<h3><SvgIcon name="iconfont icon-container-" class="svg" />{{ container.name }}</h3>
@@ -400,6 +400,15 @@ const showYaml = async () => {
 	overflow-y: auto; /* 开启滚动显示溢出内容 */
 }
 
+.test {
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(214, 221, 210, 0.75);
+    border-radius: 12px;
+    border: 1px solid rgba(209, 213, 219, 0.3);
+	// background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1124&q=100');
+    // background-position: center;
+}
 .tag-center {
 	display: flex;
 	flex-direction: column;
@@ -446,4 +455,5 @@ const showYaml = async () => {
 	margin-top: 5px;
 	font-stretch: condensed;
 }
+
 </style>

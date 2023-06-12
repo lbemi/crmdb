@@ -141,7 +141,7 @@ func (rc *ReqCtx) ShouldBind(data interface{}) {
 
 // GetPageQueryParam 获取分页参数
 func (rc *ReqCtx) GetPageQueryParam() *model.PageParam {
-	return &model.PageParam{Page: rc.QueryDefaultInt("page", 1), Limit: rc.QueryDefaultInt("limit", 10)}
+	return &model.PageParam{Page: rc.QueryDefaultInt("page", 0), Limit: rc.QueryDefaultInt("limit", 0)}
 }
 
 // QueryDefaultInt 获取查询参数中指定参数值，并转为int

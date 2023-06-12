@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	v1 "k8s.io/api/batch/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"strings"
 )
 
@@ -44,7 +45,7 @@ func (d *cronJob) List(ctx context.Context, query *model.PageParam, name string,
 
 	if label != "" {
 		for _, item := range data {
-			if strings.Contains(item.Name, label) {
+			if strings.Contains(labels.FormatLabels(item.Labels), label) {
 				cronJobMapList = append(cronJobMapList, item)
 			}
 		}

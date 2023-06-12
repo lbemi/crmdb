@@ -7,6 +7,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"strings"
 )
 
@@ -51,7 +52,7 @@ func (n *node) List(ctx context.Context, query *model.PageParam, name string, la
 
 	if label != "" {
 		for _, item := range data {
-			if strings.Contains(item.Name, label) {
+			if strings.Contains(labels.FormatLabels(item.Labels), label) {
 				nodeList = append(nodeList, item)
 			}
 		}

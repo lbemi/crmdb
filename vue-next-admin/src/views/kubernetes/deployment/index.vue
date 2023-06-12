@@ -253,8 +253,10 @@ const search = () => {
 	data.query.cloud = k8sStore.state.activeCluster;
 	if (data.type =='1') {
 		data.query.name = data.inputValue
+		delete data.query.label;
 	} else if  (data.type == "0") {
 		data.query.label = data.inputValue
+		delete data.query.name;
 	}
 	if (data.inputValue === "") {
 		delete data.query.label;
