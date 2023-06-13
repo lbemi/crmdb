@@ -4,31 +4,36 @@
 			<el-row :gutter="20">
 				<el-col :span="18">
 					<el-button type="info" :icon="ArrowLeft" text @click="backRoute">返回</el-button>
-					<span style="font-weight: 35">{{ k8sStore.state.activeDeployment?.metadata?.name }}</span></el-col>
-				<el-col :span="6"><el-button v-auth="'k8s:deployment:edit'" type="primary" size="small"
-						:icon="Edit">编辑</el-button>
+					<span style="font-weight: 35">{{ k8sStore.state.activeDeployment?.metadata?.name }}</span></el-col
+				>
+				<el-col :span="6"
+					><el-button v-auth="'k8s:deployment:edit'" type="primary" size="small" :icon="Edit">编辑</el-button>
 					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button>
-					<el-button v-auth="'k8s:deployment:redeploy'" type="primary" size="small" :icon="Refresh"
-						@click="reDeploy">重新部署</el-button></el-col>
+					<el-button v-auth="'k8s:deployment:redeploy'" type="primary" size="small" :icon="Refresh" @click="reDeploy">重新部署</el-button></el-col
+				>
 			</el-row>
 
 			<el-descriptions :column="3" border class="desc-body">
-				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label"
-					class-name="my-content" width="150px">{{
-						k8sStore.state.activeDeployment?.metadata?.name
-					}}</el-descriptions-item>
+				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">{{
+					k8sStore.state.activeDeployment?.metadata?.name
+				}}</el-descriptions-item>
 				<el-descriptions-item label="命名空间" label-align="right" align="center">{{
 					k8sStore.state.activeDeployment?.metadata?.namespace
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
 					dateStrFormat(k8sStore.state.activeDeployment?.metadata?.creationTimestamp?.toString()!)
 				}}</el-descriptions-item>
-				<el-descriptions-item label="副本数" label-align="right" align="center"><el-button
-						v-auth="'k8s:deployment:scale'" color="#626aef" :icon="Minus" size="small" plain
-						style="margin-right: 10px" @click="scaleDeploy('minus')" />{{
-							k8sStore.state.activeDeployment?.spec?.replicas
-						}}<el-button v-auth="'k8s:deployment:scale'" color="#626aef" :icon="Plus" size="small" plain
-						@click="scaleDeploy('plus')" /></el-descriptions-item>
+				<el-descriptions-item label="副本数" label-align="right" align="center"
+					><el-button
+						v-auth="'k8s:deployment:scale'"
+						color="#626aef"
+						:icon="Minus"
+						size="small"
+						plain
+						style="margin-right: 10px"
+						@click="scaleDeploy('minus')" />{{ k8sStore.state.activeDeployment?.spec?.replicas
+					}}<el-button v-auth="'k8s:deployment:scale'" color="#626aef" :icon="Plus" size="small" plain @click="scaleDeploy('plus')"
+				/></el-descriptions-item>
 				<!-- <el-descriptions-item label="选择器" label-align="right" align="center">
 					<div class="tag-center">
 						<el-tag effect="plain" round v-for="(item, key, index) in k8sStore.state.activeDeployment?.spec?.selector.matchLabels" :key="index">
@@ -38,11 +43,9 @@
 				</el-descriptions-item> -->
 				<el-descriptions-item label="镜像" label-align="right" align="center">
 					<div class="tag-center">
-						<el-tag round effect="plain"
-							v-for="(item, index) in k8sStore.state.activeDeployment?.spec?.template?.spec?.containers"
-							:key="index">{{
-								item.image?.split('@')[0]
-							}}</el-tag>
+						<el-tag round effect="plain" v-for="(item, index) in k8sStore.state.activeDeployment?.spec?.template?.spec?.containers" :key="index">{{
+							item.image?.split('@')[0]
+						}}</el-tag>
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="滚动升级策略" label-align="right" align="center">
@@ -59,21 +62,18 @@
 					k8sStore.state.activeDeployment?.spec?.strategy?.type
 				}}</el-descriptions-item>
 				<el-descriptions-item label="状态" label-align="right" align="center">
-					就绪：<a v-if="k8sStore.state.activeDeployment?.status?.readyReplicas">{{
-						k8sStore.state.activeDeployment?.status?.readyReplicas }}</a>
+					就绪：<a v-if="k8sStore.state.activeDeployment?.status?.readyReplicas">{{ k8sStore.state.activeDeployment?.status?.readyReplicas }}</a>
 					<a style="color: red" v-else>0</a> /{{ k8sStore.state.activeDeployment?.status?.replicas }} 个，已更新：{{
 						k8sStore.state.activeDeployment?.status?.updatedReplicas
 					}}
 					个，可用：
-					<a v-if="k8sStore.state.activeDeployment?.status?.readyReplicas">{{
-						k8sStore.state.activeDeployment?.status?.readyReplicas }}</a>
+					<a v-if="k8sStore.state.activeDeployment?.status?.readyReplicas">{{ k8sStore.state.activeDeployment?.status?.readyReplicas }}</a>
 					<a style="color: red" v-else>0</a>
 
 					个
-					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow"
-						style="font-size: 10px; margin-left: 5px">展开现状详情<el-icon>
-							<CaretBottom />
-						</el-icon></el-link>
+					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow" style="font-size: 10px; margin-left: 5px"
+						>展开现状详情<el-icon> <CaretBottom /> </el-icon
+					></el-link>
 				</el-descriptions-item>
 			</el-descriptions>
 
@@ -98,20 +98,18 @@
 					<el-table :data="data.pods" stripe style="width: 100%" max-height="350px">
 						<el-table-column prop="metadata.name" label="名称">
 							<template #default="scope">
-								<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name
-								}}</el-button>
+								<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>
 								<div v-if="scope.row.status.phase != 'Running'" style="color: red">
 									<div v-if="scope.row.status.containerStatuses">
-										{{ scope.row.status.containerStatuses[0].state }}
+										{{ scope.row.status.containerStatuses[0].state.waiting.message }}
 									</div>
-									<div v-else>{{ scope.row.status.conditions[0].reason }}:{{
-										scope.row.status.conditions[0].message }}</div>
+									<div v-else>{{ scope.row.status.conditions[0].message }}</div>
 								</div>
 							</template>
 						</el-table-column>
 						<el-table-column label="状态" width="180px">
 							<template #default="scope">
-								<p v-html="podStatus(scope.row.status)" />
+								<p v-if="scope.row.status.phase" v-html="podStatus(scope.row.status)" />
 							</template>
 						</el-table-column>
 						<el-table-column label="重启次数">
@@ -136,14 +134,12 @@
 								<el-tooltip placement="top" effect="light">
 									<template #content>
 										<div style="display: flex; flex-direction: column">
-											<el-tag class="label" type="info"
-												v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
+											<el-tag class="label" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
 												{{ key }}:{{ item }}
 											</el-tag>
 										</div>
 									</template>
-									<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels"
-										:key="index">
+									<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
 										<div>{{ key }}:{{ item }}</div>
 									</el-tag>
 								</el-tooltip>
@@ -156,16 +152,12 @@
 						</el-table-column>
 						<el-table-column fixed="right" label="操作" width="160">
 							<template #default="scope">
-								<el-button link type="primary" size="small"
-									@click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
-								<el-button link type="primary" size="small">编辑</el-button><el-divider
-									direction="vertical" />
-								<el-button v-auth="'k8s:pod:del'" link type="primary" size="small"
-									@click="deletePod(scope.row)">删除</el-button>
-								<el-button v-auth="'k8s:pod:shell'" link type="primary" size="small"
-									@click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
-								<el-button v-auth="'k8s:pod:log'" link type="primary" size="small"
-									@click="jumpPodLog(scope.row)">日志</el-button>
+								<el-button link type="primary" size="small" @click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
+								<el-button link type="primary" size="small">编辑</el-button><el-divider direction="vertical" />
+								<el-button v-auth="'k8s:pod:del'" link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
+								<el-button v-auth="'k8s:pod:shell'" link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button
+								><el-divider direction="vertical" />
+								<el-button v-auth="'k8s:pod:log'" link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button>
 							</template>
 						</el-table-column>
 					</el-table>
@@ -175,11 +167,9 @@
 				</el-tab-pane>
 				<el-tab-pane label="环境变量" name="third">
 					<el-descriptions :column="1" direction="vertical">
-						<el-descriptions-item :label="'容器: ' + item.name"
-							v-for="item in k8sStore.state.activeDeployment.spec?.template.spec?.containers">
+						<el-descriptions-item :label="'容器: ' + item.name" v-for="item in k8sStore.state.activeDeployment.spec?.template.spec?.containers">
 							<el-card class="card" :body-style="{ height: '200px' }">
-								<div v-if="item.env" v-for="(value, key, index) in item.env" :key="index"
-									style="margin-bottom: 8px">
+								<div v-if="item.env" v-for="(value, key, index) in item.env" :key="index" style="margin-bottom: 8px">
 									<el-tag type="info" size="default"> {{ value }} </el-tag>
 								</div>
 								<div v-else>无数据</div>
@@ -192,23 +182,28 @@
 						<el-table-column p label="版本">
 							<template #default="scope">
 								#{{ scope.row.metadata.annotations['deployment.kubernetes.io/revision'] }}
-								<el-tag v-if="scope.row.status.replicas != 0" plain size="small" type="success"
-									style="margin-left: 15px">当前版本</el-tag>
+								<el-tag v-if="scope.row.status.replicas != 0" plain size="small" type="success" style="margin-left: 15px">当前版本</el-tag>
 							</template>
 						</el-table-column>
 						<el-table-column label="镜像">
 							<template #default="scope"> {{ scope.row.spec.template.spec.containers[0].image }} </template>
 						</el-table-column>
 						<el-table-column label="创建时间">
-							<template #default="scope"> {{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
-							</template>
+							<template #default="scope"> {{ dateStrFormat(scope.row.metadata.creationTimestamp) }} </template>
 						</el-table-column>
 
 						<el-table-column fixed="right" label="操作">
 							<template #default="scope">
 								<el-button link type="primary" size="small" @click="showRsYaml(scope.row)">详情</el-button>
-								<el-button v-auth="'k8s:deployment:rollback'" link type="primary" size="small"
-									@click="rollBack(scope.row)" :disabled="data.replicasets.length == 1">回滚到该版本</el-button>
+								<el-button
+									v-auth="'k8s:deployment:rollback'"
+									link
+									type="primary"
+									size="small"
+									@click="rollBack(scope.row)"
+									:disabled="data.replicasets.length == 1"
+									>回滚到该版本</el-button
+								>
 							</template>
 						</el-table-column>
 					</el-table>
@@ -246,10 +241,14 @@
 				</el-tab-pane>
 			</el-tabs>
 		</el-card>
-		<YamlDialog v-model:dialogVisible="data.RsdialogVisible" :code-data="data.rscode" :disabled-update="true"
-			v-if="data.RsdialogVisible" />
-		<YamlDialog v-model:dialogVisible="data.dialogVisible" :code-data="data.codeData" :resourceType="'deployment'"
-			@update="updateDeployment" v-if="data.dialogVisible" />
+		<YamlDialog v-model:dialogVisible="data.RsdialogVisible" :code-data="data.rscode" :disabled-update="true" v-if="data.RsdialogVisible" />
+		<YamlDialog
+			v-model:dialogVisible="data.dialogVisible"
+			:code-data="data.codeData"
+			:resourceType="'deployment'"
+			@update="updateDeployment"
+			v-if="data.dialogVisible"
+		/>
 	</div>
 </template>
 <script lang="ts" setup name="k8sDeploymentDetail">
@@ -326,7 +325,8 @@ const rollBack = (rs: ReplicaSet) => {
 				)
 				.then(() => {
 					ElMessage.success('回滚成功');
-				}).catch((e) => {
+				})
+				.catch((e) => {
 					ElMessage.error(e.message);
 				});
 		})
@@ -414,6 +414,7 @@ const podRestart = (status: PodStatus) => {
 	return count;
 };
 // FIXME
+
 const podStatus = (status: PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
 	if (status.phase === 'Running') {
@@ -423,20 +424,44 @@ const podStatus = (status: PodStatus) => {
 				status.containerStatuses?.forEach((c: ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
-							res = `<div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
+							res = ` </div> <div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
 							// res = `${c.state.waiting.reason}`;
 						}
 						if (c.state?.terminated) {
 							res = `${c.state.terminated.reason}`;
+							// res = 'Terminating';
 						}
 					}
 				});
 				return (s = `<span style="color: red">${res}</span>`);
 			}
-			// s = '<span style="color: green">true</span>';
 		});
+	} else if (status.phase === 'Succeeded') {
+		let res = '';
+		status.containerStatuses?.forEach((c: ContainerStatus) => {
+			if (!c.ready) {
+				if (c.state?.terminated) {
+					res = `${c.state.terminated.reason}`;
+					// res = 'Terminating';
+				}
+			}
+		});
+		return (s = `<span style="color: #E6A23C">${res}</span>`);
 	} else {
-		s = '<span style="color: green">ERROR</span>';
+		let res = status.phase;
+		status.containerStatuses?.forEach((c: ContainerStatus) => {
+			if (!c.ready) {
+				if (c.state?.waiting) {
+					res = ` </div> <div>${c.state.waiting.reason}</div>`;
+					// res = `${c.state.waiting.reason}`;
+				}
+				if (c.state?.terminated) {
+					res = `${c.state.terminated.reason}`;
+					// res = 'Terminating';
+				}
+			}
+		});
+		return (s = `<span style="color: red">${res}</span>`);
 	}
 
 	return s;

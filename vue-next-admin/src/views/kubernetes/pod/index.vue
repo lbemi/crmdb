@@ -139,6 +139,7 @@ import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '/@/utils/formatTime';
 import { deepClone } from '/@/utils/other';
+import { Deployment, DeploymentCondition } from 'kubernetes-types/apps/v1';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
@@ -174,6 +175,7 @@ const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
 };
 // FIXME
+
 const podStatus = (status: PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
 	if (status.phase === 'Running') {
@@ -195,8 +197,32 @@ const podStatus = (status: PodStatus) => {
 				return (s = `<span style="color: red">${res}</span>`);
 			}
 		});
+	} else if (status.phase === 'Succeeded') {
+		let res = '';
+		status.containerStatuses?.forEach((c: ContainerStatus) => {
+			if (!c.ready) {
+				if (c.state?.terminated) {
+					res = `${c.state.terminated.reason}`;
+					// res = 'Terminating';
+				}
+			}
+		});
+		return (s = `<span style="color: #E6A23C">${res}</span>`);
 	} else {
-		s = `<span style="color: red">${status.phase}</span>`;
+		let res = status.phase;
+		status.containerStatuses?.forEach((c: ContainerStatus) => {
+			if (!c.ready) {
+				if (c.state?.waiting) {
+					res = ` </div> <div>${c.state.waiting.reason}</div>`;
+					// res = `${c.state.waiting.reason}`;
+				}
+				if (c.state?.terminated) {
+					res = `${c.state.terminated.reason}`;
+					// res = 'Terminating';
+				}
+			}
+		});
+		return (s = `<span style="color: red">${res}</span>`);
 	}
 
 	return s;
@@ -260,14 +286,17 @@ const deletePod = async (p: Pod) => {
 		draggable: true,
 	})
 		.then(() => {
-			podStore.deletePod(p).then((res)=>{
-				ElMessage({
-				type: 'success',
-				message: `${p.metadata?.name} 已删`,
-			});
-			}).catch((e)=>{
-				ElMessage.error(e.message)
-			});
+			podStore
+				.deletePod(p)
+				.then((res) => {
+					ElMessage({
+						type: 'success',
+						message: `${p.metadata?.name} 已删`,
+					});
+				})
+				.catch((e) => {
+					ElMessage.error(e.message);
+				});
 			podStore.listPod();
 		})
 		.catch(() => {

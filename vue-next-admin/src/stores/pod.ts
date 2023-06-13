@@ -15,7 +15,7 @@ type queryType = {
 	cloud: string;
 	name?: string;
 	label?: string;
-}
+};
 export const podInfo = defineStore(
 	'podInfo',
 	() => {
@@ -33,19 +33,19 @@ export const podInfo = defineStore(
 			loading: false,
 			selectData: [],
 			podShell: {} as Pod,
-			type: "1",
-			inputValue: "",
+			type: '1',
+			inputValue: '',
 		});
 		const listPod = async () => {
 			state.loading = true;
-			if (state.type =='1') {
-				state.query.name = state.inputValue
+			if (state.type == '1') {
+				state.query.name = state.inputValue;
 				delete state.query.label;
-			} else if  (state.type == "0") {
-				state.query.label = state.inputValue
+			} else if (state.type == '0') {
+				state.query.label = state.inputValue;
 				delete state.query.name;
 			}
-			if (state.inputValue === "") {
+			if (state.inputValue === '') {
 				delete state.query.label;
 				delete state.query.name;
 			}
@@ -56,11 +56,12 @@ export const podInfo = defineStore(
 			});
 			state.loading = false;
 		};
+
 		const deletePod = async (pod: Pod) => {
 			state.query.cloud = k8sStore.state.activeCluster;
 			await podApi.deletePod(pod.metadata?.namespace, pod.metadata?.name, { cloud: k8sStore.state.activeCluster });
 		};
-		
+
 		return { state, listPod, deletePod };
 	},
 	{

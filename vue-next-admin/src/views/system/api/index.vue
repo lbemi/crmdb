@@ -7,6 +7,10 @@
 				分组：
 				<el-input size="default" placeholder="请输入API分组" v-model="state.searchGroup" clearable style="max-width: 180px; margin-right: 10px">
 				</el-input>
+				<!-- 分组2：
+				<el-select v-model.number="state.searchGroup" size="default" style="width: 100px">
+					<el-option v-for="item in state.groupList" :value="item" :label="item"> </el-option>
+				</el-select> -->
 				类型：
 				<el-select v-model.number="state.searchType" size="default" style="width: 100px">
 					<el-option v-for="item in type" :value="item.value" :label="item.label"> </el-option>
@@ -27,14 +31,30 @@
 					</el-icon>
 					新增API
 				</el-button>
+				<el-button type="success" size="default" @click="refreshCurrentTagsView" style="margin-left: 10px">
+					<el-icon>
+						<ele-RefreshRight />
+					</el-icon>
+					刷新
+				</el-button>
 			</div>
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" row-key="id">
-				<el-table-column label="ID" show-overflow-tooltip>
+				<el-table-column label="ID" show-overflow-tooltip width="150">
 					<template #default="scope">
 						<span class="ml10">{{ $t(scope.row.id) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column label="分组" show-overflow-tooltip width="100">
+				<el-table-column
+					label="分组"
+					show-overflow-tooltip
+					width="120"
+					:filters="[
+						{ text: 'Home', value: 'Home' },
+						{ text: 'Office', value: 'Office' },
+					]"
+					:filter-method="filterGroup"
+					filter-placement="bottom-end"
+				>
 					<template #default="scope">
 						<el-tag size="small" class="ml-2" effect="plain">{{ scope.row.group }}</el-tag>
 					</template>
@@ -72,7 +92,7 @@
 							<el-tag size="small" class="ml-2" type="warning">{{ scope.row.method }}</el-tag>
 						</span>
 						<span v-else-if="scope.row.method === 'PATCH'" style="font-size: 13px">
-							<el-tag size="small" class="ml-2" >{{ scope.row.method }}</el-tag>
+							<el-tag size="small" class="ml-2">{{ scope.row.method }}</el-tag>
 						</span>
 						<span v-else style="font-size: 13px">
 							<el-tag size="small" class="ml-2">{{ scope.row.method }}</el-tag>
@@ -133,10 +153,11 @@
 
 <script setup lang="ts" name="systemApi">
 import { defineAsyncComponent, ref, onMounted, reactive } from 'vue';
-import { RouteRecordRaw } from 'vue-router';
+import { RouteRecordRaw, useRoute } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMenuApi } from '/@/api/system/menu';
 import { dateStrFormat } from '/@/utils/formatTime';
+import mittBus from '/@/utils/mitt';
 
 // import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";
 
@@ -153,6 +174,7 @@ type query = {
 	status?: number;
 	group?: string;
 };
+const route = useRoute();
 const menuApi = useMenuApi();
 const menuDialogRef = ref();
 const state = reactive({
@@ -171,8 +193,11 @@ const state = reactive({
 	searchStatus: 0,
 	searchType: 0,
 	searchGroup: '',
+	groupList: [''],
 });
-
+const refreshCurrentTagsView = () => {
+	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
+};
 // 获取路由数据，真实请从接口获取
 const getTableData = async () => {
 	state.tableData.loading = true;
@@ -204,12 +229,12 @@ const getTableData = async () => {
 		.then((res) => {
 			state.tableData.data = res.data.menus;
 			state.tableData.total = res.data.total;
+			filterGroup();
 		})
 		.catch((e) => {
 			ElMessage.error(e.message);
 		});
 	state.tableData.loading = false;
-	console.log(state.tableData.data);
 };
 // 打开新增菜单弹窗
 const onOpenAddApi = (type: string) => {
@@ -218,6 +243,16 @@ const onOpenAddApi = (type: string) => {
 // 打开编辑菜单弹窗
 const onOpenEditApi = (type: string, row: RouteRecordRaw) => {
 	menuDialogRef.value.openDialog(type, row);
+};
+// TODO
+const filterGroup = () => {
+	const groupList = [''];
+	state.tableData.data.forEach((item: any) => {
+		if (groupList.indexOf(item.group) < 0) {
+			groupList.push(item.group);
+		}
+	});
+	state.groupList = groupList;
 };
 // 删除菜单或按钮
 const onTabelRowDel = (row: any) => {

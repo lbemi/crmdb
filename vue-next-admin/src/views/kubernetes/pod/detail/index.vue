@@ -9,8 +9,14 @@
 				<el-col :span="6"
 					><el-button type="primary" size="small" :icon="Edit" @click="showYaml">编辑</el-button>
 					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button>
-					<el-button type="danger" size="small" :icon="Delete" @click="deletePod(podStore.state.podDetail)">删除</el-button></el-col
-				>
+					<el-button type="danger" size="small" :icon="Delete" @click="deletePod(podStore.state.podDetail)">删除</el-button>
+					<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
+						<el-icon>
+							<ele-RefreshRight />
+						</el-icon>
+						刷新
+					</el-button>
+				</el-col>
 			</el-row>
 
 			<el-descriptions :column="3" border class="desc-body">
@@ -81,18 +87,24 @@
 			<el-tabs v-model="data.activeName" class="demo-tabs" @tab-click="handleClick">
 				<el-tab-pane label="容器" name="first">
 					<el-space wrap v-for="container in podStore.state.podDetail.status?.containerStatuses">
-						<el-card class="box-card test">
+						<el-card class="box-card">
 							<template #header>
-								<div class="card-header" @click="">
-									<h3><SvgIcon name="iconfont icon-container-" class="svg" />{{ container.name }}</h3>
-									<div class="image">{{ container.image }}</div>
+								<div style="display: flex; justify-content: space-between">
+									<div class="card-header" @click="">
+										<h3><SvgIcon name="iconfont icon-container-" class="svg" />{{ container.name }}</h3>
+										<div class="image">{{ container.image }}</div>
+									</div>
+									<div>
+										<el-button link type="primary" size="small" @click="jumpPodExec(podStore.state.podDetail)">终端</el-button
+										><el-divider direction="vertical" />
+										<el-button link type="primary" size="small" @click="jumpPodLog(podStore.state.podDetail)">日志</el-button>
+									</div>
 								</div>
 							</template>
-							<h3>状态</h3>
+							<h4>状态</h4>
 							<div style="display: flex; justify-content: space-between; margin: 10px 0">
 								<el-text size="large" :type="container.ready === true ? 'success' : 'danger'" v-for="(item, key) in container.state">
 									<div>{{ container.ready ? 'Running' : item.reason }}</div>
-									<!-- {{ item.message }} -->
 								</el-text>
 								<el-text size="large" :type="container.started === true ? 'success' : 'danger'">
 									{{ container.started ? 'Started' : 'NotStarted' }}
@@ -101,22 +113,61 @@
 									{{ container.ready ? 'Ready' : 'NotReady' }}
 								</el-text>
 							</div>
-							<h3>状态</h3>
-							<div style="display: flex; justify-content: space-between">
-								<el-text size="large" :type="container.ready === true ? 'success' : 'danger'" v-for="(item, key) in container.state">
-									<div>{{ container.ready ? 'Running' : item.reason }}</div>
-									<!-- {{ item.message }} -->
-								</el-text>
-								<el-text size="large" :type="container.started === true ? 'success' : 'danger'">
-									{{ container.started ? 'Started' : 'NotStarted' }}
-								</el-text>
-								<el-text size="large" :type="container.ready === true ? 'success' : 'warning'">
-									{{ container.ready ? 'Ready' : 'NotReady' }}
+							<h4>重启次数</h4>
+							<div style="display: flex; justify-content: space-between; margin: 10px 0">
+								<el-text size="large">
+									<div>{{ container.restartCount }}</div>
 								</el-text>
 							</div>
 						</el-card>
 					</el-space>
-					<el-table :data="podStore.state.podDetail.status?.containerStatuses" stripe style="width: 100%" max-height="350px">
+					<!-- initi容器 -->
+					<el-space wrap v-for="container in podStore.state.podDetail.status?.initContainerStatuses">
+						<el-card class="box-card">
+							<template #header>
+								<div style="display: flex; justify-content: space-between">
+									<div class="card-header" @click="">
+										<h3><SvgIcon name="iconfont icon-container-" class="svg" />{{ container.name }}--初始化容器</h3>
+										<div class="image">{{ container.image }}</div>
+									</div>
+									<div>
+										<el-button link type="primary" size="small" @click="jumpPodExec(podStore.state.podDetail)">终端</el-button
+										><el-divider direction="vertical" />
+										<el-button link type="primary" size="small" @click="jumpPodLog(podStore.state.podDetail)">日志</el-button>
+									</div>
+								</div>
+							</template>
+							<h4>状态</h4>
+							<div style="display: flex; justify-content: space-between; margin: 10px 0">
+								<el-text size="large" :type="container.ready === true ? 'success' : 'danger'" v-for="(item, key) in container.state">
+									<div>{{ container.ready ? 'Running' : item.reason }}</div>
+								</el-text>
+								<div v-if="container.started">
+									<el-text size="large" :type="container.started === true ? 'success' : 'danger'">
+										{{ container.started ? 'Started' : 'NotStarted' }}
+									</el-text>
+								</div>
+								<div v-else>
+									<el-text size="large" v-if="container.state?.terminated">
+										{{ container.state?.terminated?.reason }}
+									</el-text>
+									<el-text size="large" v-if="container.state?.waiting">
+										{{ container.state?.waiting?.reason }}
+									</el-text>
+								</div>
+								<el-text size="large" :type="container.ready === true ? 'success' : 'warning'">
+									{{ container.ready ? 'Ready' : 'NotReady' }}
+								</el-text>
+							</div>
+							<h4>重启次数</h4>
+							<div style="display: flex; justify-content: space-between; margin: 10px 0">
+								<el-text size="large">
+									<div>{{ container.restartCount }}</div>
+								</el-text>
+							</div>
+						</el-card>
+					</el-space>
+					<!-- <el-table :data="podStore.state.podDetail.status?.containerStatuses" stripe style="width: 100%" max-height="350px">
 						<el-table-column label="名称">
 							<template #default="scope">
 								<el-text :type="scope.row.ready === true ? 'success' : 'danger'">{{ scope.row.name }}</el-text>
@@ -124,14 +175,7 @@
 						</el-table-column>
 						<el-table-column label="状态">
 							<template #default="scope">
-								<el-text :type="scope.row.ready === true ? 'success' : 'danger'" v-for="(item, key) in scope.row.state">
-									<div>
-										{{ key }}
-									</div>
-									<div style="font-size: 10px">
-										{{ item.message }}
-									</div>
-								</el-text>
+								<p v-html="podStatus(podStore.state.podDetail.status!)" />
 							</template>
 						</el-table-column>
 						<el-table-column label="镜像" prop="image" />
@@ -144,7 +188,7 @@
 								<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button>
 							</template>
 						</el-table-column>
-					</el-table>
+					</el-table> -->
 				</el-tab-pane>
 				<el-tab-pane label="元数据" name="second">
 					<MetaDetail :metaData="podStore.state.podDetail!.metadata" />
@@ -171,9 +215,7 @@
 						<el-table-column label="状态">
 							<template #default="scope">
 								<el-text :type="scope.row.ready === true ? 'success' : 'danger'" v-for="(item, key) in scope.row.state">
-									<div>
-										{{ key }}
-									</div>
+									<div>{{ item.reason }}</div>
 									<div style="font-size: 10px">
 										{{ item.message }}
 									</div>
@@ -271,7 +313,9 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 		getEvents();
 	}
 };
-
+const refreshCurrentTagsView = () => {
+	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
+};
 const podRestart = (status: PodStatus) => {
 	let count = 0;
 	status.containerStatuses!.forEach((item) => {
@@ -289,20 +333,44 @@ const podStatus = (status: PodStatus) => {
 				status.containerStatuses?.forEach((c: ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
-							res = `<div>${c.state.waiting.reason}</div>`;
+							res = ` </div> <div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
 							// res = `${c.state.waiting.reason}`;
 						}
 						if (c.state?.terminated) {
 							res = `${c.state.terminated.reason}`;
+							// res = 'Terminating';
 						}
 					}
 				});
 				return (s = `<span style="color: red">${res}</span>`);
 			}
-			// s = '<span style="color: green">true</span>';
 		});
+	} else if (status.phase === 'Succeeded') {
+		let res = '';
+		status.containerStatuses?.forEach((c: ContainerStatus) => {
+			if (!c.ready) {
+				if (c.state?.terminated) {
+					res = `${c.state.terminated.reason}`;
+					// res = 'Terminating';
+				}
+			}
+		});
+		return (s = `<span style="color: #E6A23C">${res}</span>`);
 	} else {
-		s = '<span style="color: red">ERROR</span>';
+		let res = status.phase;
+		status.containerStatuses?.forEach((c: ContainerStatus) => {
+			if (!c.ready) {
+				if (c.state?.waiting) {
+					res = ` </div> <div>${c.state.waiting.reason}</div>`;
+					// res = `${c.state.waiting.reason}`;
+				}
+				if (c.state?.terminated) {
+					res = `${c.state.terminated.reason}`;
+					// res = 'Terminating';
+				}
+			}
+		});
+		return (s = `<span style="color: red">${res}</span>`);
 	}
 
 	return s;
@@ -401,13 +469,13 @@ const showYaml = async () => {
 }
 
 .test {
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    background-color: rgba(214, 221, 210, 0.75);
-    border-radius: 12px;
-    border: 1px solid rgba(209, 213, 219, 0.3);
+	backdrop-filter: blur(16px) saturate(180%);
+	-webkit-backdrop-filter: blur(16px) saturate(180%);
+	background-color: rgba(214, 221, 210, 0.75);
+	border-radius: 12px;
+	border: 1px solid rgba(209, 213, 219, 0.3);
 	// background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1124&q=100');
-    // background-position: center;
+	// background-position: center;
 }
 .tag-center {
 	display: flex;
@@ -455,5 +523,4 @@ const showYaml = async () => {
 	margin-top: 5px;
 	font-stretch: condensed;
 }
-
 </style>
