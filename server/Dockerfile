@@ -9,5 +9,5 @@ RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o lbemi-server ./cmd && chmod +x lb
 FROM busybox as runner
 WORKDIR /app
 COPY --from=builder /app/lbemi-server /app
-COPY --from=builder /app/config.yaml /app
+COPY --from=builder /app/dev.yaml /app
 ENTRYPOINT ["./lbemi-server"]
