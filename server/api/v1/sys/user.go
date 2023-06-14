@@ -17,7 +17,7 @@ import (
 
 func Login(rc *rctx.ReqCtx) {
 	userForm := form.UserLoginForm{}
-	rctx.ShouldBind(rc, &userForm)
+	rc.ShouldBind(&userForm)
 	//校验验证码
 	restfulx.ErrNotTrue(store.Verify(userForm.CaptchaId, userForm.Captcha, true), restfulx.CaptchaErr)
 	user := core.V1.User().Login(rc, &userForm)
@@ -32,7 +32,7 @@ func Login(rc *rctx.ReqCtx) {
 
 func Register(rc *rctx.ReqCtx) {
 	var registerForm form.RegisterUserForm
-	rctx.ShouldBind(rc, &registerForm)
+	rc.ShouldBind(&registerForm)
 	core.V1.User().Register(&registerForm)
 }
 
@@ -72,39 +72,39 @@ func Logout(rc *rctx.ReqCtx) {
 }
 
 func GetUserInfoById(rc *rctx.ReqCtx) {
-	id := rctx.PathParamUint64(rc, "id")
+	id := rc.PathParamUint64("id")
 	rc.ResData = core.V1.User().GetUserInfoById(id)
 }
 
 func GetUserList(rc *rctx.ReqCtx) {
 	condition := &sys.User{}
-	pageParam := rctx.GetPageQueryParam(rc)
-	condition.Status = rctx.QueryParamUint8(rc, "status")
-	condition.UserName = rctx.QueryParam(rc, "name")
+	pageParam := rc.GetPageQueryParam()
+	condition.Status = rc.QueryParamUint8("status")
+	condition.UserName = rc.Query("name")
 	rc.ResData = core.V1.User().GetUserList(pageParam, condition)
 }
 
 func DeleteUserByUserId(rc *rctx.ReqCtx) {
-	id := rctx.PathParamUint64(rc, "id")
+	id := rc.PathParamUint64("id")
 	core.V1.User().DeleteUserByUserId(id)
 }
 
 func UpdateUser(rc *rctx.ReqCtx) {
 	var user form.UpdateUserFrom
-	rctx.ShouldBind(rc, &user)
-	userID := rctx.PathParamUint64(rc, "id")
+	rc.ShouldBind(&user)
+	userID := rc.PathParamUint64("id")
 	core.V1.User().Update(userID, &user)
 }
 
 func GetUserRoles(rc *rctx.ReqCtx) {
-	uid := rctx.PathParamUint64(rc, "id")
+	uid := rc.PathParamUint64("id")
 	rc.ResData = core.V1.User().GetRoleIDByUser(uid)
 }
 
 func SetUserRoles(rc *rctx.ReqCtx) {
 	var roles form.Roles
-	rctx.ShouldBind(rc, &roles)
-	uid := rctx.PathParamUint64(rc, "id")
+	rc.ShouldBind(&roles)
+	uid := rc.PathParamUint64("id")
 	core.V1.User().SetUserRoles(uid, roles.RoleIds)
 }
 
@@ -127,7 +127,7 @@ func GetLeftMenusByCurrentUser(rc *rctx.ReqCtx) {
 }
 
 func UpdateUserStatus(rc *rctx.ReqCtx) {
-	userId := rctx.PathParamUint64(rc, "id")
-	status := rctx.PathParamUint64(rc, "status")
+	userId := rc.PathParamUint64("id")
+	status := rc.PathParamUint64("status")
 	core.V1.User().UpdateStatus(userId, status)
 }

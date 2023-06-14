@@ -4,12 +4,17 @@ import (
 	"context"
 	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/model"
+	"github.com/lbemi/lbemi/pkg/model/form"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 type DeploymentGetter interface {
@@ -17,17 +22,17 @@ type DeploymentGetter interface {
 }
 
 type IDeployment interface {
-	List(ctx context.Context) ([]*appsv1.Deployment, error)
-	Get(ctx context.Context, name string) (*appsv1.Deployment, error)
-	Create(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error)
-	Update(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error)
-	RollBack(ctx context.Context, depName string, reversion string) (*appsv1.Deployment, error)
-	Delete(ctx context.Context, name string) error
-	Scale(ctx context.Context, name string, replicaNum int32) error
+	List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult
+	Get(ctx context.Context, name string) *appsv1.Deployment
+	Create(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment
+	Update(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment
+	RollBack(ctx context.Context, depName string, reversion int64) *appsv1.Deployment
+	Delete(ctx context.Context, name string)
+	Scale(ctx context.Context, name string, replicaNum int32)
 
-	GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, []*appsv1.ReplicaSet, error)
-	GetDeploymentEvent(ctx context.Context, name string) ([]*corev1.Event, error)
-	Search(ctx context.Context, key string, searchType int) ([]*appsv1.Deployment, error)
+	GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, []*appsv1.ReplicaSet)
+	GetDeploymentEvent(ctx context.Context, name string) []*corev1.Event
+	Search(ctx context.Context, key string, searchType int) []*appsv1.Deployment
 }
 
 type Deployment struct {
@@ -41,137 +46,105 @@ func NewDeployment(k8s *k8s.Factory) *Deployment {
 	return deployment
 }
 
-func (d *Deployment) List(ctx context.Context) ([]*appsv1.Deployment, error) {
-	list, err := d.k8s.Deployment().List(ctx)
+func (d *Deployment) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
+	data := d.k8s.Deployment().List(ctx)
+	res := &form.PageResult{}
+	total := len(data)
+	var deploymentList = make([]*appsv1.Deployment, 0)
 
-	if err != nil {
-		log.Logger.Error(err)
-		return []*appsv1.Deployment{}, fmt.Errorf("record not found")
+	if name != "" {
+		for _, item := range data {
+			if strings.Contains(item.Name, name) {
+				deploymentList = append(deploymentList, item)
+			}
+		}
+		data = deploymentList
 	}
-	//按时间排序
-	sort.Slice(list, func(i, j int) bool {
-		return list[j].ObjectMeta.GetCreationTimestamp().Time.Before(list[i].ObjectMeta.GetCreationTimestamp().Time)
-	})
 
-	return list, nil
+	if label != "" {
+		for _, item := range data {
+			if strings.Contains(labels.FormatLabels(item.Labels), label) {
+				deploymentList = append(deploymentList, item)
+			}
+		}
+		data = deploymentList
+	}
+	// 未传递分页查询参数
+	if query.Limit == 0 && query.Page == 0 {
+		res.Data = data
+	} else {
+		if total <= query.Limit {
+			res.Data = data
+		} else if query.Page*query.Limit >= total {
+			res.Data = data[(query.Page-1)*query.Limit : total]
+		} else {
+			res.Data = data[(query.Page-1)*query.Limit : query.Page*query.Limit]
+		}
+	}
+	res.Total = int64(total)
+
+	return res
 }
 
-func (d *Deployment) Get(ctx context.Context, name string) (*appsv1.Deployment, error) {
-	dep, err := d.k8s.Deployment().Get(ctx, name)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return dep, err
+func (d *Deployment) Get(ctx context.Context, name string) *appsv1.Deployment {
+	return d.k8s.Deployment().Get(ctx, name)
 }
 
-func (d *Deployment) Create(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error) {
-	newDeployment, err := d.k8s.Deployment().Create(ctx, obj)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return newDeployment, err
+func (d *Deployment) Create(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment {
+	return d.k8s.Deployment().Create(ctx, obj)
 }
 
-func (d *Deployment) Update(ctx context.Context, obj *appsv1.Deployment) (*appsv1.Deployment, error) {
-	updateDeployment, err := d.k8s.Deployment().Update(ctx, obj)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return updateDeployment, err
+func (d *Deployment) Update(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment {
+	return d.k8s.Deployment().Update(ctx, obj)
 }
 
-func (d *Deployment) RollBack(ctx context.Context, depName string, reversion string) (*appsv1.Deployment, error) {
-	parseInt, err := strconv.ParseInt(reversion, 10, 64)
-	if err != nil {
-		log.Logger.Error("reversion not fount")
-		return nil, fmt.Errorf("reversion not fount")
+func (d *Deployment) RollBack(ctx context.Context, depName string, reversion int64) *appsv1.Deployment {
+	if reversion < 0 {
+		restfulx.ErrNotNilDebug(fmt.Errorf("reversion not fount"), restfulx.OperatorErr)
 	}
-	if parseInt < 0 {
-		log.Logger.Error("reversion not fount")
-		return nil, fmt.Errorf("reversion not fount")
-	}
-
-	deployment, err := d.k8s.Deployment().Get(ctx, depName)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	replicaSets, err := d.k8s.Replicaset().List(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+	dep := d.k8s.Deployment().Get(ctx, depName)
+	replicaSets := d.k8s.Replicaset().List(ctx)
 	var replicaSet *appsv1.ReplicaSet
 	//找到对应的rs
 	for _, item := range replicaSets {
-		if d.isRsFromDep(deployment, item) {
-			if item.ObjectMeta.Annotations["deployment.kubernetes.io/revision"] == reversion {
+		if d.isRsFromDep(dep, item) {
+			log.Logger.Infof("reversion:  ---> %s", item.ObjectMeta.Annotations["deployment.kubernetes.io/revision"])
+			if item.ObjectMeta.Annotations["deployment.kubernetes.io/revision"] == strconv.FormatInt(reversion, 10) {
 				replicaSet = item
 			}
 		}
 	}
-
 	if replicaSet == nil {
-		return nil, fmt.Errorf("reversion not fount")
+		restfulx.ErrNotNilDebug(fmt.Errorf("reversion not fount"), restfulx.OperatorErr)
 	}
-
-	deployment.Spec.Template = replicaSet.Spec.Template
-
-	updateDeployment, err := d.k8s.Deployment().Update(ctx, deployment)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-
-	return updateDeployment, err
+	dep.Spec.Template = replicaSet.Spec.Template
+	updateDeployment := d.k8s.Deployment().Update(ctx, dep)
+	return updateDeployment
 }
 
-func (d *Deployment) Delete(ctx context.Context, name string) error {
-	err := d.k8s.Deployment().Delete(ctx, name)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return err
+func (d *Deployment) Delete(ctx context.Context, name string) {
+	d.k8s.Deployment().Delete(ctx, name)
 }
 
-func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) error {
-	err := d.k8s.Deployment().Scale(ctx, name, replicaNum)
-	if err != nil {
-		log.Logger.Error(err)
-		return err
-	}
-	return nil
+func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) {
+	d.k8s.Deployment().Scale(ctx, name, replicaNum)
 }
 
-func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, []*appsv1.ReplicaSet, error) {
-	dep, err := d.k8s.Deployment().Get(ctx, name)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	replicaSets, err := d.k8s.Replicaset().List(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
+func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, []*appsv1.ReplicaSet) {
+	dep := d.k8s.Deployment().Get(ctx, name)
+	replicaSets := d.k8s.Replicaset().List(ctx)
 	res := make([]map[string]string, 0)
-
 	PodReplicaSets := make([]*appsv1.ReplicaSet, 0)
-
 	for _, item := range replicaSets {
 		if d.isRsFromDep(dep, item) {
 			selectorAsMap, err := v1.LabelSelectorAsMap(item.Spec.Selector)
-			if err != nil {
-				return nil, nil, err
-			}
+			restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 			PodReplicaSets = append(PodReplicaSets, item)
 			res = append(res, selectorAsMap)
 		}
 	}
 
-	pods, err := d.k8s.Pod().GetPodByLabels(ctx, dep.Namespace, res)
-
-	if err != nil {
-		return nil, nil, err
-	}
-
+	pods := d.k8s.Pod().GetPodByLabels(ctx, dep.Namespace, res)
 	sort.Slice(pods, func(i, j int) bool {
 		// sort by creation timestamp in descending order
 		if pods[j].ObjectMeta.GetCreationTimestamp().Time.Before(pods[i].ObjectMeta.GetCreationTimestamp().Time) {
@@ -195,28 +168,23 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 		// if the creation timestamps are equal, sort by name in ascending order
 		return PodReplicaSets[i].ObjectMeta.GetName() < PodReplicaSets[j].ObjectMeta.GetName()
 	})
-	return pods, PodReplicaSets, nil
+	return pods, PodReplicaSets
 
 }
 
-func (d *Deployment) GetDeploymentEvent(ctx context.Context, name string) ([]*corev1.Event, error) {
+func (d *Deployment) GetDeploymentEvent(ctx context.Context, name string) []*corev1.Event {
 	events := make([]*corev1.Event, 0)
-	eventList, err := d.k8s.Event().List(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+	eventList := d.k8s.Event().List(ctx)
 	for _, item := range eventList {
 		if (item.InvolvedObject.Kind == "ReplicaSet" || item.InvolvedObject.Kind == "Deployment") && item.InvolvedObject.Name == name {
 			events = append(events, item)
 		}
 	}
-
-	return events, nil
+	return events
 
 }
 
-func (d *Deployment) Search(ctx context.Context, key string, searchType int) ([]*appsv1.Deployment, error) {
+func (d *Deployment) Search(ctx context.Context, key string, searchType int) []*appsv1.Deployment {
 	return d.k8s.Deployment().Search(ctx, key, searchType)
 }
 

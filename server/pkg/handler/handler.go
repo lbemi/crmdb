@@ -13,7 +13,7 @@ import (
 )
 
 type Getter interface {
-	redis.RedisGeeter
+	redis.RedisGetter
 	policy.PolicyGetter
 	sys.UserGetter
 	sys.RoleGetter
@@ -75,6 +75,7 @@ func (c *Handler) Ws() asset.IWs {
 func (c *Handler) Cluster(clusterName string) cloud.ICluster {
 	return cloud.NewCluster(c.DbFactory, clusterName)
 }
+
 func (c *Handler) Login() logsys.LoginLogImp {
 	return logsys.NewLogin(c.DbFactory)
 }

@@ -213,22 +213,26 @@
 				</el-tab-pane>
 			</el-tabs>
 		</el-card>
-
-		<YamlDialog ref="yamlRef" :resourceType="'node'" />
+		<YamlDialog
+			v-model:dialogVisible="data.dialogVisible"
+			:code-data="data.codeData"
+			:resourceType="'node'"
+			:disabled-update="true"
+			v-if="data.dialogVisible"
+		/>	
+		<!-- <YamlDialog ref="yamlRef" :resourceType="'node'" /> -->
 	</div>
 </template>
 <script lang="ts" setup name="nodeDetail">
 import { reactive, onMounted, ref, defineAsyncComponent } from 'vue';
 import { ArrowLeft, CaretBottom, View, Delete, Edit } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
-import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { Pod, ContainerStatus, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
 import { ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox, TabsPaneContext } from 'element-plus';
-import { usePodApi } from '/@/api/kubernetes/pod';
 import { podInfo } from '/@/stores/pod';
 import { ECharts, EChartsOption, init } from 'echarts';
 import { deepClone } from '/@/utils/other';
@@ -252,9 +256,10 @@ const yamlRef = ref();
 const route = useRoute();
 const podStore = podInfo();
 const k8sStore = kubernetesInfo();
-const podApi = usePodApi();
-const deploymentApi = useDeploymentApi();
 const data = reactive({
+	codeData: {} ,
+	dialogVisible: false,
+	visible: false,
 	loading: false,
 	param: {
 		cloud: k8sStore.state.activeCluster,
@@ -427,7 +432,7 @@ const podUsage = () => {
 };
 const podRestart = (status: PodStatus) => {
 	let count = 0;
-	status.containerStatuses!.forEach((item) => {
+	status.containerStatuses!.forEach((item:any) => {
 		count += item.restartCount;
 	});
 	return count;
@@ -482,8 +487,7 @@ const refreshCurrentTagsView = () => {
 };
 const handleSelectionChange = () => {};
 const getEvents = async () => {
-	const pod = podStore.state.podDetail;
-	const res = await podApi.podEvents(pod.metadata!.namespace, pod.metadata!.name, data.param);
+	const res = await nodeApi.getNodeEvents(k8sStore.state.activeNode.metadata!.name!, data.param);
 	data.events = res.data;
 };
 const jumpPodExec = (p: Pod) => {
@@ -607,7 +611,8 @@ const drain = async (node: Node) => {
 const showYaml = async () => {
 	const node = deepClone(k8sStore.state.activeNode);
 	delete node.usage;
-	yamlRef.value.openDialog(node);
+	data.codeData = node;
+	data.dialogVisible = true;
 };
 </script>
 <style lang="scss">

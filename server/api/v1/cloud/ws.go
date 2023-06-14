@@ -1,15 +1,17 @@
 package cloud
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
+	"github.com/lbemi/lbemi/pkg/rctx"
 )
 
-func Ws(c *gin.Context) {
-	clusterName := c.Param("cluster")
-	typeName := c.Param("type")
-	conn, err := wsstore.Upgrader.Upgrade(c.Writer, c.Request, nil)
+func Ws(rc *rctx.ReqCtx) {
+
+	clusterName := rc.PathParam("cluster")
+	typeName := rc.PathParam("type")
+	wsstore.Upgrader.Subprotocols = []string{rc.Request.Request.Header.Get("Sec-WebSocket-Protocol")}
+	conn, err := wsstore.Upgrader.Upgrade(rc.Response.ResponseWriter, rc.Request.Request, nil)
 	if err != nil {
 		log.Logger.Error(err)
 	} else {
@@ -17,7 +19,7 @@ func Ws(c *gin.Context) {
 	}
 }
 
-func WsSendAll(c *gin.Context) {
-	msg := c.Query("msg")
+func WsSendAll(rc *rctx.ReqCtx) {
+	msg := rc.Query("msg")
 	wsstore.WsClientMap.SendAll(msg)
 }

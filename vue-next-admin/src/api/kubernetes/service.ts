@@ -5,7 +5,7 @@ export function useServiceApi() {
 	return {
 		listService: (namespace: string, param: any) => {
 			return request({
-				url: '/service/' + namespace,
+				url: '/services/namespaces/' + namespace,
 				method: 'get',
 				params: param,
 			});
@@ -19,21 +19,21 @@ export function useServiceApi() {
 		},
 		listServiceWorkLoad: (namespace: string, name: string, param: any) => {
 			return request({
-				url: `/service/${namespace}/${name}/work`,
+				url: `/services/namespaces/${namespace}/workload/${name}`,
 				method: 'get',
 				params: param,
 			});
 		},
 		deleteService: (param: any, name: string, namespace: string) => {
 			return request({
-				url: `/service/${namespace}/${name}`,
+				url: `/services/namespaces/${namespace}/${name}`,
 				method: 'delete',
 				params: param,
 			});
 		},
 		updateService: (param: any, data: Service) => {
 			return request({
-				url: `/service`,
+				url: `/services`,
 				method: 'put',
 				params: param,
 				data: data,
@@ -41,7 +41,7 @@ export function useServiceApi() {
 		},
 		createService: (param: any, data: Service) => {
 			return request({
-				url: `/service`,
+				url: `/services`,
 				method: 'post',
 				params: param,
 				data: data,

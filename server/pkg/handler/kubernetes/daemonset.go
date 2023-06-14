@@ -2,9 +2,12 @@ package kubernetes
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/model"
+	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	v1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"strings"
 )
 
 type DaemonSetGetter interface {
@@ -12,11 +15,11 @@ type DaemonSetGetter interface {
 }
 
 type IDaemonSet interface {
-	List(ctx context.Context) ([]*v1.DaemonSet, error)
-	Get(ctx context.Context, name string) (*v1.DaemonSet, error)
-	Create(ctx context.Context, obj *v1.DaemonSet) (*v1.DaemonSet, error)
-	Update(ctx context.Context, obj *v1.DaemonSet) (*v1.DaemonSet, error)
-	Delete(ctx context.Context, name string) error
+	List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult
+	Get(ctx context.Context, name string) *v1.DaemonSet
+	Create(ctx context.Context, obj *v1.DaemonSet) *v1.DaemonSet
+	Update(ctx context.Context, obj *v1.DaemonSet) *v1.DaemonSet
+	Delete(ctx context.Context, name string)
 }
 
 type daemonSet struct {
@@ -27,42 +30,59 @@ func NewDaemonSet(k8s *k8s.Factory) *daemonSet {
 	return &daemonSet{k8s: k8s}
 }
 
-func (d *daemonSet) List(ctx context.Context) ([]*v1.DaemonSet, error) {
-	list, err := d.k8s.DaemonSet().List(ctx)
-	if err != nil {
-		log.Logger.Error(err)
+func (d *daemonSet) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
+	data := d.k8s.DaemonSet().List(ctx)
+	res := &form.PageResult{}
+	var daemonSetList = make([]*v1.DaemonSet, 0)
+
+	if name != "" {
+		for _, item := range data {
+			if strings.Contains(item.Name, name) {
+				daemonSetList = append(daemonSetList, item)
+			}
+		}
+		data = daemonSetList
 	}
-	return list, err
+
+	if label != "" {
+		for _, item := range data {
+			if strings.Contains(labels.FormatLabels(item.Labels), label) {
+				daemonSetList = append(daemonSetList, item)
+			}
+		}
+		data = daemonSetList
+	}
+
+	total := len(data)
+	// 未传递分页查询参数
+	if query.Limit == 0 && query.Page == 0 {
+		res.Data = data
+	} else {
+		if total <= query.Limit {
+			res.Data = data
+		} else if query.Page*query.Limit >= total {
+			res.Data = data[(query.Page-1)*query.Limit : total]
+		} else {
+			res.Data = data[(query.Page-1)*query.Limit : query.Page*query.Limit]
+		}
+	}
+	res.Total = int64(total)
+
+	return res
 }
 
-func (d *daemonSet) Get(ctx context.Context, name string) (*v1.DaemonSet, error) {
-	dep, err := d.k8s.DaemonSet().Get(ctx, name)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return dep, err
+func (d *daemonSet) Get(ctx context.Context, name string) *v1.DaemonSet {
+	return d.k8s.DaemonSet().Get(ctx, name)
 }
 
-func (d *daemonSet) Create(ctx context.Context, obj *v1.DaemonSet) (*v1.DaemonSet, error) {
-	newDaemonSet, err := d.k8s.DaemonSet().Create(ctx, obj)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return newDaemonSet, err
+func (d *daemonSet) Create(ctx context.Context, obj *v1.DaemonSet) *v1.DaemonSet {
+	return d.k8s.DaemonSet().Create(ctx, obj)
 }
 
-func (d *daemonSet) Update(ctx context.Context, obj *v1.DaemonSet) (*v1.DaemonSet, error) {
-	updateDaemonSet, err := d.k8s.DaemonSet().Update(ctx, obj)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return updateDaemonSet, err
+func (d *daemonSet) Update(ctx context.Context, obj *v1.DaemonSet) *v1.DaemonSet {
+	return d.k8s.DaemonSet().Update(ctx, obj)
 }
 
-func (d *daemonSet) Delete(ctx context.Context, name string) error {
-	err := d.k8s.DaemonSet().Delete(ctx, name)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return err
+func (d *daemonSet) Delete(ctx context.Context, name string) {
+	d.k8s.DaemonSet().Delete(ctx, name)
 }

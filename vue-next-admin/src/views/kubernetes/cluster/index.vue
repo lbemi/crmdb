@@ -9,7 +9,7 @@
 					</el-icon>
 					查询
 				</el-button>
-				<el-button size="small" type="success" class="ml10" @click="loadCluster()"> 导入集群 </el-button>
+				<el-button v-auth="'k8s:cluster:add'" size="small" type="success" class="ml10" @click="loadCluster()"> 导入集群 </el-button>
 			</div>
 
 			<el-table :data="data.clusters" style="width: 100%">
@@ -42,7 +42,7 @@
 				</el-table-column>
 				<el-table-column fixed="right" label="操作" width="170">
 					<template #default="scope">
-						<el-button link type="danger" size="small" @click="deleteCluster(scope.row)">删除</el-button>
+						<el-button v-auth="'k8s:cluster:del'"  link type="danger" size="small" @click="deleteCluster(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>

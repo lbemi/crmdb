@@ -7,11 +7,11 @@ import (
 )
 
 func ParseStrInt64(value string) []uint64 {
-	vs := []uint64{}
+	vs := make([]uint64, 0)
 	for _, v := range strings.Split(value, ",") {
 		i, err := strconv.ParseUint(v, 10, 64)
 		if err != nil {
-			restfulx.ErrIsNil(err, restfulx.ParamErr)
+			restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
 		}
 		vs = append(vs, i)
 	}

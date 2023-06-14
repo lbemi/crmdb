@@ -2,13 +2,9 @@ package restfulx
 
 import (
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"runtime/debug"
 )
-
-type OpsError struct {
-	code    int16
-	message string
-}
 
 var (
 	Success      *OpsError = NewOpsErrCode(200, "success")
@@ -30,15 +26,19 @@ var (
 	OperatorErr    *OpsError = NewOpsErrCode(2001, "操作失败")
 
 	ParamErr *OpsError = NewOpsErrCode(3001, "参数错误")
+
+	//ks8相关
+	RegisterClusterErr *OpsError = NewOpsErrCode(5001, "导入集群失败，请检查配置文件")
+	ClusterUnHealth    *OpsError = NewOpsErrCode(5002, "集群异常，请检查")
 )
+
+type OpsError struct {
+	code    int16
+	message string
+}
 
 func (oe *OpsError) Code() int16 {
 	return oe.code
-}
-
-func (oe *OpsError) AddErrMsg(msg ...interface{}) *OpsError {
-	oe.message = fmt.Sprintf(oe.message, msg...)
-	return oe
 }
 
 func (oe *OpsError) Error() string {
@@ -72,8 +72,10 @@ func ErrIsNil(err error, oe *OpsError) {
 		panic(oe)
 	}
 }
+
 func ErrNotNilDebug(err error, oe *OpsError) {
 	if err != nil {
+		log.Logger.Error(err)
 		debug.PrintStack()
 		panic(oe)
 	}
@@ -81,7 +83,6 @@ func ErrNotNilDebug(err error, oe *OpsError) {
 
 func ErrNotTrue(exp bool, err *OpsError) {
 	if !exp {
-		//log.Logger.Error(message.message)
 		panic(err)
 	}
 }

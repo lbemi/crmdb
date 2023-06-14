@@ -1,11 +1,8 @@
 package restfulx
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"net/http"
 )
 
 const SuccessMsg = "success"
@@ -16,24 +13,24 @@ type Response struct {
 	Message interface{} `json:"message,omitempty"`
 }
 
-func (r *Response) ToJson() string {
-	marshalData, err := json.Marshal(r.Data)
-	if err != nil {
-		fmt.Println("marshal data to json failed")
-	}
-	return string(marshalData)
-}
-
-func (r *Response) IsSuccess() bool {
-	return r.Code == http.StatusOK
-}
+//func (r *Response) ToJson() string {
+//	marshalData, err := json.Marshal(r.Data)
+//	if err != nil {
+//		fmt.Println("marshal data to json failed")
+//	}
+//	return string(marshalData)
+//}
+//
+//func (r *Response) IsSuccess() bool {
+//	return r.Code == http.StatusOK
+//}
 
 func SuccessX(data interface{}) *Response {
 	return &Response{Code: Success.code, Message: SuccessMsg, Data: data}
 }
 
 func SuccessRes(r *restful.Response, data interface{}) {
-	r.WriteEntity(SuccessX(data))
+	r.WriteEntity(&Response{Code: Success.code, Message: SuccessMsg, Data: data})
 }
 
 func ErrorRes(r *restful.Response, err interface{}) {
@@ -43,9 +40,9 @@ func ErrorRes(r *restful.Response, err interface{}) {
 	case error:
 		r.WriteEntity(ServerError())
 		//log.Logger.Error(message)
-	case string:
-		r.WriteEntity(ServerError())
-		//log.Logger.Error(message)
+	//case string:
+	//	r.WriteEntity(ServerError())
+	//	//log.Logger.Error(message)
 	default:
 		log.Logger.Error(err)
 	}

@@ -2,68 +2,56 @@ package k8s
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
 type StatefulSetImp interface {
-	List(ctx context.Context) ([]*v1.StatefulSet, error)
-	Get(ctx context.Context, name string) (*v1.StatefulSet, error)
-	Create(ctx context.Context, obj *v1.StatefulSet) (*v1.StatefulSet, error)
-	Update(ctx context.Context, obj *v1.StatefulSet) (*v1.StatefulSet, error)
-	Delete(ctx context.Context, name string) error
+	List(ctx context.Context) []*v1.StatefulSet
+	Get(ctx context.Context, name string) *v1.StatefulSet
+	Create(ctx context.Context, obj *v1.StatefulSet) *v1.StatefulSet
+	Update(ctx context.Context, obj *v1.StatefulSet) *v1.StatefulSet
+	Delete(ctx context.Context, name string)
 }
 
 type statefulSet struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
-func (d *statefulSet) List(ctx context.Context) ([]*v1.StatefulSet, error) {
+func (d *statefulSet) List(ctx context.Context) []*v1.StatefulSet {
 	list, err := d.cli.SharedInformerFactory.Apps().V1().StatefulSets().Lister().StatefulSets(d.ns).List(labels.Everything())
-	if err != nil {
-		log.Logger.Error(err)
-	}
-
-	return list, err
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return list
 }
 
-func (d *statefulSet) Get(ctx context.Context, name string) (*v1.StatefulSet, error) {
+func (d *statefulSet) Get(ctx context.Context, name string) *v1.StatefulSet {
 	sts, err := d.cli.SharedInformerFactory.Apps().V1().StatefulSets().Lister().StatefulSets(d.ns).Get(name)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return sts, err
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return sts
 }
 
-func (d *statefulSet) Create(ctx context.Context, obj *v1.StatefulSet) (*v1.StatefulSet, error) {
+func (d *statefulSet) Create(ctx context.Context, obj *v1.StatefulSet) *v1.StatefulSet {
 	newStatefulSet, err := d.cli.ClientSet.AppsV1().StatefulSets(d.ns).Create(ctx, obj, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return newStatefulSet, err
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return newStatefulSet
 }
 
-func (d *statefulSet) Update(ctx context.Context, obj *v1.StatefulSet) (*v1.StatefulSet, error) {
+func (d *statefulSet) Update(ctx context.Context, obj *v1.StatefulSet) *v1.StatefulSet {
 	updateStatefulSet, err := d.cli.ClientSet.AppsV1().StatefulSets(d.ns).Update(ctx, obj, metav1.UpdateOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return updateStatefulSet, err
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return updateStatefulSet
 }
 
-func (d *statefulSet) Delete(ctx context.Context, name string) error {
+func (d *statefulSet) Delete(ctx context.Context, name string) {
 	err := d.cli.ClientSet.AppsV1().StatefulSets(d.ns).Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return err
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func newStatefulSet(cli *store.Clients, namespace string) *statefulSet {
+func newStatefulSet(cli *store.ClientConfig, namespace string) *statefulSet {
 	return &statefulSet{cli: cli, ns: namespace}
 }
 

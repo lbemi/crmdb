@@ -1,164 +1,49 @@
 package cloud
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/pkg/common/response"
 	"github.com/lbemi/lbemi/pkg/core"
-	"github.com/lbemi/lbemi/pkg/handler/types"
+	"github.com/lbemi/lbemi/pkg/rctx"
 	v1 "k8s.io/api/apps/v1"
-	"strconv"
 )
 
-func ListDaemonSets(c *gin.Context) {
-	pageStr := c.DefaultQuery("page", "0")
-	page, err := strconv.Atoi(pageStr)
-	if err != nil {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
-	limitStr := c.DefaultQuery("limit", "0")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-	clusterName := c.Query("cloud")
-	if clusterName == "" {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
-	namespace := c.Param("namespace")
-
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
-		response.Fail(c, response.ClusterNoHealth)
-		return
-	}
-	daemonSetList, err := core.V1.Cluster(clusterName).DaemonSets(namespace).List(c)
-	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-	// 处理分页
-	var pageQuery types.PageQuery
-	pageQuery.Total = len(daemonSetList)
-
-	if pageQuery.Total <= limit {
-		pageQuery.Data = daemonSetList
-	} else if page*limit >= pageQuery.Total {
-		pageQuery.Data = daemonSetList[(page-1)*limit : pageQuery.Total]
-	} else {
-		pageQuery.Data = daemonSetList[(page-1)*limit : page*limit]
-	}
-
-	response.Success(c, response.StatusOK, pageQuery)
+func ListDaemonSets(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	namespace := rc.PathParam("namespace")
+	clusterName := rc.QueryCloud()
+	pageParam := rc.GetPageQueryParam()
+	name := rc.Query("name")
+	label := rc.Query("label")
+	rc.ResData = core.V1.Cluster(clusterName).DaemonSets(namespace).List(c, pageParam, name, label)
 }
 
-func GetDaemonSet(c *gin.Context) {
-	clusterName := c.Query("cloud")
-	if clusterName == "" {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-	namespace := c.Param("namespace")
-
-	daemonSetName := c.Param("daemonSetName")
-
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
-		response.Fail(c, response.ClusterNoHealth)
-		return
-	}
-
-	daemonSet, err := core.V1.Cluster(clusterName).DaemonSets(namespace).Get(c, daemonSetName)
-	if err != nil {
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	response.Success(c, response.StatusOK, daemonSet)
+func GetDaemonSet(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	namespace := rc.PathParam("namespace")
+	clusterName := rc.QueryCloud()
+	daemonSetName := rc.PathParam("daemonSetName")
+	rc.ResData = core.V1.Cluster(clusterName).DaemonSets(namespace).Get(c, daemonSetName)
 }
 
-func CreateDaemonSet(c *gin.Context) {
-	clusterName := c.Query("cloud")
-	if clusterName == "" {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
+func CreateDaemonSet(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	clusterName := rc.QueryCloud()
 	var daemonSet *v1.DaemonSet
-
-	err := c.ShouldBindJSON(&daemonSet)
-	if err != nil {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
-		response.Fail(c, response.ClusterNoHealth)
-		return
-	}
-
-	newDaemonSet, err := core.V1.Cluster(clusterName).DaemonSets(daemonSet.Namespace).Create(c, daemonSet)
-	if err != nil {
-		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
-		return
-	}
-
-	response.Success(c, response.StatusOK, newDaemonSet)
+	rc.ShouldBind(&daemonSet)
+	rc.ResData = core.V1.Cluster(clusterName).DaemonSets(daemonSet.Namespace).Create(c, daemonSet)
 }
 
-func UpdateDaemonSet(c *gin.Context) {
-	//TODO 只能修改某些字段
-	clusterName := c.Query("cloud")
-	if clusterName == "" {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
+func UpdateDaemonSet(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	clusterName := rc.QueryCloud()
 	var daemonSet *v1.DaemonSet
-
-	err := c.ShouldBindJSON(&daemonSet)
-	if err != nil {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
-		response.Fail(c, response.ClusterNoHealth)
-		return
-	}
-
-	newDaemonSet, err := core.V1.Cluster(clusterName).DaemonSets(daemonSet.Namespace).Update(c, daemonSet)
-	if err != nil {
-		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
-		return
-	}
-
-	response.Success(c, response.StatusOK, newDaemonSet)
+	rc.ShouldBind(&daemonSet)
+	rc.ResData = core.V1.Cluster(clusterName).DaemonSets(daemonSet.Namespace).Update(c, daemonSet)
 }
 
-func DeleteDaemonSet(c *gin.Context) {
-	clusterName := c.Query("cloud")
-	if clusterName == "" {
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
-	namespace := c.Param("namespace")
-
-	daemonSetName := c.Param("daemonSetName")
-
-	if !core.V1.Cluster(clusterName).CheckHealth(c) {
-		response.Fail(c, response.ClusterNoHealth)
-		return
-	}
-
-	err := core.V1.Cluster(clusterName).DaemonSets(namespace).Delete(c, daemonSetName)
-	if err != nil {
-		response.FailWithMessage(c, response.ErrOperateFailed, err.Error())
-		return
-	}
-
-	response.Success(c, response.StatusOK, nil)
+func DeleteDaemonSet(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	clusterName := rc.QueryCloud()
+	daemonSetName := rc.PathParam("daemonSetName")
+	namespace := rc.PathParam("namespace")
+	core.V1.Cluster(clusterName).DaemonSets(namespace).Delete(c, daemonSetName)
 }

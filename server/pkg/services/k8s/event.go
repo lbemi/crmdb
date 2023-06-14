@@ -2,50 +2,47 @@ package k8s
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type EventImp interface {
-	List(ctx context.Context) ([]*corev1.Event, error)
-	ListByLabels(ctx context.Context, labelsData labels.Set) ([]*corev1.Event, error)
-	Get(ctx context.Context, name string) (*corev1.Event, error)
+	List(ctx context.Context) []*corev1.Event
+	ListByLabels(ctx context.Context, labelsData labels.Set) []*corev1.Event
+	Get(ctx context.Context, name string) *corev1.Event
 }
 
 type event struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
-func (e *event) ListByLabels(ctx context.Context, labelsData labels.Set) ([]*corev1.Event, error) {
+func (e *event) ListByLabels(ctx context.Context, labelsData labels.Set) []*corev1.Event {
 	selector := labels.SelectorFromSet(labelsData)
 	eventList, err := e.cli.SharedInformerFactory.Core().V1().Events().Lister().Events(e.ns).List(selector)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-
-	return eventList, err
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return eventList
 }
-func (e *event) List(ctx context.Context) ([]*corev1.Event, error) {
+
+func (e *event) List(ctx context.Context) []*corev1.Event {
 	eventList, err := e.cli.SharedInformerFactory.Core().V1().Events().Lister().Events(e.ns).List(labels.Everything())
-	if err != nil {
-		log.Logger.Error(err)
-	}
-
-	return eventList, err
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	sort.Slice(eventList, func(i, j int) bool {
+		return eventList[j].ObjectMeta.CreationTimestamp.Time.Before(eventList[i].ObjectMeta.CreationTimestamp.Time)
+	})
+	return eventList
 }
 
-func (e *event) Get(ctx context.Context, name string) (*corev1.Event, error) {
-	event, err := e.cli.SharedInformerFactory.Core().V1().Events().Lister().Events(e.ns).Get(name)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return event, err
+func (e *event) Get(ctx context.Context, name string) *corev1.Event {
+	res, err := e.cli.SharedInformerFactory.Core().V1().Events().Lister().Events(e.ns).Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return res
 }
 
-func newEvent(client *store.Clients, namespace string) *event {
+func newEvent(client *store.ClientConfig, namespace string) *event {
 	return &event{cli: client, ns: namespace}
 }
 

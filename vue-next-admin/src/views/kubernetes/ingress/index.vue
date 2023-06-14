@@ -14,7 +14,7 @@
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
 				</el-select>
 				<el-input
-					v-model="data.query.key"
+					v-model="data.inputValue"
 					placeholder="输入标签或者名称"
 					size="small"
 					clearable
@@ -22,7 +22,7 @@
 					style="max-width: 300px; margin-left: 10px"
 				>
 					<template #prepend>
-						<el-select v-model="data.query.type" placeholder="输入标签或者名称" style="max-width: 120px" size="small">
+						<el-select v-model="data.type" placeholder="输入标签或者名称" style="max-width: 120px" size="small">
 							<el-option label="标签" value="0" size="small" />
 							<el-option label="名称" value="1" size="small" />
 						</el-select>
@@ -164,6 +164,14 @@ import { useThemeConfig } from '/@/stores/themeConfig';
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 
+type queryType = {
+	key: string;
+	page: number;
+	limit: number;
+	cloud: string;
+	name?: string;
+	label?: string;
+}
 const k8sStore = kubernetesInfo();
 const ingressApi = useIngressApi();
 const route = useRoute();
@@ -176,11 +184,11 @@ const data = reactive({
 	services: [] as Ingress[],
 	tmpIngress: [] as Ingress[],
 	total: 0,
-	query: {
+	type: "1",
+	inputValue: "",
+	query:<queryType> {
 		page: 1,
 		limit: 10,
-		key: '',
-		type: '1',
 		cloud: k8sStore.state.activeCluster,
 	},
 });
@@ -189,33 +197,23 @@ onMounted(() => {
 });
 
 const search = () => {
-	filterIngress(data.tmpIngress);
+	if (data.type =='1') {
+		data.query.name = data.inputValue
+		delete data.query.label;
+	} else if  (data.type == "0") {
+		data.query.label = data.inputValue
+		delete data.query.name;
+	}
+	if (data.inputValue === "") {
+		delete data.query.label;
+		delete data.query.name;
+	}
+	listIngress();
 };
 const handleChange = () => {
 	listIngress();
 };
-const filterIngress = (services: Array<Ingress>) => {
-	const serviceList = [] as Ingress[];
-	if (data.query.type === '1') {
-		services.forEach((service: Ingress) => {
-			if (service.metadata?.name?.includes(data.query.key)) {
-				serviceList.push(service);
-			}
-		});
-	} else {
-		services.forEach((service: Ingress) => {
-			if (service.metadata?.labels) {
-				for (let k in service.metadata.labels) {
-					if (k.includes(data.query.key) || service.metadata.labels[k].includes(data.query.key)) {
-						serviceList.push(service);
-						break;
-					}
-				}
-			}
-		});
-	}
-	data.services = serviceList;
-};
+
 const createIngress = () => {};
 const deleteIngress = (service: Ingress) => {
 	ElMessageBox({
@@ -267,6 +265,7 @@ const handlePageChange = (page: PageInfo) => {
 	listIngress();
 };
 const listIngress = () => {
+	data.loading = true
 	ingressApi
 		.listIngress(k8sStore.state.activeNamespace, data.query)
 		.then((res: ResponseType) => {
@@ -279,6 +278,8 @@ const listIngress = () => {
 		.catch((e) => {
 			ElMessage.error(e);
 		});
+
+	data.loading = false
 };
 const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));

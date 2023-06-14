@@ -10,16 +10,6 @@ import (
 	"strconv"
 )
 
-// @Summary      Add host
-// @Description  Add host
-// @Tags         host
-// @Accept       json
-// @Produce      json
-// @Param        data body asset.HostReq true "host info"
-// @Success      200  {object}  httputils.HttpOK
-// @Failure      400  {object}  httputils.HttpError
-// @Router       /hosts [post]
-
 func AddHost(c *gin.Context) {
 	var machine asset.HostReq
 	if err := c.ShouldBindJSON(&machine); err != nil {

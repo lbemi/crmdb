@@ -25,7 +25,7 @@ database:
   charset: utf8mb4
   max_idle_conns: 10
   max_open_conns: 100
-  log_mode: info # silent,error,warn,info
+  log_mode: error # silent,error,warn,info
   enable_file_log_write: false
   log_filename: sql.log
   is_initialize: false  # 是否初始化数据库表

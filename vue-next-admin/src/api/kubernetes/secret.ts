@@ -4,14 +4,14 @@ export function useSecretApi() {
 	return {
 		listSecret: (namespace: string, param: any) => {
 			return request({
-				url: '/secret/' + namespace,
+				url: '/secrets/namespaces/' + namespace,
 				method: 'get',
 				params: param,
 			});
 		},
 		deleteSecret: (namespace: string,name: string, param: any) => {
 			return request({
-				url: `/secret/${namespace}/${name}`,
+				url: `/secrets/namespaces/${namespace}/${name}`,
 				method: 'delete',
 				params: param,
 			})

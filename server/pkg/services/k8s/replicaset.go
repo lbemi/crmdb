@@ -5,49 +5,47 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sort"
 )
 
 type ReplicasetImp interface {
-	List(ctx context.Context) ([]*appsv1.ReplicaSet, error)
-	Get(ctx context.Context, name string) (*appsv1.ReplicaSet, error)
+	List(ctx context.Context) []*appsv1.ReplicaSet
+	Get(ctx context.Context, name string) *appsv1.ReplicaSet
 }
 
 type Replicaset struct {
-	cli *store.Clients
+	cli *store.ClientConfig
 	ns  string
 }
 
-func (r *Replicaset) List(ctx context.Context) ([]*appsv1.ReplicaSet, error) {
+func (r *Replicaset) List(ctx context.Context) []*appsv1.ReplicaSet {
 	replicaSets, err := r.cli.SharedInformerFactory.Apps().V1().ReplicaSets().Lister().ReplicaSets(r.ns).List(labels.Everything())
-	if err != nil {
-		log.Logger.Error(err)
-		return nil, err
-	}
-	return replicaSets, nil
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	sort.Slice(replicaSets, func(i, j int) bool {
+		return replicaSets[j].ObjectMeta.CreationTimestamp.Time.Before(replicaSets[i].ObjectMeta.CreationTimestamp.Time)
+	})
+	return replicaSets
 }
 
-func (r *Replicaset) Get(ctx context.Context, name string) (*appsv1.ReplicaSet, error) {
+func (r *Replicaset) Get(ctx context.Context, name string) *appsv1.ReplicaSet {
 	replicaSet, err := r.cli.SharedInformerFactory.Apps().V1().ReplicaSets().Lister().ReplicaSets(r.ns).Get(name)
-	if err != nil {
-		log.Logger.Error(replicaSet)
-		return nil, err
-	}
-	return replicaSet, nil
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return replicaSet
 }
 
-func newReplicaset(cli *store.Clients, ns string) *Replicaset {
+func newReplicaset(cli *store.ClientConfig, ns string) *Replicaset {
 	return &Replicaset{cli: cli, ns: ns}
 }
 
 type ReplicasetHandler struct {
-	client      *store.Clients
+	client      *store.ClientConfig
 	clusterName string
 }
 
-func NewReplicasetHandler(client *store.Clients, clusterName string) *ReplicasetHandler {
+func NewReplicasetHandler(client *store.ClientConfig, clusterName string) *ReplicasetHandler {
 	return &ReplicasetHandler{client: client, clusterName: clusterName}
 }
 

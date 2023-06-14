@@ -4,35 +4,35 @@ export function usePodApi() {
 	return {
 		listPods: (ns: string, param: any) => {
 			return request({
-				url: '/pod/' + ns,
+				url: '/pods/namespaces/' + ns,
 				method: 'get',
 				params: param,
 			});
 		},
 		getPod: (ns: string,name: string, param: any) => {
 			return request({
-				url: `/pod/${ns}/${name}`,
+				url: `/pods/namespaces/${ns}/${name}`,
 				method: 'get',
 				params: param,
 			});
 		},
 		searchPods: (ns: string, param: any) => {
 			return request({
-				url: `/pod/${ns}/search`,
+				url: `/pods/namespaces/${ns}/search`,
 				method: 'get',
 				params: param,
 			});
 		},
 		deletePod: (ns: string | undefined, podName: string | undefined, param: any) => {
 			return request({
-				url: '/pod/' + ns + '/' + podName,
+				url: '/pods/namespaces/' + ns + '/' + podName,
 				method: 'delete',
 				params: param,
 			});
 		},
 		podLog: (ns: string | undefined, podName: string | undefined, container: string, param: any) => {
 			return request({
-				url: '/pod/log/' + ns + '/' + podName + '/' + container,
+				url: '/pods/namespaces/' + ns + '/logs/' + podName + '/' + container,
 				method: 'get',
 				params: param,
 				onDownloadProgress: (e) => {},
@@ -40,7 +40,7 @@ export function usePodApi() {
 		},
 		podEvents: (ns: string | undefined, podName: string | undefined, param: any) => {
 			return request({
-				url: '/pod/event/' + ns + '/' + podName,
+				url: '/pods/namespaces/' + ns + '/' + podName+'/events',
 				method: 'get',
 				params: param,
 			});

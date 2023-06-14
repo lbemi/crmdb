@@ -15,7 +15,7 @@
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
 				</el-select>
 				<el-input
-					v-model="podStore.state.query.key"
+					v-model="podStore.state.inputValue"
 					placeholder="输入标签或者名称"
 					size="small"
 					clearable
@@ -23,7 +23,7 @@
 					style="width: 250px; margin-left: 10px"
 				>
 					<template #prepend>
-						<el-select v-model="podStore.state.query.type" placeholder="输入标签或者名称" style="width: 60px" size="small">
+						<el-select v-model="podStore.state.type" placeholder="输入标签或者名称" style="width: 60px" size="small">
 							<el-option label="标签" value="0" size="small" />
 							<el-option label="名称" value="1" size="small" />
 						</el-select>
@@ -139,6 +139,7 @@ import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '/@/utils/formatTime';
 import { deepClone } from '/@/utils/other';
+import { Deployment, DeploymentCondition } from 'kubernetes-types/apps/v1';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
@@ -150,7 +151,7 @@ const podStore = podInfo();
 const websocketApi = useWebsocketApi();
 
 const search = () => {
-	podStore.searchPods();
+	podStore.listPod();
 };
 
 const handleSelectionChange = (value: any) => {
@@ -174,6 +175,7 @@ const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
 };
 // FIXME
+
 const podStatus = (status: PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
 	if (status.phase === 'Running') {
@@ -195,8 +197,32 @@ const podStatus = (status: PodStatus) => {
 				return (s = `<span style="color: red">${res}</span>`);
 			}
 		});
+	} else if (status.phase === 'Succeeded') {
+		let res = '';
+		status.containerStatuses?.forEach((c: ContainerStatus) => {
+			if (!c.ready) {
+				if (c.state?.terminated) {
+					res = `${c.state.terminated.reason}`;
+					// res = 'Terminating';
+				}
+			}
+		});
+		return (s = `<span style="color: #E6A23C">${res}</span>`);
 	} else {
-		s = `<span style="color: red">${status.phase}</span>`;
+		let res = status.phase;
+		status.containerStatuses?.forEach((c: ContainerStatus) => {
+			if (!c.ready) {
+				if (c.state?.waiting) {
+					res = ` </div> <div>${c.state.waiting.reason}</div>`;
+					// res = `${c.state.waiting.reason}`;
+				}
+				if (c.state?.terminated) {
+					res = `${c.state.terminated.reason}`;
+					// res = 'Terminating';
+				}
+			}
+		});
+		return (s = `<span style="color: red">${res}</span>`);
 	}
 
 	return s;
@@ -260,12 +286,18 @@ const deletePod = async (p: Pod) => {
 		draggable: true,
 	})
 		.then(() => {
-			podStore.deletePod(p);
+			podStore
+				.deletePod(p)
+				.then((res) => {
+					ElMessage({
+						type: 'success',
+						message: `${p.metadata?.name} 已删`,
+					});
+				})
+				.catch((e) => {
+					ElMessage.error(e.message);
+				});
 			podStore.listPod();
-			ElMessage({
-				type: 'success',
-				message: `${p.metadata?.name} 已删`,
-			});
 		})
 		.catch(() => {
 			ElMessage.info('取消');
@@ -274,9 +306,9 @@ const deletePod = async (p: Pod) => {
 
 const filterPod = (pods: Array<Pod>) => {
 	const podList = [] as Pod[];
-	if (podStore.state.query.type === '1') {
+	if (podStore.state.type === '1') {
 		pods.forEach((pod: Pod) => {
-			if (pod.metadata?.name?.includes(podStore.state.query.key)) {
+			if (pod.metadata?.name?.includes(podStore.state.inputValue)) {
 				podList.push(pod);
 			}
 		});
@@ -284,7 +316,7 @@ const filterPod = (pods: Array<Pod>) => {
 		pods.forEach((pod: Pod) => {
 			if (pod.metadata?.labels) {
 				for (let k in pod.metadata.labels) {
-					if (k.includes(podStore.state.query.key) || pod.metadata.labels[k].includes(podStore.state.query.key)) {
+					if (k.includes(podStore.state.inputValue) || pod.metadata.labels[k].includes(podStore.state.inputValue)) {
 						podList.push(pod);
 						break;
 					}

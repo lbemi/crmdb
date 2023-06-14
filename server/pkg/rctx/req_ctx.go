@@ -1,9 +1,13 @@
 package rctx
 
 import (
+	"fmt"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/restfulx"
+	"io"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -36,6 +40,7 @@ func NewReqCtx(request *restful.Request, response *restful.Response) *ReqCtx {
 	return &ReqCtx{
 		Request:           request,
 		Response:          response,
+		NoRes:             false,
 		LogInfo:           NewLogInfo(),
 		RequirePermission: NewPermission(),
 	}
@@ -59,6 +64,11 @@ func (rc *ReqCtx) WithCasbin(flag bool) *ReqCtx {
 	return rc
 }
 
+// WithNoRes websocket,文件下载等无需返回结果
+func (rc *ReqCtx) WithNoRes() *ReqCtx {
+	rc.NoRes = true
+	return rc
+}
 func (rc *ReqCtx) WithHandle(handler HandlerFunc) *ReqCtx {
 	rc.Handler = handler
 	return rc
@@ -121,6 +131,110 @@ func (rc *ReqCtx) ClientIP() string {
 	}
 
 	return ip
+}
+
+func (rc *ReqCtx) ShouldBind(data interface{}) {
+	if err := rc.Request.ReadEntity(data); err != nil {
+		restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	}
+}
+
+// GetPageQueryParam 获取分页参数
+func (rc *ReqCtx) GetPageQueryParam() *model.PageParam {
+	return &model.PageParam{Page: rc.QueryDefaultInt("page", 0), Limit: rc.QueryDefaultInt("limit", 0)}
+}
+
+// QueryDefaultInt 获取查询参数中指定参数值，并转为int
+func (rc *ReqCtx) QueryDefaultInt(key string, defaultInt int) int {
+	qv := rc.Request.QueryParameter(key)
+	if qv == "" {
+		return defaultInt
+	}
+	qvi, err := strconv.Atoi(qv)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return qvi
+}
+
+func (rc *ReqCtx) QueryDefault(key string, defaultStr string) string {
+	qv := rc.Request.QueryParameter(key)
+	if qv == "" {
+		return defaultStr
+	}
+	return qv
+}
+
+// Query get query param
+func (rc *ReqCtx) Query(key string) string {
+	return rc.Request.QueryParameter(key)
+}
+
+// QueryCloud get cloud name ,if cloud is empty return param error
+func (rc *ReqCtx) QueryCloud() string {
+	cloud := rc.Request.QueryParameter("cloud")
+	if cloud == "" {
+		restfulx.ErrNotNilDebug(fmt.Errorf("cloud is empty"), restfulx.ParamErr)
+	}
+	return cloud
+}
+
+// QueryParamUint8 Query
+func (rc *ReqCtx) QueryParamUint8(key string) uint8 {
+	str := rc.Request.QueryParameter(key)
+	if str == "" {
+		return uint8(0)
+	}
+	i, err := strconv.Atoi(str)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return uint8(i)
+}
+
+// QueryParamInt8 Query
+func (rc *ReqCtx) QueryParamInt8(key string) int8 {
+	str := rc.Request.QueryParameter(key)
+	if str == "" {
+		return int8(0)
+	}
+	i, err := strconv.Atoi(str)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return int8(i)
+}
+
+// PathParamInt 获取路径参数
+func (rc *ReqCtx) PathParamInt(key string) int {
+	value, err := strconv.Atoi(rc.Request.PathParameter(key))
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return value
+}
+
+// PathParamInt64 获取路径参数
+func (rc *ReqCtx) PathParamInt64(key string) int64 {
+	value, err := strconv.ParseInt(rc.Request.PathParameter(key), 10, 64)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return value
+}
+
+// PathParamUint64 获取路径参数
+func (rc *ReqCtx) PathParamUint64(key string) uint64 {
+	value, err := strconv.ParseUint(rc.Request.PathParameter(key), 10, 64)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return value
+}
+func (rc *ReqCtx) PathParam(pm string) string {
+	return rc.Request.PathParameter(pm)
+}
+
+func (rc *ReqCtx) FormFile(key string) []byte {
+	_, fileHeader, err := rc.Request.Request.FormFile(key)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	file, err := fileHeader.Open()
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	bytes, err := io.ReadAll(file)
+	restfulx.ErrNotNilDebug(err, restfulx.ParamErr)
+	return bytes
+}
+
+func (rc *ReqCtx) PostForm(key string) string {
+	return rc.Request.Request.PostFormValue(key)
 }
 
 type HandlerInterceptorFunc func(ctx *ReqCtx) error

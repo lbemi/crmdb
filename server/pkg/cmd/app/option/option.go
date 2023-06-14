@@ -57,7 +57,7 @@ func (o *Options) Complete() *Options {
 	o.Factory = services.NewDbFactory(o.DB, o.Enforcer, clientStore)
 
 	// 初始化已存在的kubernetes集群client
-	//go bootstrap.LoadKubernetes(o.Factory)
+	go bootstrap.LoadKubernetes(o.Factory)
 
 	return o
 }

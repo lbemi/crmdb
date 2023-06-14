@@ -4,29 +4,29 @@ export function useClusterApi() {
 	return {
 		listCluster: () => {
 			return request({
-				url: '/cluster',
+				url: '/clusters',
 				method: 'get',
 			});
 		},
 		deleteCluster: (id: number) => {
 			return request({
-				url: '/cluster/' + id,
-                method: 'delete'
+				url: '/clusters/' + id,
+				method: 'delete',
 			});
 		},
-        createCluster: (data:any, header:any) => {
-            return request({
-                url: '/cluster',
-                method:  "post",
-                data: data,
-                headers: header
-            })
-        },
-        getCluster: (clusterName: string)=>{
-            return request({
-                url: '/cluster/' + clusterName,
-                method: 'get'
-            })
-        }
+		createCluster: (data: any, header: any) => {
+			return request({
+				url: '/clusters',
+				method: 'post',
+				data: data,
+				headers: header,
+			});
+		},
+		getCluster: (clusterName: string) => {
+			return request({
+				url: '/clusters/' + clusterName,
+				method: 'get',
+			});
+		},
 	};
 }

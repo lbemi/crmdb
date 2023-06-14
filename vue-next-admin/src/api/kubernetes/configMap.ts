@@ -4,14 +4,14 @@ export function useConfigMapApi() {
 	return {
 		listConfigMap: (namespace: string, param: any) => {
 			return request({
-				url: '/configmap/' + namespace,
+				url: '/configmaps/namespaces/' + namespace,
 				method: 'get',
 				params: param,
 			});
 		},
 		deleteConfigMap: (namespace: string,name: string, param: any) => {
 			return request({
-				url: `/configmap/${namespace}/${name}`,
+				url: `/configmaps/namespaces/${namespace}/${name}`,
 				method: 'delete',
 				params: param,
 			});

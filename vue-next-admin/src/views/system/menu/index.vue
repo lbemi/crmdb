@@ -20,6 +20,12 @@
 					</el-icon>
 					新增菜单
 				</el-button>
+				<el-button size="default" type="success" @click="refreshCurrentTagsView" style="margin-left: 10px">
+					<el-icon>
+						<ele-RefreshRight />
+					</el-icon>
+					刷新
+				</el-button>
 			</div>
 			<el-table
 				:data="state.tableData.data"
@@ -100,6 +106,8 @@ import { RouteRecordRaw } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMenuApi } from '/@/api/system/menu';
 import { dateStrFormat } from '/@/utils/formatTime';
+import mittBus from '/@/utils/mitt';
+import { useRoute } from 'vue-router';
 
 // import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";
 
@@ -113,6 +121,7 @@ type query = {
 	status?: number;
 };
 const menuApi = useMenuApi();
+const route = useRoute();
 const menuDialogRef = ref();
 const state = reactive({
 	tableData: {
@@ -174,7 +183,9 @@ const onTabelRowDel = (row: any) => {
 		})
 		.catch(() => {});
 };
-
+const refreshCurrentTagsView = () => {
+	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
+};
 //修改状态
 const changeStatus = async (obj: any) => {
 	let text = obj.status === 1 ? '启用' : '停用';
