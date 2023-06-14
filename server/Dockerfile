@@ -10,4 +10,4 @@ FROM busybox as runner
 WORKDIR /app
 COPY --from=builder /app/lbemi-server /app
 COPY --from=builder /app/config.yaml /app
-ENTRYPOINT ["/app/lbemi-server --config /app/config.yaml"]
+ENTRYPOINT ["./lbemi-server"]
