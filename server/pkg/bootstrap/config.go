@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultConfigFile = "./dev.yaml"
+	defaultConfigFile = "./config.yaml"
 )
 
 func InitializeConfig(configFile string) (appConfig *config.Config) {
