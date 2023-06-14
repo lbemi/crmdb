@@ -4,11 +4,12 @@
 			<el-row :gutter="20">
 				<el-col :span="18">
 					<el-button type="info" :icon="ArrowLeft" text @click="backRoute">返回</el-button>
-					<span style="font-weight: 35">{{ podStore.state.podDetail?.metadata?.name }}</span></el-col>
-				<el-col :span="6"><el-button type="primary" size="small" :icon="Edit" @click="showYaml">编辑</el-button>
+					<span style="font-weight: 35">{{ podStore.state.podDetail?.metadata?.name }}</span></el-col
+				>
+				<el-col :span="6"
+					><el-button type="primary" size="small" :icon="Edit" @click="showYaml">编辑</el-button>
 					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button>
-					<el-button type="danger" size="small" :icon="Delete"
-						@click="deletePod(podStore.state.podDetail)">删除</el-button>
+					<el-button type="danger" size="small" :icon="Delete" @click="deletePod(podStore.state.podDetail)">删除</el-button>
 					<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
 						<el-icon>
 							<ele-RefreshRight />
@@ -19,8 +20,7 @@
 			</el-row>
 
 			<el-descriptions :column="3" border class="desc-body">
-				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label"
-					class-name="my-content" width="150px">
+				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">
 					{{ podStore.state.podDetail?.metadata?.name }}
 				</el-descriptions-item>
 				<el-descriptions-item label="命名空间" label-align="right" align="center">{{
@@ -36,10 +36,9 @@
 
 				<el-descriptions-item label="镜像" label-align="right" align="center">
 					<div class="tag-center">
-						<el-tag round effect="plain" v-for="(item, index) in podStore.state.podDetail?.spec?.containers"
-							:key="index">{{
-								item.image?.split('@')[0]
-							}}</el-tag>
+						<el-tag round effect="plain" v-for="(item, index) in podStore.state.podDetail?.spec?.containers" :key="index">{{
+							item.image?.split('@')[0]
+						}}</el-tag>
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="Pod IP" label-align="right" align="center">
@@ -47,17 +46,15 @@
 				</el-descriptions-item>
 				<el-descriptions-item label="重启次数" label-align="right" align="center">
 					<template #default="scope">
-						<div v-if="podStore.state.podDetail?.status?.containerStatuses">{{
-							podRestart(podStore.state.podDetail?.status) }}</div>
+						<div v-if="podStore.state.podDetail?.status?.containerStatuses">{{ podRestart(podStore.state.podDetail?.status) }}</div>
 					</template>
 				</el-descriptions-item>
 
 				<el-descriptions-item label="状态" label-align="right" align="center">
 					<a v-html="podStatus(podStore.state.podDetail?.status!)" />
-					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow"
-						style="font-size: 10px; margin-left: 5px">展开现状详情<el-icon>
-							<CaretBottom />
-						</el-icon></el-link>
+					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow" style="font-size: 10px; margin-left: 5px"
+						>展开现状详情<el-icon> <CaretBottom /> </el-icon
+					></el-link>
 				</el-descriptions-item>
 				<el-descriptions-item label="QoS类别" label-align="right" align="center">
 					<template #default="scope">
@@ -90,137 +87,199 @@
 			<el-tabs v-model="data.activeName" class="demo-tabs" @tab-click="handleClick">
 				<el-tab-pane label="容器" name="first">
 					<el-space wrap>
-						<el-card class="box-card"
-							v-for="(container, index) in podStore.state.podDetail.status?.containerStatuses">
+						<el-card class="box-card" v-for="(container, index) in data.containers">
 							<template #header>
 								<div style="display: flex; justify-content: space-between">
 									<div class="card-header" @click="">
-										<h3>
-											<SvgIcon name="iconfont icon-container-" class="svg" />{{ container.name }}
-										</h3>
-										<div class="image">{{ container.image }}</div>
+										<h3><SvgIcon name="iconfont icon-container-" class="svg" />{{ container.name }}</h3>
+										<div class="image">
+											<el-text type="info"  size="small" show-overflow-tooltip>{{ container.image }}</el-text>
+										</div>
 									</div>
 									<div>
-										<el-button link type="primary" size="small"
-											@click="jumpPodExec(podStore.state.podDetail)">终端</el-button><el-divider
-											direction="vertical" />
-										<el-button link type="primary" size="small"
-											@click="jumpPodLog(podStore.state.podDetail)">日志</el-button>
+										<el-button link type="primary" size="small" @click="jumpPodExec(podStore.state.podDetail)">终端</el-button
+										><el-divider direction="vertical" />
+										<el-button link type="primary" size="small" @click="jumpPodLog(podStore.state.podDetail)">日志</el-button>
 									</div>
 								</div>
 							</template>
 							<h4>状态</h4>
 							<div style="display: flex; justify-content: space-between; margin: 10px 0">
-								<el-text size="default" :type="container.ready === true ? 'success' : 'danger'"
-									v-for="(item, key) in container.state">
-									<div>{{ container.ready ? 'Running' : item.reason }}</div>
+								<p v-html="podStatus(podStore.state.podDetail.status!)" v-if="!podStore.state.podDetail.status?.containerStatuses"></p>
+								<el-text
+									size="default"
+									v-if="data.containerStatuses"
+									:type="data.containerStatuses![index].ready === true ? 'success' : 'danger'"
+									v-for="(item, key) in data.containerStatuses![index].state"
+								>
+									<div v-if="data.containerStatuses">{{ data.containerStatuses![index].ready ? 'Running' : item.reason }}</div>
 								</el-text>
-								<el-text size="default" :type="container.started === true ? 'success' : 'danger'">
-									{{ container.started ? 'Started' : 'NotStarted' }}
+								<el-text size="default" v-if="data.containerStatuses" :type="data.containerStatuses![index].started === true ? 'success' : 'danger'">
+									{{ data.containerStatuses![index].started ? 'Started' : 'NotStarted' }}
 								</el-text>
-								<el-text size="default" :type="container.ready === true ? 'success' : 'warning'">
-									{{ container.ready ? 'Ready' : 'NotReady' }}
+								<el-text size="default" v-if="data.containerStatuses" :type="data.containerStatuses![index].ready === true ? 'success' : 'warning'">
+									{{ data.containerStatuses![index].ready ? 'Ready' : 'NotReady' }}
 								</el-text>
 							</div>
-							<h4>重启次数</h4>
-							<div style="display: flex; justify-content: space-between; margin: 10px 0">
-								<el-text size="large">
-									<div>{{ container.restartCount }}</div>
-								</el-text>
-							</div>
-							<div style="display: flex;justify-content: flex-start;">
-								<!-- <div>CPU资源</div> -->
-								<div style="">
-									<h4>CPU资源</h4>
-									<div style=" margin: 10px 0">
-										<div>
-										<el-text size="small"
-											v-if="podStore.state.podDetail.spec?.containers[index].resources">
-											CPU需求: {{ podStore.state.podDetail.spec?.containers[index].resources?.requests?.cpu
-											}}
+							<div style="display: flex">
+								<div>
+									<h4>重启次数</h4>
+									<div style="margin: 10px 0">
+										<el-text size="large">
+											<div v-if="data.containerStatuses">{{ data.containerStatuses![index].restartCount }}</div>
+											<div v-else>0</div>
 										</el-text>
-									</div>
-										<div>
-										<el-text size="small"
-											v-if="podStore.state.podDetail.spec?.containers[index].resources">
-											CPU限制: {{
-												podStore.state.podDetail.spec?.containers[index].resources?.limits?.cpu }}
-										</el-text>
-									</div>
-										
 									</div>
 								</div>
-								<div>
-									<h4>Memory资源</h4>
-									<div style=" margin: 10px 0">
-										<div>
-											<el-text size="small"
-											v-if="podStore.state.podDetail.spec?.containers[index].resources">
-											Memory: {{
-												podStore.state.podDetail.spec?.containers[index].resources?.requests?.memory }}
+								<div style="margin-left: 120px">
+									<h4>上次重启时间</h4>
+									<div style="margin: 10px 0">
+										<el-text size="large" v-if="data.containerStatuses">
+											{{ data.containerStatuses[index].lastState?.terminated?.startedAt }}
+											<!-- {{ data.containerStatuses![index].lastState?.terminated?.startedAt || '-' }} -->
 										</el-text>
-									</div>
-									<div>
-										<el-text size="small"
-											v-if="podStore.state.podDetail.spec?.containers[index].resources">
-											Memory: {{
-												podStore.state.podDetail.spec?.containers[index].resources?.limits?.memory }}
-										</el-text>
-									</div>
+										<el-text size="large" v-else> - </el-text>
 									</div>
 								</div>
 							</div>
 
+							<h4>错误原因</h4>
+							<div style="margin: 10px 0">
+								<p style="color: red" v-if="data.containerStatuses">
+									{{ data.containerStatuses[index].state?.waiting?.message || '-' }}
+								</p>
+								<p v-else-if="!podStore.state.podDetail.status?.containerStatuses">
+								<div v-for="item in podStore.state.podDetail.status?.conditions">
+									<p style="color: red">
+										{{ item.message }}
+									</p>
+								</div>
+								</p>
+								<p v-else>-</p>
+							</div>
+							<div style="display: flex; margin-top: 5px">
+								<!-- <div>CPU资源</div> -->
+								<div style="">
+									<h4>CPU资源</h4>
+									<div style="margin: 10px 15px">
+										<div>
+											<el-text size="small" v-if="container.resources"> CPU需求: {{ container.resources?.requests?.cpu || '-' }} </el-text>
+										</div>
+										<div>
+											<el-text size="small" v-if="container.resources"> CPU限制: {{ container.resources?.limits?.cpu || '-' }} </el-text>
+										</div>
+									</div>
+								</div>
+								<div style="margin-left: 85px">
+									<h4>Memory资源</h4>
+									<div style="margin: 10px 15px">
+										<div>
+											<el-text size="small" v-if="container.resources"> Memory需求: {{ container.resources?.requests?.memory || '-' }} </el-text>
+										</div>
+										<div>
+											<el-text size="small" v-if="container.resources"> Memory限制: {{ container.resources?.limits?.memory || '-' }} </el-text>
+										</div>
+									</div>
+								</div>
+							</div>
 						</el-card>
 						<!-- initi容器 -->
-						<el-card class="box-card"
-							v-for="(container, index) in podStore.state.podDetail.status?.initContainerStatuses">
+						<el-card class="box-card" v-for="(container, index) in data.intiContainers">
 							<template #header>
 								<div style="display: flex; justify-content: space-between">
 									<div class="card-header" @click="">
 										<h3>
 											<SvgIcon name="iconfont icon-container-" class="svg" />{{ container.name
-											}}<el-text style="margin-left: 5px;" size="small" class="mx-1"
-												type="danger">初始化容器</el-text>
+											}}<el-text  style="margin-left: 5px" size="small" class="mx-1" type="danger">初始化容器</el-text>
 										</h3>
-										<div class="image">{{ container.image }}</div>
+										<div class="image">
+											<el-text type="info" size="small" show-overflow-tooltip>{{ container.image }}</el-text>
+										</div>
 									</div>
 									<div>
-										<el-button link type="primary" size="small"
-											@click="jumpPodLog(podStore.state.podDetail)">日志</el-button>
+										<el-button link type="primary" size="small" @click="jumpPodLog(podStore.state.podDetail)">日志</el-button>
 									</div>
 								</div>
 							</template>
 							<h4>状态</h4>
 							<div style="display: flex; justify-content: space-between; margin: 10px 0">
-								<el-text size="default" :type="container.ready === true ? 'success' : 'danger'"
-									v-for="item in container.state">
-									<div>{{ container.ready ? 'Running' : item.reason! }}</div>
+								<p v-html="podStatus(podStore.state.podDetail.status!)" v-if="!podStore.state.podDetail.status?.initContainerStatuses"></p>
+								<el-text
+									size="default"
+									v-if="data.initContainerStatus"
+									:type="data.initContainerStatus![index].ready === true ? 'success' : 'danger'"
+									v-for="(item, key) in data.initContainerStatus![index].state"
+								>
+									<div v-if="data.initContainerStatus && data.initContainerStatus[index].state?.terminated">{{  data.initContainerStatus![index].state!.terminated!.reason }}</div>
 								</el-text>
-								<div v-if="container.started">
-									<el-text size="default" :type="container.started === true ? 'success' : 'danger'">
-										{{ container.started ? 'Started' : 'NotStarted' }}
-									</el-text>
-								</div>
-								<div v-else>
-									<el-text size="default" v-if="container.state?.terminated">
-										{{ container.state?.terminated?.reason }}
-									</el-text>
-									<el-text size="default" v-if="container.state?.waiting">
-										{{ container.state?.waiting?.reason }}
-									</el-text>
-								</div>
-								<el-text size="default" :type="container.ready === true ? 'success' : 'warning'">
-									{{ container.ready ? 'Ready' : 'NotReady' }}
+								<el-text size="default" v-if="data.initContainerStatus" :type="data.initContainerStatus![index].started === true ? 'success' : 'danger'">
+									{{ data.initContainerStatus![index].started ? 'Started' : 'NotStarted' }}
 								</el-text>
+								<!-- <el-text size="default" v-if="data.initContainerStatus" :type="data.initContainerStatus![index].ready === true ? 'success' : 'warning'">
+									{{ data.initContainerStatus![index].ready ? 'Ready' : 'NotReady' }}
+								</el-text> -->
 							</div>
-							<h4>重启次数</h4>
-							<div style="display: flex; justify-content: space-between; margin: 10px 0">
-								<el-text size="small">
-									<div>{{ container.restartCount }}</div>
-								</el-text>
+							<div style="display: flex">
+								<div>
+									<h4>重启次数</h4>
+									<div style="margin: 10px 0">
+										<el-text size="large">
+											<div v-if="data.initContainerStatus">{{ data.initContainerStatus![index].restartCount }}</div>
+											<div v-else>0</div>
+										</el-text>
+									</div>
+								</div>
+								<div style="margin-left: 120px">
+									<h4>上次重启时间</h4>
+									<div style="margin: 10px 0">
+										<el-text size="large" v-if="data.initContainerStatus">
+											{{ data.initContainerStatus[index].lastState?.terminated?.startedAt }}
+											<!-- {{ data.containerStatuses![index].lastState?.terminated?.startedAt || '-' }} -->
+										</el-text>
+										<el-text size="large" v-else> - </el-text>
+									</div>
+								</div>
 							</div>
 
+							<h4>异常原因</h4>
+							<div style="margin: 10px 0">
+								<p style="color: red" v-if="data.initContainerStatus">
+									{{ data.initContainerStatus[index].state?.waiting?.message || '-' }}
+								</p>
+								<p v-else-if="!podStore.state.podDetail.status?.initContainerStatuses">
+								<div v-for="item in podStore.state.podDetail.status?.conditions">
+									<p style="color: red">
+										{{ item.message }}
+									</p>
+								</div>
+								</p>
+								<p v-else>-</p>
+							</div>
+							<div style="display: flex; margin-top: 5px">
+								<!-- <div>CPU资源</div> -->
+								<div style="">
+									<h4>CPU资源</h4>
+									<div style="margin: 10px 15px">
+										<div>
+											<el-text size="small" v-if="container.resources"> CPU需求: {{ container.resources?.requests?.cpu || '-' }} </el-text>
+										</div>
+										<div>
+											<el-text size="small" v-if="container.resources"> CPU限制: {{ container.resources?.limits?.cpu || '-' }} </el-text>
+										</div>
+									</div>
+								</div>
+								<div style="margin-left: 85px">
+									<h4>Memory资源</h4>
+									<div style="margin: 10px 15px">
+										<div>
+											<el-text size="small" v-if="container.resources"> Memory需求: {{ container.resources?.requests?.memory || '-' }} </el-text>
+										</div>
+										<div>
+											<el-text size="small" v-if="container.resources"> Memory限制: {{ container.resources?.limits?.memory || '-' }} </el-text>
+										</div>
+									</div>
+								</div>
+							</div>
 						</el-card>
 					</el-space>
 				</el-tab-pane>
@@ -229,11 +288,9 @@
 				</el-tab-pane>
 				<el-tab-pane label="环境变量" name="third">
 					<el-descriptions :column="1" direction="vertical">
-						<el-descriptions-item :label="'容器: ' + item.name"
-							v-for="item in podStore.state.podDetail?.spec?.containers">
+						<el-descriptions-item :label="'容器: ' + item.name" v-for="item in podStore.state.podDetail?.spec?.containers">
 							<el-card class="card" :body-style="{ height: '200px' }">
-								<div v-if="item.env" v-for="(value, key, index) in item.env" :key="index"
-									style="margin-bottom: 8px">
+								<div v-if="item.env" v-for="(value, key, index) in item.env" :key="index" style="margin-bottom: 8px">
 									<el-tag type="info" size="default"> {{ value }} </el-tag>
 								</div>
 								<div v-else>无数据</div>
@@ -245,14 +302,12 @@
 					<el-table :data="podStore.state.podDetail.status?.initContainerStatuses" style="width: 100%">
 						<el-table-column label="名称">
 							<template #default="scope">
-								<el-text :type="scope.row.ready === true ? 'success' : 'danger'">{{ scope.row.name
-								}}</el-text>
+								<el-text :type="scope.row.ready === true ? 'success' : 'danger'">{{ scope.row.name }}</el-text>
 							</template>
 						</el-table-column>
 						<el-table-column label="状态">
 							<template #default="scope">
-								<el-text :type="scope.row.ready === true ? 'success' : 'danger'"
-									v-for="(item, key) in scope.row.state">
+								<el-text :type="scope.row.ready === true ? 'success' : 'danger'" v-for="(item, key) in scope.row.state">
 									<div>{{ item.reason }}</div>
 									<div style="font-size: 10px">
 										{{ item.message }}
@@ -298,8 +353,14 @@
 				</el-tab-pane>
 			</el-tabs>
 		</el-card>
-		<YamlDialog v-model:dialogVisible="data.dialogVisible" :disabled-update="true" :code-data="data.codeData"
-			:resourceType="'pod'" @update="updatePod" v-if="data.dialogVisible" />
+		<YamlDialog
+			v-model:dialogVisible="data.dialogVisible"
+			:disabled-update="true"
+			:code-data="data.codeData"
+			:resourceType="'pod'"
+			@update="updatePod"
+			v-if="data.dialogVisible"
+		/>
 	</div>
 </template>
 <script lang="ts" setup name="podDetail">
@@ -307,7 +368,7 @@ import { reactive, defineAsyncComponent, h } from 'vue';
 import { ArrowLeft, CaretBottom, Edit, View, Delete } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { ContainerStatus, Pod, PodCondition, PodStatus, } from 'kubernetes-types/core/v1';
+import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
 import { ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
@@ -337,6 +398,10 @@ const data = reactive({
 	activeName: 'first',
 	deployment: [],
 	events: [] as ReplicaSetCondition[],
+	containers: podStore.state.podDetail.spec?.containers,
+	intiContainers: podStore.state.podDetail.spec?.initContainers,
+	containerStatuses: podStore.state.podDetail.status?.containerStatuses,
+	initContainerStatus: podStore.state.podDetail.status?.initContainerStatuses,
 });
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
@@ -549,8 +614,9 @@ const showYaml = async () => {
 }
 
 .box-card {
-	width: 470px;
+	width: 430px;
 	margin-bottom: 10px;
+	height: 400px;
 }
 
 .svg {
@@ -559,5 +625,6 @@ const showYaml = async () => {
 
 .image {
 	margin-top: 5px;
-	font-stretch: condensed;
-}</style>
+	margin-left: 5px;
+}
+</style>
