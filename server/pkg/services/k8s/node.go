@@ -98,11 +98,11 @@ func (n *node) Patch(ctx context.Context, name string, labels map[string]interfa
 
 func (n *node) GetNodeUsage(ctx context.Context, node *corev1.Node) (cpuUsage, memoryUsage float64) {
 
-	// 如果两秒超时，则返回空
+	// 如果1秒超时，则返回空
 	withTimeout, cancelFunc := context.WithTimeout(ctx, 1*time.Second)
 	defer cancelFunc()
 	nodeMetric, err := n.cli.MetricSet.MetricsV1beta1().NodeMetricses().Get(withTimeout, node.Name, metav1.GetOptions{})
-	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	restfulx.ErrNotNil(err, restfulx.GetResourceErr)
 
 	cpuUsage = float64(nodeMetric.Usage.Cpu().MilliValue()) / float64(node.Status.Capacity.Cpu().MilliValue())
 	memoryUsage = float64(nodeMetric.Usage.Memory().MilliValue()) / float64(node.Status.Capacity.Memory().MilliValue())

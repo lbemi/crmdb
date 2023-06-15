@@ -21,7 +21,7 @@ database:
   user: lbemi
   password: Admin_1234
   port: 3333
-  database: lbemi-admin
+  database: lbemi-dev
   charset: utf8mb4
   max_idle_conns: 10
   max_open_conns: 100

@@ -1,7 +1,6 @@
 package restfulx
 
 import (
-	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"runtime/debug"
 )
@@ -60,10 +59,9 @@ func ServerError() *Response {
 	return Error(ServerErr)
 }
 
-func ErrNotNil(err error, msg string, param ...any) {
+func ErrNotNil(err error, oe *OpsError) {
 	if err != nil {
-		//log.Logger.Error(message)
-		panic(NewErr(fmt.Sprintf(msg, param...)))
+		log.Logger.Errorf(err.Error(), oe.message)
 	}
 }
 

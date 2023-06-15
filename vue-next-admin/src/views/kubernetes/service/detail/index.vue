@@ -50,7 +50,7 @@
 				</el-descriptions-item>
 				<el-descriptions-item label="选择器" label-align="right" align="center">
 					<div v-for="(key, value) in k8sStore.state.activeService.spec?.selector" style="margin-bottom: 5px">
-						<el-tag plain>{{ key }}: {{ value }}</el-tag>
+						<el-tag plain>{{ value }}: {{ key }}</el-tag>
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="端点" label-align="right" align="center">

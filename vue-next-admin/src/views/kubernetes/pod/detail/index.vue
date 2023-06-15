@@ -19,44 +19,42 @@
 				</el-col>
 			</el-row>
 
-			<el-descriptions :column="3" border class="desc-body">
-				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">
+			<el-descriptions :column="4" border class="desc-body">
+				<el-descriptions-item label="名称" :span="2" label-align="right"  label-class-name="my-label" class-name="my-content" width="150px">
 					{{ podStore.state.podDetail?.metadata?.name }}
 				</el-descriptions-item>
-				<el-descriptions-item label="命名空间" label-align="right" align="center">{{
+				<el-descriptions-item label="命名空间" label-align="right">{{
 					podStore.state.podDetail?.metadata?.namespace
 				}}</el-descriptions-item>
-				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
+					<el-descriptions-item label="创建时间" label-align="right" >{{
 					dateStrFormat(podStore.state.podDetail.metadata!.creationTimestamp!.toString())
 				}}</el-descriptions-item>
-				<el-descriptions-item label="所在节点及IP" label-align="right" align="center">
-					<div>{{ podStore.state.podDetail?.spec?.nodeName }}</div>
-					<div>{{ podStore.state.podDetail?.status?.hostIP }}</div>
-				</el-descriptions-item>
-
-				<el-descriptions-item label="镜像" label-align="right" align="center">
-					<div class="tag-center">
-						<el-tag round effect="plain" v-for="(item, index) in podStore.state.podDetail?.spec?.containers" :key="index">{{
+				<el-descriptions-item label="镜像" :span="2" label-align="right">
+					<div class="tag-left">
+						<el-tag size="small" round effect="plain" v-for="(item, index) in podStore.state.podDetail?.spec?.containers" :key="index">{{
 							item.image?.split('@')[0]
 						}}</el-tag>
 					</div>
 				</el-descriptions-item>
-				<el-descriptions-item label="Pod IP" label-align="right" align="center">
+				<el-descriptions-item label="所在节点及IP" label-align="right">
+					<div>{{ podStore.state.podDetail?.spec?.nodeName }}</div>
+					<div>{{ podStore.state.podDetail?.status?.hostIP }}</div>
+				</el-descriptions-item>
+				<el-descriptions-item label="Pod IP" label-align="right">
 					{{ podStore.state.podDetail?.status?.podIP }}
 				</el-descriptions-item>
-				<el-descriptions-item label="重启次数" label-align="right" align="center">
-					<template #default="scope">
-						<div v-if="podStore.state.podDetail?.status?.containerStatuses">{{ podRestart(podStore.state.podDetail?.status) }}</div>
-					</template>
-				</el-descriptions-item>
-
-				<el-descriptions-item label="状态" label-align="right" align="center">
+				<el-descriptions-item label="状态" :span="2" label-align="right" align="center" >
 					<a v-html="podStatus(podStore.state.podDetail?.status!)" />
 					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow" style="font-size: 10px; margin-left: 5px"
 						>展开现状详情<el-icon> <CaretBottom /> </el-icon
 					></el-link>
 				</el-descriptions-item>
-				<el-descriptions-item label="QoS类别" label-align="right" align="center">
+				<el-descriptions-item label="重启次数" label-align="right">
+					<template #default="scope">
+						<div v-if="podStore.state.podDetail?.status?.containerStatuses">{{ podRestart(podStore.state.podDetail?.status) }}</div>
+					</template>
+				</el-descriptions-item>
+				<el-descriptions-item label="QoS类别" label-align="right">
 					<template #default="scope">
 						{{ podStore.state.podDetail?.status?.qosClass }}
 					</template>

@@ -2,11 +2,10 @@ package policy
 
 import (
 	"context"
+	"github.com/casbin/casbin/v2"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/services"
-
-	"github.com/casbin/casbin/v2"
 )
 
 type PolicyGetter interface {
