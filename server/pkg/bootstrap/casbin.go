@@ -2,11 +2,13 @@ package bootstrap
 
 import (
 	"fmt"
+
 	"github.com/casbin/casbin/v2"
 	csmodel "github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
-	"github.com/lbemi/lbemi/pkg/model/rules"
 	"gorm.io/gorm"
+
+	"github.com/lbemi/lbemi/pkg/model/rules"
 )
 
 // InitPolicyEnforcer TODO: 整体优化

@@ -1,12 +1,13 @@
 package middleware
 
 import (
+	"time"
+
 	"github.com/golang-jwt/jwt"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
-	"time"
 )
 
 func JWTAuth(rc *rctx.ReqCtx) error {

@@ -3,9 +3,10 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"github.com/lbemi/lbemi/pkg/cmd"
 	"testing"
 	"time"
+
+	"github.com/lbemi/lbemi/pkg/cmd"
 )
 
 func TestService_ListWorkLoad(t *testing.T) {

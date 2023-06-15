@@ -1,7 +1,11 @@
 package sys
 
 import (
+	"time"
+
 	"github.com/golang-jwt/jwt"
+	"github.com/mssola/useragent"
+
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
@@ -11,8 +15,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
-	"github.com/mssola/useragent"
-	"time"
 )
 
 func Login(rc *rctx.ReqCtx) {

@@ -1,8 +1,9 @@
 package util
 
 import (
-	"github.com/emicklei/go-restful/v3"
 	"strings"
+
+	"github.com/emicklei/go-restful/v3"
 )
 
 //

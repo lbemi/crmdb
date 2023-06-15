@@ -1,8 +1,9 @@
 package util
 
 import (
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"strconv"
+
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 )
 
 // ParseInt64 将字符串转换为 int64

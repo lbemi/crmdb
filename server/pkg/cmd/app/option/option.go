@@ -4,12 +4,13 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
+	"gorm.io/gorm"
+
 	"github.com/lbemi/lbemi/pkg/bootstrap"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/model/config"
 	"github.com/lbemi/lbemi/pkg/services"
-	"gorm.io/gorm"
 )
 
 type Options struct {

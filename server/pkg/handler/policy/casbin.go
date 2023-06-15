@@ -2,6 +2,7 @@ package policy
 
 import (
 	"context"
+
 	"github.com/casbin/casbin/v2"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model/sys"

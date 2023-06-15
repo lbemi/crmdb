@@ -2,7 +2,9 @@ package bootstrap
 
 import (
 	"fmt"
+
 	redis "github.com/go-redis/redis"
+
 	"github.com/lbemi/lbemi/pkg/model/config"
 )
 

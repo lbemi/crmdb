@@ -2,8 +2,6 @@ package app
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/pkg/cmd/app/option"
-	"github.com/spf13/cobra"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,9 +9,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/cmd/app/option"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
 )

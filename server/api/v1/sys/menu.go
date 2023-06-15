@@ -1,13 +1,14 @@
 package sys
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
-	"strconv"
-	"strings"
 )
 
 func AddMenu(rc *rctx.ReqCtx) {

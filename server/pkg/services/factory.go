@@ -1,7 +1,6 @@
 package services
 
 import (
-	"github.com/casbin/casbin/v2"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	client "github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/services/asset"
@@ -9,6 +8,8 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	"github.com/lbemi/lbemi/pkg/services/logsys"
 	"github.com/lbemi/lbemi/pkg/services/sys"
+
+	"github.com/casbin/casbin/v2"
 	"gorm.io/gorm"
 )
 

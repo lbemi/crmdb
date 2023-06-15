@@ -1,11 +1,13 @@
 package routes
 
 import (
+	"net/http"
+
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/go-openapi/spec"
+
 	"github.com/lbemi/lbemi/pkg/rctx"
-	"net/http"
 )
 
 // UserResource is the REST layer to the User domain

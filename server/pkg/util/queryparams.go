@@ -2,8 +2,9 @@ package util
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 // GetQueryToStrE

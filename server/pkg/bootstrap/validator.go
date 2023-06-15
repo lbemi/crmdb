@@ -1,11 +1,12 @@
 package bootstrap
 
 import (
+	"reflect"
+	"strings"
+
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/lbemi/lbemi/pkg/util"
-	"reflect"
-	"strings"
 )
 
 func InitializeValidator() {

@@ -2,9 +2,10 @@ package util
 
 import (
 	"errors"
+	"time"
+
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/restfulx"
-	"time"
 
 	"github.com/golang-jwt/jwt"
 )

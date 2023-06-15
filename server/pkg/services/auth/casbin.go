@@ -2,13 +2,14 @@ package auth
 
 import (
 	"fmt"
-	"github.com/casbin/casbin/v2"
+	"strconv"
+
 	"github.com/lbemi/lbemi/pkg/model/rules"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/restfulx"
-	"gorm.io/gorm"
 
-	"strconv"
+	"github.com/casbin/casbin/v2"
+	"gorm.io/gorm"
 )
 
 // TODO: 整体优化

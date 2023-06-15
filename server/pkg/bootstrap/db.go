@@ -1,6 +1,17 @@
 package bootstrap
 
 import (
+	"io"
+	"log"
+	"os"
+	"strconv"
+	"time"
+
+	"gopkg.in/natefinch/lumberjack.v2"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+
 	opsLog "github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model/asset"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
@@ -8,16 +19,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/logsys"
 	"github.com/lbemi/lbemi/pkg/model/rules"
 	"github.com/lbemi/lbemi/pkg/model/sys"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"log"
-
-	"io"
-	"os"
-	"strconv"
-	"time"
 )
 
 func InitializeDB(c *config.Config) *gorm.DB {

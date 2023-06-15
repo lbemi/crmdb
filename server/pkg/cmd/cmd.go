@@ -1,24 +1,24 @@
 package cmd
 
 import (
-	restfulspec "github.com/emicklei/go-restful-openapi/v2"
-	"github.com/emicklei/go-restful/v3"
-	"github.com/go-openapi/spec"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/core"
-	"github.com/lbemi/lbemi/pkg/core/server"
-	"github.com/lbemi/lbemi/routes/cloud"
-	"github.com/lbemi/lbemi/routes/logsys"
-	"github.com/lbemi/lbemi/routes/sys"
-
-	//"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/cmd/app/option"
-	"github.com/lbemi/lbemi/pkg/middleware"
-	"github.com/lbemi/lbemi/pkg/rctx"
-	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
 	"syscall"
+
+	restfulspec "github.com/emicklei/go-restful-openapi/v2"
+	"github.com/emicklei/go-restful/v3"
+	"github.com/go-openapi/spec"
+	"github.com/spf13/cobra"
+
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/cmd/app/option"
+	"github.com/lbemi/lbemi/pkg/core"
+	"github.com/lbemi/lbemi/pkg/core/server"
+	"github.com/lbemi/lbemi/pkg/middleware"
+	"github.com/lbemi/lbemi/pkg/rctx"
+	"github.com/lbemi/lbemi/routes/cloud"
+	"github.com/lbemi/lbemi/routes/logsys"
+	"github.com/lbemi/lbemi/routes/sys"
 )
 
 var completedOptions *option.Options

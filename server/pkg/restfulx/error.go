@@ -1,8 +1,9 @@
 package restfulx
 
 import (
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"runtime/debug"
+
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 )
 
 var (

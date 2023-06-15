@@ -1,9 +1,10 @@
 package util
 
 import (
+	"reflect"
+
 	"github.com/gin-gonic/gin"
 	"github.com/lbemi/lbemi/pkg/common/response"
-	"reflect"
 )
 
 type Result struct {

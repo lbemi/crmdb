@@ -3,15 +3,17 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"reflect"
+
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/model/logsys"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
+
 	"github.com/mssola/useragent"
-	"net/http"
-	"reflect"
 )
 
 type Fields map[string]interface{}

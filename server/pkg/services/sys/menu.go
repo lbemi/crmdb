@@ -2,10 +2,12 @@ package sys
 
 import (
 	"errors"
+
 	"github.com/fatih/structs"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
+
 	"gorm.io/gorm"
 )
 

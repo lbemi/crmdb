@@ -21,3 +21,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+server/cmd/__debug_bin

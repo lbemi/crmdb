@@ -1,9 +1,11 @@
 package logsys
 
 import (
-	"github.com/lbemi/lbemi/pkg/model/basemodel"
-	"gorm.io/gorm"
 	"time"
+
+	"github.com/lbemi/lbemi/pkg/model/basemodel"
+
+	"gorm.io/gorm"
 )
 
 type LogLogin struct {

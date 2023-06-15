@@ -1,9 +1,10 @@
 package redis
 
 import (
+	"time"
+
 	"github.com/go-redis/redis"
 	"github.com/lbemi/lbemi/pkg/restfulx"
-	"time"
 )
 
 type RedisGetter interface {

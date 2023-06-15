@@ -1,9 +1,10 @@
 package util
 
 import (
-	"github.com/lbemi/lbemi/pkg/restfulx"
 	"strconv"
 	"strings"
+
+	"github.com/lbemi/lbemi/pkg/restfulx"
 )
 
 func ParseStrInt64(value string) []uint64 {

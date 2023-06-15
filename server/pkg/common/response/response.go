@@ -3,9 +3,11 @@ package response
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/pkg/restfulx"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/lbemi/lbemi/pkg/restfulx"
 )
 
 const SuccessMsg = "success"

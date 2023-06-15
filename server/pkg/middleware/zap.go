@@ -2,9 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"go.uber.org/zap"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -12,6 +9,11 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func Test() gin.HandlerFunc {

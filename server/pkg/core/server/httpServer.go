@@ -3,10 +3,11 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 
 	"github.com/emicklei/go-restful/v3"
 )

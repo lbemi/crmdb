@@ -2,15 +2,17 @@ package rctx
 
 import (
 	"fmt"
-	"github.com/emicklei/go-restful/v3"
-	"github.com/lbemi/lbemi/pkg/model"
-	"github.com/lbemi/lbemi/pkg/model/sys"
-	"github.com/lbemi/lbemi/pkg/restfulx"
 	"io"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/emicklei/go-restful/v3"
+
+	"github.com/lbemi/lbemi/pkg/model"
+	"github.com/lbemi/lbemi/pkg/model/sys"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 )
 
 type HandlerFunc func(ctx *ReqCtx)

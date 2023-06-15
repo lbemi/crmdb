@@ -1,11 +1,12 @@
 package wsstore
 
 import (
-	"github.com/gorilla/websocket"
 	"log"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 var WsClientMap *WsClientStore

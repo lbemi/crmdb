@@ -2,12 +2,14 @@ package store
 
 import (
 	"errors"
+	"sync"
+
 	"github.com/lbemi/lbemi/pkg/restfulx"
+
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/metrics/pkg/client/clientset/versioned"
-	"sync"
 )
 
 type ClientConfig struct {

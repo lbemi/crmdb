@@ -1,9 +1,10 @@
 package logsys
 
 import (
+	"time"
+
 	"github.com/lbemi/lbemi/pkg/model/basemodel"
 	"gorm.io/gorm"
-	"time"
 )
 
 type LogOperator struct {

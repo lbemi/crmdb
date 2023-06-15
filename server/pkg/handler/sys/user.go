@@ -1,6 +1,8 @@
 package sys
 
 import (
+	"time"
+
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
@@ -11,7 +13,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/services"
 	"github.com/lbemi/lbemi/pkg/util"
 	"github.com/mssola/useragent"
-	"time"
 )
 
 type UserGetter interface {
