@@ -100,10 +100,18 @@
 							<template #default="scope">
 								<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>
 								<div v-if="scope.row.status.phase != 'Running'" style="color: red">
-									<div v-if="scope.row.status.containerStatuses">
-										{{ scope.row.status.containerStatuses[0].state.waiting.message }}
+									<div v-if="scope.row.status.containerStatuses" v-for="containerStatus in scope.row.status.containerStatuses">
+										<div v-if="!containerStatus.ready">
+											{{ containerStatus.state.waiting?.message }}
+											{{ containerStatus.state.Terminating?.message }}
+										</div>
 									</div>
-									<div v-else>{{ scope.row.status.conditions[0].message }}</div>
+									<div v-if="scope.row.status.initContainerStatuses" v-for="containerStatus in scope.row.status.initContainerStatuses">
+										<div v-if="!containerStatus.ready">
+											{{ containerStatus.state.waiting?.message }}
+											{{ containerStatus.state.Terminating?.message }}
+										</div>
+									</div>
 								</div>
 							</template>
 						</el-table-column>
@@ -134,12 +142,12 @@
 								<el-tooltip placement="top" effect="light">
 									<template #content>
 										<div style="display: flex; flex-direction: column">
-											<el-tag class="label" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
+											<el-tag size="small" class="label" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
 												{{ key }}:{{ item }}
 											</el-tag>
 										</div>
 									</template>
-									<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
+									<el-tag size="small" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index">
 										<div>{{ key }}:{{ item }}</div>
 									</el-tag>
 								</el-tooltip>
@@ -279,8 +287,6 @@ const k8sStore = kubernetesInfo();
 const podApi = usePodApi();
 const deploymentApi = useDeploymentApi();
 const timer = ref();
-const code = ref({});
-const dialogVisible = ref(false);
 
 const data = reactive({
 	RsdialogVisible: false,
@@ -632,5 +638,8 @@ const buildWebsocket = () => {
 			flex: 1;
 		}
 	}
+}
+.label {
+	margin-bottom: 3px;
 }
 </style>

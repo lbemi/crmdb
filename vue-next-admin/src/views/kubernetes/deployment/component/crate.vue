@@ -1,10 +1,11 @@
 <template>
-	<div class="layout-padding div-container">
-		<el-card shadow="hover" class="layout-padding-auto">
+	<div class="system-user-dialog-container">
+		<el-dialog v-model="dialogVisible" width="1450px" :title="title" @close="handleClose()">
+			<!-- <el-card shadow="hover" class="layout-padding-auto"> -->
 			<el-backtop :right="100" :bottom="100" />
 
 			<div>
-				<el-button type="primary" @click="edit">编辑</el-button>
+				<!-- <el-button type="primary" @click="edit">编辑</el-button> -->
 				<el-steps :active="data.active" finish-status="success" simple>
 					<el-step title="基本信息" description="Some description" />
 					<el-step title="容器配置" description="Some description" />
@@ -21,6 +22,7 @@
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
 								<Containers
 									:containers="deepClone(data.deployment.spec!.template.spec!.containers) as Array< Container>"
+									:initContainers="deepClone(data.deployment.spec!.template.spec!.initContainers) as Array< Container>"
 									@updateContainers="getContainers"
 								/>
 							</div>
@@ -28,13 +30,13 @@
 						</div>
 					</el-card>
 				</el-col>
-				<!--				<el-col :span="1" />-->
-				<el-col :span="7">
+				<!-- <el-col :span="1" /> -->
+				<el-col :span="9">
 					<el-card style="margin-top: 15px; height: 99%">
 						<codemirror v-model="data.code" style="margin-top: 15px" :autofocus="true" :tabSize="2" :extensions="extensions" />
 					</el-card>
 				</el-col>
-				<el-col :span="2" style="margin-left: 20px">
+				<!-- <el-col :span="2" style="margin-left: 20px">
 					<div class="btn">
 						<div>
 							<el-link type="primary" :underline="false" @click="jumpTo(0)" class="men">基础信息</el-link>
@@ -48,9 +50,18 @@
 						<el-button @click="next" style="margin-top: 5px" size="small">下一步</el-button>
 						<el-button @click="confirm" style="margin-top: 5px" size="small">确认</el-button>
 					</div>
-				</el-col>
+				</el-col> -->
 			</el-row>
-		</el-card>
+			<!-- </el-card> -->
+			<template #footer>
+				<span class="dialog-footer">
+					<el-button @click="up" size="small">上一步</el-button>
+					<el-button @click="next" size="small">下一步</el-button>
+					<el-button @click="confirm" type="success" size="small">确认</el-button>
+					<el-button size="small" type="primary" @click="handleClose">关闭</el-button>
+				</span>
+			</template>
+		</el-dialog>
 	</div>
 </template>
 
@@ -64,7 +75,6 @@ import yamlJs from 'js-yaml';
 import { useDeploymentApi } from '/@/api/kubernetes/deployment';
 import { kubernetesInfo } from '/@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
-import router from '/@/router';
 import { useRoute } from 'vue-router';
 import mittBus from '/@/utils/mitt';
 import { deepClone } from '/@/utils/other';
@@ -72,10 +82,12 @@ import { CreateK8SBindData, CreateK8SMetaData } from '/@/types/kubernetes/custom
 import type { FormInstance } from 'element-plus';
 import { StreamLanguage } from '@codemirror/language';
 import { yaml } from '@codemirror/legacy-modes/mode/yaml';
+import { isObjectValueEqual } from '/@/utils/arrayOperation';
 
 const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
 
+const dialogVisible = ref(false);
 const kubeInfo = kubernetesInfo();
 const deployApi = useDeploymentApi();
 
@@ -95,7 +107,6 @@ const data = reactive({
 		apiVersion: 'apps/v1',
 		kind: 'Deployment',
 		metadata: {
-			// name: '',
 			namespace: 'default',
 		},
 		spec: {
@@ -109,6 +120,7 @@ const data = reactive({
 				},
 				spec: {
 					serviceAccount: 'default',
+					initContainers: [],
 					containers: [],
 					// volumes: [],
 				},
@@ -129,7 +141,12 @@ const data = reactive({
 	},
 });
 const extensions = [oneDark, StreamLanguage.define(yaml)];
-const getContainers = (containers: Array<Container>) => {
+const getContainers = (containers: Array<Container>, initContainers: Array<Container>) => {
+	if (initContainers.length != 0) {
+		data.deployment.spec!.template.spec!.initContainers = initContainers;
+	} else {
+		delete data.deployment.spec!.template.spec!.initContainers;
+	}
 	data.deployment.spec!.template.spec!.containers = containers;
 	console.log('4.接收到容器发生变化。。。。。', containers);
 	updateCodeMirror();
@@ -166,6 +183,9 @@ const jumpTo = (id: number) => {
 
 	document.getElementById(id + '')!.scrollIntoView(true);
 };
+const up = () => {
+	if (data.active-- == 0) data.active = 0;
+};
 const next = () => {
 	// data.deployment.metadata = metaRef.value.data.meta;
 	// data.deployment.spec!.replicas = metaRef.value.data.replicas;
@@ -184,26 +204,30 @@ const next = () => {
 // 定义变量内容
 const route = useRoute();
 mittBus.on('updateVolumes', (res) => {
-	data.deployment.spec!.template.spec!.volumes = res;
-	updateCodeMirror();
+	if (data.deployment.spec) {
+		if (data.deployment.spec.template) {
+			data.deployment.spec.template.spec.volumes = res;
+			updateCodeMirror();
+		}
+	}
 });
 
-const confirm = () => {
-	// data.code = yaml.dump(data.deployment);
-	deployApi
-		.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployment)
-		.then(() => {
-			router.push({
-				name: 'k8sDeployment',
-			});
-			mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));
+// const confirm = () => {
+// 	// data.code = yaml.dump(data.deployment);
+// 	deployApi
+// 		.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployment)
+// 		.then(() => {
+// 			router.push({
+// 				name: 'k8sDeployment',
+// 			});
+// 			mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));
 
-			ElMessage.success('创建成功');
-		})
-		.catch((e) => {
-			ElMessage.error(e.message);
-		});
-};
+// 			ElMessage.success('创建成功');
+// 		})
+// 		.catch((e) => {
+// 			ElMessage.error(e.message);
+// 		});
+// };
 const updateCodeMirror = () => {
 	data.loadCode = true;
 	data.code = yamlJs.dump(data.deployment);
@@ -244,9 +268,67 @@ onUnmounted(() => {
 	//卸载
 	mittBus.off('updateVolumes', () => {});
 });
+
+const emit = defineEmits(['update', 'update:dialogVisible', 'refresh']);
+
+const handleClose = () => {
+	emit('update:dialogVisible', false);
+};
+
+const createService = () => {
+	handleClose();
+	emit('refresh');
+};
+
+const confirm = () => {
+	// if (data.service.spec?.type === 'ClusterIP' && data.headless) {
+	// 	data.service.spec!.clusterIP = 'None';
+	// } else {
+	// 	delete data.service.spec?.clusterIP;
+	// }
+	// if (data.keepAlive) {
+	// 	data.service.spec!.sessionAffinity = 'ClientIP';
+	// 	data.service.spec!.sessionAffinityConfig! = {
+	// 		clientIP: {
+	// 			timeoutSeconds: data.keepAliveTime,
+	// 		},
+	// 	};
+	// } else {
+	// 	delete data.service.spec?.sessionAffinity;
+	// 	delete data.service.spec?.sessionAffinityConfig;
+	// }
+	// if (data.updateFlag) {
+	// } else {
+	// 	createService();
+	// }
+};
+
+const props = defineProps({
+	title: String,
+	codeData: Object,
+	dialogVisible: Boolean,
+	service: Object,
+});
+
+watch(
+	() => props,
+	() => {
+		dialogVisible.value = props.dialogVisible;
+		if (!isObjectValueEqual(props.service, {})) {
+			// data.service = props.service as Service;
+			// data.updateFlag = true;
+		}
+	},
+	{
+		immediate: true,
+	}
+);
 </script>
 
-<style scoped lang="scss">
+<style scoped>
+.card {
+	margin-bottom: 10px;
+}
 .d2 {
 	min-width: 100%;
 	height: 100%;
@@ -271,7 +353,7 @@ onUnmounted(() => {
 	padding-top: 2px;
 	padding-bottom: 2px;
 }
-.div-container {
+/* .div-container {
 	:deep(.el-card__body) {
 		display: flex;
 		flex-direction: column;
@@ -281,5 +363,5 @@ onUnmounted(() => {
 			flex: 1;
 		}
 	}
-}
+} */
 </style>

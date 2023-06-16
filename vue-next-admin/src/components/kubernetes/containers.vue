@@ -2,7 +2,25 @@
 	<div class="layout-pd">
 		<div>
 			<el-tabs v-model="editableTabsValue" type="card" editable class="demo-tabs" @edit="handleTabsEdit">
-				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :label="'容器' + (index + 1)" :name="index" :closable="index != 0">
+				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :name="index" :closable="index != 0">
+					<template #label>
+						<span v-if="data.isInitContainer" class="custom-tabs-label">
+							<SvgIcon name="iconfont icon-container-" class="svg" />{{ ' init容器 ' + (index + 1) }}
+						</span>
+						<span v-else class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' + (index + 1) }} </span>
+					</template>
+					<container :container="item" :index="index" @updateContainer="getContainer" />
+				</el-tab-pane>
+				<el-tab-pane
+					v-if="data.initContainers.length != 0"
+					v-for="(item, index) in data.initContainers"
+					:key="index"
+					:name="index"
+					:closable="index != 0"
+				>
+					<template #label>
+						<span class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' init容器 ' + (index + 1) }} </span>
+					</template>
 					<container :container="item" :index="index" @updateContainer="getContainer" />
 				</el-tab-pane>
 			</el-tabs>
@@ -48,7 +66,9 @@ const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 
 };
 
 const data = reactive({
+	isInitContainer: false,
 	loadFromParent: false,
+	initContainers: [] as Array<Container>,
 	containers: [
 		{
 			name: '',
@@ -83,23 +103,51 @@ const data = reactive({
 	},
 });
 
-const getContainer = (index: number, container: Container) => {
+const getContainer = (index: number, isInitContainer: boolean, container: Container) => {
 	if (index === editableTabsValue.value) {
 		// // FIXME  初始化container name
-		data.containers[index] = deepClone(container) as Container;
+		if (isInitContainer) {
+			data.isInitContainer = isInitContainer;
+			data.initContainers[index] = deepClone(container) as Container;
+			delete data.containers[index];
+		} else {
+			delete data.initContainers[index];
+			data.containers[index] = deepClone(container) as Container;
+		}
+	}
+};
+
+const getInitContainer = (index: number, isInitContainer: boolean, container: Container) => {
+	if (index === editableTabsValue.value) {
+		if (isInitContainer) {
+			data.isInitContainer = isInitContainer;
+			data.initContainers[index] = deepClone(container) as Container;
+		} else {
+			delete data.initContainers[index];
+			data.containers[index] = deepClone(container) as Container;
+		}
 	}
 };
 
 const props = defineProps({
 	containers: Array<Container>,
+	initContainers: Array<Container>,
 });
 
 watch(
-	() => props.containers,
+	() => props,
 	() => {
 		if (props.containers && props.containers.length != 0 && !isObjectValueEqual(data.containers, props.containers)) {
 			data.loadFromParent = true;
 			data.containers = deepClone(props.containers) as Container[];
+			setTimeout(() => {
+				// 延迟一下，不然会触发循环更新
+				data.loadFromParent = false;
+			}, 10);
+		}
+		if (props.initContainers && props.initContainers.length != 0 && !isObjectValueEqual(data.initContainers, props.initContainers)) {
+			data.loadFromParent = true;
+			data.initContainers = deepClone(props.initContainers) as Container[];
 			setTimeout(() => {
 				// 延迟一下，不然会触发循环更新
 				data.loadFromParent = false;
@@ -114,10 +162,10 @@ watch(
 const emit = defineEmits(['updateContainers']);
 
 watch(
-	() => data.containers,
+	() => [data.containers, data.initContainers],
 	() => {
 		if (!data.loadFromParent) {
-			emit('updateContainers', deepClone(data.containers));
+			emit('updateContainers', deepClone(data.containers), deepClone(data.initContainers));
 		}
 	},
 	{

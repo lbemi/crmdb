@@ -263,7 +263,7 @@ import { DaemonSet, Deployment, ReplicaSet, ReplicaSetCondition, StatefulSet } f
 import router from '/@/router';
 import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
-import { ElMessage, TabsPaneContext } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import YAML from 'js-yaml';
 import { dateStrFormat } from '/@/utils/formatTime';
 import { useServiceApi } from '/@/api/kubernetes/service';

@@ -139,7 +139,6 @@ import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '/@/utils/formatTime';
 import { deepClone } from '/@/utils/other';
-import { Deployment, DeploymentCondition } from 'kubernetes-types/apps/v1';
 
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));

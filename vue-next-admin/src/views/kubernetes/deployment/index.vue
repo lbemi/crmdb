@@ -198,6 +198,12 @@
 				</span>
 			</template>
 		</el-dialog>
+		<CreateDialog
+			v-model:dialogVisible="data.create.dialogVisible"
+			:title="data.create.title"
+			@refresh="listDeployment()"
+			v-if="data.create.dialogVisible"
+		/>
 	</div>
 </template>
 
@@ -217,10 +223,10 @@ import mittBus from '/@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '/@/utils/formatTime';
 import { deepClone, globalComponentSize } from '/@/utils/other';
-import { useThemeConfig } from '/@/stores/themeConfig';
 
 const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
 const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
+const CreateDialog = defineAsyncComponent(() => import('./component/crate.vue'));
 
 type queryType = {
 	key: string;
@@ -231,6 +237,11 @@ type queryType = {
 	label?: string;
 };
 const data = reactive({
+	create: {
+		dialogVisible: false,
+		title: '',
+	},
+
 	codeData: {} as Deployment,
 	searchType: '1',
 	search: '',
@@ -494,9 +505,11 @@ const deployDetail = async (dep: Deployment) => {
 };
 
 const createDeployment = () => {
-	router.push({
-		name: 'deploymentCreate',
-	});
+	// router.push({
+	// 	name: 'deploymentCreate',
+	// });
+	data.create.title = '创建deployment';
+	data.create.dialogVisible = true;
 };
 onMounted(() => {
 	listDeployment();

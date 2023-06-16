@@ -3,8 +3,6 @@ package main
 import (
 	"os"
 
-	_ "github.com/lbemi/lbemi/docs"
-
 	"github.com/lbemi/lbemi/pkg/cmd"
 )
 

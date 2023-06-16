@@ -2,6 +2,9 @@
 	<div>
 		<el-form v-model="data.container" label-width="100px" label-position="left">
 			<el-card>
+				<el-form-item label="初始化容器:">
+					<el-checkbox v-model="data.isInitContainer">设置为初始化容器</el-checkbox>
+				</el-form-item>
 				<el-form-item label="容器名称：">
 					<el-input v-model="data.container.name" size="default" style="width: 296px" />
 				</el-form-item>
@@ -166,6 +169,7 @@ const Ports = defineAsyncComponent(() => import('./port.vue'));
 const Env = defineAsyncComponent(() => import('./env.vue'));
 
 const data = reactive({
+	isInitContainer: false,
 	loadFromParent: false,
 	lifePostStartSet: false,
 	lifePreStopSet: false,
@@ -324,7 +328,7 @@ watch(
 );
 
 watch(
-	() => [data.container, data.resourceSet],
+	() => [data.container, data.resourceSet, data.isInitContainer],
 	() => {
 		// 父组件传值直接渲染，不触发循环更新
 		if (!data.loadFromParent) {
@@ -350,8 +354,7 @@ watch(
 				};
 				data.resourceHasSet = true;
 			}
-
-			emit('updateContainer', props.index, data.container);
+			emit('updateContainer', props.index, data.isInitContainer, data.container);
 		}
 	},
 	{
