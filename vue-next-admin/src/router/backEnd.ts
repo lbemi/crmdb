@@ -1,14 +1,14 @@
 import { RouteRecordRaw } from 'vue-router';
-import pinia from '/@/stores/index';
-import { useUserInfo } from '/@/stores/userInfo';
-import { useRequestOldRoutes } from '/@/stores/requestOldRoutes';
-import { Session } from '/@/utils/storage';
-import { NextLoading } from '/@/utils/loading';
-import { dynamicRoutes, notFoundAndNoPower } from '/@/router/route';
-import { formatTwoStageRoutes, formatFlatteningRoutes, router } from '/@/router/index';
-import { useRoutesList } from '/@/stores/routesList';
-import { useTagsViewRoutes } from '/@/stores/tagsViewRoutes';
-import { useMenuApi } from '/@/api/system/menu';
+import pinia from '@/stores/index';
+import { useUserInfo } from '@/stores/userInfo';
+import { useRequestOldRoutes } from '@/stores/requestOldRoutes';
+import { Session } from '@/utils/storage';
+import { NextLoading } from '@/utils/loading';
+import { dynamicRoutes, notFoundAndNoPower } from '@/router/route';
+import { formatTwoStageRoutes, formatFlatteningRoutes, router } from '@/router/index';
+import { useRoutesList } from '@/stores/routesList';
+import { useTagsViewRoutes } from '@/stores/tagsViewRoutes';
+import { useMenuApi } from '@/api/system/menu';
 
 // 后端控制路由
 
@@ -50,7 +50,7 @@ export async function initBackEndControlRoutes() {
 	await useUserInfo().setUserAuthButton(res.data.permission);
 	// 存储接口原始路由（未处理component），根据需求选择使用
 	useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(res.data.menus)));
-	// 处理路由（component），替换 dynamicRoutes（/@/router/route）第一个顶级 children 的路由
+	// 处理路由（component），替换 dynamicRoutes（@/router/route）第一个顶级 children 的路由
 	dynamicRoutes[0].children = await backEndComponent(res.data.menus);
 	// 添加动态路由
 	await setAddRoute();
@@ -80,7 +80,7 @@ export function setCacheTagsViewRoutes() {
 
 /**
  * 处理路由格式及添加捕获所有路由或 404 Not found 路由
- * @description 替换 dynamicRoutes（/@/router/route）第一个顶级 children 的路由
+ * @description 替换 dynamicRoutes（@/router/route）第一个顶级 children 的路由
  * @returns 返回替换后的路由数组
  */
 export function setFilterRouteEnd() {
@@ -94,7 +94,7 @@ export function setFilterRouteEnd() {
 /**
  * 添加动态路由
  * @method router.addRoute
- * @description 此处循环为 dynamicRoutes（/@/router/route）第一个顶级 children 的路由一维数组，非多级嵌套
+ * @description 此处循环为 dynamicRoutes（@/router/route）第一个顶级 children 的路由一维数组，非多级嵌套
  * @link 参考：https://next.router.vuejs.org/zh/api/#addroute
  */
 export async function setAddRoute() {

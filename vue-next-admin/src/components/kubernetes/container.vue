@@ -3,7 +3,7 @@
 		<el-form v-model="data.container" label-width="100px" label-position="left">
 			<el-card>
 				<el-form-item label="初始化容器:">
-					<el-checkbox v-model="data.isInitContainer">设置为初始化容器</el-checkbox>
+					<el-checkbox v-model="data.container.isIntiContainer">设置为初始化容器</el-checkbox>
 				</el-form-item>
 				<el-form-item label="容器名称：">
 					<el-input v-model="data.container.name" size="default" style="width: 296px" />
@@ -25,11 +25,11 @@
 				<el-form-item v-if="data.container.resources?.requests && data.resourceSet">
 					<div style="height: 28px">
 						<span>所需资源： CPU</span>
-						<el-input placeholder="如：0.5" v-model="data.container.resources.requests.cpu" size="small" style="width: 80px" />
+						<el-input placeholder="如：0.5" v-model="data.container.resources!.requests!.cpu" size="small" style="width: 80px" />
 						<span> Core</span>
 						<el-divider direction="vertical" />
 						<a>内存</a>
-						<el-input placeholder="如：300Mi" v-model="data.container.resources.requests.memory" size="small" style="width: 80px" /><span>
+						<el-input placeholder="如：300Mi" v-model="data.container.resources!.requests!.memory" size="small" style="width: 80px" /><span>
 							(单位：MiB)</span
 						>
 					</div>
@@ -37,14 +37,14 @@
 						<el-icon size="12px" color="#00bb00"><InfoFilled /></el-icon>建议根据实际使用情况设置，防止由于资源约束而无法调度或引发内存不足(OOM)错误
 					</div>
 				</el-form-item>
-				<el-form-item v-if="data.container.resources?.limits && data.resourceSet">
+				<el-form-item v-if="data.container.resources!.limits && data.resourceSet">
 					<div style="height: 28px">
 						<span>资源限制： CPU</span>
-						<el-input placeholder="如：0.5" v-model="data.container.resources.limits.cpu" size="small" style="width: 80px" />
+						<el-input placeholder="如：0.5" v-model="data.container.resources!.limits!.cpu" size="small" style="width: 80px" />
 						<span> Core</span>
 						<el-divider direction="vertical" />
 						<a>内存</a>
-						<el-input placeholder="如：500Mi" v-model="data.container.resources.limits.memory" size="small" style="width: 80px" /><span>
+						<el-input placeholder="如：500Mi" v-model="data.container.resources!.limits!.memory" size="small" style="width: 80px" /><span>
 							(单位：MiB)</span
 						>
 					</div>
@@ -98,7 +98,7 @@
 			<el-card>
 				<Env :env="data.container.env" @updateEnv="getEnvs" />
 			</el-card>
-			<el-card>
+			<el-card v-show="!data.container.isIntiContainer">
 				<el-form-item label="存活检查">
 					<template #label>
 						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start" raw-content>
@@ -124,7 +124,7 @@
 					<HealthCheck :checkData="data.container.startupProbe" @updateCheckData="getStartupData" />
 				</el-form-item>
 			</el-card>
-			<el-card>
+			<el-card v-show="!data.container.isIntiContainer">
 				<el-form-item label="生命周期配置" />
 				<el-form-item label="启动前：">
 					<template #label>
@@ -157,8 +157,9 @@
 import { defineAsyncComponent, reactive, watch } from 'vue';
 import { Container, ContainerPort, Lifecycle, Probe, VolumeMount, LifecycleHandler, EnvVar } from 'kubernetes-types/core/v1';
 import { Delete, Edit, InfoFilled } from '@element-plus/icons-vue';
-import { isObjectValueEqual } from '/@/utils/arrayOperation';
-import { deepClone } from '/@/utils/other';
+import { isObjectValueEqual } from '@/utils/arrayOperation';
+import { deepClone } from '@/utils/other';
+import { ContainerType } from '@/types/kubernetes/common';
 
 //子组件引用
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
@@ -169,7 +170,6 @@ const Ports = defineAsyncComponent(() => import('./port.vue'));
 const Env = defineAsyncComponent(() => import('./env.vue'));
 
 const data = reactive({
-	isInitContainer: false,
 	loadFromParent: false,
 	lifePostStartSet: false,
 	lifePreStopSet: false,
@@ -178,7 +178,7 @@ const data = reactive({
 	resourceHasSet: false,
 	resourceSet: false,
 	containers: [] as Container[],
-	container: <Container>{
+	container: <ContainerType>{
 		name: '',
 		imagePullPolicy: 'ifNotPresent',
 		securityContext: {
@@ -187,14 +187,16 @@ const data = reactive({
 		lifecycle: {} as Lifecycle,
 		livenessProbe: {},
 		readinessProbe: {},
-	},
-	limit: {
-		cpu: '',
-		memory: 0,
-	},
-	require: {
-		cpu: 0.5,
-		memory: 500,
+		resources: {
+			limits: {
+				cpu: '',
+				memory: '0',
+			},
+			requests: {
+				cpu: '0.5',
+				memory: '500',
+			},
+		},
 	},
 });
 
@@ -294,15 +296,13 @@ watch(
 		if (props.container && !isObjectValueEqual(data.container, props.container)) {
 			data.loadFromParent = true;
 
-			console.log('b.处理父组件传递的container', props.container);
-			const copyData = deepClone(props.container) as Container;
+			const copyData = deepClone(props.container) as ContainerType;
 			if (!copyData.volumeMounts) {
 				copyData.volumeMounts = [] as VolumeMount[];
 			}
 
 			if (copyData.resources?.limits || copyData.resources?.requests) {
 				data.resourceSet = true;
-				console.log('状态：：：', data.resourceSet);
 			}
 
 			if (!copyData.securityContext) {
@@ -327,16 +327,30 @@ watch(
 	}
 );
 
+const returnContainer = () => {
+	if (data.container.securityContext?.privileged && !data.container.securityContext?.privileged) {
+		delete data.container.securityContext;
+	}
+
+	if (data.resourceSet && !data.resourceHasSet) {
+		data.container.resources = {
+			limits: {
+				cpu: '',
+				memory: '',
+			},
+			requests: {
+				cpu: '',
+				memory: '',
+			},
+		};
+		data.resourceHasSet = true;
+	}
+};
 watch(
-	() => [data.container, data.resourceSet, data.isInitContainer],
+	() => [data.container, data.resourceSet],
 	() => {
 		// 父组件传值直接渲染，不触发循环更新
 		if (!data.loadFromParent) {
-			console.log('1.触发updateContainer，>>>>>', data.container);
-			// if (data.container.name != k8sStore.state.creatDeployment.name) {
-			// 	data.container.name = k8sStore.state.creatDeployment.name;
-			// }
-
 			if (data.container.securityContext?.privileged && !data.container.securityContext?.privileged) {
 				delete data.container.securityContext;
 			}
@@ -354,7 +368,7 @@ watch(
 				};
 				data.resourceHasSet = true;
 			}
-			emit('updateContainer', props.index, data.isInitContainer, data.container);
+			emit('updateContainer', props.index, data.container);
 		}
 	},
 	{

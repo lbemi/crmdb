@@ -257,23 +257,23 @@
 <script lang="ts" setup name="k8sServiceDetail">
 import { reactive, onMounted, defineAsyncComponent, h } from 'vue';
 import { ArrowLeft, Edit, View, InfoFilled } from '@element-plus/icons-vue';
-import { kubernetesInfo } from '/@/stores/kubernetes';
+import { kubernetesInfo } from '@/stores/kubernetes';
 import { Event, Pod, Service, Endpoints } from 'kubernetes-types/core/v1';
 import { DaemonSet, Deployment, ReplicaSet, ReplicaSetCondition, StatefulSet } from 'kubernetes-types/apps/v1';
-import router from '/@/router';
-import mittBus from '/@/utils/mitt';
+import router from '@/router';
+import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import YAML from 'js-yaml';
-import { dateStrFormat } from '/@/utils/formatTime';
-import { useServiceApi } from '/@/api/kubernetes/service';
-import { usePodApi } from '/@/api/kubernetes/pod';
-import { ResponseType } from '/@/types/response';
-import { podInfo } from '/@/stores/pod';
-import { deepClone } from '/@/utils/other';
+import { dateStrFormat } from '@/utils/formatTime';
+import { useServiceApi } from '@/api/kubernetes/service';
+import { usePodApi } from '@/api/kubernetes/pod';
+import { ResponseType } from '@/types/response';
+import { podInfo } from '@/stores/pod';
+import { deepClone } from '@/utils/other';
 
-const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
-const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
+const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
+const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDeail.vue'));
 
 const route = useRoute();
 const servieApi = useServiceApi();
@@ -329,7 +329,6 @@ const getServiceInfo = () => {
 		})
 		.then((res) => {
 			data.serviceInfo = res.data;
-			console.log(data.serviceInfo);
 		});
 };
 // FIXME

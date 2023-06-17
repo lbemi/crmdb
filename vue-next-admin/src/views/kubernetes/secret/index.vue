@@ -115,19 +115,19 @@
 <script setup lang="ts" name="k8sSecret">
 import { ConfigMap } from 'kubernetes-types/core/v1';
 import { defineAsyncComponent, h, onMounted, reactive, ref } from 'vue';
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import { ResponseType } from '/@/types/response';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { ResponseType } from '@/types/response';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import mittBus from '/@/utils/mitt';
+import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
-import { dateStrFormat } from '/@/utils/formatTime';
-import { PageInfo } from '/@/types/kubernetes/common';
+import { dateStrFormat } from '@/utils/formatTime';
+import { PageInfo } from '@/types/kubernetes/common';
 import { Edit, Delete, List } from '@element-plus/icons-vue';
-import { useThemeConfig } from '/@/stores/themeConfig';
-import { useConfigMapApi } from '/@/api/kubernetes/configMap';
+import { useThemeConfig } from '@/stores/themeConfig';
+import { useConfigMapApi } from '@/api/kubernetes/configMap';
 
-const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
-const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
+const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
+const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 
 type queryType = {
 	key: string;

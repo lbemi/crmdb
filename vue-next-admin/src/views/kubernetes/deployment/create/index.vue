@@ -61,20 +61,20 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { Container } from 'kubernetes-types/core/v1';
 import { Deployment } from 'kubernetes-types/apps/v1';
 import yamlJs from 'js-yaml';
-import { useDeploymentApi } from '/@/api/kubernetes/deployment';
-import { kubernetesInfo } from '/@/stores/kubernetes';
+import { useDeploymentApi } from '@/api/kubernetes/deployment';
+import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
-import router from '/@/router';
+import router from '@/router';
 import { useRoute } from 'vue-router';
-import mittBus from '/@/utils/mitt';
-import { deepClone } from '/@/utils/other';
-import { CreateK8SBindData, CreateK8SMetaData } from '/@/types/kubernetes/custom';
+import mittBus from '@/utils/mitt';
+import { deepClone } from '@/utils/other';
+import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
 import { StreamLanguage } from '@codemirror/language';
 import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
-const Meta = defineAsyncComponent(() => import('/@/components/kubernetes/meta.vue'));
-const Containers = defineAsyncComponent(() => import('/@/components/kubernetes/containers.vue'));
+const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
+const Containers = defineAsyncComponent(() => import('@/components/kubernetes/containers.vue'));
 
 const kubeInfo = kubernetesInfo();
 const deployApi = useDeploymentApi();
@@ -131,7 +131,6 @@ const data = reactive({
 const extensions = [oneDark, StreamLanguage.define(yaml)];
 const getContainers = (containers: Array<Container>) => {
 	data.deployment.spec!.template.spec!.containers = containers;
-	console.log('4.接收到容器发生变化。。。。。', containers);
 	updateCodeMirror();
 };
 
@@ -218,7 +217,6 @@ watch(
 			if (newValue != oldValue) {
 				const newData = yamlJs.load(newValue) as Deployment;
 				if (typeof newData === 'object' && newData != null) {
-					console.log('code变化了，回填数据', newValue);
 					data.bindMetaData.metadata = newData.metadata!;
 					data.bindMetaData.replicas = newData.spec?.replicas!;
 					data.deployment = newData;

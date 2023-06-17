@@ -2,12 +2,12 @@
 	<div style="margin-top: 10px">
 		<el-form ref="metaRef" :model="data.meta" v-if="data.meta" label-width="120px" label-position="left" :rules="metaRules" size="default">
 			<el-form-item label="命名空间">
-				<el-select v-model="data.meta.namespace" style="max-width: 220px" class="m-2" placeholder="Select">
+				<el-select v-model="data.meta.namespace" style="max-width: 220px" class="m-2" placeholder="Select" :disabled="props.isUpdate">
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name!" />
 				</el-select>
 			</el-form-item>
 			<el-form-item label="应用名称" prop="name">
-				<el-input v-model="data.meta.name" style="width: 220px" />
+				<el-input v-model="data.meta.name" style="width: 220px" :disabled="props.isUpdate" />
 			</el-form-item>
 			<el-form-item label="类型">
 				<el-select v-model="data.resourceType" class="m-2" placeholder="Select" style="width: 220px" :disabled="enableEdit">
@@ -29,14 +29,15 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, reactive, watch } from 'vue';
-import { kubernetesInfo } from '/@/stores/kubernetes';
+import { kubernetesInfo } from '@/stores/kubernetes';
 import { ref } from 'vue-demi';
-import { isObjectValueEqual } from '/@/utils/arrayOperation';
-import { deepClone } from '/@/utils/other';
-import { CreateK8SBindData, CreateK8SMetaData, ResourceType } from '/@/types/kubernetes/custom';
+import { isObjectValueEqual } from '@/utils/arrayOperation';
+import { deepClone } from '@/utils/other';
+import { CreateK8SBindData, CreateK8SMetaData, ResourceType } from '@/types/kubernetes/custom';
 import type { FormInstance, FormRules } from 'element-plus';
+import { ObjectMeta } from 'kubernetes-types/meta/v1';
 
-const Label = defineAsyncComponent(() => import('/@/components/kubernetes/label.vue'));
+const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 
 const metaRef = ref<FormInstance>();
 const k8sStore = kubernetesInfo();
@@ -124,6 +125,7 @@ const handAnnotations = (labels: { [key: string]: string }) => {
 
 const props = defineProps<{
 	bindData?: CreateK8SBindData;
+	isUpdate: boolean;
 }>();
 
 watch(
@@ -132,7 +134,7 @@ watch(
 		if (props.bindData) {
 			data.loadFromParent = true;
 			if (props.bindData.metadata) {
-				data.meta = deepClone(props.bindData.metadata);
+				data.meta = deepClone(props.bindData.metadata) as ObjectMeta;
 			}
 			//处理labels标签
 			if (props.bindData.metadata) {
@@ -163,7 +165,6 @@ watch(
 	(value, oldValue) => {
 		// 监听变化，父组件传值时不更新
 		if (!data.loadFromParent) {
-			console.log('jia=======', data.meta?.name, value, oldValue);
 			if (data.meta) {
 				// 缓存namespace
 				if (data.meta.namespace) {

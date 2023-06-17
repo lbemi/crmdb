@@ -178,16 +178,16 @@
 
 <script setup lang="ts" name="systemMenuDialog">
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
-import { useMenuApi } from '/@/api/system/menu';
+import { useMenuApi } from '@/api/system/menu';
 import { ElMessage, FormInstance, FormRules } from 'element-plus';
 
-// import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";
+// import { setBackEndControlRefreshRoutes } from "@/router/backEnd";
 
 // 定义子组件向父组件传值/事件
 const emit = defineEmits(['refresh']);
 const menuApi = useMenuApi();
 // 引入组件
-const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
+const IconSelector = defineAsyncComponent(() => import('@/components/iconSelector/index.vue'));
 
 // 定义变量内容
 const menuDialogFormRef = ref<FormInstance>();

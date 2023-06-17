@@ -150,19 +150,19 @@
 <script setup lang="ts" name="k8sIngress">
 import { Ingress } from 'kubernetes-types/networking/v1';
 import { defineAsyncComponent, h, onMounted, reactive, ref } from 'vue';
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import { ResponseType } from '/@/types/response';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { ResponseType } from '@/types/response';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import mittBus from '/@/utils/mitt';
+import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
-import { dateStrFormat } from '/@/utils/formatTime';
-import { PageInfo } from '/@/types/kubernetes/common';
+import { dateStrFormat } from '@/utils/formatTime';
+import { PageInfo } from '@/types/kubernetes/common';
 import { Edit, Delete, List } from '@element-plus/icons-vue';
-import { useIngressApi } from '/@/api/kubernetes/ingress';
-import { useThemeConfig } from '/@/stores/themeConfig';
+import { useIngressApi } from '@/api/kubernetes/ingress';
+import { useThemeConfig } from '@/stores/themeConfig';
 
-const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
-const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
+const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
+const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 
 type queryType = {
 	key: string;
@@ -171,7 +171,7 @@ type queryType = {
 	cloud: string;
 	name?: string;
 	label?: string;
-}
+};
 const k8sStore = kubernetesInfo();
 const ingressApi = useIngressApi();
 const route = useRoute();
@@ -184,9 +184,9 @@ const data = reactive({
 	services: [] as Ingress[],
 	tmpIngress: [] as Ingress[],
 	total: 0,
-	type: "1",
-	inputValue: "",
-	query:<queryType> {
+	type: '1',
+	inputValue: '',
+	query: <queryType>{
 		page: 1,
 		limit: 10,
 		cloud: k8sStore.state.activeCluster,
@@ -197,14 +197,14 @@ onMounted(() => {
 });
 
 const search = () => {
-	if (data.type =='1') {
-		data.query.name = data.inputValue
+	if (data.type == '1') {
+		data.query.name = data.inputValue;
 		delete data.query.label;
-	} else if  (data.type == "0") {
-		data.query.label = data.inputValue
+	} else if (data.type == '0') {
+		data.query.label = data.inputValue;
 		delete data.query.name;
 	}
-	if (data.inputValue === "") {
+	if (data.inputValue === '') {
 		delete data.query.label;
 		delete data.query.name;
 	}
@@ -253,9 +253,7 @@ const showYaml = (ingress: Ingress) => {
 	data.codeData = ingress;
 	// yamlRef.value.openDialog(ingress);
 };
-const updateIngressYaml = (code: any) => {
-	console.log('更新Ingress', code);
-};
+const updateIngressYaml = (code: any) => {};
 
 const handleSelectionChange = () => {};
 const updateIngress = (ervice: Ingress) => {};
@@ -265,7 +263,7 @@ const handlePageChange = (page: PageInfo) => {
 	listIngress();
 };
 const listIngress = () => {
-	data.loading = true
+	data.loading = true;
 	ingressApi
 		.listIngress(k8sStore.state.activeNamespace, data.query)
 		.then((res: ResponseType) => {
@@ -279,7 +277,7 @@ const listIngress = () => {
 			ElMessage.error(e);
 		});
 
-	data.loading = false
+	data.loading = false;
 };
 const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));

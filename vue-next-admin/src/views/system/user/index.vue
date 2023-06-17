@@ -84,9 +84,9 @@
 <script setup lang="ts">
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { useUserApi } from '/@/api/system/user';
-import { RoleType, RowUserType, SysUserState } from '/@/types/views';
-import { dateStrFormat } from '/@/utils/formatTime';
+import { useUserApi } from '@/api/system/user';
+import { RoleType, RowUserType, SysUserState } from '@/types/views';
+import { dateStrFormat } from '@/utils/formatTime';
 
 // 引入组件
 const UserDialog = defineAsyncComponent(() => import('./componet/dialog.vue'));

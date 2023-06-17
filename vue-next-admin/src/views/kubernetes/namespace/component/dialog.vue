@@ -55,8 +55,8 @@
 import { Namespace } from 'kubernetes-types/core/v1';
 import { FormRules, FormInstance, ElMessage } from 'element-plus';
 import { reactive, watch, ref, onMounted } from 'vue';
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import { useNamespaceApi } from '/@/api/kubernetes/namespace';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { useNamespaceApi } from '@/api/kubernetes/namespace';
 
 const k8sStore = kubernetesInfo();
 const namespaceApi = useNamespaceApi();

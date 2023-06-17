@@ -77,9 +77,9 @@
 
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
-import { isObjectValueEqual } from '/@/utils/arrayOperation';
+import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { deepClone } from '/@/utils/other';
+import { deepClone } from '@/utils/other';
 import { LifecycleHandler } from 'kubernetes-types/core/v1';
 import { CaretBottom, CaretTop } from '@element-plus/icons-vue';
 

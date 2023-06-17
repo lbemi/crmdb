@@ -21,8 +21,8 @@
 <script setup lang="ts" name="podLog">
 import { onBeforeUnmount, ref } from 'vue';
 import { ElScrollbar } from 'element-plus';
-import { podInfo } from '/@/stores/pod';
-import { useWebsocketApi } from '/@/api/kubernetes/websocket';
+import { podInfo } from '@/stores/pod';
+import { useWebsocketApi } from '@/api/kubernetes/websocket';
 import { VideoPause, VideoPlay } from '@element-plus/icons-vue';
 
 const selectContainer = ref();

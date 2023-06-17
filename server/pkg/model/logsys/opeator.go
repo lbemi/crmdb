@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/lbemi/lbemi/pkg/model/basemodel"
+	
 	"gorm.io/gorm"
 )
 

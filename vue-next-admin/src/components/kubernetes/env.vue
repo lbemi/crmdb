@@ -53,7 +53,7 @@
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { EnvVar } from 'kubernetes-types/core/v1';
 import { reactive, watch } from 'vue';
-import { deepClone } from '/@/utils/other';
+import { deepClone } from '@/utils/other';
 
 // FIXME 资源引用有问题，待修复
 interface envImp {

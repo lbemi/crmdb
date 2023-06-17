@@ -105,8 +105,8 @@
 import { ref, onMounted, reactive } from 'vue';
 import { RouteRecordRaw } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { dateStrFormat } from '/@/utils/formatTime';
-import { useOperatorLogApi } from '/@/api/logsys/opratorLog';
+import { dateStrFormat } from '@/utils/formatTime';
+import { useOperatorLogApi } from '@/api/logsys/opratorLog';
 
 type query = {
 	page: number;
@@ -223,7 +223,6 @@ const onDeleteAll = () => {
 };
 const handleSelectionChange = (val: Array<OperatorLog>) => {
 	state.select = val;
-	console.log(state.select);
 };
 // 获取路由数据，真实请从接口获取
 const getTableData = async () => {

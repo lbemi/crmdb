@@ -155,11 +155,11 @@
 import { defineAsyncComponent, ref, onMounted, reactive } from 'vue';
 import { RouteRecordRaw, useRoute } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { useMenuApi } from '/@/api/system/menu';
-import { dateStrFormat } from '/@/utils/formatTime';
-import mittBus from '/@/utils/mitt';
+import { useMenuApi } from '@/api/system/menu';
+import { dateStrFormat } from '@/utils/formatTime';
+import mittBus from '@/utils/mitt';
 
-// import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";
+// import { setBackEndControlRefreshRoutes } from "@/router/backEnd";
 
 // 引入组件
 const MenuDialog = defineAsyncComponent(() => import('./dialog.vue'));

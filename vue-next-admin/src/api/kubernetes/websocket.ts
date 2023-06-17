@@ -1,5 +1,5 @@
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import { Session } from '/@/utils/storage';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { Session } from '@/utils/storage';
 
 export function useWebsocketApi() {
 	const k8sStore = kubernetesInfo();

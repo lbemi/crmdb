@@ -128,20 +128,20 @@
 <script setup lang="ts" name="k8sPod">
 import { defineAsyncComponent, h, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import router from '/@/router';
-import { podInfo } from '/@/stores/pod';
-import { kubernetesInfo } from '/@/stores/kubernetes';
+import router from '@/router';
+import { podInfo } from '@/stores/pod';
+import { kubernetesInfo } from '@/stores/kubernetes';
 import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
-import { useWebsocketApi } from '/@/api/kubernetes/websocket';
-import { PageInfo } from '/@/types/kubernetes/common';
+import { useWebsocketApi } from '@/api/kubernetes/websocket';
+import { PageInfo } from '@/types/kubernetes/common';
 import YAML from 'js-yaml';
-import mittBus from '/@/utils/mitt';
+import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
-import { dateStrFormat } from '/@/utils/formatTime';
-import { deepClone } from '/@/utils/other';
+import { dateStrFormat } from '@/utils/formatTime';
+import { deepClone } from '@/utils/other';
 
-const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
-const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
+const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
+const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 
 const route = useRoute();
 const yamlRef = ref();

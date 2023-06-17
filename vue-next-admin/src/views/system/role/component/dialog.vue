@@ -53,9 +53,9 @@
 
 <script setup lang="ts" name="systemRoleDialog">
 import { reactive, ref } from 'vue';
-import {  RoleType } from '/@/types/views';
+import {  RoleType } from '@/types/views';
 import {ElMessage, FormInstance, FormRules} from 'element-plus';
-import {useRoleApi} from "/@/api/system/role";
+import {useRoleApi} from "@/api/system/role";
 
 // 定义子组件向父组件传值/事件
 const emit = defineEmits(['refresh']);

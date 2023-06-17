@@ -25,9 +25,9 @@
 <script setup lang="ts" name="limitsFrontEndPage">
 import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useUserInfo } from '/@/stores/userInfo';
-import { frontEndsResetRoute, setAddRoute, setFilterMenuAndCacheTagsViewRoutes } from '/@/router/frontEnd';
-import {Session} from "/@/utils/storage";
+import { useUserInfo } from '@/stores/userInfo';
+import { frontEndsResetRoute, setAddRoute, setFilterMenuAndCacheTagsViewRoutes } from '@/router/frontEnd';
+import {Session} from "@/utils/storage";
 
 // 定义变量内容
 const storesUserInfo = useUserInfo();

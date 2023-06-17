@@ -1,8 +1,9 @@
-export interface ResponseType<T = any> {
+//返回结果
+export interface ResponseType {
 	code: Number;
 	data: {
-		data?: any;
-		[key: string]: T;
+		data: any;
 		total: number;
 	};
+	message: string;
 }

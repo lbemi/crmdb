@@ -262,23 +262,23 @@
 <script lang="ts" setup name="k8sDeploymentDetail">
 import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, h } from 'vue';
 import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, Refresh } from '@element-plus/icons-vue';
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import { useDeploymentApi } from '/@/api/kubernetes/deployment';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { useDeploymentApi } from '@/api/kubernetes/deployment';
 import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
 import { Deployment, ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
-import router from '/@/router';
-import mittBus from '/@/utils/mitt';
+import router from '@/router';
+import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox, TabsPaneContext } from 'element-plus';
-import { usePodApi } from '/@/api/kubernetes/pod';
-import { useWebsocketApi } from '/@/api/kubernetes/websocket';
-import { podInfo } from '/@/stores/pod';
+import { usePodApi } from '@/api/kubernetes/pod';
+import { useWebsocketApi } from '@/api/kubernetes/websocket';
+import { podInfo } from '@/stores/pod';
 import YAML from 'js-yaml';
-import { deepClone } from '/@/utils/other';
-import { dateStrFormat } from '/@/utils/formatTime';
+import { deepClone } from '@/utils/other';
+import { dateStrFormat } from '@/utils/formatTime';
 
-const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
-const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
+const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
+const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDeail.vue'));
 
 const route = useRoute();
 const websocketApi = useWebsocketApi();

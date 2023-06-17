@@ -1,6 +1,6 @@
 import { Namespace } from 'kubernetes-types/core/v1';
 
-import request from '/@/utils/request';
+import request from '@/utils/request';
 
 export function useNamespaceApi() {
 	return {

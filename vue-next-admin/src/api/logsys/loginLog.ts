@@ -1,5 +1,5 @@
 import { AnyColumn } from 'element-plus/es/components/table-v2/src/common';
-import request from '/@/utils/request';
+import request from '@/utils/request';
 
 export function useLoinLogApi() {
 	return {

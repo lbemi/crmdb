@@ -39,13 +39,13 @@
 <script setup lang="ts" name="layoutBreadcrumb">
 import { reactive, computed, onMounted } from 'vue';
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
-import { Local } from '/@/utils/storage';
-import other from '/@/utils/other';
+import { Local } from '@/utils/storage';
+import other from '@/utils/other';
 import { storeToRefs } from 'pinia';
-import { useThemeConfig } from '/@/stores/themeConfig';
-import { useRoutesList } from '/@/stores/routesList';
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import mittBus from '/@/utils/mitt';
+import { useThemeConfig } from '@/stores/themeConfig';
+import { useRoutesList } from '@/stores/routesList';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import mittBus from '@/utils/mitt';
 
 // 定义变量内容
 const k8sStore = kubernetesInfo();

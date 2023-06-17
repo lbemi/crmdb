@@ -15,9 +15,9 @@
 
 <script setup lang="ts" name="kubernetesDashboard">
 import Dashboard from './component/dashboard.vue';
-import { kubernetesInfo } from '/@/stores/kubernetes';
+import { kubernetesInfo } from '@/stores/kubernetes';
 import { defineAsyncComponent, onMounted } from 'vue';
-import { useNamespaceApi } from '/@/api/kubernetes/namespace';
+import { useNamespaceApi } from '@/api/kubernetes/namespace';
 
 const Info = defineAsyncComponent(() => import('./component/info.vue'));
 const Log = defineAsyncComponent(() => import('./component/log.vue'));

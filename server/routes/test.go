@@ -30,12 +30,12 @@ func TestRouter() *restful.WebService {
 
 	tags := []string{"users"}
 
-	ws.Route(ws.GET("/").To(rctx.NewReqCtx().WithHandle(u.findAllUsers).Do()).
-		// docs
-		Doc("get all users").
-		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Writes([]User{}).
-		Returns(200, "OK", []User{}))
+	// ws.Route(ws.GET("/").To(u.findAllUsers).
+	// 	// docs
+	// 	Doc("get all users").
+	// 	Metadata(restfulspec.KeyOpenAPITags, tags).
+	// 	Writes([]User{}).
+	// 	Returns(200, "OK", []User{}))
 
 	ws.Route(ws.GET("/{user-id}").To(u.findUser).
 		// docs

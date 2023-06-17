@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { CaretBottom, CaretTop } from '@element-plus/icons-vue';
 import { reactive, watch } from 'vue';
-import { deepClone } from '/@/utils/other';
+import { deepClone } from '@/utils/other';
 
 // FIXME args无法清空
 const data = reactive({
@@ -77,7 +77,6 @@ watch(
 	() => [props.args, props.commands],
 	() => {
 		data.loadFromParent = true;
-		console.log('-----------------<<<<<<<>>>>>>>');
 
 		if (props.args) {
 			data.set = true; //当本地数据为空，但是传递过来数据不为空时则显示

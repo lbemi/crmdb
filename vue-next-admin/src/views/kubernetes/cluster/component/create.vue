@@ -7,13 +7,12 @@
 			</div>
 		</template>
 		<div class="dialog-body">
-			<el-form ref="ruleFormRef" :model="state" status-icon label-width="80px" class="demo-ruleForm"
-				:rules="clusterRule">
+			<el-form ref="ruleFormRef" :model="state" status-icon label-width="80px" class="demo-ruleForm" :rules="clusterRule">
 				<el-form-item label="集群名称" prop="clusterName">
-					<el-input v-model="state.clusterName" autocomplete="off" size="small"  style="width: 350px;"/>
+					<el-input v-model="state.clusterName" autocomplete="off" size="small" style="width: 350px" />
 				</el-form-item>
 				<el-form-item label="配置文件">
-					<el-upload   ref="uploadRef" :limit="1" drag :auto-upload="false" :on-change="handleChange" multiple style="width: 350px;" >
+					<el-upload ref="uploadRef" :limit="1" drag :auto-upload="false" :on-change="handleChange" multiple style="width: 350px">
 						<el-icon class="el-icon--upload"><upload-filled /></el-icon>
 						<div class="el-upload__text">拖拽文件到这里 <em>或者点击上传</em></div>
 						<template #tip>
@@ -22,12 +21,11 @@
 					</el-upload>
 				</el-form-item>
 			</el-form>
-
 		</div>
 		<template #footer>
 			<span class="dialog-footer">
 				<el-button type="primary" size="small" @click="submitForm(ruleFormRef)">创建</el-button>
-				<el-button  size="small" @click="resetForm(ruleFormRef)">重置</el-button>
+				<el-button size="small" @click="resetForm(ruleFormRef)">重置</el-button>
 			</span>
 		</template>
 	</el-dialog>
@@ -38,7 +36,7 @@ import { onMounted, reactive, ref, toRefs } from 'vue';
 import { UploadFilled } from '@element-plus/icons-vue';
 import { ElMessage, FormRules, UploadFile } from 'element-plus';
 import type { FormInstance } from 'element-plus';
-import { useClusterApi } from '/@/api/kubernetes/cluster';
+import { useClusterApi } from '@/api/kubernetes/cluster';
 
 const clusterApi = useClusterApi();
 const ruleFormRef = ref();
@@ -90,7 +88,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
 				.catch((e) => {
 					newFormData.delete('file');
 					newFormData.delete('name');
-					ElMessage.error(e.message)
+					ElMessage.error(e.message);
 					handleClose(formEl);
 				});
 		} else {
@@ -111,10 +109,7 @@ const handleClose = (formEl: FormInstance | undefined) => {
 	emits('update:dialogVisible', false);
 };
 
-onMounted(() => {
-	console.log('--', dialogVisible.value);
-});
-
+onMounted(() => {});
 </script>
 
 <style scoped lang="less"></style>

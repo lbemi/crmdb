@@ -97,19 +97,19 @@
 </template>
 
 <script setup lang="ts" name="k8sNamespace">
-import { kubernetesInfo } from '/@/stores/kubernetes';
+import { kubernetesInfo } from '@/stores/kubernetes';
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import { Namespace } from 'kubernetes-types/core/v1';
-import { dateStrFormat } from '/@/utils/formatTime';
-import mittBus from '/@/utils/mitt';
+import { dateStrFormat } from '@/utils/formatTime';
+import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { Delete, Edit } from '@element-plus/icons-vue';
-import { useNamespaceApi } from '/@/api/kubernetes/namespace';
-import { PageInfo } from '/@/types/kubernetes/common';
+import { useNamespaceApi } from '@/api/kubernetes/namespace';
+import { PageInfo } from '@/types/kubernetes/common';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { number } from 'echarts';
 
-const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
+const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const NamespaceDialog = defineAsyncComponent(() => import('./component/dialog.vue'));
 
 type queryType = {

@@ -53,11 +53,11 @@
 
 <script setup lang="ts" name="kubernetesCluster">
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
-import router from '/@/router';
-import { useClusterApi } from '/@/api/kubernetes/cluster';
+import router from '@/router';
+import { useClusterApi } from '@/api/kubernetes/cluster';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import { ClusterInfo } from '/@/types/kubernetes/cluster';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { ClusterInfo } from '@/types/kubernetes/cluster';
 
 const CreateCluster = defineAsyncComponent(() => import('./component/create.vue'));
 

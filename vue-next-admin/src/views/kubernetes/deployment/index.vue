@@ -3,7 +3,7 @@
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="mb15">
 				<el-row :gutter="24">
-					<el-col :span="18" style="display: flex; justify-content;: center">
+					<el-col :span="18" style="display: flex">
 						<el-text class="mx-1" size="small">命名空间：</el-text>
 						<el-select
 							v-model="k8sStore.state.activeNamespace"
@@ -146,7 +146,7 @@
 					<template #default="scope">
 						<div style="display: flex; align-items: center">
 							<el-button link type="primary" size="small" @click="deployDetail(scope.row)">详情</el-button>
-							<el-button link type="primary" size="small" @click="deployDetail(scope.row)">编辑</el-button>
+							<el-button v-auth="'k8s:deployment:edit'" link type="primary" size="small" @click="handleUpdate(scope.row)">编辑</el-button>
 							<el-button v-auth="'k8s:deployment:scale'" link type="primary" size="small" @click="openScaleDialog(scope.row)">伸缩</el-button>
 							<el-button link type="primary" size="small" @click="deployDetail(scope.row)">监控</el-button>
 							<el-divider direction="vertical" />
@@ -201,6 +201,7 @@
 		<CreateDialog
 			v-model:dialogVisible="data.create.dialogVisible"
 			:title="data.create.title"
+			:deployment="data.deployment"
 			@refresh="listDeployment()"
 			v-if="data.create.dialogVisible"
 		/>
@@ -211,22 +212,22 @@
 import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref, computed, onUnmounted, h } from 'vue';
 import { Delete, Edit } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
-import { useDeploymentApi } from '/@/api/kubernetes/deployment';
+import { useDeploymentApi } from '@/api/kubernetes/deployment';
 import { Deployment, DeploymentCondition, DeploymentStatus } from 'kubernetes-types/apps/v1';
-import { PageInfo } from '/@/types/kubernetes/common';
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import router from '/@/router';
+import { PageInfo } from '@/types/kubernetes/common';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import router from '@/router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { useWebsocketApi } from '/@/api/kubernetes/websocket';
+import { useWebsocketApi } from '@/api/kubernetes/websocket';
 import YAML from 'js-yaml';
-import mittBus from '/@/utils/mitt';
+import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
-import { dateStrFormat } from '/@/utils/formatTime';
-import { deepClone, globalComponentSize } from '/@/utils/other';
+import { dateStrFormat } from '@/utils/formatTime';
+import { deepClone, globalComponentSize } from '@/utils/other';
 
-const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
-const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
-const CreateDialog = defineAsyncComponent(() => import('./component/crate.vue'));
+const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
+const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
+const CreateDialog = defineAsyncComponent(() => import('./component/dialog.vue'));
 
 type queryType = {
 	key: string;
@@ -241,7 +242,7 @@ const data = reactive({
 		dialogVisible: false,
 		title: '',
 	},
-
+	deployment: {} as Deployment,
 	codeData: {} as Deployment,
 	searchType: '1',
 	search: '',
@@ -320,26 +321,18 @@ const rollBack = (deployment: Deployment) => {
 		.rollBackDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, parseInt(reversion, 10) - 1 + '', {
 			cloud: k8sStore.state.activeCluster,
 		})
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('回滚成功');
-			} else {
-				ElMessage.error('回滚失败,' + res.message);
-			}
+		.then(() => {
+			ElMessage.success('回滚成功');
 		})
-		.catch((res) => {
+		.catch((res: any) => {
 			ElMessage.error('回滚失败,' + res.message);
 		});
 };
 const reDeploy = (deployment: Deployment) => {
 	deploymentApi
 		.reDeployDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, { cloud: k8sStore.state.activeCluster })
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('操作成功');
-			} else {
-				ElMessage.error(res.message);
-			}
+		.then((res: any) => {
+			ElMessage.success('操作成功');
 		})
 		.catch((res: any) => {
 			ElMessage.error(res.message);
@@ -355,12 +348,8 @@ const updateDeployment = async (codeData: any) => {
 	delete updateData.metadata?.managedFields;
 	await deploymentApi
 		.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('更新成功');
-			} else {
-				ElMessage.error(res.message);
-			}
+		.then((res: any) => {
+			ElMessage.success('更新成功');
 		})
 		.catch((e) => {
 			ElMessage.error(e.message);
@@ -434,6 +423,7 @@ const showYaml = async (deployment: Deployment) => {
 	data.codeData = dep;
 	data.dialogVisible = true;
 };
+
 const openScaleDialog = (dep: Deployment) => {
 	data.scaleDeploy = deepClone(dep);
 	data.visible = true;
@@ -509,6 +499,15 @@ const createDeployment = () => {
 	// 	name: 'deploymentCreate',
 	// });
 	data.create.title = '创建deployment';
+	data.create.dialogVisible = true;
+};
+
+const handleUpdate = (deployment: Deployment) => {
+	const dep = deepClone(deployment) as Deployment;
+	delete dep.status;
+	delete dep.metadata?.managedFields;
+	data.deployment = dep;
+	data.create.title = '更新deployment';
 	data.create.dialogVisible = true;
 };
 onMounted(() => {

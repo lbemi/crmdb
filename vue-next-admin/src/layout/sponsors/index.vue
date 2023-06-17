@@ -14,7 +14,7 @@
 
 <script setup lang="ts" name="layoutSponsors">
 import { reactive, computed, onMounted } from 'vue';
-import sponsorsOne from '/@/assets/ccflowRightNextAdmin.png';
+import sponsorsOne from '@/assets/ccflowRightNextAdmin.png';
 
 // 定义变量内容
 const state = reactive({

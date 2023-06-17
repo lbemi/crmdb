@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Session } from '/@/utils/storage';
+import { Session } from '@/utils/storage';
 
 /**
  * 用户信息

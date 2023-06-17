@@ -174,13 +174,13 @@ import { onUnmounted, reactive, ref, watch } from 'vue';
 import { ConfigMap, PersistentVolumeClaim, Secret, Volume, VolumeMount, KeyToPath } from 'kubernetes-types/core/v1';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import { useConfigMapApi } from '/@/api/kubernetes/configMap';
-import { useSecretApi } from '/@/api/kubernetes/secret';
-import { usePVCApi } from '/@/api/kubernetes/persitentVolumeClaim';
-import mittBus from '/@/utils/mitt';
-import { isObjectValueEqual } from '/@/utils/arrayOperation';
-import { CreateK8SVolumentData } from '/@/types/kubernetes/custom';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { useConfigMapApi } from '@/api/kubernetes/configMap';
+import { useSecretApi } from '@/api/kubernetes/secret';
+import { usePVCApi } from '@/api/kubernetes/persitentVolumeClaim';
+import mittBus from '@/utils/mitt';
+import { isObjectValueEqual } from '@/utils/arrayOperation';
+import { CreateK8SVolumentData } from '@/types/kubernetes/custom';
 
 const k8sStore = kubernetesInfo();
 const configMapApi = useConfigMapApi();
@@ -391,8 +391,6 @@ const handleTypeChange = (type: string, index: number) => {
 // 监听从根组件传递的volume变化
 mittBus.on('updateDeploymentVolumes', (volumes: any) => {
 	if (!isObjectValueEqual(volumes, data.volumes)) {
-		console.log('---------------------->>>>>>>>', volumes);
-
 		data.loadFromParent = true;
 		data.tmpVolumes = volumes;
 		parseVolumeMount(data.volumeMount);
@@ -460,15 +458,12 @@ watch(
 	() => [props.volumeMounts, data.tmpVolumes],
 	() => {
 		if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0) {
-			console.log('接收到父组件的值： volume', props.volumeMounts);
-
 			data.loadFromParent = true;
 			parseVolumeMount(props.volumeMounts);
 			setTimeout(() => {
 				data.loadFromParent = false;
 			}, 100);
 		}
-		console.log('>>>>>>>>>>>>>>', data.volumeData);
 	},
 	{
 		immediate: true,

@@ -32,15 +32,17 @@ import { ContainerPort } from 'kubernetes-types/core/v1';
 import { reactive, watch } from 'vue';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
-import { deepClone } from '/@/utils/other';
+import { deepClone } from '@/utils/other';
 
 const data = reactive({
 	loadFromParent: false,
 	ports: <Array<ContainerPort>>[],
 });
+
 const props = defineProps({
 	ports: Array<ContainerPort>,
 });
+
 const emit = defineEmits(['updatePort']);
 const pushPort = () => {
 	const name = uuid().toString().split('-')[1];

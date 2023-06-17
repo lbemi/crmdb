@@ -1,27 +1,20 @@
 <template>
 	<div class="layout-pd">
 		<div>
-			<el-tabs v-model="editableTabsValue" type="card" editable class="demo-tabs" @edit="handleTabsEdit">
-				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :name="index" :closable="index != 0">
+			<el-tabs v-model="editableTabsValue" type="border-card" @tab-remove="tabRemove" class="demo-tabs" :before-leave="tabChange">
+				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :name="index" :closable="data.containers.length != 1">
 					<template #label>
-						<span v-if="data.isInitContainer" class="custom-tabs-label">
-							<SvgIcon name="iconfont icon-container-" class="svg" />{{ ' init容器 ' + (index + 1) }}
+						<span v-if="item.isIntiContainer" class="custom-tabs-label">
+							<SvgIcon name="iconfont icon-container-" class="svg" />{{ ' init容器 ' }}
 						</span>
-						<span v-else class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' + (index + 1) }} </span>
+						<span v-else class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' }} </span>
 					</template>
 					<container :container="item" :index="index" @updateContainer="getContainer" />
 				</el-tab-pane>
-				<el-tab-pane
-					v-if="data.initContainers.length != 0"
-					v-for="(item, index) in data.initContainers"
-					:key="index"
-					:name="index"
-					:closable="index != 0"
-				>
+				<el-tab-pane key="CustomBtn" name="CustomBtn" :closable="false">
 					<template #label>
-						<span class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' init容器 ' + (index + 1) }} </span>
+						<el-link type="primary" :underline="false" :icon="Plus"></el-link>
 					</template>
-					<container :container="item" :index="index" @updateContainer="getContainer" />
 				</el-tab-pane>
 			</el-tabs>
 		</div>
@@ -29,48 +22,49 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, reactive, watch } from 'vue';
+import { defineAsyncComponent, onMounted, reactive, watch } from 'vue';
 import { ref } from 'vue-demi';
 import { Container } from 'kubernetes-types/core/v1';
 import type { TabPaneName } from 'element-plus';
-import { isObjectValueEqual } from '/@/utils/arrayOperation';
-import { deepClone } from '/@/utils/other';
-
+import { deepClone } from '@/utils/other';
+import { Plus } from '@element-plus/icons-vue';
+import { ContainerType } from '@/types/kubernetes/common';
 const Container = defineAsyncComponent(() => import('./container.vue'));
 
 const editableTabsValue = ref(0);
 
-const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 'add') => {
-	if (action === 'add') {
-		const newTabName = data.containers.length;
-
-		data.containers.push(data.container);
-		editableTabsValue.value = newTabName;
-	} else if (action === 'remove') {
-		if (targetName === 0) {
-			return;
-		}
-		const tabs = data.containers;
-		let activeName = editableTabsValue.value;
-		if (activeName === targetName) {
-			activeName = activeName - 1;
-		}
-		tabs.forEach((tab, index) => {
-			if (index === targetName) {
-				tabs.splice(index, 1);
-			}
-		});
-		data.containers = tabs;
-		editableTabsValue.value = activeName;
+const tabChange = (currentName: TabPaneName, oldName: TabPaneName) => {
+	if (currentName === 'CustomBtn') {
+		tabAdd();
+		return false;
 	}
+};
+
+const tabAdd = () => {
+	const newTabName = data.containers.length;
+	data.containers.push(data.container);
+	editableTabsValue.value = newTabName;
+};
+
+const tabRemove = (TabPaneName: TabPaneName) => {
+	if (data.containers.length <= 1) {
+		return false;
+	}
+	const tabs = deepClone(data.containers);
+	data.containers = tabs.filter((tab, index) => index !== TabPaneName);
+	editableTabsValue.value = data.containers.length - 1;
 };
 
 const data = reactive({
 	isInitContainer: false,
 	loadFromParent: false,
-	initContainers: [] as Array<Container>,
+	currentIndex: 1,
+	addIndex: 1,
+	tabIndex: 1,
+	editableTabsValue: '1',
 	containers: [
 		{
+			isIntiContainer: false,
 			name: '',
 			image: '',
 			imagePullPolicy: 'IfNotPresent',
@@ -85,8 +79,9 @@ const data = reactive({
 			startupProbe: {},
 			lifecycle: {},
 		},
-	] as Array<Container>,
-	container: <Container>{
+	] as Array<ContainerType>,
+	container: <ContainerType>{
+		isIntiContainer: false,
 		name: '',
 		image: '',
 		imagePullPolicy: 'IfNotPresent',
@@ -103,30 +98,8 @@ const data = reactive({
 	},
 });
 
-const getContainer = (index: number, isInitContainer: boolean, container: Container) => {
-	if (index === editableTabsValue.value) {
-		// // FIXME  初始化container name
-		if (isInitContainer) {
-			data.isInitContainer = isInitContainer;
-			data.initContainers[index] = deepClone(container) as Container;
-			delete data.containers[index];
-		} else {
-			delete data.initContainers[index];
-			data.containers[index] = deepClone(container) as Container;
-		}
-	}
-};
-
-const getInitContainer = (index: number, isInitContainer: boolean, container: Container) => {
-	if (index === editableTabsValue.value) {
-		if (isInitContainer) {
-			data.isInitContainer = isInitContainer;
-			data.initContainers[index] = deepClone(container) as Container;
-		} else {
-			delete data.initContainers[index];
-			data.containers[index] = deepClone(container) as Container;
-		}
-	}
+const getContainer = (index: number, container: ContainerType) => {
+	data.containers[index] = deepClone(container) as ContainerType;
 };
 
 const props = defineProps({
@@ -134,45 +107,166 @@ const props = defineProps({
 	initContainers: Array<Container>,
 });
 
+// onMounted(() => {
+// 	const containers = [] as ContainerType[];
+// 	if (props.containers && props.containers.length > 0) {
+// 		props.containers.forEach((item: Container) => {
+// 			const container: ContainerType = {
+// 				args: item.args,
+// 				command: item.args,
+// 				env: item.env,
+// 				envFrom: item.envFrom,
+// 				image: item.image,
+// 				imagePullPolicy: item.imagePullPolicy,
+// 				isIntiContainer: false,
+// 				lifecycle: item.lifecycle,
+// 				livenessProbe: item.livenessProbe,
+// 				name: item.name,
+// 				ports: item.ports,
+// 				readinessProbe: item.readinessProbe,
+// 				resources: item.resources,
+// 				securityContext: item.securityContext,
+// 				startupProbe: item.startupProbe,
+// 				stdin: item.stdin,
+// 				stdinOnce: item.stdinOnce,
+// 				terminationMessagePath: item.terminationMessagePath,
+// 				terminationMessagePolicy: item.terminationMessagePolicy,
+// 				tty: item.tty,
+// 				volumeDevices: item.volumeDevices,
+// 				volumeMounts: item.volumeMounts,
+// 				workingDir: item.workingDir,
+// 			};
+// 			containers.push(container);
+// 		});
+// 	}
+// 	if (props.initContainers && props.initContainers.length > 0) {
+// 		props.initContainers.forEach((item: Container) => {
+// 			const container: ContainerType = {
+// 				args: item.args,
+// 				command: item.args,
+// 				env: item.env,
+// 				envFrom: item.envFrom,
+// 				image: item.image,
+// 				imagePullPolicy: item.imagePullPolicy,
+// 				isIntiContainer: true,
+// 				lifecycle: item.lifecycle,
+// 				livenessProbe: item.livenessProbe,
+// 				name: item.name,
+// 				ports: item.ports,
+// 				readinessProbe: item.readinessProbe,
+// 				resources: item.resources,
+// 				securityContext: item.securityContext,
+// 				startupProbe: item.startupProbe,
+// 				stdin: item.stdin,
+// 				stdinOnce: item.stdinOnce,
+// 				terminationMessagePath: item.terminationMessagePath,
+// 				terminationMessagePolicy: item.terminationMessagePolicy,
+// 				tty: item.tty,
+// 				volumeDevices: item.volumeDevices,
+// 				volumeMounts: item.volumeMounts,
+// 				workingDir: item.workingDir,
+// 			};
+// 			containers.push(container);
+// 		});
+// 		data.containers = containers;
+// 	}
+// });
 watch(
 	() => props,
 	() => {
-		if (props.containers && props.containers.length != 0 && !isObjectValueEqual(data.containers, props.containers)) {
-			data.loadFromParent = true;
-			data.containers = deepClone(props.containers) as Container[];
-			setTimeout(() => {
-				// 延迟一下，不然会触发循环更新
-				data.loadFromParent = false;
-			}, 10);
+		const containers = [] as ContainerType[];
+		if (props.containers && props.containers.length > 0) {
+			props.containers.forEach((item: Container) => {
+				const container: ContainerType = {
+					args: item.args,
+					command: item.args,
+					env: item.env,
+					envFrom: item.envFrom,
+					image: item.image,
+					imagePullPolicy: item.imagePullPolicy,
+					isIntiContainer: false,
+					lifecycle: item.lifecycle,
+					livenessProbe: item.livenessProbe,
+					name: item.name,
+					ports: item.ports,
+					readinessProbe: item.readinessProbe,
+					resources: item.resources,
+					securityContext: item.securityContext,
+					startupProbe: item.startupProbe,
+					stdin: item.stdin,
+					stdinOnce: item.stdinOnce,
+					terminationMessagePath: item.terminationMessagePath,
+					terminationMessagePolicy: item.terminationMessagePolicy,
+					tty: item.tty,
+					volumeDevices: item.volumeDevices,
+					volumeMounts: item.volumeMounts,
+					workingDir: item.workingDir,
+				};
+				containers.push(container);
+			});
 		}
-		if (props.initContainers && props.initContainers.length != 0 && !isObjectValueEqual(data.initContainers, props.initContainers)) {
-			data.loadFromParent = true;
-			data.initContainers = deepClone(props.initContainers) as Container[];
-			setTimeout(() => {
-				// 延迟一下，不然会触发循环更新
-				data.loadFromParent = false;
-			}, 10);
+		if (props.initContainers && props.initContainers.length > 0) {
+			props.initContainers.forEach((item: Container) => {
+				const container: ContainerType = {
+					args: item.args,
+					command: item.args,
+					env: item.env,
+					envFrom: item.envFrom,
+					image: item.image,
+					imagePullPolicy: item.imagePullPolicy,
+					isIntiContainer: true,
+					lifecycle: item.lifecycle,
+					livenessProbe: item.livenessProbe,
+					name: item.name,
+					ports: item.ports,
+					readinessProbe: item.readinessProbe,
+					resources: item.resources,
+					securityContext: item.securityContext,
+					startupProbe: item.startupProbe,
+					stdin: item.stdin,
+					stdinOnce: item.stdinOnce,
+					terminationMessagePath: item.terminationMessagePath,
+					terminationMessagePolicy: item.terminationMessagePolicy,
+					tty: item.tty,
+					volumeDevices: item.volumeDevices,
+					volumeMounts: item.volumeMounts,
+					workingDir: item.workingDir,
+				};
+				containers.push(container);
+			});
 		}
+		data.containers = containers;
 	},
 	{
 		immediate: true,
 		deep: true,
 	}
 );
-const emit = defineEmits(['updateContainers']);
 
-watch(
-	() => [data.containers, data.initContainers],
-	() => {
-		if (!data.loadFromParent) {
-			emit('updateContainers', deepClone(data.containers), deepClone(data.initContainers));
+const emit = defineEmits(['updateContainers']);
+const returnContainers = () => {
+	const containers = [] as Container[];
+	const initContainers = [] as Container[];
+	const res = deepClone(data.containers) as ContainerType[];
+	res.forEach((item) => {
+		if (item.isIntiContainer) {
+			delete item.isIntiContainer;
+			delete item.lifecycle;
+			delete item.livenessProbe;
+			delete item.readinessProbe;
+			delete item.startupProbe;
+			initContainers.push(item);
+		} else {
+			delete item.isIntiContainer;
+			containers.push(item);
 		}
-	},
-	{
-		immediate: true,
-		deep: true,
-	}
-);
+	});
+	return { containers, initContainers };
+};
+
+defineExpose({
+	returnContainers,
+});
 </script>
 
 <style scoped lang="scss">
@@ -182,13 +276,16 @@ watch(
 	text-align: center;
 	top: 50%;
 }
+
 .men {
 	font-size: 13px;
 	letter-spacing: 3px;
 }
+
 .el-form-item {
 	margin-bottom: 2px;
 }
+
 .el-table-column {
 	padding-top: 2px;
 	padding-bottom: 2px;

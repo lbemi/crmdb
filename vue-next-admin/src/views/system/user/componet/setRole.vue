@@ -20,9 +20,9 @@
 <script setup lang="ts">
 import { ElMessage } from 'element-plus';
 import { ref, reactive, watch, onMounted } from 'vue';
-import { RoleType } from '/@/types/views';
-import { useUserApi } from '/@/api/system/user';
-import { useRoleApi } from '/@/api/system/role';
+import { RoleType } from '@/types/views';
+import { useUserApi } from '@/api/system/user';
+import { useRoleApi } from '@/api/system/role';
 
 const menusRef = ref();
 const userApi = useUserApi();
@@ -52,8 +52,6 @@ const handleClose = () => {
 };
 
 const btnOk = async () => {
-	console.log('----', data.defaultCheckedRoles);
-
 	// const roleIds = menusRef.value.getCheckedKeys();
 	data.roleForm.role_ids = data.defaultCheckedRoles;
 	userApi

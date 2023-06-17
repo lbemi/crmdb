@@ -77,10 +77,10 @@
 
 <script setup lang="ts" name="systemMenuDialog">
 import { reactive, ref } from 'vue';
-import { useMenuApi } from '/@/api/system/menu';
+import { useMenuApi } from '@/api/system/menu';
 import { ElMessage } from 'element-plus';
 
-// import { setBackEndControlRefreshRoutes } from "/@/router/backEnd";
+// import { setBackEndControlRefreshRoutes } from "@/router/backEnd";
 
 // 定义子组件向父组件传值/事件
 const emit = defineEmits(['refresh']);

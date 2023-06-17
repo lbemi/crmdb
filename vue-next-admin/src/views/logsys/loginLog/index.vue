@@ -87,9 +87,8 @@
 import { ref, onMounted, reactive } from 'vue';
 import { RouteRecordRaw } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { dateStrFormat } from '/@/utils/formatTime';
-import { useLoinLogApi } from '/@/api/logsys/loginLog';
-
+import { dateStrFormat } from '@/utils/formatTime';
+import { useLoinLogApi } from '@/api/logsys/loginLog';
 
 type query = {
 	page: number;
@@ -189,7 +188,6 @@ const onDeleteAll = () => {
 };
 const handleSelectionChange = (val: Array<LoginLog>) => {
 	state.select = val;
-	console.log(state.select);
 };
 // 获取路由数据，真实请从接口获取
 const getTableData = async () => {
@@ -197,12 +195,12 @@ const getTableData = async () => {
 	if (state.searchName != '') {
 		state.tableData.param.name = state.searchName;
 	} else {
-		delete state.tableData.param.name
+		delete state.tableData.param.name;
 	}
 	if (state.searchStatus != '0') {
 		state.tableData.param.status = state.searchStatus;
-	}else {
-		delete state.tableData.param.status
+	} else {
+		delete state.tableData.param.status;
 	}
 	await loginLogApi
 		.listLoginLog(state.tableData.param)

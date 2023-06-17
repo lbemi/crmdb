@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { reactive } from 'vue';
 import { Pod } from 'kubernetes-types/core/v1';
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import { usePodApi } from '/@/api/kubernetes/pod';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { usePodApi } from '@/api/kubernetes/pod';
 
 /**
  * k8s集群信息

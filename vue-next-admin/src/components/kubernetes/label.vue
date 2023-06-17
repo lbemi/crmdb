@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { RemoveFilled } from '@element-plus/icons-vue';
 import { reactive, watch, ref } from 'vue';
-import { isObjectValueEqual } from '/@/utils/arrayOperation';
+import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { CirclePlusFilled } from '@element-plus/icons-vue';
 import { ElMessage, FormInstance } from 'element-plus';
 

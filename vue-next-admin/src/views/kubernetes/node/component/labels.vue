@@ -14,12 +14,12 @@
 </template>
 
 <script setup lang="ts">
-import Labels from '/@/components/label/index.vue';
+import Labels from '@/components/label/index.vue';
 
 import { ElMessage } from 'element-plus';
 import { ref, watch, reactive, toRefs } from 'vue';
-import { useNodeApi } from '/@/api/kubernetes/node';
-import { Node } from '/@/types/kubernetes/cluster';
+import { useNodeApi } from '@/api/kubernetes/node';
+import { Node } from '@/types/kubernetes/cluster';
 
 interface label {
 	key: string;

@@ -51,13 +51,13 @@
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import type { ElTableColumn } from 'element-plus';
-import { PageInfo } from '/@/types/kubernetes/common';
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import { useEventApi } from '/@/api/kubernetes/event';
+import { PageInfo } from '@/types/kubernetes/common';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { useEventApi } from '@/api/kubernetes/event';
 import { Event } from 'kubernetes-types/core/v1';
-import { dateStrFormat } from '/@/utils/formatTime';
+import { dateStrFormat } from '@/utils/formatTime';
 
-const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
+const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 
 const state = reactive({
 	events: [] as Event[],

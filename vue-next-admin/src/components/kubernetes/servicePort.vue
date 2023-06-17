@@ -37,7 +37,7 @@ import { Service, ServicePort } from 'kubernetes-types/core/v1';
 import { reactive, watch } from 'vue';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
-import { deepClone } from '/@/utils/other';
+import { deepClone } from '@/utils/other';
 
 const data = reactive({
 	loadFromParent: false,

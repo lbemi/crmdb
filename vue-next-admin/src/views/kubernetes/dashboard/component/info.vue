@@ -61,9 +61,9 @@
 
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
-import { kubernetesInfo } from '/@/stores/kubernetes';
-import { useClusterApi } from '/@/api/kubernetes/cluster';
-import { ClusterInfo } from '/@/types/cluster';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { useClusterApi } from '@/api/kubernetes/cluster';
+import { ClusterInfo } from '@/types/cluster';
 
 const k8sStore = kubernetesInfo();
 const clusterApi = useClusterApi();

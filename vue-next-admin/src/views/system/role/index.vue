@@ -77,13 +77,13 @@
 <script setup lang="ts" name="systemRole">
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { useRoleApi } from '/@/api/system/role';
-import { SysRoleState, RoleType } from '/@/types/views';
-import { dateStrFormat } from '/@/utils/formatTime';
+import { useRoleApi } from '@/api/system/role';
+import { SysRoleState, RoleType } from '@/types/views';
+import { dateStrFormat } from '@/utils/formatTime';
 
 // 引入组件
-const RoleDialog = defineAsyncComponent(() => import('/@/views/system/role/component/dialog.vue'));
-const RoleAuthDialog = defineAsyncComponent(() => import('/@/views/system/role/component/authDialog.vue'));
+const RoleDialog = defineAsyncComponent(() => import('@/views/system/role/component/dialog.vue'));
+const RoleAuthDialog = defineAsyncComponent(() => import('@/views/system/role/component/authDialog.vue'));
 // 定义变量内容
 
 type query = {

@@ -11,11 +11,7 @@ import { ref, onActivated, onMounted } from 'vue';
 const val = ref('');
 
 // 页面加载时
-onMounted(() => {
-	console.log(2222);
-});
+onMounted(() => {});
 // keep-alive 钩子函数，页面进入时
-onActivated(() => {
-	console.log(1111);
-});
+onActivated(() => {});
 </script>

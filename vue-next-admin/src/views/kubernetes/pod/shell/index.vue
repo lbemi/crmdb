@@ -18,8 +18,8 @@ import 'xterm/css/xterm.css';
 import { ITerminalOptions, ITheme, Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { ElMessage } from 'element-plus';
-import { useWebsocketApi } from '/@/api/kubernetes/websocket';
-import { podInfo } from '/@/stores/pod';
+import { useWebsocketApi } from '@/api/kubernetes/websocket';
+import { podInfo } from '@/stores/pod';
 
 const selectContainer = ref();
 const pod = podInfo().state.podShell;

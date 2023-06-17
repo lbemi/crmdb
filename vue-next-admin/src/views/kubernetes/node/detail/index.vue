@@ -226,24 +226,24 @@
 <script lang="ts" setup name="nodeDetail">
 import { reactive, onMounted, ref, defineAsyncComponent } from 'vue';
 import { ArrowLeft, CaretBottom, View, Delete, Edit } from '@element-plus/icons-vue';
-import { kubernetesInfo } from '/@/stores/kubernetes';
+import { kubernetesInfo } from '@/stores/kubernetes';
 import { Pod, ContainerStatus, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
 import { ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
-import router from '/@/router';
-import mittBus from '/@/utils/mitt';
+import router from '@/router';
+import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox, TabsPaneContext } from 'element-plus';
-import { podInfo } from '/@/stores/pod';
+import { podInfo } from '@/stores/pod';
 import { ECharts, EChartsOption, init } from 'echarts';
-import { deepClone } from '/@/utils/other';
-import { useNodeApi } from '/@/api/kubernetes/node';
-import { Node } from '/@/types/kubernetes/cluster';
-import { PageInfo } from '/@/types/kubernetes/common';
-import { dateStrFormat } from '/@/utils/formatTime';
+import { deepClone } from '@/utils/other';
+import { useNodeApi } from '@/api/kubernetes/node';
+import { Node } from '@/types/kubernetes/cluster';
+import { PageInfo } from '@/types/kubernetes/common';
+import { dateStrFormat } from '@/utils/formatTime';
 
-const YamlDialog = defineAsyncComponent(() => import('/@/components/yaml/index.vue'));
-const MetaDetail = defineAsyncComponent(() => import('/@/components/kubernetes/metaDeail.vue'));
-const Pagination = defineAsyncComponent(() => import('/@/components/pagination/pagination.vue'));
+const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
+const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDeail.vue'));
+const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 
 onMounted(() => {
 	cpuUsage();
