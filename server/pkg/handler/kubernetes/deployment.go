@@ -51,7 +51,7 @@ func NewDeployment(k8s *k8s.Factory) *Deployment {
 func (d *Deployment) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
 	data := d.k8s.Deployment().List(ctx)
 	res := &form.PageResult{}
-	total := len(data)
+
 	var deploymentList = make([]*appsv1.Deployment, 0)
 
 	if name != "" {
@@ -71,6 +71,7 @@ func (d *Deployment) List(ctx context.Context, query *model.PageParam, name stri
 		}
 		data = deploymentList
 	}
+	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {
 		res.Data = data

@@ -154,17 +154,17 @@ const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
 	updateCodeMirror();
 };
 const nextStep = (formEl: FormInstance | undefined) => {
-	if (!formEl) {
-		ElMessage.error('请输入必填项');
-		return;
-	}
-	formEl.validate((valid) => {
-		if (valid) {
-			if (data.active++ > 2) data.active = 0;
-		} else {
-			ElMessage.error('请输检查字段');
-		}
-	});
+	// if (!formEl) {
+	// 	ElMessage.error('请输入必填项');
+	// 	return;
+	// }
+	// formEl.validate((valid) => {
+	// 	if (valid) {
+	if (data.active++ > 2) data.active = 0;
+	// 	} else {
+	// 		ElMessage.error('请输检查字段');
+	// 	}
+	// });
 };
 const up = () => {
 	if (data.active-- == 0) data.active = 0;

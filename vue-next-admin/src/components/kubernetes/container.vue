@@ -37,7 +37,7 @@
 						<el-icon size="12px" color="#00bb00"><InfoFilled /></el-icon>建议根据实际使用情况设置，防止由于资源约束而无法调度或引发内存不足(OOM)错误
 					</div>
 				</el-form-item>
-				<el-form-item v-if="data.container.resources!.limits && data.resourceSet">
+				<el-form-item v-if="data.resourceSet">
 					<div style="height: 28px">
 						<span>资源限制： CPU</span>
 						<el-input placeholder="如：0.5" v-model="data.container.resources!.limits!.cpu" size="small" style="width: 80px" />
@@ -303,6 +303,7 @@ watch(
 
 			if (copyData.resources?.limits || copyData.resources?.requests) {
 				data.resourceSet = true;
+				console.log(data.container.name, '************', data.container.resources?.requests.cpu, '-----', props.container.resources);
 			}
 
 			if (!copyData.securityContext) {
@@ -315,6 +316,7 @@ watch(
 			}
 
 			data.container = copyData;
+
 			setTimeout(() => {
 				//延迟一下，不然会触发循环更新
 				data.loadFromParent = false;
@@ -327,25 +329,6 @@ watch(
 	}
 );
 
-const returnContainer = () => {
-	if (data.container.securityContext?.privileged && !data.container.securityContext?.privileged) {
-		delete data.container.securityContext;
-	}
-
-	if (data.resourceSet && !data.resourceHasSet) {
-		data.container.resources = {
-			limits: {
-				cpu: '',
-				memory: '',
-			},
-			requests: {
-				cpu: '',
-				memory: '',
-			},
-		};
-		data.resourceHasSet = true;
-	}
-};
 watch(
 	() => [data.container, data.resourceSet],
 	() => {

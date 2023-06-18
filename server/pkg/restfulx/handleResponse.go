@@ -3,6 +3,7 @@ package restfulx
 import (
 	"github.com/emicklei/go-restful/v3"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"runtime/debug"
 )
 
 const SuccessMsg = "success"
@@ -38,6 +39,7 @@ func ErrorRes(r *restful.Response, err interface{}) {
 	case *OpsError:
 		r.WriteEntity(Error(t))
 	case error:
+		debug.PrintStack()
 		r.WriteEntity(ServerError())
 		//log.Logger.Error(message)
 	//case string:
