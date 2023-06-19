@@ -37,7 +37,7 @@ export declare type CreateK8SMetaData = {
 	meta?: ObjectMeta;
 };
 
-export declare type CreateK8SVolumentData = {
+export declare type CreateK8SVolumeData = {
 	type: string;
 	name: string;
 	hostPath?: HostPathVolumeSource | undefined;

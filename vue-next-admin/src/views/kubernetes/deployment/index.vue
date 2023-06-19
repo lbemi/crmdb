@@ -16,7 +16,7 @@
 							<el-option
 								v-for="item in k8sStore.state.namespace"
 								:key="item.metadata?.name"
-								:label="item.metadata?.name"
+								:label="item.metadata!.name!"
 								:value="item.metadata?.name"
 							/>
 						</el-select>
@@ -189,7 +189,7 @@
 				<span style="font-size: 16px">{{ '伸缩: ' + data.scaleDeploy.metadata?.name }}</span>
 			</template>
 			<div style="text-align: center">
-				<el-input-number v-model="data.scaleDeploy.spec.replicas" :min="0" :max="1000" size="default" w />
+				<el-input-number v-model="data.scaleDeploy.spec!.replicas" :min="0" :max="1000" size="default" w />
 			</div>
 			<template #footer>
 				<span class="dialog-footer">
@@ -361,7 +361,7 @@ const deleteDeployments = (depList: Array<Deployment>) => {
 		title: '提示',
 		message: h('p', null, [
 			h('span', null, '此操作将批量删除多个 '),
-			h('i', { style: 'color: teal' }, `Deplpoment副本`),
+			h('i', { style: 'color: teal' }, `Deployment副本`),
 			h('span', null, ' . 是否继续? '),
 		]),
 		buttonSize: 'small',
@@ -481,7 +481,7 @@ const handlePageChange = (pageInfo: PageInfo) => {
 };
 const deployDetail = async (dep: Deployment) => {
 	k8sStore.state.activeDeployment = dep;
-	router.push({
+	await router.push({
 		name: 'k8sDeploymentDetail',
 		params: {
 			name: dep.metadata?.name,
@@ -498,6 +498,7 @@ const createDeployment = () => {
 };
 
 const handleUpdate = (deployment: Deployment) => {
+	k8sStore.state.creatDeployment.namespace = deployment.metadata!.namespace!;
 	const dep = deepClone(deployment) as Deployment;
 	delete dep.status;
 	delete dep.metadata?.managedFields;
@@ -508,9 +509,7 @@ const handleUpdate = (deployment: Deployment) => {
 onMounted(() => {
 	listDeployment();
 });
-onUnmounted(() => {
-	mittBus.off('changeNamespace', () => {});
-});
+
 const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
 };

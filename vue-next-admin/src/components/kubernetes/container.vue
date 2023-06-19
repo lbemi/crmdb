@@ -147,15 +147,15 @@
 				<CommandSet ref="startCmdRef" :args="data.container.args" :commands="data.container.command" />
 			</el-card>
 			<el-card>
-				<VolumeMountDiv ref="volumeMountRef" :volumeMounts="data.container.volumeMounts" />
+				<VolumeMountDiv ref="volumeMountRef" :volumeMounts="data.container.volumeMounts" :volumes="props.volumes" />
 			</el-card>
 		</el-form>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, reactive, watch, ref, onMounted } from 'vue';
-import { Container, ContainerPort, EnvVar } from 'kubernetes-types/core/v1';
+import { defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue';
+import { Container, ContainerPort, EnvVar, Volume } from 'kubernetes-types/core/v1';
 import { Delete, Edit, InfoFilled } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
 import { ContainerType } from '@/types/kubernetes/common';
@@ -280,8 +280,7 @@ const getCommands = () => {
 };
 
 const getVolumeMounts = () => {
-	const volumeMounts = volumeMountRef.value.returnVolumeMounts();
-	data.container.volumeMounts = volumeMounts;
+	data.container.volumeMounts = volumeMountRef.value.returnVolumeMounts();
 };
 
 const setResource = () => {
@@ -306,10 +305,12 @@ const cancelResource = () => {
 	data.resourceHasSet = false;
 };
 
-const props = defineProps({
-	container: Object,
-	index: Number,
-});
+type propsType = {
+	container: ContainerType;
+	volumes: Array<Volume> | undefined;
+	index: Number;
+};
+const props = defineProps<propsType>();
 
 const emit = defineEmits(['updateContainer']);
 onMounted(() => {
@@ -378,6 +379,7 @@ const returnContainer = () => {
 	getPostStart();
 	getCommands();
 	getVolumeMounts();
+
 	if (data.container.securityContext?.privileged && !data.container.securityContext?.privileged) {
 		delete data.container.securityContext;
 	}
@@ -395,7 +397,7 @@ const returnContainer = () => {
 		};
 		data.resourceHasSet = true;
 	}
-	return { index: props.index, container: data.container };
+	return { index: props.index, container: data.container, volumes: volumeMountRef.value.returnVolumes() };
 };
 
 defineExpose({

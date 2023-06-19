@@ -50,18 +50,18 @@
 							placeholder="主机路径：/tmp"
 						/>
 						<div v-if="scope.row.type === 'persistentVolumeClaim'" style="display: flex">
-							<el-select v-model="scope.row.persistentVolumeClaim.name" size="small" :loading="data.loading" @click="getPvc" show-overflow-tooltip>
+							<el-select
+								v-model="scope.row.persistentVolumeClaim.claimName"
+								size="small"
+								:loading="data.loading"
+								@click="getPvc"
+								show-overflow-tooltip
+							>
 								<el-option v-for="item in data.pvcdata" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
 							</el-select>
 						</div>
 						<div v-if="scope.row.type === 'configMap'" style="display: flex">
-							<el-select
-								v-model="scope.row.configMap.name"
-								size="small"
-								:loading="data.loading"
-								@click="getConfigMap(scope.row)"
-								show-overflow-tooltip
-							>
+							<el-select v-model="scope.row.configMap.name" size="small" :loading="data.loading" @click="getConfigMap()" show-overflow-tooltip>
 								<el-option v-for="item in data.configMapData" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
 							</el-select>
 							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
@@ -172,7 +172,7 @@ import { useSecretApi } from '@/api/kubernetes/secret';
 import { usePVCApi } from '@/api/kubernetes/persitentVolumeClaim';
 import mittBus from '@/utils/mitt';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
-import { CreateK8SVolumentData } from '@/types/kubernetes/custom';
+import { CreateK8SVolumeData } from '@/types/kubernetes/custom';
 
 const k8sStore = kubernetesInfo();
 const configMapApi = useConfigMapApi();
@@ -210,7 +210,7 @@ const data = reactive({
 			value: 'persistentVolumeClaim',
 		},
 	],
-	volumeData: [] as Array<CreateK8SVolumentData>,
+	volumeData: [] as Array<CreateK8SVolumeData>,
 	pvcdata: [] as PersistentVolumeClaim[],
 	tmpVolumes: [] as Volume[],
 	volumes: [] as Volume[],
@@ -231,22 +231,24 @@ const addKey = () => {
 		path: '',
 	});
 };
+
 // 从接口获取configMap数据
-const getConfigMap = (config: any) => {
-	configMapApi.listConfigMap(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
+const getConfigMap = async () => {
+	await configMapApi.listConfigMap(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
 		data.configMapData = res.data.data;
-		config.keySetShow = true;
+		// config.keySetShow = true;
 	});
 };
+
 // 从接口获取secret数据
-const getSecret = () => {
-	secretApi.listSecret(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
+const getSecret = async () => {
+	await secretApi.listSecret(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
 		data.secretData = res.data.data;
 	});
 };
 // 从接口获取pvc数据
-const getPvc = () => {
-	pvcApi.listPVC(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
+const getPvc = async () => {
+	await pvcApi.listPVC(k8sStore.state.creatDeployment.namespace, { cloud: k8sStore.state.activeCluster }).then((res) => {
 		data.pvcdata = res.data.data;
 	});
 };
@@ -309,34 +311,48 @@ const handleVolumeData = () => {
 		if (tempVolumeMount.length === index) {
 			tempVolumeMount.push({} as VolumeMount);
 		}
-		if (tmpVolume.length === index) {
-			tmpVolume.push({} as Volume);
-		}
-		tmpVolume[index].name = item.name;
 		tempVolumeMount[index].name = item.name;
 		tempVolumeMount[index].mountPath = item.volumeMountData.mountPath;
 		tempVolumeMount[index].subPath = item.volumeMountData.subPath;
-		switch (item.type) {
-			case 'configMap':
-				tmpVolume[index].configMap = item.configMap;
-				break;
-			case 'secret':
-				tmpVolume[index].secret = item.secret;
-				break;
-			case 'hostPath':
-				tmpVolume[index].hostPath = item.hostPath;
-				break;
-			case 'persistentVolumeClaim':
-				tmpVolume[index].persistentVolumeClaim = item.persistentVolumeClaim;
-				break;
-			case 'tmp':
-				tmpVolume[index].emptyDir = item.emptyDir;
-				break;
+		let flag = false;
+		if (tmpVolume.length > 0) {
+			tmpVolume.filter((i) => {
+				if (i.name === item.name) {
+					flag = true;
+					return;
+				}
+			});
+		}
+		if (!flag) {
+			let volume: Volume = {
+				name: item.name,
+			};
+			switch (item.type) {
+				case 'configMap':
+					volume.configMap = item.configMap;
+					break;
+				case 'secret':
+					volume.secret = item.secret;
+					break;
+				case 'hostPath':
+					volume.hostPath = item.hostPath;
+					break;
+				case 'persistentVolumeClaim':
+					volume.persistentVolumeClaim = item.persistentVolumeClaim;
+					break;
+				case 'tmp':
+					volume.emptyDir = item.emptyDir;
+					break;
+			}
+			console.log('=====> ', volume);
+			tmpVolume.push(volume);
 		}
 	});
 	data.volumeMount = tempVolumeMount;
 	data.tmpVolumes = tmpVolume;
 	data.volumes = tmpVolume;
+	console.log('>>>>>>>>>>>>', tmpVolume);
+	console.log('************', data.volumes);
 };
 
 // 添加volumeData数据
@@ -352,7 +368,7 @@ const handleSet = () => {
 			name: name,
 			mountPath: '',
 		},
-	} as CreateK8SVolumentData);
+	} as CreateK8SVolumeData);
 };
 
 // 根据不同的type初始化volumeData的值
@@ -380,32 +396,17 @@ const handleTypeChange = (type: string, index: number) => {
 			break;
 	}
 };
-// 监听从根组件传递的volume变化
-mittBus.on('updateDeploymentVolumes', (volumes: any) => {
-	if (!isObjectValueEqual(volumes, data.volumes)) {
-		data.loadFromParent = true;
-		data.tmpVolumes = volumes;
-		parseVolumeMount(data.volumeMount);
-		setTimeout(() => {
-			data.loadFromParent = false;
-		}, 100);
-	}
-});
-
-onUnmounted(() => {
-	//卸载
-	mittBus.off('updateDeploymentVolumes', () => {});
-});
 
 type propsType = {
 	volumeMounts: Array<VolumeMount> | undefined;
+	volumes: Array<Volume> | undefined;
 };
 //接受父组件传递的值
 const props = defineProps<propsType>();
 
 //解析volumeMount为所需要的CreateK8SVolumeData 类型
 const parseVolumeMount = (volumeMount: Array<VolumeMount>) => {
-	const tmpVolumeData = [] as Array<CreateK8SVolumentData>;
+	const tmpVolumeData = [] as Array<CreateK8SVolumeData>;
 	volumeMount.forEach((item: VolumeMount) => {
 		data.tmpVolumes.forEach((v: Volume) => {
 			let volumeType = '';
@@ -415,15 +416,18 @@ const parseVolumeMount = (volumeMount: Array<VolumeMount>) => {
 			}
 			if (v.secret) {
 				volumeType = 'secret';
+				getSecret();
 			}
 			if (v.configMap) {
 				volumeType = 'configMap';
+				getConfigMap();
 			}
 			if (v.emptyDir) {
 				volumeType = 'tmp';
 			}
 			if (v.persistentVolumeClaim) {
 				volumeType = 'persistentVolumeClaim';
+				getPvc();
 			}
 
 			if (item.name === v.name) {
@@ -444,31 +448,19 @@ const parseVolumeMount = (volumeMount: Array<VolumeMount>) => {
 			}
 		});
 	});
-	if (!isObjectValueEqual(data.volumeData, tmpVolumeData)) data.volumeData = tmpVolumeData;
+	data.volumeData = tmpVolumeData;
 };
 
 onMounted(() => {
-	if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0 && props.volumeMounts != undefined) {
+	if (!isObjectValueEqual(props.volumes, data.volumes) && props.volumes != undefined) {
+		data.tmpVolumes = props.volumes;
+		// parseVolumeMount(data.volumeMount);
+	}
+
+	if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0) {
 		parseVolumeMount(props.volumeMounts);
 	}
 });
-
-// watch(
-// 	() => [props.volumeMounts, data.tmpVolumes],
-// 	() => {
-// 		if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0) {
-// 			data.loadFromParent = true;
-// 			parseVolumeMount(props.volumeMounts);
-// 			setTimeout(() => {
-// 				data.loadFromParent = false;
-// 			}, 100);
-// 		}
-// 	},
-// 	{
-// 		immediate: true,
-// 		deep: true,
-// 	}
-// );
 
 const returnVolumeMounts = () => {
 	handleVolumeData();
@@ -476,30 +468,13 @@ const returnVolumeMounts = () => {
 };
 
 const returnVolumes = () => {
-	mittBus.emit('updateVolumes', data.volumes);
+	// handleVolumeData();
 	return data.volumes;
 };
-
 defineExpose({
 	returnVolumeMounts,
 	returnVolumes,
 });
-// 派发更新事件
-// const emit = defineEmits(['updateVolumeMount']);
-// watch(
-// 	() => [data.volumeData],
-// 	() => {
-// 		if (!data.loadFromParent) {
-// 			// handleVolumeData();
-// 			emit('updateVolumeMount', data.volumeMount);
-// 			mittBus.emit('updateVolumes', data.volumes);
-// 		}
-// 	},
-// 	{
-// 		immediate: true,
-// 		deep: true,
-// 	}
-// );
 </script>
 
 <style scoped>

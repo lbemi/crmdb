@@ -25,7 +25,12 @@
 					</el-card>
 				</div>
 				<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-					<Containers ref="containersRef" :containers="data.containers" :initContainers="data.initContainers" />
+					<Containers
+						ref="containersRef"
+						:containers="data.containers"
+						:initContainers="data.initContainers"
+						:volumes="data.deployment.spec?.template.spec?.volumes"
+					/>
 				</div>
 				<div style="margin-top: 10px" id="2" v-show="data.active === 2">
 					<el-checkbox v-model="data.enableService" label="配置service" />
@@ -134,7 +139,10 @@ const showYaml = async () => {
 const getContainers = () => {
 	delete data.deployment.spec!.template.spec!.containers;
 	delete data.deployment.spec!.template.spec!.initContainers;
-	const { containers, initContainers } = containersRef.value.returnContainers();
+	const { containers, initContainers, volumes } = containersRef.value.returnContainers();
+	if (volumes.length > 0) {
+		data.deployment.spec!.template.spec!.volumes = volumes;
+	}
 	if (containers.length > 0) {
 		data.deployment.spec!.template.spec!.containers = containers;
 	}
@@ -168,15 +176,15 @@ const next = () => {
 	nextStep();
 };
 
-// 定义变量内容
-mittBus.on('updateVolumes', (res) => {
-	console.log('volumes---->:', res);
-	if (data.deployment.spec) {
-		if (data.deployment.spec.template) {
-			data.deployment.spec.template.spec!.volumes = res;
-		}
-	}
-});
+// // 定义变量内容
+// mittBus.on('updateVolumes', (res) => {
+// 	console.log('volumes---->:', res);
+// 	if (data.deployment.spec) {
+// 		if (data.deployment.spec.template) {
+// 			data.deployment.spec.template.spec!.volumes = res;
+// 		}
+// 	}
+// });
 
 const confirm = async () => {
 	// data.code = yaml.dump(data.deployment);
@@ -215,10 +223,10 @@ const updateCodeMirror = () => {
 onBeforeMount(() => {
 	updateCodeMirror();
 });
-onUnmounted(() => {
-	//卸载
-	mittBus.off('updateVolumes', () => {});
-});
+// onUnmounted(() => {
+// 	//卸载
+// 	mittBus.off('updateVolumes', () => {});
+// });
 
 const emit = defineEmits(['update', 'update:dialogVisible', 'refresh']);
 

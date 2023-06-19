@@ -9,7 +9,7 @@
 						</span>
 						<span v-else class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' }} </span>
 					</template>
-					<ContainerDiv :ref="(el:refItem)=>setItemRef(el)" :container="item" :index="index" />
+					<ContainerDiv :ref="(el:refItem)=>setItemRef(el)" :container="item" :index="index" :volumes="props.volumes" />
 				</el-tab-pane>
 				<el-tab-pane key="CustomBtn" name="CustomBtn" :closable="false">
 					<template #label>
@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import { ComponentPublicInstance, ref } from 'vue-demi';
-import { Container } from 'kubernetes-types/core/v1';
+import { Container, Volume } from 'kubernetes-types/core/v1';
 import type { TabPaneName } from 'element-plus';
 import { deepClone } from '@/utils/other';
 import { Plus } from '@element-plus/icons-vue';
@@ -70,6 +70,7 @@ const data = reactive({
 	addIndex: 1,
 	tabIndex: 1,
 	editableTabsValue: '1',
+	volumes: [] as Volume[],
 	containers: [] as Array<ContainerType>,
 	container: <ContainerType>{
 		isIntiContainer: false,
@@ -91,7 +92,8 @@ const data = reactive({
 
 const getContainers = () => {
 	itemRefs.value.forEach((refValue) => {
-		const { index, container } = refValue.returnContainer();
+		const { index, container, volumes } = refValue.returnContainer();
+		data.volumes = volumes;
 		data.containers[index] = deepClone(container) as ContainerType;
 	});
 };
@@ -99,6 +101,7 @@ const getContainers = () => {
 type propsType = {
 	containers: Array<Container>;
 	initContainers: Array<Container>;
+	volumes: Array<Volume> | undefined;
 };
 const props = defineProps<propsType>();
 
@@ -108,7 +111,7 @@ onMounted(() => {
 		props.containers.forEach((item: Container) => {
 			const container: ContainerType = {
 				args: item.args,
-				command: item.args,
+				command: item.command,
 				env: item.env,
 				envFrom: item.envFrom,
 				image: item.image,
@@ -140,7 +143,7 @@ onMounted(() => {
 		props.initContainers.forEach((item: Container) => {
 			const container: ContainerType = {
 				args: item.args,
-				command: item.args,
+				command: item.command,
 				env: item.env,
 				envFrom: item.envFrom,
 				image: item.image,
@@ -169,77 +172,6 @@ onMounted(() => {
 	}
 	data.containers = containers;
 });
-// watch(
-// 	() => props,
-// 	() => {
-// 		const containers = [] as ContainerType[];
-// 		if (props.containers && props.containers.length > 0) {
-// 			props.containers.forEach((item: Container) => {
-// 				const container: ContainerType = {
-// 					args: item.args,
-// 					command: item.args,
-// 					env: item.env,
-// 					envFrom: item.envFrom,
-// 					image: item.image,
-// 					imagePullPolicy: item.imagePullPolicy,
-// 					isIntiContainer: false,
-// 					lifecycle: item.lifecycle,
-// 					livenessProbe: item.livenessProbe,
-// 					name: item.name,
-// 					ports: item.ports,
-// 					readinessProbe: item.readinessProbe,
-// 					resources: item.resources,
-// 					securityContext: item.securityContext,
-// 					startupProbe: item.startupProbe,
-// 					stdin: item.stdin,
-// 					stdinOnce: item.stdinOnce,
-// 					terminationMessagePath: item.terminationMessagePath,
-// 					terminationMessagePolicy: item.terminationMessagePolicy,
-// 					tty: item.tty,
-// 					volumeDevices: item.volumeDevices,
-// 					volumeMounts: item.volumeMounts,
-// 					workingDir: item.workingDir,
-// 				};
-// 				containers.push(container);
-// 			});
-// 		}
-// 		if (props.initContainers && props.initContainers.length > 0) {
-// 			props.initContainers.forEach((item: Container) => {
-// 				const container: ContainerType = {
-// 					args: item.args,
-// 					command: item.args,
-// 					env: item.env,
-// 					envFrom: item.envFrom,
-// 					image: item.image,
-// 					imagePullPolicy: item.imagePullPolicy,
-// 					isIntiContainer: true,
-// 					lifecycle: item.lifecycle,
-// 					livenessProbe: item.livenessProbe,
-// 					name: item.name,
-// 					ports: item.ports,
-// 					readinessProbe: item.readinessProbe,
-// 					resources: item.resources,
-// 					securityContext: item.securityContext,
-// 					startupProbe: item.startupProbe,
-// 					stdin: item.stdin,
-// 					stdinOnce: item.stdinOnce,
-// 					terminationMessagePath: item.terminationMessagePath,
-// 					terminationMessagePolicy: item.terminationMessagePolicy,
-// 					tty: item.tty,
-// 					volumeDevices: item.volumeDevices,
-// 					volumeMounts: item.volumeMounts,
-// 					workingDir: item.workingDir,
-// 				};
-// 				containers.push(container);
-// 			});
-// 		}
-// 		data.containers = containers;
-// 	},
-// 	{
-// 		immediate: true,
-// 		deep: true,
-// 	}
-// );
 
 const returnContainers = () => {
 	getContainers();
@@ -259,7 +191,7 @@ const returnContainers = () => {
 			containers.push(item);
 		}
 	});
-	return { containers, initContainers };
+	return { containers: containers, initContainers: initContainers, volumes: data.volumes };
 };
 
 defineExpose({
