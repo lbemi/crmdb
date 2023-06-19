@@ -1,15 +1,23 @@
 <template>
 	<div class="system-user-dialog-container">
-		<el-dialog v-model="dialogVisible" width="1000px" :title="title" @close="handleClose()">
+		<el-dialog class="dialog" v-model="dialogVisible" width="1000px" @close="handleClose()">
+			<template #header>
+				<div style="display: flex; justify-content: space-between">
+					{{ title }}
+					<el-button type="primary" @click="showYaml" size="small" :icon="View" style="margin-right: 20px">YAML</el-button>
+				</div>
+				<el-divider style="margin: 8px 0" />
+			</template>
 			<el-backtop :right="100" :bottom="100" />
-			<div>
-				<el-steps :active="data.active" finish-status="success" simple>
-					<el-step title="基本信息" description="Some description" />
-					<el-step title="容器配置" description="Some description" />
-					<el-step title="高级配置" description="Some description" />
-				</el-steps>
-			</div>
-
+			<el-affix target=".dialog" :offset="80">
+				<div>
+					<el-steps :active="data.active" finish-status="success" simple>
+						<el-step title="基本信息" description="Some description" />
+						<el-step title="容器配置" description="Some description" />
+						<el-step title="高级配置" description="Some description" />
+					</el-steps>
+				</div>
+			</el-affix>
 			<div>
 				<div style="margin-top: 10px" id="0" v-show="data.active === 0">
 					<el-card>
@@ -17,11 +25,7 @@
 					</el-card>
 				</div>
 				<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-					<Containers
-						ref="containersRef"
-						:containers="data.deployment.spec.template.spec.containers"
-						:initContainers="data.deployment.spec.template.spec.initContainers"
-					/>
+					<Containers ref="containersRef" :containers="data.containers" :initContainers="data.initContainers" />
 				</div>
 				<div style="margin-top: 10px" id="2" v-show="data.active === 2">
 					<el-checkbox v-model="data.enableService" label="配置service" />
@@ -29,7 +33,6 @@
 			</div>
 			<template #footer>
 				<span class="dialog-footer">
-					<el-button @click="showYaml" size="small">查看YAML</el-button>
 					<el-button @click="up" size="small">上一步</el-button>
 					<el-button @click="next" size="small">下一步</el-button>
 					<el-button @click="confirm" type="success" size="small">确认</el-button>
@@ -43,19 +46,16 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, onBeforeMount, onUnmounted, reactive, ref, watch } from 'vue';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { Container } from 'kubernetes-types/core/v1';
 import { Deployment } from 'kubernetes-types/apps/v1';
 import yamlJs from 'js-yaml';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
-import { useRoute } from 'vue-router';
+import { View } from '@element-plus/icons-vue';
 import mittBus from '@/utils/mitt';
 import { deepClone } from '@/utils/other';
 import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
-import { StreamLanguage } from '@codemirror/language';
-import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 
@@ -67,14 +67,8 @@ const dialogVisible = ref(false);
 const containersRef = ref();
 const kubeInfo = kubernetesInfo();
 const deploymentApi = useDeploymentApi();
-const edit = () => {
-	const dep = deepClone(kubeInfo.state.activeDeployment);
-	delete dep.metadata?.resourceVersion;
-	delete dep.metadata?.managedFields;
-	delete dep.status;
-	data.code = yamlJs.dump(dep);
-};
 const metaRef = ref<FormInstance>();
+
 const data = reactive({
 	isUpdate: false,
 	enableService: false,
@@ -83,6 +77,8 @@ const data = reactive({
 	codeData: {} as Deployment,
 	loadCode: false,
 	active: 0,
+	containers: [] as Container[],
+	initContainers: [] as Container[],
 	//初始化deployment
 	deployment: <Deployment>{
 		apiVersion: 'apps/v1',
@@ -121,11 +117,20 @@ const data = reactive({
 		resourceType: 'deployment',
 	},
 });
-const extensions = [oneDark, StreamLanguage.define(yaml)];
+
+const edit = () => {
+	const dep = deepClone(kubeInfo.state.activeDeployment);
+	delete dep.metadata?.resourceVersion;
+	delete dep.metadata?.managedFields;
+	delete dep.status;
+	data.code = yamlJs.dump(dep);
+};
+
 const showYaml = async () => {
 	getContainers();
 	data.yamlDialogVisible = true;
 };
+
 const getContainers = () => {
 	delete data.deployment.spec!.template.spec!.containers;
 	delete data.deployment.spec!.template.spec!.initContainers;
@@ -153,29 +158,19 @@ const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
 	data.deployment.spec!.replicas = newData.replicas;
 	updateCodeMirror();
 };
-const nextStep = (formEl: FormInstance | undefined) => {
-	// if (!formEl) {
-	// 	ElMessage.error('请输入必填项');
-	// 	return;
-	// }
-	// formEl.validate((valid) => {
-	// 	if (valid) {
+const nextStep = () => {
 	if (data.active++ > 2) data.active = 0;
-	// 	} else {
-	// 		ElMessage.error('请输检查字段');
-	// 	}
-	// });
 };
 const up = () => {
 	if (data.active-- == 0) data.active = 0;
 };
 const next = () => {
-	nextStep(metaRef.value);
+	nextStep();
 };
 
 // 定义变量内容
-const route = useRoute();
 mittBus.on('updateVolumes', (res) => {
+	console.log('volumes---->:', res);
 	if (data.deployment.spec) {
 		if (data.deployment.spec.template) {
 			data.deployment.spec.template.spec!.volumes = res;
@@ -246,7 +241,12 @@ watch(
 			data.deployment = props.deployment as Deployment;
 			data.bindMetaData.metadata = data.deployment.metadata;
 			data.bindMetaData.replicas = data.deployment.spec?.replicas;
-			console.log(data.deployment);
+			if (data.deployment.spec?.template.spec?.initContainers) {
+				data.initContainers = data.deployment.spec!.template.spec!.initContainers!;
+			}
+			if (data.deployment.spec?.template.spec?.containers) {
+				data.containers = data.deployment.spec!.template.spec!.containers!;
+			}
 		}
 	},
 	{
@@ -260,6 +260,7 @@ watch(
 .card {
 	margin-bottom: 10px;
 }
+
 .d2 {
 	min-width: 100%;
 	height: 100%;
@@ -284,15 +285,7 @@ watch(
 	padding-top: 2px;
 	padding-bottom: 2px;
 }
-/* .div-container {
-	:deep(.el-card__body) {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		overflow: auto;
-		.el-table {
-			flex: 1;
-		}
-	}
-} */
+.dialog .el-dialog__body {
+	--el-dialog-padding-primary: -10px;
+}
 </style>

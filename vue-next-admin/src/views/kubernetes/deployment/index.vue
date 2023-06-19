@@ -17,7 +17,7 @@
 								v-for="item in k8sStore.state.namespace"
 								:key="item.metadata?.name"
 								:label="item.metadata?.name"
-								:value="item.metadata!.name!"
+								:value="item.metadata?.name"
 							/>
 						</el-select>
 						<el-input
@@ -189,7 +189,7 @@
 				<span style="font-size: 16px">{{ '伸缩: ' + data.scaleDeploy.metadata?.name }}</span>
 			</template>
 			<div style="text-align: center">
-				<el-input-number v-model="data.scaleDeploy.spec!.replicas" :min="0" :max="1000" size="default" w />
+				<el-input-number v-model="data.scaleDeploy.spec.replicas" :min="0" :max="1000" size="default" w />
 			</div>
 			<template #footer>
 				<span class="dialog-footer">
@@ -209,11 +209,11 @@
 </template>
 
 <script setup lang="ts" name="k8sDeployment">
-import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, ref, computed, onUnmounted, h } from 'vue';
+import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, onUnmounted, h } from 'vue';
 import { Delete, Edit } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
-import { Deployment, DeploymentCondition, DeploymentStatus } from 'kubernetes-types/apps/v1';
+import { Deployment, DeploymentCondition } from 'kubernetes-types/apps/v1';
 import { PageInfo } from '@/types/kubernetes/common';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import router from '@/router';
@@ -223,7 +223,7 @@ import YAML from 'js-yaml';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '@/utils/formatTime';
-import { deepClone, globalComponentSize } from '@/utils/other';
+import { deepClone } from '@/utils/other';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
@@ -313,7 +313,6 @@ const depStatus = (deployment: Deployment) => {
 
 	return runStatus;
 };
-const deploymentStatus = computed((dep: Deployment) => {});
 const rollBack = (deployment: Deployment) => {
 	const reversion = deployment.metadata?.annotations!['deployment.kubernetes.io/revision']!;
 	parseInt(reversion, 10);
@@ -331,7 +330,7 @@ const rollBack = (deployment: Deployment) => {
 const reDeploy = (deployment: Deployment) => {
 	deploymentApi
 		.reDeployDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, { cloud: k8sStore.state.activeCluster })
-		.then((res: any) => {
+		.then(() => {
 			ElMessage.success('操作成功');
 		})
 		.catch((res: any) => {
@@ -348,7 +347,7 @@ const updateDeployment = async (codeData: any) => {
 	delete updateData.metadata?.managedFields;
 	await deploymentApi
 		.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
-		.then((res: any) => {
+		.then(() => {
 			ElMessage.success('更新成功');
 		})
 		.catch((e) => {
@@ -418,14 +417,14 @@ const deleteDeployment = (dep: Deployment) => {
 };
 
 const showYaml = async (deployment: Deployment) => {
-	const dep = deepClone(deployment);
+	const dep = deepClone(deployment) as Deployment;
 	delete dep.metadata?.managedFields;
 	data.codeData = dep;
 	data.dialogVisible = true;
 };
 
 const openScaleDialog = (dep: Deployment) => {
-	data.scaleDeploy = deepClone(dep);
+	data.scaleDeploy = deepClone(dep) as Deployment;
 	data.visible = true;
 };
 
@@ -446,10 +445,6 @@ const scaleDeployment = () => {
 		});
 	data.visible = false;
 };
-
-const filterTableData = computed(() =>
-	data.deployments.filter((item) => !data.search || item.metadata!.name!.toLowerCase().includes(data.search.toLowerCase()))
-);
 
 const handleSelectionChange = (value: any) => {
 	data.selectData = value;

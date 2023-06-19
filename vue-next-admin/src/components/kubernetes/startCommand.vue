@@ -28,7 +28,7 @@
 				>展开</el-button
 			>
 		</el-form-item>
-		<el-form-item label="命令：" v-show="data.set && data.show" style="margin-bottom: 5" label-width="60px">
+		<el-form-item label="命令：" v-show="data.set && data.show" style="margin-bottom: 5px" label-width="60px">
 			<el-input v-model="data.commands" size="small" style="width: 500px" type="textarea" />
 			<span style="font-size: 10px; color: rgba(22, 9, 7, 0.57); margin-left: 5px">如有多个命令请使用半角逗号（,）分隔</span>
 		</el-form-item>
@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import { CaretBottom, CaretTop } from '@element-plus/icons-vue';
-import { reactive, watch } from 'vue';
+import { onMounted, reactive } from 'vue';
 import { deepClone } from '@/utils/other';
 
 // FIXME args无法清空
@@ -56,10 +56,12 @@ const data = reactive({
 		args: [''],
 	},
 });
-const props = defineProps({
-	args: Array<String>,
-	commands: Array<String>,
-});
+
+type propsType = {
+	args: Array<String> | undefined;
+	commands: Array<String> | undefined;
+};
+const props = defineProps<propsType>();
 
 const handleArr = (source: Array<String>) => {
 	const dataCopy = deepClone(source);
@@ -73,52 +75,35 @@ const handleArr = (source: Array<String>) => {
 	});
 	return str;
 };
-watch(
-	() => [props.args, props.commands],
-	() => {
-		data.loadFromParent = true;
+onMounted(() => {
+	if (props.args || props.args != undefined) {
+		data.set = true; //当本地数据为空，但是传递过来数据不为空时则显示
+		data.args = handleArr(props.args);
+	}
+	if (props.commands || props.commands != undefined) {
+		data.set = true; //当本地数据为空，但是传递过来数据不为空时则显示
+		data.commands = handleArr(props.commands);
+	}
+});
 
-		if (props.args) {
-			data.set = true; //当本地数据为空，但是传递过来数据不为空时则显示
-			data.args = handleArr(props.args);
+const returnStartCommand = () => {
+	if (!data.set) {
+		data.k8s.args = [];
+		data.k8s.commands = [];
+	} else {
+		if (data.args.length > 0) {
+			data.k8s.args = data.args.split(',');
 		}
-		if (props.commands) {
-			data.set = true; //当本地数据为空，但是传递过来数据不为空时则显示
-			data.commands = handleArr(props.commands);
+		if (data.commands.length > 0) {
+			data.k8s.commands = data.commands.split(',');
 		}
-		setTimeout(() => {
-			data.loadFromParent = false;
-		}, 100);
-	},
-	{
-		immediate: true,
-		deep: true,
 	}
-);
-const emit = defineEmits(['updateCommand']);
-watch(
-	() => [data.args, data.commands, data.set],
-	() => {
-		if (!data.loadFromParent) {
-			if (!data.set) {
-				data.k8s.args = [];
-				data.k8s.commands = [];
-			} else {
-				if (data.args) {
-					data.k8s.args = data.args.split(',');
-				}
-				if (props.commands) {
-					data.k8s.commands = data.commands.split(',');
-				}
-			}
-			emit('updateCommand', data.k8s);
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
-	}
-);
+	return { set: data.set, commands: data.k8s.commands, args: data.k8s.args };
+};
+
+defineExpose({
+	returnStartCommand,
+});
 </script>
 
 <style scoped></style>

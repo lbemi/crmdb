@@ -9,7 +9,7 @@
 						</span>
 						<span v-else class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' }} </span>
 					</template>
-					<container :container="item" :index="index" @updateContainer="getContainer" />
+					<ContainerDiv :ref="(el:refItem)=>setItemRef(el)" :container="item" :index="index" />
 				</el-tab-pane>
 				<el-tab-pane key="CustomBtn" name="CustomBtn" :closable="false">
 					<template #label>
@@ -22,18 +22,26 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, reactive, watch } from 'vue';
-import { ref } from 'vue-demi';
+import { defineAsyncComponent, onMounted, reactive } from 'vue';
+import { ComponentPublicInstance, ref } from 'vue-demi';
 import { Container } from 'kubernetes-types/core/v1';
 import type { TabPaneName } from 'element-plus';
 import { deepClone } from '@/utils/other';
 import { Plus } from '@element-plus/icons-vue';
 import { ContainerType } from '@/types/kubernetes/common';
-const Container = defineAsyncComponent(() => import('./container.vue'));
 
+const ContainerDiv = defineAsyncComponent(() => import('./container.vue'));
+
+type refItem = Element | ComponentPublicInstance | null;
 const editableTabsValue = ref(0);
+const itemRefs = ref([]);
 
-const tabChange = (currentName: TabPaneName, oldName: TabPaneName) => {
+const setItemRef = (el: refItem) => {
+	if (el) {
+		itemRefs.value.push(el);
+	}
+};
+const tabChange = (currentName: TabPaneName) => {
 	if (currentName === 'CustomBtn') {
 		tabAdd();
 		return false;
@@ -62,24 +70,7 @@ const data = reactive({
 	addIndex: 1,
 	tabIndex: 1,
 	editableTabsValue: '1',
-	containers: [
-		{
-			isIntiContainer: false,
-			name: '',
-			image: '',
-			imagePullPolicy: 'IfNotPresent',
-			securityContext: {
-				privileged: false,
-			},
-			ports: [],
-			env: [],
-			resources: {},
-			livenessProbe: {},
-			readinessProbe: {},
-			startupProbe: {},
-			lifecycle: {},
-		},
-	] as Array<ContainerType>,
+	containers: [] as Array<ContainerType>,
 	container: <ContainerType>{
 		isIntiContainer: false,
 		name: '',
@@ -88,163 +79,170 @@ const data = reactive({
 		securityContext: {
 			privileged: false,
 		},
-		ports: [],
-		env: [],
-		resources: {},
-		livenessProbe: {},
-		readinessProbe: {},
-		startupProbe: {},
-		lifecycle: {},
+		// ports: [],
+		// env: [],
+		// resources: {},
+		// livenessProbe: {},
+		// readinessProbe: {},
+		// startupProbe: {},
+		// lifecycle: {},
 	},
 });
 
-const getContainer = (index: number, container: ContainerType) => {
-	data.containers[index] = deepClone(container) as ContainerType;
+const getContainers = () => {
+	itemRefs.value.forEach((refValue) => {
+		const { index, container } = refValue.returnContainer();
+		data.containers[index] = deepClone(container) as ContainerType;
+	});
 };
 
-const props = defineProps({
-	containers: Array<Container>,
-	initContainers: Array<Container>,
-});
+type propsType = {
+	containers: Array<Container>;
+	initContainers: Array<Container>;
+};
+const props = defineProps<propsType>();
 
-// onMounted(() => {
-// 	const containers = [] as ContainerType[];
-// 	if (props.containers && props.containers.length > 0) {
-// 		props.containers.forEach((item: Container) => {
-// 			const container: ContainerType = {
-// 				args: item.args,
-// 				command: item.args,
-// 				env: item.env,
-// 				envFrom: item.envFrom,
-// 				image: item.image,
-// 				imagePullPolicy: item.imagePullPolicy,
-// 				isIntiContainer: false,
-// 				lifecycle: item.lifecycle,
-// 				livenessProbe: item.livenessProbe,
-// 				name: item.name,
-// 				ports: item.ports,
-// 				readinessProbe: item.readinessProbe,
-// 				resources: item.resources,
-// 				securityContext: item.securityContext,
-// 				startupProbe: item.startupProbe,
-// 				stdin: item.stdin,
-// 				stdinOnce: item.stdinOnce,
-// 				terminationMessagePath: item.terminationMessagePath,
-// 				terminationMessagePolicy: item.terminationMessagePolicy,
-// 				tty: item.tty,
-// 				volumeDevices: item.volumeDevices,
-// 				volumeMounts: item.volumeMounts,
-// 				workingDir: item.workingDir,
-// 			};
-// 			containers.push(container);
-// 		});
-// 	}
-// 	if (props.initContainers && props.initContainers.length > 0) {
-// 		props.initContainers.forEach((item: Container) => {
-// 			const container: ContainerType = {
-// 				args: item.args,
-// 				command: item.args,
-// 				env: item.env,
-// 				envFrom: item.envFrom,
-// 				image: item.image,
-// 				imagePullPolicy: item.imagePullPolicy,
-// 				isIntiContainer: true,
-// 				lifecycle: item.lifecycle,
-// 				livenessProbe: item.livenessProbe,
-// 				name: item.name,
-// 				ports: item.ports,
-// 				readinessProbe: item.readinessProbe,
-// 				resources: item.resources,
-// 				securityContext: item.securityContext,
-// 				startupProbe: item.startupProbe,
-// 				stdin: item.stdin,
-// 				stdinOnce: item.stdinOnce,
-// 				terminationMessagePath: item.terminationMessagePath,
-// 				terminationMessagePolicy: item.terminationMessagePolicy,
-// 				tty: item.tty,
-// 				volumeDevices: item.volumeDevices,
-// 				volumeMounts: item.volumeMounts,
-// 				workingDir: item.workingDir,
-// 			};
-// 			containers.push(container);
-// 		});
-// 		data.containers = containers;
-// 	}
-// });
-watch(
-	() => props,
-	() => {
-		const containers = [] as ContainerType[];
-		if (props.containers && props.containers.length > 0) {
-			props.containers.forEach((item: Container) => {
-				const container: ContainerType = {
-					args: item.args,
-					command: item.args,
-					env: item.env,
-					envFrom: item.envFrom,
-					image: item.image,
-					imagePullPolicy: item.imagePullPolicy,
-					isIntiContainer: false,
-					lifecycle: item.lifecycle,
-					livenessProbe: item.livenessProbe,
-					name: item.name,
-					ports: item.ports,
-					readinessProbe: item.readinessProbe,
-					resources: item.resources,
-					securityContext: item.securityContext,
-					startupProbe: item.startupProbe,
-					stdin: item.stdin,
-					stdinOnce: item.stdinOnce,
-					terminationMessagePath: item.terminationMessagePath,
-					terminationMessagePolicy: item.terminationMessagePolicy,
-					tty: item.tty,
-					volumeDevices: item.volumeDevices,
-					volumeMounts: item.volumeMounts,
-					workingDir: item.workingDir,
-				};
-				containers.push(container);
-			});
-		}
-		if (props.initContainers && props.initContainers.length > 0) {
-			props.initContainers.forEach((item: Container) => {
-				const container: ContainerType = {
-					args: item.args,
-					command: item.args,
-					env: item.env,
-					envFrom: item.envFrom,
-					image: item.image,
-					imagePullPolicy: item.imagePullPolicy,
-					isIntiContainer: true,
-					lifecycle: item.lifecycle,
-					livenessProbe: item.livenessProbe,
-					name: item.name,
-					ports: item.ports,
-					readinessProbe: item.readinessProbe,
-					resources: item.resources,
-					securityContext: item.securityContext,
-					startupProbe: item.startupProbe,
-					stdin: item.stdin,
-					stdinOnce: item.stdinOnce,
-					terminationMessagePath: item.terminationMessagePath,
-					terminationMessagePolicy: item.terminationMessagePolicy,
-					tty: item.tty,
-					volumeDevices: item.volumeDevices,
-					volumeMounts: item.volumeMounts,
-					workingDir: item.workingDir,
-				};
-				containers.push(container);
-			});
-		}
-		data.containers = containers;
-	},
-	{
-		immediate: true,
-		deep: true,
+onMounted(() => {
+	const containers = [] as ContainerType[];
+	if (props.containers && props.containers.length > 0) {
+		props.containers.forEach((item: Container) => {
+			const container: ContainerType = {
+				args: item.args,
+				command: item.args,
+				env: item.env,
+				envFrom: item.envFrom,
+				image: item.image,
+				imagePullPolicy: item.imagePullPolicy,
+				isIntiContainer: false,
+				lifecycle: item.lifecycle,
+				livenessProbe: item.livenessProbe,
+				name: item.name,
+				ports: item.ports,
+				readinessProbe: item.readinessProbe,
+				resources: item.resources,
+				securityContext: item.securityContext,
+				startupProbe: item.startupProbe,
+				stdin: item.stdin,
+				stdinOnce: item.stdinOnce,
+				terminationMessagePath: item.terminationMessagePath,
+				terminationMessagePolicy: item.terminationMessagePolicy,
+				tty: item.tty,
+				volumeDevices: item.volumeDevices,
+				volumeMounts: item.volumeMounts,
+				workingDir: item.workingDir,
+			};
+			containers.push(container);
+		});
+	} else {
+		containers.push(data.container);
 	}
-);
+	if (props.initContainers && props.initContainers.length > 0) {
+		props.initContainers.forEach((item: Container) => {
+			const container: ContainerType = {
+				args: item.args,
+				command: item.args,
+				env: item.env,
+				envFrom: item.envFrom,
+				image: item.image,
+				imagePullPolicy: item.imagePullPolicy,
+				isIntiContainer: true,
+				lifecycle: item.lifecycle,
+				livenessProbe: item.livenessProbe,
+				name: item.name,
+				ports: item.ports,
+				readinessProbe: item.readinessProbe,
+				resources: item.resources,
+				securityContext: item.securityContext,
+				startupProbe: item.startupProbe,
+				stdin: item.stdin,
+				stdinOnce: item.stdinOnce,
+				terminationMessagePath: item.terminationMessagePath,
+				terminationMessagePolicy: item.terminationMessagePolicy,
+				tty: item.tty,
+				volumeDevices: item.volumeDevices,
+				volumeMounts: item.volumeMounts,
+				workingDir: item.workingDir,
+			};
+			containers.push(container);
+		});
+		data.containers = containers;
+	}
+	data.containers = containers;
+});
+// watch(
+// 	() => props,
+// 	() => {
+// 		const containers = [] as ContainerType[];
+// 		if (props.containers && props.containers.length > 0) {
+// 			props.containers.forEach((item: Container) => {
+// 				const container: ContainerType = {
+// 					args: item.args,
+// 					command: item.args,
+// 					env: item.env,
+// 					envFrom: item.envFrom,
+// 					image: item.image,
+// 					imagePullPolicy: item.imagePullPolicy,
+// 					isIntiContainer: false,
+// 					lifecycle: item.lifecycle,
+// 					livenessProbe: item.livenessProbe,
+// 					name: item.name,
+// 					ports: item.ports,
+// 					readinessProbe: item.readinessProbe,
+// 					resources: item.resources,
+// 					securityContext: item.securityContext,
+// 					startupProbe: item.startupProbe,
+// 					stdin: item.stdin,
+// 					stdinOnce: item.stdinOnce,
+// 					terminationMessagePath: item.terminationMessagePath,
+// 					terminationMessagePolicy: item.terminationMessagePolicy,
+// 					tty: item.tty,
+// 					volumeDevices: item.volumeDevices,
+// 					volumeMounts: item.volumeMounts,
+// 					workingDir: item.workingDir,
+// 				};
+// 				containers.push(container);
+// 			});
+// 		}
+// 		if (props.initContainers && props.initContainers.length > 0) {
+// 			props.initContainers.forEach((item: Container) => {
+// 				const container: ContainerType = {
+// 					args: item.args,
+// 					command: item.args,
+// 					env: item.env,
+// 					envFrom: item.envFrom,
+// 					image: item.image,
+// 					imagePullPolicy: item.imagePullPolicy,
+// 					isIntiContainer: true,
+// 					lifecycle: item.lifecycle,
+// 					livenessProbe: item.livenessProbe,
+// 					name: item.name,
+// 					ports: item.ports,
+// 					readinessProbe: item.readinessProbe,
+// 					resources: item.resources,
+// 					securityContext: item.securityContext,
+// 					startupProbe: item.startupProbe,
+// 					stdin: item.stdin,
+// 					stdinOnce: item.stdinOnce,
+// 					terminationMessagePath: item.terminationMessagePath,
+// 					terminationMessagePolicy: item.terminationMessagePolicy,
+// 					tty: item.tty,
+// 					volumeDevices: item.volumeDevices,
+// 					volumeMounts: item.volumeMounts,
+// 					workingDir: item.workingDir,
+// 				};
+// 				containers.push(container);
+// 			});
+// 		}
+// 		data.containers = containers;
+// 	},
+// 	{
+// 		immediate: true,
+// 		deep: true,
+// 	}
+// );
 
-const emit = defineEmits(['updateContainers']);
 const returnContainers = () => {
+	getContainers();
 	const containers = [] as Container[];
 	const initContainers = [] as Container[];
 	const res = deepClone(data.containers) as ContainerType[];

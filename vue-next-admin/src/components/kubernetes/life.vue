@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
@@ -101,87 +101,68 @@ const data = reactive({
 		exec: {
 			command: [''],
 		},
-	} as V1LifecycleHandler,
+	} as LifecycleHandler,
 });
 const activeName = ref('httpGet');
 const props = defineProps({
 	lifeData: Object,
 });
 
-watch(
-	() => props.lifeData,
-	() => {
-		// 数据不同则更新
-		if (props.lifeData && Object.keys(props.lifeData).length != 0 && !isObjectValueEqual(props.lifeData, data.lifeProbe)) {
-			data.loadFromParent = true;
-			data.set = true;
-			const dataCopy = deepClone(props.lifeData);
-			if (dataCopy.httpGet && !isObjectValueEqual(dataCopy.httpGet, data.lifeProbe.httpGet)) {
-				data.lifeProbe.httpGet = dataCopy.httpGet;
-			} else if (dataCopy.tcpSocket && !isObjectValueEqual(dataCopy.tcpSocket, data.lifeProbe.tcpSocket)) {
-				data.lifeProbe.tcpSocket = dataCopy.tcpSocket;
-			} else if (dataCopy.exec && !isObjectValueEqual(dataCopy.exec, data.lifeProbe.exec)) {
-				let str = '';
-				dataCopy.exec.command.forEach((item: any, index: number) => {
-					if (index == dataCopy.exec.command.length - 1) {
-						str = str + item;
-					} else {
-						str = str + item + ',';
-					}
-				});
-				if (str != data.command) data.command = str;
-			}
-			setTimeout(() => {
-				data.loadFromParent = false;
-			}, 100);
+onMounted(() => {
+	if (props.lifeData && Object.keys(props.lifeData).length != 0 && !isObjectValueEqual(props.lifeData, data.lifeProbe)) {
+		data.set = true;
+		const dataCopy = deepClone(props.lifeData);
+		if (dataCopy.httpGet && !isObjectValueEqual(dataCopy.httpGet, data.lifeProbe.httpGet)) {
+			data.lifeProbe.httpGet = dataCopy.httpGet;
+		} else if (dataCopy.tcpSocket && !isObjectValueEqual(dataCopy.tcpSocket, data.lifeProbe.tcpSocket)) {
+			data.lifeProbe.tcpSocket = dataCopy.tcpSocket;
+		} else if (dataCopy.exec && !isObjectValueEqual(dataCopy.exec, data.lifeProbe.exec)) {
+			let str = '';
+			dataCopy.exec.command.forEach((item: any, index: number) => {
+				if (index == dataCopy.exec.command.length - 1) {
+					str = str + item;
+				} else {
+					str = str + item + ',';
+				}
+			});
+			if (str != data.command) data.command = str;
 		}
-	},
-	{
-		immediate: true,
-		deep: true,
+		setTimeout(() => {
+			data.loadFromParent = false;
+		}, 100);
 	}
-);
-const emit = defineEmits(['updateLifeData']);
-
-watch(
-	() => [data.lifeProbe, activeName, data.set, data.command],
-	() => {
-		if (!data.loadFromParent && data.set) {
-			const copyData = deepClone(data);
-			switch (activeName.value) {
-				case 'httpGet': {
-					delete copyData.lifeProbe.tcpSocket;
-					delete copyData.lifeProbe.exec;
-					break;
-				}
-				case 'tcpSocket': {
-					delete copyData.lifeProbe.httpGet;
-					delete copyData.lifeProbe.exec;
-					break;
-				}
-				case 'exec': {
-					if (data.command.indexOf(',')) {
-						copyData.lifeProbe.exec.command = data.command.split(',');
-					} else {
-						copyData.lifeProbe.exec.command = data.command;
-					}
-					delete copyData.lifeProbe.httpGet;
-					delete copyData.lifeProbe.tcpSocket;
-					break;
-				}
+});
+const returnLife = () => {
+	const copyData = deepClone(data);
+	if (data.set) {
+		switch (activeName.value) {
+			case 'httpGet': {
+				delete copyData.lifeProbe.tcpSocket;
+				delete copyData.lifeProbe.exec;
+				break;
 			}
-			emit('updateLifeData', copyData.lifeProbe);
+			case 'tcpSocket': {
+				delete copyData.lifeProbe.httpGet;
+				delete copyData.lifeProbe.exec;
+				break;
+			}
+			case 'exec': {
+				if (data.command.indexOf(',')) {
+					copyData.lifeProbe.exec.command = data.command.split(',');
+				} else {
+					copyData.lifeProbe.exec.command = data.command;
+				}
+				delete copyData.lifeProbe.httpGet;
+				delete copyData.lifeProbe.tcpSocket;
+				break;
+			}
 		}
-
-		if (!data.set) {
-			emit('updateLifeData', {});
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
 	}
-);
+	return { set: data.set, lifeProbe: copyData.lifeProbe };
+};
+defineExpose({
+	returnLife,
+});
 const schemeType = [
 	{
 		label: 'HTTP',

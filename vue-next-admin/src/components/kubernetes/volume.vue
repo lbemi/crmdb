@@ -2,15 +2,7 @@
 	<div>
 		<el-form-item label-width="90px" style="margin-bottom: 0">
 			<template #label>
-				<el-tooltip
-					class="box-item"
-					effect="light"
-					content="自定义容器启动时运行的命令; 默认情况下，容器启动时将运行镜像默认命令"
-					placement="top-start"
-					raw-content
-				>
-					数据卷：
-				</el-tooltip>
+				<el-tooltip class="box-item" effect="light" content="用于挂载到容器中使用" placement="top-start" raw-content> 数据卷： </el-tooltip>
 			</template>
 			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0" @click="handleSet">新增</el-button>
 			<el-button
@@ -59,7 +51,7 @@
 						/>
 						<div v-if="scope.row.type === 'persistentVolumeClaim'" style="display: flex">
 							<el-select v-model="scope.row.persistentVolumeClaim.name" size="small" :loading="data.loading" @click="getPvc" show-overflow-tooltip>
-								<el-option v-for="item in data.pvcdata" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name!" />
+								<el-option v-for="item in data.pvcdata" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
 							</el-select>
 						</div>
 						<div v-if="scope.row.type === 'configMap'" style="display: flex">
@@ -70,7 +62,7 @@
 								@click="getConfigMap(scope.row)"
 								show-overflow-tooltip
 							>
-								<el-option v-for="item in data.configMapData" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name!" />
+								<el-option v-for="item in data.configMapData" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
 							</el-select>
 							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
 								<el-tooltip placement="top" effect="light">
@@ -90,7 +82,7 @@
 						</div>
 						<div v-if="scope.row.type === 'secret'" style="display: flex">
 							<el-select v-model="scope.row.secret.secretName" size="small" :loading="data.loading" @click="getSecret" show-overflow-tooltip>
-								<el-option v-for="item in data.secretData" :key="item.metadata!.uid" :label="item.metadata!.name" :value="item.metadata!.name!" />
+								<el-option v-for="item in data.secretData" :key="item.metadata.uid" :label="item.metadata.name" :value="item.metadata.name" />
 							</el-select>
 							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
 								<el-tooltip placement="top" effect="dark">
@@ -170,7 +162,7 @@
 
 <script setup lang="ts">
 import { CaretBottom, CaretTop, CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { onUnmounted, reactive, ref, watch } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { ConfigMap, PersistentVolumeClaim, Secret, Volume, VolumeMount, KeyToPath } from 'kubernetes-types/core/v1';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
@@ -405,12 +397,13 @@ onUnmounted(() => {
 	mittBus.off('updateDeploymentVolumes', () => {});
 });
 
+type propsType = {
+	volumeMounts: Array<VolumeMount> | undefined;
+};
 //接受父组件传递的值
-const props = defineProps({
-	volumeMounts: Array<VolumeMount>,
-});
+const props = defineProps<propsType>();
 
-//解析volumeMount为所需要的CreateK8SVolumentData 类型
+//解析volumeMount为所需要的CreateK8SVolumeData 类型
 const parseVolumeMount = (volumeMount: Array<VolumeMount>) => {
 	const tmpVolumeData = [] as Array<CreateK8SVolumentData>;
 	volumeMount.forEach((item: VolumeMount) => {
@@ -454,39 +447,59 @@ const parseVolumeMount = (volumeMount: Array<VolumeMount>) => {
 	if (!isObjectValueEqual(data.volumeData, tmpVolumeData)) data.volumeData = tmpVolumeData;
 };
 
-watch(
-	() => [props.volumeMounts, data.tmpVolumes],
-	() => {
-		if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0) {
-			data.loadFromParent = true;
-			parseVolumeMount(props.volumeMounts);
-			setTimeout(() => {
-				data.loadFromParent = false;
-			}, 100);
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
+onMounted(() => {
+	if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0 && props.volumeMounts != undefined) {
+		parseVolumeMount(props.volumeMounts);
 	}
-);
+});
 
+// watch(
+// 	() => [props.volumeMounts, data.tmpVolumes],
+// 	() => {
+// 		if (props.volumeMounts && Object.keys(props.volumeMounts).length > 0) {
+// 			data.loadFromParent = true;
+// 			parseVolumeMount(props.volumeMounts);
+// 			setTimeout(() => {
+// 				data.loadFromParent = false;
+// 			}, 100);
+// 		}
+// 	},
+// 	{
+// 		immediate: true,
+// 		deep: true,
+// 	}
+// );
+
+const returnVolumeMounts = () => {
+	handleVolumeData();
+	return data.volumeMount;
+};
+
+const returnVolumes = () => {
+	mittBus.emit('updateVolumes', data.volumes);
+	return data.volumes;
+};
+
+defineExpose({
+	returnVolumeMounts,
+	returnVolumes,
+});
 // 派发更新事件
-const emit = defineEmits(['updateVolumeMount']);
-watch(
-	() => [data.volumeData],
-	() => {
-		if (!data.loadFromParent) {
-			// handleVolumeData();
-			emit('updateVolumeMount', data.volumeMount);
-			mittBus.emit('updateVolumes', data.volumes);
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
-	}
-);
+// const emit = defineEmits(['updateVolumeMount']);
+// watch(
+// 	() => [data.volumeData],
+// 	() => {
+// 		if (!data.loadFromParent) {
+// 			// handleVolumeData();
+// 			emit('updateVolumeMount', data.volumeMount);
+// 			mittBus.emit('updateVolumes', data.volumes);
+// 		}
+// 	},
+// 	{
+// 		immediate: true,
+// 		deep: true,
+// 	}
+// );
 </script>
 
 <style scoped>

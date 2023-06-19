@@ -118,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { CaretBottom, CaretTop } from '@element-plus/icons-vue';
 import { Probe } from 'kubernetes-types/core/v1';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
@@ -153,81 +153,135 @@ const props = defineProps({
 	checkData: Object,
 });
 
-watch(
-	() => props.checkData,
-	() => {
-		// 数据不同则更新
-		if (props.checkData && Object.keys(props.checkData).length != 0 && !isObjectValueEqual(props.checkData, data.probe)) {
-			data.set = true;
-			data.loadFromParent = true;
-			const dataCopy = deepClone(props.checkData);
-			if (dataCopy.httpGet && !isObjectValueEqual(dataCopy.httpGet, data.probe.httpGet)) {
-				data.probe.httpGet = dataCopy.httpGet;
-			} else if (dataCopy.tcpSocket && !isObjectValueEqual(dataCopy.tcpSocket, data.probe.tcpSocket)) {
-				data.probe.tcpSocket = dataCopy.tcpSocket;
-			} else if (dataCopy.exec && !isObjectValueEqual(dataCopy.exec, data.probe.exec)) {
-				data.probe.exec = dataCopy.exec;
-			}
-			if (dataCopy.failureThreshold != data.probe.failureThreshold) {
-				data.probe.failureThreshold = dataCopy.failureThreshold;
-			}
-			if (dataCopy.initialDelaySeconds != data.probe.initialDelaySeconds) {
-				data.probe.initialDelaySeconds = dataCopy.initialDelaySeconds;
-			}
-			if (dataCopy.periodSeconds != data.probe.periodSeconds) {
-				data.probe.periodSeconds = dataCopy.periodSeconds;
-			}
-			if (dataCopy.successThreshold != data.probe.successThreshold) {
-				data.probe.successThreshold = dataCopy.successThreshold;
-			}
-			if (dataCopy.timeoutSeconds != data.probe.timeoutSeconds) {
-				data.probe.timeoutSeconds = dataCopy.timeoutSeconds;
-			}
-			setTimeout(() => {
-				data.loadFromParent = false;
-			}, 1);
+onMounted(() => {
+	if (!isObjectValueEqual(props.checkData, {}) && props.checkData != undefined) {
+		data.set = true;
+		const dataCopy = deepClone(props.checkData);
+		if (dataCopy.httpGet && !isObjectValueEqual(dataCopy.httpGet, data.probe.httpGet)) {
+			data.probe.httpGet = dataCopy.httpGet;
+		} else if (dataCopy.tcpSocket && !isObjectValueEqual(dataCopy.tcpSocket, data.probe.tcpSocket)) {
+			data.probe.tcpSocket = dataCopy.tcpSocket;
+		} else if (dataCopy.exec && !isObjectValueEqual(dataCopy.exec, data.probe.exec)) {
+			data.probe.exec = dataCopy.exec;
 		}
-	},
-	{
-		immediate: true,
-		deep: true,
+		if (dataCopy.failureThreshold != data.probe.failureThreshold) {
+			data.probe.failureThreshold = dataCopy.failureThreshold;
+		}
+		if (dataCopy.initialDelaySeconds != data.probe.initialDelaySeconds) {
+			data.probe.initialDelaySeconds = dataCopy.initialDelaySeconds;
+		}
+		if (dataCopy.periodSeconds != data.probe.periodSeconds) {
+			data.probe.periodSeconds = dataCopy.periodSeconds;
+		}
+		if (dataCopy.successThreshold != data.probe.successThreshold) {
+			data.probe.successThreshold = dataCopy.successThreshold;
+		}
+		if (dataCopy.timeoutSeconds != data.probe.timeoutSeconds) {
+			data.probe.timeoutSeconds = dataCopy.timeoutSeconds;
+		}
 	}
-);
-const emit = defineEmits(['updateCheckData']);
+});
+// watch(
+// 	() => props.checkData,
+// 	() => {
+// 		// 数据不同则更新
+// 		if (props.checkData && Object.keys(props.checkData).length != 0 && !isObjectValueEqual(props.checkData, data.probe)) {
+// 			data.set = true;
+// 			data.loadFromParent = true;
+// 			const dataCopy = deepClone(props.checkData);
+// 			if (dataCopy.httpGet && !isObjectValueEqual(dataCopy.httpGet, data.probe.httpGet)) {
+// 				data.probe.httpGet = dataCopy.httpGet;
+// 			} else if (dataCopy.tcpSocket && !isObjectValueEqual(dataCopy.tcpSocket, data.probe.tcpSocket)) {
+// 				data.probe.tcpSocket = dataCopy.tcpSocket;
+// 			} else if (dataCopy.exec && !isObjectValueEqual(dataCopy.exec, data.probe.exec)) {
+// 				data.probe.exec = dataCopy.exec;
+// 			}
+// 			if (dataCopy.failureThreshold != data.probe.failureThreshold) {
+// 				data.probe.failureThreshold = dataCopy.failureThreshold;
+// 			}
+// 			if (dataCopy.initialDelaySeconds != data.probe.initialDelaySeconds) {
+// 				data.probe.initialDelaySeconds = dataCopy.initialDelaySeconds;
+// 			}
+// 			if (dataCopy.periodSeconds != data.probe.periodSeconds) {
+// 				data.probe.periodSeconds = dataCopy.periodSeconds;
+// 			}
+// 			if (dataCopy.successThreshold != data.probe.successThreshold) {
+// 				data.probe.successThreshold = dataCopy.successThreshold;
+// 			}
+// 			if (dataCopy.timeoutSeconds != data.probe.timeoutSeconds) {
+// 				data.probe.timeoutSeconds = dataCopy.timeoutSeconds;
+// 			}
+// 			setTimeout(() => {
+// 				data.loadFromParent = false;
+// 			}, 1);
+// 		}
+// 	},
+// 	{
+// 		immediate: true,
+// 		deep: true,
+// 	}
+// );
+// const emit = defineEmits(['updateCheckData']);
 
-watch(
-	() => [data.probe, activeName, data.set],
-	() => {
-		if (!data.loadFromParent && data.set) {
-			const copyData = deepClone(data);
-			switch (activeName.value) {
-				case 'httpGet': {
-					delete copyData.probe.tcpSocket;
-					delete copyData.probe.exec;
-					break;
-				}
-				case 'tcpSocket': {
-					delete copyData.probe.httpGet;
-					delete copyData.probe.exec;
-					break;
-				}
-				case 'exec': {
-					delete copyData.probe.httpGet;
-					delete copyData.probe.tcpSocket;
-					break;
-				}
-			}
-			emit('updateCheckData', copyData.probe);
+const returnHealthCheck = () => {
+	const copyData = deepClone(data);
+	switch (activeName.value) {
+		case 'httpGet': {
+			delete copyData.probe.tcpSocket;
+			delete copyData.probe.exec;
+			break;
 		}
-		if (!data.set) {
-			emit('updateCheckData', {});
+		case 'tcpSocket': {
+			delete copyData.probe.httpGet;
+			delete copyData.probe.exec;
+			break;
 		}
-	},
-	{
-		immediate: true,
-		deep: true,
+		case 'exec': {
+			delete copyData.probe.httpGet;
+			delete copyData.probe.tcpSocket;
+			break;
+		}
 	}
-);
+	return { set: data.set, probe: copyData.probe };
+};
+
+defineExpose({
+	returnHealthCheck,
+});
+//
+// watch(
+// 	() => [data.probe, activeName, data.set],
+// 	() => {
+// 		if (!data.loadFromParent && data.set) {
+// 			const copyData = deepClone(data);
+// 			switch (activeName.value) {
+// 				case 'httpGet': {
+// 					delete copyData.probe.tcpSocket;
+// 					delete copyData.probe.exec;
+// 					break;
+// 				}
+// 				case 'tcpSocket': {
+// 					delete copyData.probe.httpGet;
+// 					delete copyData.probe.exec;
+// 					break;
+// 				}
+// 				case 'exec': {
+// 					delete copyData.probe.httpGet;
+// 					delete copyData.probe.tcpSocket;
+// 					break;
+// 				}
+// 			}
+// 			emit('updateCheckData', copyData.probe);
+// 		}
+// 		if (!data.set) {
+// 			emit('updateCheckData', {});
+// 		}
+// 	},
+// 	{
+// 		immediate: true,
+// 		deep: true,
+// 	}
+// );
 const schemeType = [
 	{
 		label: 'HTTP',

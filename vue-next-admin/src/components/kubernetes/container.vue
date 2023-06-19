@@ -105,7 +105,7 @@
 							存活检查：
 						</el-tooltip>
 					</template>
-					<HealthCheck :checkData="data.container.livenessProbe" @updateCheckData="getLivenessData" />
+					<HealthCheck ref="lifeCheckRef" :checkData="data.container.livenessProbe" />
 				</el-form-item>
 				<el-form-item label="就绪检查">
 					<template #label>
@@ -113,7 +113,7 @@
 							就绪检查：
 						</el-tooltip>
 					</template>
-					<HealthCheck :checkData="data.container.readinessProbe" @updateCheckData="getReadinessData" />
+					<HealthCheck ref="readyCheckRef" :checkData="data.container.readinessProbe" />
 				</el-form-item>
 				<el-form-item label="启动探测">
 					<template #label>
@@ -121,7 +121,7 @@
 							启动探测：
 						</el-tooltip>
 					</template>
-					<HealthCheck :checkData="data.container.startupProbe" @updateCheckData="getStartupData" />
+					<HealthCheck ref="startCheckRef" :checkData="data.container.startupProbe" />
 				</el-form-item>
 			</el-card>
 			<el-card v-show="!data.container.isIntiContainer">
@@ -132,7 +132,7 @@
 							启动前：
 						</el-tooltip>
 					</template>
-					<LifeSet :lifeData="data.container.lifecycle?.postStart" @updateLifeData="getPostStart" />
+					<LifeSet ref="preLifeRef" :lifeData="data.container.lifecycle?.postStart" />
 				</el-form-item>
 				<el-form-item label="停止前：">
 					<template #label>
@@ -140,24 +140,23 @@
 							停止前：
 						</el-tooltip>
 					</template>
-					<LifeSet :lifeData="data.container.lifecycle?.preStop" @updateLifeData="getPreStop" />
+					<LifeSet ref="postLifeRef" :lifeData="data.container.lifecycle?.preStop" />
 				</el-form-item>
 			</el-card>
 			<el-card>
-				<CommandSet :args="data.container.args" :commands="data.container.command" @updateCommand="getCommand" />
+				<CommandSet ref="startCmdRef" :args="data.container.args" :commands="data.container.command" />
 			</el-card>
 			<el-card>
-				<VolumeMount :volumeMounts="data.container.volumeMounts" @updateVolumeMount="getVolumeMount" />
+				<VolumeMountDiv ref="volumeMountRef" :volumeMounts="data.container.volumeMounts" />
 			</el-card>
 		</el-form>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, reactive, watch } from 'vue';
-import { Container, ContainerPort, Lifecycle, Probe, VolumeMount, LifecycleHandler, EnvVar } from 'kubernetes-types/core/v1';
+import { defineAsyncComponent, reactive, watch, ref, onMounted } from 'vue';
+import { Container, ContainerPort, EnvVar } from 'kubernetes-types/core/v1';
 import { Delete, Edit, InfoFilled } from '@element-plus/icons-vue';
-import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
 import { ContainerType } from '@/types/kubernetes/common';
 
@@ -165,10 +164,17 @@ import { ContainerType } from '@/types/kubernetes/common';
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
 const LifeSet = defineAsyncComponent(() => import('./life.vue'));
 const CommandSet = defineAsyncComponent(() => import('./startCommand.vue'));
-const VolumeMount = defineAsyncComponent(() => import('./volume.vue'));
+const VolumeMountDiv = defineAsyncComponent(() => import('./volume.vue'));
 const Ports = defineAsyncComponent(() => import('./port.vue'));
 const Env = defineAsyncComponent(() => import('./env.vue'));
 
+const lifeCheckRef = ref();
+const readyCheckRef = ref();
+const startCheckRef = ref();
+const preLifeRef = ref();
+const postLifeRef = ref();
+const startCmdRef = ref();
+const volumeMountRef = ref();
 const data = reactive({
 	loadFromParent: false,
 	lifePostStartSet: false,
@@ -184,19 +190,16 @@ const data = reactive({
 		securityContext: {
 			privileged: false,
 		},
-		lifecycle: {} as Lifecycle,
-		livenessProbe: {},
-		readinessProbe: {},
-		resources: {
-			limits: {
-				cpu: '',
-				memory: '0',
-			},
-			requests: {
-				cpu: '0.5',
-				memory: '500',
-			},
-		},
+		// resources: {
+		// 	limits: {
+		// 		cpu: '',
+		// 		memory: '0',
+		// 	},
+		// 	requests: {
+		// 		cpu: '0.5',
+		// 		memory: '500',
+		// 	},
+		// },
 	},
 });
 
@@ -216,48 +219,68 @@ const getEnvs = (envs: Array<EnvVar>) => {
 	}
 };
 // 更新存活检查数据
-const getLivenessData = (liveData: Probe) => {
-	if (isObjectValueEqual(liveData, {})) {
+const getLivenessData = () => {
+	const { set, probe } = lifeCheckRef.value.returnHealthCheck();
+	if (set) {
+		data.container.livenessProbe = probe;
+	} else {
 		delete data.container.livenessProbe;
-		return;
 	}
-	data.container.livenessProbe = liveData;
 };
-const getReadinessData = (readData: Probe) => {
-	if (isObjectValueEqual(readData, {})) {
+
+const getReadinessData = () => {
+	const { set, probe } = readyCheckRef.value.returnHealthCheck();
+	if (set) {
+		data.container.readinessProbe = probe;
+	} else {
 		delete data.container.readinessProbe;
-		return;
 	}
-	data.container.readinessProbe = readData;
 };
-const getStartupData = (startData: Probe) => {
-	if (isObjectValueEqual(startData, {})) {
+
+const getStartupData = () => {
+	const { set, probe } = startCheckRef.value.returnHealthCheck();
+	if (set) {
+		data.container.startupProbe = probe;
+	} else {
 		delete data.container.startupProbe;
-		return;
 	}
-	data.container.startupProbe = startData;
 };
-const getPostStart = (postStart: LifecycleHandler) => {
-	if (isObjectValueEqual(postStart, {})) {
+
+const getPostStart = () => {
+	const { set, lifeProbe } = postLifeRef.value.returnLife();
+	if (set) {
+		data.container.lifecycle = {
+			postStart: lifeProbe,
+		};
+	} else {
 		delete data.container.lifecycle?.postStart;
-		return;
 	}
-	data.container.lifecycle!.postStart = postStart;
 };
-const getPreStop = (preStop: LifecycleHandler) => {
-	if (isObjectValueEqual(preStop, {})) {
+
+const getPreStop = () => {
+	const { set, lifeProbe } = preLifeRef.value.returnLife();
+	if (set) {
+		data.container.lifecycle = {
+			preStop: lifeProbe,
+		};
+	} else {
 		delete data.container.lifecycle?.preStop;
-		return;
 	}
-	data.container.lifecycle!.preStop = preStop;
 };
 
-const getCommand = (c: any) => {
-	data.container.command = c.commands;
-	data.container.args = c.args;
+const getCommands = () => {
+	const { set, commands, args } = startCmdRef.value.returnStartCommand();
+	if (set) {
+		data.container.command = commands;
+		data.container.args = args;
+	} else {
+		delete data.container.command;
+		delete data.container.args;
+	}
 };
 
-const getVolumeMount = (volumeMounts: any) => {
+const getVolumeMounts = () => {
+	const volumeMounts = volumeMountRef.value.returnVolumeMounts();
 	data.container.volumeMounts = volumeMounts;
 };
 
@@ -289,45 +312,95 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['updateContainer']);
+onMounted(() => {
+	const copyData = deepClone(props.container) as ContainerType;
+	console.log(')))>>>', copyData);
+	// if (!copyData.volumeMounts) {
+	// 	copyData.volumeMounts = [] as VolumeMount[];
+	// }
+	//
+	// if (copyData.resources?.limits || copyData.resources?.requests) {
+	// 	data.resourceSet = true;
+	// 	console.log(data.container.name, '************', data.container.resources?.requests.cpu, '-----', props.container.resources);
+	// }
 
-watch(
-	() => props.container,
-	() => {
-		if (props.container && !isObjectValueEqual(data.container, props.container)) {
-			data.loadFromParent = true;
-
-			const copyData = deepClone(props.container) as ContainerType;
-			if (!copyData.volumeMounts) {
-				copyData.volumeMounts = [] as VolumeMount[];
-			}
-
-			if (copyData.resources?.limits || copyData.resources?.requests) {
-				data.resourceSet = true;
-				console.log(data.container.name, '************', data.container.resources?.requests.cpu, '-----', props.container.resources);
-			}
-
-			if (!copyData.securityContext) {
-				copyData.securityContext = {
-					privileged: false,
-				};
-			}
-			if (!copyData.lifecycle) {
-				copyData.lifecycle = {};
-			}
-
-			data.container = copyData;
-
-			setTimeout(() => {
-				//延迟一下，不然会触发循环更新
-				data.loadFromParent = false;
-			}, 1);
-		}
-	},
-	{
-		deep: true,
-		immediate: true,
+	if (!copyData.securityContext) {
+		copyData.securityContext = {
+			privileged: false,
+		};
 	}
-);
+	data.container = copyData;
+});
+// watch(
+// 	() => props.container,
+// 	() => {
+//
+// 		if (props.container && !isObjectValueEqual(data.container, props.container)) {
+// 			data.loadFromParent = true;
+//
+// 			const copyData = deepClone(props.container) as ContainerType;
+// 			if (!copyData.volumeMounts) {
+// 				copyData.volumeMounts = [] as VolumeMount[];
+// 			}
+//
+// 			if (copyData.resources?.limits || copyData.resources?.requests) {
+// 				data.resourceSet = true;
+// 				console.log(data.container.name, '************', data.container.resources?.requests.cpu, '-----', props.container.resources);
+// 			}
+//
+// 			if (!copyData.securityContext) {
+// 				copyData.securityContext = {
+// 					privileged: false,
+// 				};
+// 			}
+// 			if (!copyData.lifecycle) {
+// 				copyData.lifecycle = {};
+// 			}
+//
+// 			data.container = copyData;
+//
+// 			setTimeout(() => {
+// 				//延迟一下，不然会触发循环更新
+// 				data.loadFromParent = false;
+// 			}, 1);
+// 		}
+// 	},
+// 	{
+// 		deep: true,
+// 		immediate: true,
+// 	}
+// );
+const returnContainer = () => {
+	getLivenessData();
+	getStartupData();
+	getReadinessData();
+	getPreStop();
+	getPostStart();
+	getCommands();
+	getVolumeMounts();
+	if (data.container.securityContext?.privileged && !data.container.securityContext?.privileged) {
+		delete data.container.securityContext;
+	}
+
+	if (data.resourceSet && !data.resourceHasSet) {
+		data.container.resources = {
+			limits: {
+				cpu: '',
+				memory: '',
+			},
+			requests: {
+				cpu: '',
+				memory: '',
+			},
+		};
+		data.resourceHasSet = true;
+	}
+	return { index: props.index, container: data.container };
+};
+
+defineExpose({
+	returnContainer,
+});
 
 watch(
 	() => [data.container, data.resourceSet],
