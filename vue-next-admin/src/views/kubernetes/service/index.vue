@@ -11,7 +11,7 @@
 					size="small"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
+					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata.name" />
 				</el-select>
 				<el-input
 					v-model="data.query.key"
@@ -70,7 +70,7 @@
 						</template>
 
 						<template #default="scope">
-							<div v-if="scope.row.spec.ports" v-for="item in scope.row.spec.ports">
+							<div v-if="scope.row.spec.ports" v-for="(item, index) in scope.row.spec.ports" :key="index">
 								<el-tag class="label" size="small" effect="plain">
 									<a v-if="scope.row.spec.type === 'NodePort'"> {{ item.nodePort }}:</a>{{ item.port }}/{{ item.protocol }}->{{
 										item.targetPort
@@ -83,9 +83,10 @@
 						<template #default="scope">
 							<el-link
 								v-if="scope.row.status.loadBalancer.ingress"
-								v-for="item in scope.row.status.loadBalancer.ingress"
+								v-for="(item, index) in scope.row.status.loadBalancer.ingress"
 								target="_blank"
 								type="primary"
+								:key="index"
 								:href="'http://' + item.ip"
 								>{{ item.ip }}</el-link
 							>
@@ -171,7 +172,6 @@ import { Service } from 'kubernetes-types/core/v1';
 import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { useServiceApi } from '@/api/kubernetes/service';
-import { ResponseType } from '@/types/response';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -179,7 +179,6 @@ import { dateStrFormat } from '@/utils/formatTime';
 import { PageInfo } from '@/types/kubernetes/common';
 import { Edit, Delete, List, CaretBottom } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
-import YAML from 'js-yaml';
 import router from '@/router';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
@@ -228,7 +227,7 @@ const serviceDetail = (service: Service) => {
 };
 
 const showYaml = async (service: Service) => {
-	const svc = deepClone(service);
+	const svc = deepClone(service) as Service;
 	delete svc.metadata?.managedFields;
 	data.codeData = svc;
 	data.dialogVisible = true;
@@ -289,7 +288,7 @@ const deleteService = (service: Service) => {
 		.then(() => {
 			servieApi
 				.deleteService({ cloud: k8sStore.state.activeCluster }, service.metadata!.name!, service.metadata!.namespace!)
-				.then((res) => {
+				.then((res: any) => {
 					listService();
 					ElMessage.success(res.message);
 				})
@@ -310,20 +309,15 @@ const updateService = (service: Service) => {
 	data.serviceDialog = true;
 };
 
-const updateServiceYaml = async (svc: any) => {
-	const updateData = deepClone(YAML.load(svc) as Service);
-	delete updateData.status;
+const updateServiceYaml = async (svc: Service) => {
+	const updateData = deepClone(svc) as Service;
 	delete updateData.metadata?.managedFields;
 
 	await servieApi
 		.updateService({ cloud: k8sStore.state.activeCluster }, updateData)
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('更新成功');
-				listService();
-			} else {
-				ElMessage.error(res.message);
-			}
+		.then(() => {
+			listService();
+			ElMessage.success('更新成功');
 		})
 		.catch((e) => {
 			ElMessage.error(e.message);
@@ -341,15 +335,13 @@ const listService = () => {
 	data.loading = true;
 	servieApi
 		.listService(k8sStore.state.activeNamespace, data.query)
-		.then((res: ResponseType) => {
-			if (res.code === 200) {
-				data.services = res.data.data;
-				data.total = res.data.total;
-				data.tmpService = res.data.data;
-			}
+		.then((res: any) => {
+			data.services = res.data.data;
+			data.total = res.data.total;
+			data.tmpService = res.data.data;
 		})
-		.catch((e) => {
-			ElMessage.error(e);
+		.catch((e: any) => {
+			ElMessage.error(e.message);
 		});
 	data.loading = false;
 };

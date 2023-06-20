@@ -12,7 +12,7 @@ export function useServiceApi() {
 		},
 		getService: (namespace: string, name: string, param: any) => {
 			return request({
-				url: `/service/${namespace}/${name}`,
+				url: `/services/namespaces/${namespace}/${name}`,
 				method: 'get',
 				params: param,
 			});

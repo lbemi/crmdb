@@ -7,7 +7,7 @@
 					<span style="font-weight: 35">{{ k8sStore.state.activeService?.metadata?.name }}</span></el-col
 				>
 				<el-col :span="6"
-					><el-button type="primary" size="small" :icon="Edit">编辑</el-button>
+					><el-button type="primary" size="small" :icon="Edit" @click="handleEdit()">编辑</el-button>
 					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button>
 					<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
 						<el-icon>
@@ -246,6 +246,14 @@
 			@update="updateServiceYaml"
 			v-if="data.dialogVisible"
 		/>
+
+		<ServiceDialog
+			v-model:dialogVisible="data.update.dialogVisible"
+			:service="k8sStore.state.activeService"
+			:title="data.update.title"
+			@refresh="k8sStore.refreshActiveService()"
+			v-if="data.update.dialogVisible"
+		/>
 	</div>
 </template>
 <script lang="ts" setup name="k8sServiceDetail">
@@ -266,13 +274,18 @@ import { deepClone } from '@/utils/other';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDetail.vue'));
+const ServiceDialog = defineAsyncComponent(() => import('../component/dialog.vue'));
 
 const route = useRoute();
-const servieApi = useServiceApi();
+const serviceApi = useServiceApi();
 const k8sStore = kubernetesInfo();
 const podStore = podInfo();
 const podApi = usePodApi();
 const data = reactive({
+	update: {
+		title: '',
+		dialogVisible: false,
+	},
 	serviceInfo: {
 		deployments: [] as Deployment[],
 		daemonSets: [] as DaemonSet[],
@@ -315,7 +328,7 @@ const podDetail = (name: string | undefined) => {
 	});
 };
 const getServiceInfo = () => {
-	servieApi
+	serviceApi
 		.listServiceWorkLoad(k8sStore.state.activeService.metadata!.namespace!, k8sStore.state.activeService.metadata!.name!, {
 			cloud: k8sStore.state.activeCluster,
 		})
@@ -332,7 +345,7 @@ const updateServiceYaml = async (svc: Service) => {
 	const updateData = deepClone(svc) as Service;
 	delete updateData.metadata?.managedFields;
 
-	await servieApi
+	await serviceApi
 		.updateService({ cloud: k8sStore.state.activeCluster }, updateData)
 		.then(() => {
 			// 同步更新store数据,刷新当前页面数据
@@ -346,7 +359,7 @@ const updateServiceYaml = async (svc: Service) => {
 };
 
 const getService = () => {
-	servieApi
+	serviceApi
 		.getService(k8sStore.state.activeService!.metadata!.namespace!, k8sStore.state.activeService!.metadata!.name!, {
 			cloud: k8sStore.state.activeCluster,
 		})
@@ -362,6 +375,11 @@ const backRoute = () => {
 	router.push({
 		name: 'k8sService',
 	});
+};
+
+const handleEdit = () => {
+	data.update.title = '更新service';
+	data.update.dialogVisible = true;
 };
 
 const showYaml = async () => {

@@ -6,13 +6,14 @@ import { Node } from '../types/kubernetes/cluster';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { ElMessage } from 'element-plus';
+import { useServiceApi } from '@/api/kubernetes/service';
 
 /**
  * k8s集群信息
  * @methods kubernetesInfo 设置k8s集群信息
  */
 const deploymentApi = useDeploymentApi();
-
+const serviceApi = useServiceApi();
 export const kubernetesInfo = defineStore(
 	'kubernetesInfo',
 	() => {
@@ -43,7 +44,21 @@ export const kubernetesInfo = defineStore(
 						ElMessage.error(e.message);
 					});
 		};
-		return { state, refreshActiveDeployment };
+		const refreshActiveService = async () => {
+			if (!isObjectValueEqual(state.activeService, {}))
+				await serviceApi
+					.getService(state.activeService.metadata!.namespace!, state.activeService.metadata!.name!, {
+						cloud: state.activeCluster,
+					})
+					.then((res: any) => {
+						state.activeService = res.data;
+					})
+					.catch((e: any) => {
+						ElMessage.error(e.message);
+					});
+		};
+
+		return { state, refreshActiveDeployment, refreshActiveService };
 	},
 	{
 		persist: true,
