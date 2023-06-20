@@ -11,7 +11,7 @@
 					size="small"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
+					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata.name" :value="item.metadata!.name!" />
 				</el-select>
 				<el-input
 					v-model="data.inputValue"
@@ -109,8 +109,7 @@
 			@update="updateConfigMapYaml"
 			v-if="data.dialogVisible"
 		/>
-
-		<!-- <DrawDialog :visible="data.draw.visible" /> -->
+		<DrawDialog v-model:visible="data.draw.visible" :title="data.draw.title" />
 	</div>
 </template>
 
@@ -118,7 +117,6 @@
 import { ConfigMap } from 'kubernetes-types/core/v1';
 import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { ResponseType } from '@/types/response';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -127,6 +125,7 @@ import { PageInfo } from '@/types/kubernetes/common';
 import { Edit, Delete, List } from '@element-plus/icons-vue';
 import { useThemeConfig } from '@/stores/themeConfig';
 import { useConfigMapApi } from '@/api/kubernetes/configMap';
+import { deepClone } from '@/utils/other';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
@@ -139,7 +138,7 @@ type queryType = {
 	cloud: string;
 	name?: string;
 	label?: string;
-}
+};
 const k8sStore = kubernetesInfo();
 const ConfigMapApi = useConfigMapApi();
 const configMapApi = useConfigMapApi();
@@ -147,6 +146,7 @@ const route = useRoute();
 const theme = useThemeConfig();
 const data = reactive({
 	draw: {
+		title: '',
 		visible: false,
 		configMap: {} as ConfigMap,
 	},
@@ -157,8 +157,8 @@ const data = reactive({
 	configMaps: [] as ConfigMap[],
 	tmpConfigMap: [] as ConfigMap[],
 	total: 0,
-	type: "1",
-	inputValue: "",
+	type: '1',
+	inputValue: '',
 	query: <queryType>{
 		page: 1,
 		limit: 10,
@@ -170,14 +170,14 @@ onMounted(() => {
 });
 
 const search = () => {
-	if (data.type =='1') {
-		data.query.name = data.inputValue
+	if (data.type == '1') {
+		data.query.name = data.inputValue;
 		delete data.query.label;
-	} else if  (data.type == "0") {
-		data.query.label = data.inputValue
+	} else if (data.type == '0') {
+		data.query.label = data.inputValue;
 		delete data.query.name;
 	}
-	if (data.inputValue === "") {
+	if (data.inputValue === '') {
 		delete data.query.label;
 		delete data.query.name;
 	}
@@ -209,7 +209,11 @@ const filterConfigMap = (configMaps: Array<ConfigMap>) => {
 	}
 	data.configMaps = configMapList;
 };
-const createConfigMap = () => {};
+const createConfigMap = () => {
+	data.draw.title = '创建';
+	data.draw.visible = true;
+	console.log('传递的数据draw：', data.draw);
+};
 const deleteConfigMap = (configMap: ConfigMap) => {
 	ElMessageBox({
 		title: '提示',
@@ -228,12 +232,12 @@ const deleteConfigMap = (configMap: ConfigMap) => {
 		.then(() => {
 			data.loading = true;
 			ConfigMapApi.deleteConfigMap(configMap.metadata!.namespace!, configMap.metadata!.name!, { cloud: k8sStore.state.activeCluster })
-				.then((res) => {
+				.then((res: any) => {
 					listConfigMap();
 					ElMessage.success(res.message);
 				})
-				.catch((e) => {
-					ElMessage.error(e);
+				.catch((e: any) => {
+					ElMessage.error(e.message);
 				});
 		})
 		.catch(() => {
@@ -242,6 +246,7 @@ const deleteConfigMap = (configMap: ConfigMap) => {
 	data.loading = false;
 };
 const configMapDetail = (configMap: ConfigMap) => {
+	data.draw.title = '编辑';
 	data.draw.configMap = configMap;
 	data.draw.visible = true;
 };
@@ -250,14 +255,17 @@ const showYaml = (ConfigMap: ConfigMap) => {
 	data.dialogVisible = true;
 	delete ConfigMap.metadata?.managedFields;
 	data.codeData = ConfigMap;
-	// yamlRef.value.openDialog(ConfigMap);
 };
 const updateConfigMapYaml = (code: any) => {
 	console.log('更新ConfigMap', code);
 };
 
 const handleSelectionChange = () => {};
-const updateConfigMap = (ervice: ConfigMap) => {};
+const updateConfigMap = (configMap: ConfigMap) => {
+	data.draw.title = '编辑';
+	data.draw.configMap = deepClone(configMap) as ConfigMap;
+	data.draw.visible = true;
+};
 const handlePageChange = (page: PageInfo) => {
 	data.query.page = page.page;
 	data.query.limit = page.limit;
@@ -265,17 +273,16 @@ const handlePageChange = (page: PageInfo) => {
 };
 const listConfigMap = () => {
 	ConfigMapApi.listConfigMap(k8sStore.state.activeNamespace, data.query)
-		.then((res: ResponseType) => {
-			if (res.code === 200) {
-				data.configMaps = res.data.data;
-				data.tmpConfigMap = res.data.data;
-				data.total = res.data.total;
-			}
+		.then((res: any) => {
+			data.configMaps = res.data.data;
+			data.tmpConfigMap = res.data.data;
+			data.total = res.data.total;
 		})
-		.catch((e) => {
-			ElMessage.error(e);
+		.catch((e: any) => {
+			ElMessage.error(e.message);
 		});
 };
+
 const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
 };
