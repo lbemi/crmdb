@@ -23,10 +23,10 @@
 
 <script setup lang="ts">
 import { ObjectMeta } from 'kubernetes-types/meta/v1';
-
-const props = defineProps({
-	metaData: Object<ObjectMeta>,
-});
+type propsType = {
+	metaData: ObjectMeta | undefined;
+};
+const props = defineProps<propsType>();
 </script>
 
 <style scoped>

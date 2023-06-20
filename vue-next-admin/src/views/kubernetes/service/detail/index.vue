@@ -25,23 +25,17 @@
 					k8sStore.state.activeService?.metadata?.namespace
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
-					dateStrFormat(k8sStore.state.activeService?.metadata?.creationTimestamp?.toString()!)
+					dateStrFormat(k8sStore.state.activeService?.metadata?.creationTimestamp?.toString())
 				}}</el-descriptions-item>
 				<el-descriptions-item label="类型" label-align="right" align="center">{{ k8sStore.state.activeService.spec?.type }}</el-descriptions-item>
 				<el-descriptions-item label="虚拟IP" label-align="right" align="center">{{
 					k8sStore.state.activeService.spec?.clusterIP
 				}}</el-descriptions-item>
 				<el-descriptions-item label="外部IP" label-align="right" align="center">
-					<span v-for="item in k8sStore.state.activeService.status?.loadBalancer?.ingress"> {{ item.ip }}</span>
+					<span v-for="item in k8sStore.state.activeService.status?.loadBalancer?.ingress" :key="item.ip"> {{ item.ip }}</span>
 				</el-descriptions-item>
 				<el-descriptions-item label="端口" label-align="right" align="center">
-					<el-tag
-						class="label"
-						size="small"
-						effect="plain"
-						v-if="k8sStore.state.activeService.spec?.ports"
-						v-for="item in k8sStore.state.activeService.spec?.ports"
-					>
+					<el-tag class="label" size="small" effect="plain" v-for="item in k8sStore.state.activeService.spec?.ports" :key="item.port">
 						<a v-if="k8sStore.state.activeService.spec?.type === 'NodePort'">节点端口:{{ item.nodePort }}</a> 服务端口:{{ item.port }}/{{
 							item.protocol
 						}}
@@ -49,15 +43,15 @@
 					</el-tag>
 				</el-descriptions-item>
 				<el-descriptions-item label="选择器" label-align="right" align="center">
-					<div v-for="(key, value) in k8sStore.state.activeService.spec?.selector" style="margin-bottom: 5px">
-						<el-tag plain>{{ value }}: {{ key }}</el-tag>
+					<div v-for="(key, value) in k8sStore.state.activeService.spec?.selector" :key="key" style="margin-bottom: 5px">
+						<el-tag size="small" plain>{{ value }}: {{ key }}</el-tag>
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="端点" label-align="right" align="center">
-					<div v-for="item in data.serviceInfo.endPoints.subsets">
-						<div v-for="p in item.ports">
-							<div v-for="e in item.addresses">{{ e.ip }}:{{ p.port }}</div>
-							<div v-for="e in item.notReadyAddresses">{{ e.ip }}:{{ p.port }}</div>
+					<div v-for="item in data.serviceInfo.endPoints.subsets" :key="item.addresses">
+						<div v-for="p in item.ports" :key="p.port">
+							<div v-for="e in item.addresses" :key="e.ip">{{ e.ip }}:{{ p.port }}</div>
+							<div v-for="e in item.notReadyAddresses" :key="e.ip">{{ e.ip }}:{{ p.port }}</div>
 						</div>
 					</div>
 				</el-descriptions-item>
@@ -255,7 +249,7 @@
 	</div>
 </template>
 <script lang="ts" setup name="k8sServiceDetail">
-import { reactive, onMounted, defineAsyncComponent, h } from 'vue';
+import { reactive, onMounted, defineAsyncComponent } from 'vue';
 import { ArrowLeft, Edit, View, InfoFilled } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { Event, Pod, Service, Endpoints } from 'kubernetes-types/core/v1';
@@ -264,16 +258,14 @@ import router from '@/router';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import YAML from 'js-yaml';
 import { dateStrFormat } from '@/utils/formatTime';
 import { useServiceApi } from '@/api/kubernetes/service';
 import { usePodApi } from '@/api/kubernetes/pod';
-import { ResponseType } from '@/types/response';
 import { podInfo } from '@/stores/pod';
 import { deepClone } from '@/utils/other';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
-const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDeail.vue'));
+const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDetail.vue'));
 
 const route = useRoute();
 const servieApi = useServiceApi();
@@ -303,7 +295,7 @@ const data = reactive({
 
 const deployDetail = async (dep: Deployment) => {
 	k8sStore.state.activeDeployment = dep;
-	router.push({
+	await router.push({
 		name: 'k8sDeploymentDetail',
 		params: {
 			name: dep.metadata?.name,
@@ -331,27 +323,21 @@ const getServiceInfo = () => {
 			data.serviceInfo = res.data;
 		});
 };
-// FIXME
 
 onMounted(() => {
 	getServiceInfo();
 });
 
-const updateServiceYaml = async (svc: any) => {
-	const updateData = deepClone(YAML.load(svc) as Service);
-	delete updateData.status;
+const updateServiceYaml = async (svc: Service) => {
+	const updateData = deepClone(svc) as Service;
 	delete updateData.metadata?.managedFields;
 
 	await servieApi
 		.updateService({ cloud: k8sStore.state.activeCluster }, updateData)
-		.then((res) => {
-			if (res.code == 200) {
-				// 同步更新store数据,刷新当前页面数据
-				getService();
-				ElMessage.success('更新成功');
-			} else {
-				ElMessage.error(res.message);
-			}
+		.then(() => {
+			// 同步更新store数据,刷新当前页面数据
+			getService();
+			ElMessage.success('更新成功');
 		})
 		.catch((e) => {
 			ElMessage.error(e.message);
@@ -365,9 +351,10 @@ const getService = () => {
 			cloud: k8sStore.state.activeCluster,
 		})
 		.then((res) => {
-			if (res.code === 200) {
-				k8sStore.state.activeService = res.data;
-			}
+			k8sStore.state.activeService = res.data;
+		})
+		.catch((e: any) => {
+			ElMessage.error(e.message);
 		});
 };
 const backRoute = () => {

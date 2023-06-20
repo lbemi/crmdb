@@ -22,33 +22,35 @@
 					>
 					<el-button :icon="Delete" type="primary" size="small" text v-else style="padding-left: 0" @click="cancelResource">取消配置</el-button>
 				</el-form-item>
-				<el-form-item v-if="data.container.resources?.requests && data.resourceSet">
-					<div style="height: 28px">
-						<span>所需资源： CPU</span>
-						<el-input placeholder="如：0.5" v-model="data.container.resources!.requests!.cpu" size="small" style="width: 80px" />
-						<span> Core</span>
-						<el-divider direction="vertical" />
-						<a>内存</a>
-						<el-input placeholder="如：300Mi" v-model="data.container.resources!.requests!.memory" size="small" style="width: 80px" /><span>
-							(单位：MiB)</span
-						>
-					</div>
-					<div style="font-size: 6px; color: #00bb00">
-						<el-icon size="12px" color="#00bb00"><InfoFilled /></el-icon>建议根据实际使用情况设置，防止由于资源约束而无法调度或引发内存不足(OOM)错误
-					</div>
-				</el-form-item>
-				<el-form-item v-if="data.resourceSet">
-					<div style="height: 28px">
-						<span>资源限制： CPU</span>
-						<el-input placeholder="如：0.5" v-model="data.container.resources!.limits!.cpu" size="small" style="width: 80px" />
-						<span> Core</span>
-						<el-divider direction="vertical" />
-						<a>内存</a>
-						<el-input placeholder="如：500Mi" v-model="data.container.resources!.limits!.memory" size="small" style="width: 80px" /><span>
-							(单位：MiB)</span
-						>
-					</div>
-				</el-form-item>
+				<div v-if="data.resourceSet">
+					<el-form-item v-if="data.container.resources">
+						<div style="height: 28px" v-if="data.container.resources.requests">
+							<span>所需资源： CPU</span>
+							<el-input placeholder="如：0.5" v-model="data.container.resources.requests.cpu" size="small" style="width: 80px" />
+							<span> Core</span>
+							<el-divider direction="vertical" />
+							<a>内存</a>
+							<el-input placeholder="如：300Mi" v-model="data.container.resources.requests.memory" size="small" style="width: 80px" /><span>
+								(单位：MiB)</span
+							>
+						</div>
+						<div style="font-size: 6px; color: #00bb00">
+							<el-icon size="12px" color="#00bb00"><InfoFilled /></el-icon>建议根据实际使用情况设置，防止由于资源约束而无法调度或引发内存不足(OOM)错误
+						</div>
+					</el-form-item>
+					<el-form-item v-if="data.container.resources">
+						<div style="height: 28px" v-if="data.container.resources.limits">
+							<span>资源限制： CPU</span>
+							<el-input placeholder="如：0.5" v-model="data.container.resources.limits.cpu" size="small" style="width: 80px" />
+							<span> Core</span>
+							<el-divider direction="vertical" />
+							<a>内存</a>
+							<el-input placeholder="如：500Mi" v-model="data.container.resources.limits.memory" size="small" style="width: 80px" /><span>
+								(单位：MiB)</span
+							>
+						</div>
+					</el-form-item>
+				</div>
 				<el-form-item v-if="data.resourceSet">
 					<el-tooltip
 						class="box-item"
@@ -89,14 +91,14 @@
 							特权容器：
 						</el-tooltip>
 					</template>
-					<el-checkbox v-model="data.container.securityContext!.privileged" />
+					<el-checkbox v-if="data.container.securityContext" v-model="data.container.securityContext.privileged" />
 				</el-form-item>
 			</el-card>
 			<el-card>
-				<Ports :ports="data.container.ports" @updatePort="getPorts" />
+				<Ports ref="portsRef" :ports="data.container.ports" />
 			</el-card>
 			<el-card>
-				<Env :env="data.container.env" @updateEnv="getEnvs" />
+				<Env ref="envsRef" :env="data.container.env" />
 			</el-card>
 			<el-card v-show="!data.container.isIntiContainer">
 				<el-form-item label="存活检查">
@@ -154,11 +156,12 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue';
+import { defineAsyncComponent, onMounted, reactive, ref } from 'vue';
 import { Container, ContainerPort, EnvVar, Volume } from 'kubernetes-types/core/v1';
 import { Delete, Edit, InfoFilled } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
 import { ContainerType } from '@/types/kubernetes/common';
+import { isObjectValueEqual } from '@/utils/arrayOperation';
 
 //子组件引用
 const HealthCheck = defineAsyncComponent(() => import('./check.vue'));
@@ -175,6 +178,9 @@ const preLifeRef = ref();
 const postLifeRef = ref();
 const startCmdRef = ref();
 const volumeMountRef = ref();
+const portsRef = ref();
+const envsRef = ref();
+
 const data = reactive({
 	loadFromParent: false,
 	lifePostStartSet: false,
@@ -203,7 +209,8 @@ const data = reactive({
 	},
 });
 
-const getPorts = (ports: Array<ContainerPort>) => {
+const getPorts = () => {
+	const ports = portsRef.value.returnPorts();
 	if (ports && ports.length != 0) {
 		data.container.ports = deepClone(ports) as Array<ContainerPort>;
 	} else {
@@ -211,7 +218,8 @@ const getPorts = (ports: Array<ContainerPort>) => {
 	}
 };
 
-const getEnvs = (envs: Array<EnvVar>) => {
+const getEnvs = () => {
+	const envs = envsRef.value.returnEnvs();
 	if (envs && envs.length != 0) {
 		data.container.env = deepClone(envs) as Array<EnvVar>;
 	} else {
@@ -312,66 +320,20 @@ type propsType = {
 };
 const props = defineProps<propsType>();
 
-const emit = defineEmits(['updateContainer']);
+// const emit = defineEmits(['updateContainer']);
 onMounted(() => {
 	const copyData = deepClone(props.container) as ContainerType;
-	console.log(')))>>>', copyData);
-	// if (!copyData.volumeMounts) {
-	// 	copyData.volumeMounts = [] as VolumeMount[];
-	// }
-	//
-	// if (copyData.resources?.limits || copyData.resources?.requests) {
-	// 	data.resourceSet = true;
-	// 	console.log(data.container.name, '************', data.container.resources?.requests.cpu, '-----', props.container.resources);
-	// }
-
 	if (!copyData.securityContext) {
 		copyData.securityContext = {
 			privileged: false,
 		};
 	}
+	if (!isObjectValueEqual(copyData.resources, {})) data.resourceSet = true;
 	data.container = copyData;
 });
-// watch(
-// 	() => props.container,
-// 	() => {
-//
-// 		if (props.container && !isObjectValueEqual(data.container, props.container)) {
-// 			data.loadFromParent = true;
-//
-// 			const copyData = deepClone(props.container) as ContainerType;
-// 			if (!copyData.volumeMounts) {
-// 				copyData.volumeMounts = [] as VolumeMount[];
-// 			}
-//
-// 			if (copyData.resources?.limits || copyData.resources?.requests) {
-// 				data.resourceSet = true;
-// 				console.log(data.container.name, '************', data.container.resources?.requests.cpu, '-----', props.container.resources);
-// 			}
-//
-// 			if (!copyData.securityContext) {
-// 				copyData.securityContext = {
-// 					privileged: false,
-// 				};
-// 			}
-// 			if (!copyData.lifecycle) {
-// 				copyData.lifecycle = {};
-// 			}
-//
-// 			data.container = copyData;
-//
-// 			setTimeout(() => {
-// 				//延迟一下，不然会触发循环更新
-// 				data.loadFromParent = false;
-// 			}, 1);
-// 		}
-// 	},
-// 	{
-// 		deep: true,
-// 		immediate: true,
-// 	}
-// );
+
 const returnContainer = () => {
+	getPorts();
 	getLivenessData();
 	getStartupData();
 	getReadinessData();
@@ -379,6 +341,7 @@ const returnContainer = () => {
 	getPostStart();
 	getCommands();
 	getVolumeMounts();
+	getEnvs();
 
 	if (data.container.securityContext?.privileged && !data.container.securityContext?.privileged) {
 		delete data.container.securityContext;
@@ -404,36 +367,36 @@ defineExpose({
 	returnContainer,
 });
 
-watch(
-	() => [data.container, data.resourceSet],
-	() => {
-		// 父组件传值直接渲染，不触发循环更新
-		if (!data.loadFromParent) {
-			if (data.container.securityContext?.privileged && !data.container.securityContext?.privileged) {
-				delete data.container.securityContext;
-			}
-
-			if (data.resourceSet && !data.resourceHasSet) {
-				data.container.resources = {
-					limits: {
-						cpu: '',
-						memory: '',
-					},
-					requests: {
-						cpu: '',
-						memory: '',
-					},
-				};
-				data.resourceHasSet = true;
-			}
-			emit('updateContainer', props.index, data.container);
-		}
-	},
-	{
-		deep: true,
-		immediate: true,
-	}
-);
+// watch(
+// 	() => [data.container, data.resourceSet],
+// 	() => {
+// 		// 父组件传值直接渲染，不触发循环更新
+// 		if (!data.loadFromParent) {
+// 			if (data.container.securityContext?.privileged && !data.container.securityContext?.privileged) {
+// 				delete data.container.securityContext;
+// 			}
+//
+// 			if (data.resourceSet && !data.resourceHasSet) {
+// 				data.container.resources = {
+// 					limits: {
+// 						cpu: '',
+// 						memory: '',
+// 					},
+// 					requests: {
+// 						cpu: '',
+// 						memory: '',
+// 					},
+// 				};
+// 				data.resourceHasSet = true;
+// 			}
+// 			emit('updateContainer', props.index, data.container);
+// 		}
+// 	},
+// 	{
+// 		deep: true,
+// 		immediate: true,
+// 	}
+// );
 
 const imagePullPolicy = [
 	{

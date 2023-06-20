@@ -344,15 +344,12 @@ const handleVolumeData = () => {
 					volume.emptyDir = item.emptyDir;
 					break;
 			}
-			console.log('=====> ', volume);
 			tmpVolume.push(volume);
 		}
 	});
 	data.volumeMount = tempVolumeMount;
 	data.tmpVolumes = tmpVolume;
 	data.volumes = tmpVolume;
-	console.log('>>>>>>>>>>>>', tmpVolume);
-	console.log('************', data.volumes);
 };
 
 // 添加volumeData数据
@@ -469,6 +466,7 @@ const returnVolumeMounts = () => {
 
 const returnVolumes = () => {
 	// handleVolumeData();
+	console.log('返回volumes：：', data.volumes);
 	return data.volumes;
 };
 defineExpose({

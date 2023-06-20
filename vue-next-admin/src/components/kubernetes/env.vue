@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { EnvVar } from 'kubernetes-types/core/v1';
-import { reactive, watch } from 'vue';
+import { onMounted, reactive } from 'vue';
 import { deepClone } from '@/utils/other';
 
 // FIXME 资源引用有问题，待修复
@@ -67,11 +67,10 @@ const data = reactive({
 	env: <Array<envImp>>[],
 });
 
-const props = defineProps({
-	env: Array<EnvVar>,
-});
-
-const emit = defineEmits(['updateEnv']);
+type propsType = {
+	env: Array<EnvVar> | undefined;
+};
+const props = defineProps<propsType>();
 
 const buildEnv = () => {
 	const envData = [] as EnvVar[];
@@ -166,37 +165,52 @@ const parseEnv = (envs: Array<EnvVar>) => {
 	});
 	data.env = envData;
 };
-
-watch(
-	() => props.env,
-	() => {
-		if (props.env) {
-			data.loadFromParent = true;
-			parseEnv(props.env);
-			setTimeout(() => {
-				data.loadFromParent = false;
-			}, 100);
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
+onMounted(() => {
+	if (props.env != undefined) {
+		data.loadFromParent = true;
+		parseEnv(props.env);
+		setTimeout(() => {
+			data.loadFromParent = false;
+		}, 100);
 	}
-);
+});
+// watch(
+// 	() => props.env,
+// 	() => {
+// 		if (props.env) {
+// 			data.loadFromParent = true;
+// 			parseEnv(props.env);
+// 			setTimeout(() => {
+// 				data.loadFromParent = false;
+// 			}, 100);
+// 		}
+// 	},
+// 	{
+// 		immediate: true,
+// 		deep: true,
+// 	}
+// );
+const returnEnvs = () => {
+	const env = buildEnv();
+	return env;
+};
 
-watch(
-	() => data.env,
-	() => {
-		if (!data.loadFromParent) {
-			const env = buildEnv();
-			emit('updateEnv', env);
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
-	}
-);
+defineExpose({
+	returnEnvs,
+});
+// watch(
+// 	() => data.env,
+// 	() => {
+// 		if (!data.loadFromParent) {
+// 			const env = buildEnv();
+// 			emit('updateEnv', env);
+// 		}
+// 	},
+// 	{
+// 		immediate: true,
+// 		deep: true,
+// 	}
+// );
 
 const envType = [
 	{

@@ -39,6 +39,13 @@ export function useDeploymentApi() {
 				params: param,
 			});
 		},
+		getDeployment: (ns: string, depName: string, param: any) => {
+			return request({
+				url: '/deployments/namespaces/' + ns + '/' + depName,
+				method: 'get',
+				params: param,
+			});
+		},
 		getDeploymentEvents: (ns: string, depName: string, param: any) => {
 			return request({
 				url: '/deployments/namespaces/' + ns + '/' + depName + '/events',

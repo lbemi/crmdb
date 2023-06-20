@@ -29,7 +29,7 @@
 						ref="containersRef"
 						:containers="data.containers"
 						:initContainers="data.initContainers"
-						:volumes="data.deployment.spec?.template.spec?.volumes"
+						:volumes="data.deployments.spec?.template.spec?.volumes"
 					/>
 				</div>
 				<div style="margin-top: 10px" id="2" v-show="data.active === 2">
@@ -45,19 +45,18 @@
 				</span>
 			</template>
 		</el-dialog>
-		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployment" v-if="data.yamlDialogVisible" />
+		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployments" v-if="data.yamlDialogVisible" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeMount, onUnmounted, reactive, ref, watch } from 'vue';
+import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref } from 'vue';
 import { Container } from 'kubernetes-types/core/v1';
 import { Deployment } from 'kubernetes-types/apps/v1';
 import yamlJs from 'js-yaml';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
 import { View } from '@element-plus/icons-vue';
-import mittBus from '@/utils/mitt';
 import { deepClone } from '@/utils/other';
 import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
@@ -85,7 +84,7 @@ const data = reactive({
 	containers: [] as Container[],
 	initContainers: [] as Container[],
 	//初始化deployment
-	deployment: <Deployment>{
+	deployments: <Deployment>{
 		apiVersion: 'apps/v1',
 		kind: 'Deployment',
 		metadata: {
@@ -123,31 +122,23 @@ const data = reactive({
 	},
 });
 
-const edit = () => {
-	const dep = deepClone(kubeInfo.state.activeDeployment);
-	delete dep.metadata?.resourceVersion;
-	delete dep.metadata?.managedFields;
-	delete dep.status;
-	data.code = yamlJs.dump(dep);
-};
-
 const showYaml = async () => {
 	getContainers();
 	data.yamlDialogVisible = true;
 };
 
 const getContainers = () => {
-	delete data.deployment.spec!.template.spec!.containers;
-	delete data.deployment.spec!.template.spec!.initContainers;
+	delete data.deployments.spec!.template.spec!.containers;
+	delete data.deployments.spec!.template.spec!.initContainers;
 	const { containers, initContainers, volumes } = containersRef.value.returnContainers();
 	if (volumes.length > 0) {
-		data.deployment.spec!.template.spec!.volumes = volumes;
+		data.deployments.spec!.template.spec!.volumes = volumes;
 	}
 	if (containers.length > 0) {
-		data.deployment.spec!.template.spec!.containers = containers;
+		data.deployments.spec!.template.spec!.containers = containers;
 	}
 	if (initContainers.length > 0) {
-		data.deployment.spec!.template.spec!.initContainers = initContainers;
+		data.deployments.spec!.template.spec!.initContainers = initContainers;
 	}
 };
 
@@ -155,15 +146,15 @@ const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
 	metaRef.value = metaRefs;
 	const dep = deepClone(newData);
 	const metaLabels = deepClone(newData);
-	data.deployment.metadata = newData.meta;
+	data.deployments.metadata = newData.meta;
 	//更新labels
 	if (!data.isUpdate) {
-		if (dep.meta.name) data.deployment.metadata!.labels!.app = dep.meta.name;
+		if (dep.meta.name) data.deployments.metadata!.labels!.app = dep.meta.name;
 	}
 	//更新selector.matchLabels
-	data.deployment.spec!.selector.matchLabels = dep.meta.labels;
-	data.deployment.spec!.template.metadata!.labels = metaLabels.meta.labels;
-	data.deployment.spec!.replicas = newData.replicas;
+	data.deployments.spec!.selector.matchLabels = dep.meta.labels;
+	data.deployments.spec!.template.metadata!.labels = metaLabels.meta.labels;
+	data.deployments.spec!.replicas = newData.replicas;
 	updateCodeMirror();
 };
 const nextStep = () => {
@@ -176,22 +167,12 @@ const next = () => {
 	nextStep();
 };
 
-// // 定义变量内容
-// mittBus.on('updateVolumes', (res) => {
-// 	console.log('volumes---->:', res);
-// 	if (data.deployment.spec) {
-// 		if (data.deployment.spec.template) {
-// 			data.deployment.spec.template.spec!.volumes = res;
-// 		}
-// 	}
-// });
-
 const confirm = async () => {
 	// data.code = yaml.dump(data.deployment);
 	getContainers();
 	if (props.title === '创建deployment') {
 		deploymentApi
-			.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployment)
+			.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployments)
 			.then(() => {
 				ElMessage.success('创建成功');
 				handleClose();
@@ -202,7 +183,7 @@ const confirm = async () => {
 			});
 	} else {
 		await deploymentApi
-			.updateDeployment(data.deployment, { cloud: kubeInfo.state.activeCluster })
+			.updateDeployment(data.deployments, { cloud: kubeInfo.state.activeCluster })
 			.then(() => {
 				ElMessage.success('更新成功');
 				handleClose();
@@ -214,7 +195,7 @@ const confirm = async () => {
 };
 const updateCodeMirror = () => {
 	data.loadCode = true;
-	data.code = yamlJs.dump(data.deployment);
+	data.code = yamlJs.dump(data.deployments);
 	setTimeout(() => {
 		data.loadCode = false;
 	}, 1);
@@ -223,15 +204,12 @@ const updateCodeMirror = () => {
 onBeforeMount(() => {
 	updateCodeMirror();
 });
-// onUnmounted(() => {
-// 	//卸载
-// 	mittBus.off('updateVolumes', () => {});
-// });
 
 const emit = defineEmits(['update', 'update:dialogVisible', 'refresh']);
 
 const handleClose = () => {
 	emit('update:dialogVisible', false);
+	emit('refresh');
 };
 
 const props = defineProps({
@@ -240,28 +218,45 @@ const props = defineProps({
 	deployment: Object,
 });
 
-watch(
-	() => props,
-	() => {
-		dialogVisible.value = props.dialogVisible;
-		if (!isObjectValueEqual(props.deployment, {})) {
-			data.isUpdate = true;
-			data.deployment = props.deployment as Deployment;
-			data.bindMetaData.metadata = data.deployment.metadata;
-			data.bindMetaData.replicas = data.deployment.spec?.replicas;
-			if (data.deployment.spec?.template.spec?.initContainers) {
-				data.initContainers = data.deployment.spec!.template.spec!.initContainers!;
-			}
-			if (data.deployment.spec?.template.spec?.containers) {
-				data.containers = data.deployment.spec!.template.spec!.containers!;
-			}
+onMounted(() => {
+	dialogVisible.value = props.dialogVisible;
+	if (!isObjectValueEqual(props.deployment, {})) {
+		data.isUpdate = true;
+		console.log(props.deployment);
+		data.deployments = props.deployment as Deployment;
+		data.bindMetaData.metadata = data.deployments.metadata;
+		data.bindMetaData.replicas = data.deployments.spec?.replicas;
+
+		if (data.deployments.spec?.template.spec?.initContainers) {
+			data.initContainers = data.deployments.spec!.template.spec!.initContainers!;
 		}
-	},
-	{
-		immediate: true,
-		deep: true,
+		if (data.deployments.spec?.template.spec?.containers) {
+			data.containers = data.deployments.spec!.template.spec!.containers!;
+		}
 	}
-);
+});
+// watch(
+// 	() => props,
+// 	() => {
+// 		dialogVisible.value = props.dialogVisible;
+// 		if (!isObjectValueEqual(props.deployments, {})) {
+// 			data.isUpdate = true;
+// 			data.deployments = props.deployments as Deployment;
+// 			data.bindMetaData.metadata = data.deployments.metadata;
+// 			data.bindMetaData.replicas = data.deployments.spec?.replicas;
+// 			if (data.deployments.spec?.template.spec?.initContainers) {
+// 				data.initContainers = data.deployments.spec!.template.spec!.initContainers!;
+// 			}
+// 			if (data.deployments.spec?.template.spec?.containers) {
+// 				data.containers = data.deployments.spec!.template.spec!.containers!;
+// 			}
+// 		}
+// 	},
+// 	{
+// 		immediate: true,
+// 		deep: true,
+// 	}
+// );
 </script>
 
 <style scoped>

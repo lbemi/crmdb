@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { ContainerPort } from 'kubernetes-types/core/v1';
-import { reactive, watch } from 'vue';
+import { onMounted, reactive } from 'vue';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
 import { deepClone } from '@/utils/other';
@@ -39,45 +39,29 @@ const data = reactive({
 	ports: <Array<ContainerPort>>[],
 });
 
-const props = defineProps({
-	ports: Array<ContainerPort>,
-});
+type propsType = {
+	ports: Array<ContainerPort> | undefined;
+};
+const props = defineProps<propsType>();
 
-const emit = defineEmits(['updatePort']);
 const pushPort = () => {
 	const name = uuid().toString().split('-')[1];
 	data.ports.push({ name: 'p-' + name, containerPort: 80, protocol: 'TCP' });
 };
 
-watch(
-	() => props.ports,
-	() => {
-		if (props.ports) {
-			data.loadFromParent = true;
-			data.ports = deepClone(props.ports) as Array<ContainerPort>;
-			setTimeout(() => {
-				data.loadFromParent = false;
-			}, 2);
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
+onMounted(() => {
+	if (props.ports != undefined) {
+		data.ports = deepClone(props.ports) as Array<ContainerPort>;
 	}
-);
+});
 
-watch(
-	() => data.ports,
-	() => {
-		if (!data.loadFromParent) {
-			emit('updatePort', data.ports);
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
-	}
-);
+const returnPorts = () => {
+	return data.ports;
+};
+
+defineExpose({
+	returnPorts,
+});
 
 const protocolType = [
 	{

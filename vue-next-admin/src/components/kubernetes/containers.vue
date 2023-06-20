@@ -9,7 +9,7 @@
 						</span>
 						<span v-else class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' }} </span>
 					</template>
-					<ContainerDiv :ref="(el:refItem)=>setItemRef(el)" :container="item" :index="index" :volumes="props.volumes" />
+					<ContainerDiv :ref="(el:refItem)=>setItemRef(el,index)" :container="item" :index="index" :volumes="props.volumes" />
 				</el-tab-pane>
 				<el-tab-pane key="CustomBtn" name="CustomBtn" :closable="false">
 					<template #label>
@@ -36,9 +36,9 @@ type refItem = Element | ComponentPublicInstance | null;
 const editableTabsValue = ref(0);
 const itemRefs = ref([]);
 
-const setItemRef = (el: refItem) => {
+const setItemRef = (el: refItem, index: number) => {
 	if (el) {
-		itemRefs.value.push(el);
+		itemRefs.value[index] = el;
 	}
 };
 const tabChange = (currentName: TabPaneName) => {
@@ -91,11 +91,14 @@ const data = reactive({
 });
 
 const getContainers = () => {
+	const vs = [] as Volume[];
 	itemRefs.value.forEach((refValue) => {
 		const { index, container, volumes } = refValue.returnContainer();
-		data.volumes = volumes;
+		vs.push(...volumes);
 		data.containers[index] = deepClone(container) as ContainerType;
 	});
+
+	data.volumes = vs;
 };
 
 type propsType = {

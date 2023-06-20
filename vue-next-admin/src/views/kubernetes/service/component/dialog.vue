@@ -4,7 +4,7 @@
 			<el-form ref="ruleFormRef" :model="data.service" label-width="120px" class="demo-ruleForm" status-icon>
 				<el-card class="card">
 					<el-form-item label="类型" prop="type">
-						<el-select v-model="data.service.spec!.type" :disabled="data.updateFlag" size="small">
+						<el-select v-if="data.service.spec" v-model="data.service.spec.type" :disabled="data.updateFlag" size="small">
 							<el-option v-for="item in data.serviceType" :key="item.key" :label="item.key" :value="item.value" />
 						</el-select>
 
@@ -14,15 +14,15 @@
 							</el-select>
 						</el-form-item>
 					</el-form-item>
-					<el-form-item label="服务名称" prop="name">
-						<el-input v-model="data.service.metadata!.name" style="width: 190px" :disabled="data.updateFlag" size="small" />
+					<el-form-item label="服务名称" prop="name" v-if="data.service.metadata">
+						<el-input v-model="data.service.metadata.name" style="width: 190px" :disabled="data.updateFlag" size="small" />
 						<el-form-item label="命名空间">
-							<el-select v-model="data.service.metadata!.namespace" placeholder="指定命名空间" size="small" :disabled="data.updateFlag">
+							<el-select v-model="data.service.metadata.namespace" placeholder="指定命名空间" size="small" :disabled="data.updateFlag">
 								<el-option
 									v-for="item in k8sStore.state.namespace"
-									:key="item.metadata!.name"
-									:label="item.metadata!.name"
-									:value="item.metadata!.name!"
+									:key="item.metadata.name"
+									:label="item.metadata.name"
+									:value="item.metadata.name"
 								/>
 							</el-select>
 						</el-form-item>
@@ -53,21 +53,11 @@
 					<el-form-item label="关联后端">
 						<el-popover :visible="data.visible" placement="right" :width="400">
 							<el-text class="mx-1" type="info">使用工作负载的标签作为选择器</el-text>
-							<el-tabs
-								v-model="data.activeName"
-								type="border-card"
-								style="margin-top: 8px; margin-bottom: 8px"
-								@tab-change="(TabPaneName) => chanageTab(TabPaneName)"
-							>
+							<el-tabs v-model="data.activeName" type="border-card" style="margin-top: 8px; margin-bottom: 8px">
 								<el-tab-pane label="无状态" name="deployment">
 									请选择:
 									<el-select class="m-2" placeholder="Select" v-model="data.selectWorkLoad" size="small">
-										<el-option
-											v-for="item in data.deployments"
-											:key="item.metadata!.name"
-											:label="item.metadata!.name"
-											:value="item.metadata!.name!"
-										/>
+										<el-option v-for="item in data.deployments" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
 									</el-select>
 								</el-tab-pane>
 								<el-tab-pane label="守护进程" name="daemonSet">daemonSet</el-tab-pane>
@@ -83,7 +73,7 @@
 						</el-popover>
 					</el-form-item>
 					<el-form-item label="标签选择器" prop="selector">
-						<Label :labelData="data.service.spec!.selector!" @update-labels="getLabels" />
+						<Label v-if="data.service.spec" :labelData="data.service.spec.selector" @update-labels="getLabels" />
 					</el-form-item>
 				</el-card>
 
@@ -101,12 +91,12 @@
 					<!-- ServicePort 端口设置 -->
 					<ServicePort :ports="data.service.spec?.ports" @updatePort="getServicePorts" />
 				</el-card>
-				<el-card class="card">
+				<el-card class="card" v-if="data.service.metadata">
 					<el-form-item label="标签">
-						<Label :labelData="data.service.metadata!.labels!" @update-labels="getMetaLabels" />
+						<Label :labelData="data.service.metadata.labels" @update-labels="getMetaLabels" />
 					</el-form-item>
 					<el-form-item label="注解">
-						<Label :labelData="data.service.metadata!.annotations!" @update-labels="getAnnotations" />
+						<Label :labelData="data.service.metadata.annotations" @update-labels="getAnnotations" />
 					</el-form-item>
 				</el-card>
 			</el-form>
@@ -191,10 +181,8 @@ const selectWorkLoad = () => {
 const getDeployments = () => {
 	deploymentApi
 		.listDeployment(data.service.metadata!.namespace!, { cloud: k8sStore.state.activeCluster })
-		.then((res) => {
-			if (res.code === 200) {
-				data.deployments = res.data.data;
-			}
+		.then((res: any) => {
+			data.deployments = res.data.data;
 		})
 		.catch(() => {
 			ElMessage.error('获取deployment失败');
@@ -250,9 +238,6 @@ const getAnnotations = (labels: any) => {
 const getServicePorts = (ports: any) => {
 	data.service.spec!.ports = ports;
 };
-const chanageTab = (chanageTab: string | number) => {
-	console.log(chanageTab);
-};
 
 const confirm = () => {
 	if (data.service.spec?.type === 'ClusterIP' && data.headless) {
@@ -262,7 +247,7 @@ const confirm = () => {
 	}
 	if (data.keepAlive) {
 		data.service.spec!.sessionAffinity = 'ClientIP';
-		data.service.spec!.sessionAffinityConfig! = {
+		data.service.spec!.sessionAffinityConfig = {
 			clientIP: {
 				timeoutSeconds: data.keepAliveTime,
 			},

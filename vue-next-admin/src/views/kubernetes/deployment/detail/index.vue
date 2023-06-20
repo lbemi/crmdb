@@ -7,10 +7,16 @@
 					<span style="font-weight: 35">{{ k8sStore.state.activeDeployment?.metadata?.name }}</span></el-col
 				>
 				<el-col :span="6"
-					><el-button v-auth="'k8s:deployment:edit'" type="primary" size="small" :icon="Edit">编辑</el-button>
+					><el-button v-auth="'k8s:deployment:edit'" type="primary" size="small" :icon="Edit" @click="handleEdit()">编辑</el-button>
 					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button>
-					<el-button v-auth="'k8s:deployment:redeploy'" type="primary" size="small" :icon="Refresh" @click="reDeploy">重新部署</el-button></el-col
-				>
+					<el-button v-auth="'k8s:deployment:redeploy'" type="primary" size="small" :icon="Refresh" @click="reDeploy">重新部署</el-button>
+					<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
+						<el-icon>
+							<ele-RefreshRight />
+						</el-icon>
+						刷新
+					</el-button>
+				</el-col>
 			</el-row>
 
 			<el-descriptions :column="3" border class="desc-body">
@@ -21,7 +27,7 @@
 					k8sStore.state.activeDeployment?.metadata?.namespace
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
-					dateStrFormat(k8sStore.state.activeDeployment?.metadata?.creationTimestamp?.toString()!)
+					dateStrFormat(k8sStore.state.activeDeployment?.metadata?.creationTimestamp?.toString())
 				}}</el-descriptions-item>
 				<el-descriptions-item label="副本数" label-align="right" align="center"
 					><el-button
@@ -100,13 +106,13 @@
 							<template #default="scope">
 								<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>
 								<div v-if="scope.row.status.phase != 'Running'" style="color: red">
-									<div v-if="scope.row.status.containerStatuses" v-for="containerStatus in scope.row.status.containerStatuses">
+									<div v-for="(containerStatus, index) in scope.row.status.containerStatuses" :key="index">
 										<div v-if="!containerStatus.ready">
 											{{ containerStatus.state.waiting?.message }}
 											{{ containerStatus.state.Terminating?.message }}
 										</div>
 									</div>
-									<div v-if="scope.row.status.initContainerStatuses" v-for="containerStatus in scope.row.status.initContainerStatuses">
+									<div v-for="(containerStatus, index) in scope.row.status.initContainerStatuses" :key="index">
 										<div v-if="!containerStatus.ready">
 											{{ containerStatus.state.waiting?.message }}
 											{{ containerStatus.state.Terminating?.message }}
@@ -175,10 +181,14 @@
 				</el-tab-pane>
 				<el-tab-pane label="环境变量" name="third">
 					<el-descriptions :column="1" direction="vertical">
-						<el-descriptions-item :label="'容器: ' + item.name" v-for="item in k8sStore.state.activeDeployment.spec?.template.spec?.containers">
+						<el-descriptions-item
+							:label="'容器: ' + item.name"
+							v-for="(item, index) in k8sStore.state.activeDeployment.spec?.template.spec?.containers"
+							:key="index"
+						>
 							<el-card class="card" :body-style="{ height: '200px' }">
-								<div v-if="item.env" v-for="(value, key, index) in item.env" :key="index" style="margin-bottom: 8px">
-									<el-tag type="info" size="default"> {{ value }} </el-tag>
+								<div v-if="item.env" style="margin-bottom: 8px">
+									<el-tag type="info" size="default" v-for="(value, key, index) in item.env" :key="index"> {{ value }} </el-tag>
 								</div>
 								<div v-else>无数据</div>
 							</el-card>
@@ -257,6 +267,14 @@
 			@update="updateDeployment"
 			v-if="data.dialogVisible"
 		/>
+
+		<CreateDialog
+			v-model:dialogVisible="data.update.dialogVisible"
+			:title="data.update.title"
+			:deployment="data.deployment"
+			:refresh="k8sStore.refreshActiveDeployment()"
+			v-if="data.update.dialogVisible"
+		/>
 	</div>
 </template>
 <script lang="ts" setup name="k8sDeploymentDetail">
@@ -278,7 +296,8 @@ import { deepClone } from '@/utils/other';
 import { dateStrFormat } from '@/utils/formatTime';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
-const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDeail.vue'));
+const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDetail.vue'));
+const CreateDialog = defineAsyncComponent(() => import('../component/dialog.vue'));
 
 const route = useRoute();
 const websocketApi = useWebsocketApi();
@@ -289,6 +308,10 @@ const deploymentApi = useDeploymentApi();
 const timer = ref();
 
 const data = reactive({
+	update: {
+		dialogVisible: false,
+		title: '',
+	},
 	RsdialogVisible: false,
 	rscode: {},
 	dialogVisible: false,
@@ -300,9 +323,21 @@ const data = reactive({
 	pods: [] as Pod[],
 	iShow: false,
 	activeName: 'first',
-	deployment: [],
+	deployments: [],
+	deployment: {} as Deployment,
 	events: [] as ReplicaSetCondition[],
 });
+
+//编辑deployment
+const handleEdit = () => {
+	k8sStore.state.creatDeployment.namespace = k8sStore.state.activeDeployment.metadata!.namespace!;
+	const dep = deepClone(k8sStore.state.activeDeployment) as Deployment;
+	delete dep.status;
+	delete dep.metadata?.managedFields;
+	data.deployment = dep;
+	data.update.title = '更新deployment';
+	data.update.dialogVisible = true;
+};
 
 const rollBack = (rs: ReplicaSet) => {
 	ElMessageBox({
@@ -340,7 +375,7 @@ const rollBack = (rs: ReplicaSet) => {
 			ElMessage.info('取消');
 		});
 };
-const handleClick = (tab: TabsPaneContext, event: Event) => {
+const handleClick = (tab: TabsPaneContext) => {
 	if (tab.paneName === 'six') {
 		getEvents();
 	}
@@ -365,12 +400,11 @@ const reDeploy = () => {
 		.then(() => {
 			deploymentApi
 				.reDeployDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, { cloud: k8sStore.state.activeCluster })
-				.then((res) => {
-					if (res.code == 200) {
-						ElMessage.success('操作成功');
-					} else {
-						ElMessage.error(res.message);
-					}
+				.then(() => {
+					ElMessage.success('操作成功');
+				})
+				.catch((e: any) => {
+					ElMessage.error(e.message);
 				});
 		})
 		.catch(() => {
@@ -391,25 +425,10 @@ const scaleDeploy = (action: string) => {
 			k8sStore.state.activeDeployment.spec?.replicas!,
 			{ cloud: k8sStore.state.activeCluster }
 		)
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('伸缩成功');
-			} else {
-				ElMessage.error('伸缩失败');
-			}
-		});
-};
-
-const handleEnvent = () => {
-	data.replicasets.forEach((item: ReplicaSet) => {
-		if (item.status) {
-			if (item.status.conditions) {
-				item.status.conditions.forEach((it: ReplicaSetCondition) => {
-					data.events.push(it);
-				});
-			}
-		}
-	});
+		.then(() => {
+			ElMessage.success('伸缩成功');
+		})
+		.catch(() => [ElMessage.error('伸缩失败')]);
 };
 
 const podRestart = (status: PodStatus) => {
@@ -419,7 +438,6 @@ const podRestart = (status: PodStatus) => {
 	});
 	return count;
 };
-// FIXME
 
 const podStatus = (status: PodStatus) => {
 	let s = '<span style="color: green">Running</span>';
@@ -489,12 +507,8 @@ const updateDeployment = async (codeData: any) => {
 
 	await deploymentApi
 		.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
-		.then((res) => {
-			if (res.code == 200) {
-				ElMessage.success('更新成功');
-			} else {
-				ElMessage.error(res.message);
-			}
+		.then(() => {
+			ElMessage.success('更新成功');
 		})
 		.catch((e) => {
 			ElMessage.error(e.message);
@@ -596,8 +610,8 @@ const buildWebsocket = () => {
 				object.result.namespace === k8sStore.state.activeDeployment?.metadata?.namespace &&
 				object.cluster == k8sStore.state.activeCluster
 			) {
-				data.deployment = object.result.data;
-				data.deployment.forEach((item: Deployment) => {
+				data.deployments = object.result.data;
+				data.deployments.forEach((item: Deployment) => {
 					if (item.metadata!.name == k8sStore.state.activeDeployment?.metadata?.name) {
 						k8sStore.state.activeDeployment = item;
 						return;
@@ -606,6 +620,10 @@ const buildWebsocket = () => {
 			}
 		}
 	};
+};
+
+const refreshCurrentTagsView = () => {
+	k8sStore.refreshActiveDeployment();
 };
 </script>
 <style lang="scss">

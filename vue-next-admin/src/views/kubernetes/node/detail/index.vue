@@ -219,7 +219,7 @@
 			:resourceType="'node'"
 			:disabled-update="true"
 			v-if="data.dialogVisible"
-		/>	
+		/>
 		<!-- <YamlDialog ref="yamlRef" :resourceType="'node'" /> -->
 	</div>
 </template>
@@ -242,7 +242,7 @@ import { PageInfo } from '@/types/kubernetes/common';
 import { dateStrFormat } from '@/utils/formatTime';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
-const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDeail.vue'));
+const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDetail.vue'));
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 
 onMounted(() => {
@@ -257,7 +257,7 @@ const route = useRoute();
 const podStore = podInfo();
 const k8sStore = kubernetesInfo();
 const data = reactive({
-	codeData: {} ,
+	codeData: {},
 	dialogVisible: false,
 	visible: false,
 	loading: false,
@@ -432,7 +432,7 @@ const podUsage = () => {
 };
 const podRestart = (status: PodStatus) => {
 	let count = 0;
-	status.containerStatuses!.forEach((item:any) => {
+	status.containerStatuses!.forEach((item: any) => {
 		count += item.restartCount;
 	});
 	return count;

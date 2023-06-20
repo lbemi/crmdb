@@ -20,7 +20,7 @@
 							</div>
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
 								<Containers
-									:containers="deepClone(data.deployment.spec!.template.spec!.containers) as Array< Container>"
+									:containers="deepClone(data.deployments.spec!.template.spec!.containers) as Array< Container>"
 									@updateContainers="getContainers"
 								/>
 							</div>
@@ -91,7 +91,7 @@ const data = reactive({
 	loadCode: false,
 	active: 0,
 	//初始化deployment
-	deployment: <Deployment>{
+	deployments: <Deployment>{
 		apiVersion: 'apps/v1',
 		kind: 'Deployment',
 		metadata: {
@@ -130,7 +130,7 @@ const data = reactive({
 });
 const extensions = [oneDark, StreamLanguage.define(yaml)];
 const getContainers = (containers: Array<Container>) => {
-	data.deployment.spec!.template.spec!.containers = containers;
+	data.deployments.spec!.template.spec!.containers = containers;
 	updateCodeMirror();
 };
 
@@ -138,13 +138,13 @@ const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
 	metaRef.value = metaRefs;
 	const dep = deepClone(newData);
 	const metaLabels = deepClone(newData);
-	data.deployment.metadata = newData.meta;
+	data.deployments.metadata = newData.meta;
 	//更新labels
-	if (dep.meta.name) data.deployment.metadata!.labels!.app = dep.meta.name;
+	if (dep.meta.name) data.deployments.metadata!.labels!.app = dep.meta.name;
 	//更新selector.matchLabels
-	data.deployment.spec!.selector.matchLabels = dep.meta.labels;
-	data.deployment.spec!.template.metadata!.labels = metaLabels.meta.labels;
-	data.deployment.spec!.replicas = newData.replicas;
+	data.deployments.spec!.selector.matchLabels = dep.meta.labels;
+	data.deployments.spec!.template.metadata!.labels = metaLabels.meta.labels;
+	data.deployments.spec!.replicas = newData.replicas;
 	updateCodeMirror();
 };
 const nextStep = (formEl: FormInstance | undefined) => {
@@ -183,14 +183,14 @@ const next = () => {
 // 定义变量内容
 const route = useRoute();
 mittBus.on('updateVolumes', (res) => {
-	data.deployment.spec!.template.spec!.volumes = res;
+	data.deployments.spec!.template.spec!.volumes = res;
 	updateCodeMirror();
 });
 
 const confirm = () => {
 	// data.code = yaml.dump(data.deployment);
 	deployApi
-		.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployment)
+		.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployments)
 		.then(() => {
 			router.push({
 				name: 'k8sDeployment',
@@ -205,7 +205,7 @@ const confirm = () => {
 };
 const updateCodeMirror = () => {
 	data.loadCode = true;
-	data.code = yamlJs.dump(data.deployment);
+	data.code = yamlJs.dump(data.deployments);
 	setTimeout(() => {
 		data.loadCode = false;
 	}, 1);
@@ -219,12 +219,12 @@ watch(
 				if (typeof newData === 'object' && newData != null) {
 					data.bindMetaData.metadata = newData.metadata!;
 					data.bindMetaData.replicas = newData.spec?.replicas!;
-					data.deployment = newData;
+					data.deployments = newData;
 					mittBus.emit('updateDeploymentVolumes', newData.spec!.template.spec!.volumes);
 					//重新更新一下关联字段，并更新cide
-					data.deployment.metadata!.labels!.app = newData.metadata!.name!;
-					data.deployment.spec!.selector.matchLabels = deepClone(newData).metadata!.labels;
-					data.deployment.spec!.template.metadata!.labels = deepClone(newData).metadata!.labels;
+					data.deployments.metadata!.labels!.app = newData.metadata!.name!;
+					data.deployments.spec!.selector.matchLabels = deepClone(newData).metadata!.labels;
+					data.deployments.spec!.template.metadata!.labels = deepClone(newData).metadata!.labels;
 					updateCodeMirror();
 				}
 			}

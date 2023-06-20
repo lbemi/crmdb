@@ -16,7 +16,7 @@
 							<el-option
 								v-for="item in k8sStore.state.namespace"
 								:key="item.metadata?.name"
-								:label="item.metadata!.name!"
+								:label="item.metadata?.name"
 								:value="item.metadata?.name"
 							/>
 						</el-select>
@@ -183,18 +183,20 @@
 			@update="updateDeployment"
 			v-if="data.dialogVisible"
 		/>
-		<!-- <YamlDialog ref="yamlRef" :resourceType="'deployment'" :update-resource="updateDeployment" /> -->
+		<!--    伸缩-->
 		<el-dialog v-model="data.visible" width="300px" @close="data.visible = false">
 			<template #header>
-				<span style="font-size: 16px">{{ '伸缩: ' + data.scaleDeploy.metadata?.name }}</span>
+				<span style="font-size: 14px"
+					>{{ '修改: ' }} <a style="color: teal"> {{ data.scaleDeploy.metadata?.name }}</a> {{ ' 副本' }}</span
+				>
 			</template>
 			<div style="text-align: center">
-				<el-input-number v-model="data.scaleDeploy.spec!.replicas" :min="0" :max="1000" size="default" w />
+				<el-input-number v-if="data.scaleDeploy.spec" v-model="data.scaleDeploy.spec.replicas" :min="0" :max="100" size="small" />
 			</div>
 			<template #footer>
 				<span class="dialog-footer">
-					<el-button text @click="data.visible = false" size="default">取消</el-button>
-					<el-button text type="primary" @click="scaleDeployment" size="default"> 确定 </el-button>
+					<el-button text @click="data.visible = false" size="small">取消</el-button>
+					<el-button text type="primary" @click="scaleDeployment" size="small"> 确定 </el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -209,7 +211,7 @@
 </template>
 
 <script setup lang="ts" name="k8sDeployment">
-import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, onUnmounted, h } from 'vue';
+import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, h } from 'vue';
 import { Delete, Edit } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
@@ -490,9 +492,6 @@ const deployDetail = async (dep: Deployment) => {
 };
 
 const createDeployment = () => {
-	// router.push({
-	// 	name: 'deploymentCreate',
-	// });
 	data.create.title = '创建deployment';
 	data.create.dialogVisible = true;
 };
@@ -513,6 +512,7 @@ onMounted(() => {
 const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
 };
+
 onBeforeUnmount(() => {
 	ws.close();
 });
