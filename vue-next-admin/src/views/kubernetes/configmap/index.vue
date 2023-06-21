@@ -55,7 +55,7 @@
 				<el-table-column type="selection" width="35" />
 				<el-table-column label="名称">
 					<template #default="scope">
-						<el-button :size="theme.themeConfig.globalComponentSize" type="primary" text> {{ scope.row.metadata.name }}</el-button>
+						<el-button size="small" type="primary" text @click="configMapDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
 					</template>
 				</el-table-column>
 				<el-table-column prop="metadata.namespace" label="命名空间" />
@@ -109,7 +109,14 @@
 			@update="updateConfigMapYaml"
 			v-if="data.dialogVisible"
 		/>
-		<DrawDialog v-model:visible="data.draw.visible" :title="data.draw.title" />
+		<DrawDialog
+			v-model:visible="data.draw.visible"
+			:configMap="data.draw.configMap"
+			:title="data.draw.title"
+			@refresh="listConfigMap"
+			v-if="data.draw.visible"
+		/>
+		<ConfigMapDetail v-model:visible="data.detail.visible" :configMap="data.detail.configMap" :title="data.detail.title" v-if="data.detail.visible" />
 	</div>
 </template>
 
@@ -130,6 +137,7 @@ import { deepClone } from '@/utils/other';
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 const DrawDialog = defineAsyncComponent(() => import('./component/draw.vue'));
+const ConfigMapDetail = defineAsyncComponent(() => import('./component/detail.vue'));
 
 type queryType = {
 	key: string;
@@ -141,10 +149,14 @@ type queryType = {
 };
 const k8sStore = kubernetesInfo();
 const ConfigMapApi = useConfigMapApi();
-const configMapApi = useConfigMapApi();
 const route = useRoute();
 const theme = useThemeConfig();
 const data = reactive({
+	detail: {
+		title: '',
+		visible: false,
+		configMap: {} as ConfigMap,
+	},
 	draw: {
 		title: '',
 		visible: false,
@@ -212,15 +224,15 @@ const filterConfigMap = (configMaps: Array<ConfigMap>) => {
 const createConfigMap = () => {
 	data.draw.title = '创建';
 	data.draw.visible = true;
-	console.log('传递的数据draw：', data.draw);
 };
 const deleteConfigMap = (configMap: ConfigMap) => {
+	data.loading = true;
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
 			h('span', null, '此操作将删除 '),
 			h('i', { style: 'color: teal' }, `${configMap.metadata!.name}`),
-			h('span', null, ' 服务. 是否继续? '),
+			h('span', null, ' 配置. 是否继续? '),
 		]),
 		buttonSize: 'small',
 		showCancelButton: true,
@@ -230,7 +242,6 @@ const deleteConfigMap = (configMap: ConfigMap) => {
 		draggable: true,
 	})
 		.then(() => {
-			data.loading = true;
 			ConfigMapApi.deleteConfigMap(configMap.metadata!.namespace!, configMap.metadata!.name!, { cloud: k8sStore.state.activeCluster })
 				.then((res: any) => {
 					listConfigMap();
@@ -246,9 +257,9 @@ const deleteConfigMap = (configMap: ConfigMap) => {
 	data.loading = false;
 };
 const configMapDetail = (configMap: ConfigMap) => {
-	data.draw.title = '编辑';
-	data.draw.configMap = configMap;
-	data.draw.visible = true;
+	data.detail.title = '详情';
+	data.detail.configMap = configMap;
+	data.detail.visible = true;
 };
 
 const showYaml = (ConfigMap: ConfigMap) => {
@@ -272,6 +283,7 @@ const handlePageChange = (page: PageInfo) => {
 	listConfigMap();
 };
 const listConfigMap = () => {
+	data.loading = true;
 	ConfigMapApi.listConfigMap(k8sStore.state.activeNamespace, data.query)
 		.then((res: any) => {
 			data.configMaps = res.data.data;
@@ -281,6 +293,7 @@ const listConfigMap = () => {
 		.catch((e: any) => {
 			ElMessage.error(e.message);
 		});
+	data.loading = false;
 };
 
 const refreshCurrentTagsView = () => {

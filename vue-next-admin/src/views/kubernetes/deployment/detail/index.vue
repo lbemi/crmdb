@@ -40,13 +40,6 @@
 						@click="scaleDeploy('minus')" />{{ k8sStore.state.activeDeployment?.spec?.replicas
 					}}<el-button v-auth="'k8s:deployment:scale'" color="#626aef" :icon="Plus" size="small" plain @click="scaleDeploy('plus')"
 				/></el-descriptions-item>
-				<!-- <el-descriptions-item label="选择器" label-align="right" align="center">
-					<div class="tag-center">
-						<el-tag effect="plain" round v-for="(item, key, index) in k8sStore.state.activeDeployment?.spec?.selector.matchLabels" :key="index">
-							{{ key }}:{{ item }}
-						</el-tag>
-					</div>
-				</el-descriptions-item> -->
 				<el-descriptions-item label="镜像" label-align="right" align="center">
 					<div class="tag-center">
 						<el-tag round effect="plain" v-for="(item, index) in k8sStore.state.activeDeployment?.spec?.template?.spec?.containers" :key="index">{{

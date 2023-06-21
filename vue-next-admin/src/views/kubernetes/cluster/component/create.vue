@@ -80,7 +80,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
 			newFormData.append('name', state.clusterName);
 			await clusterApi
 				.createCluster(newFormData, requestConfig.headers)
-				.then((res) => {
+				.then((res: any) => {
 					emits('valueChange');
 					handleClose(formEl);
 					ElMessage.success(res.message);

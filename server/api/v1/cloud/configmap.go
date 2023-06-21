@@ -45,6 +45,6 @@ func DeleteConfigMap(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	clusterName := rc.Query("cloud")
 	namespace := rc.PathParam("namespace")
-	configMapName := rc.PathParam("configMapName")
+	configMapName := rc.PathParam("name")
 	core.V1.Cluster(clusterName).ConfigMaps(namespace).Delete(c, configMapName)
 }
