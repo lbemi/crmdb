@@ -209,6 +209,8 @@ func (c *Cluster) StartInformer(clusterName string) {
 	client.SharedInformerFactory.Core().V1().Services().Informer().AddEventHandler(k8s.NewServiceHandle())
 	client.SharedInformerFactory.Core().V1().PersistentVolumeClaims().Informer().AddEventHandler(k8s.NewPersistentVolumeClaimHandler(client, clusterName))
 	client.SharedInformerFactory.Networking().V1().Ingresses().Informer().AddEventHandler(k8s.NewIngressHandle())
+	//client.SharedInformerFactory.Networking().V1beta1().Ingresses().Informer().AddEventHandler(k8s.NewIngressHandle())
+	//client.SharedInformerFactory.Extensions().V1beta1().Ingresses().Informer().AddEventHandler(k8s.NewIngressHandle())
 	client.SharedInformerFactory.Apps().V1().StatefulSets().Informer().AddEventHandler(k8s.NewStatefulSetHandle())
 
 	stopChan := make(chan struct{})
@@ -220,5 +222,9 @@ func (c *Cluster) StartInformer(clusterName string) {
 
 func (c *Cluster) ShutDownInformer(clusterName string) {
 	client := c.store.Get(clusterName)
-	client.SharedInformerFactory.Shutdown()
+	if client != nil {
+		client.SharedInformerFactory.Shutdown()
+	} else {
+		restfulx.ErrIsNil(fmt.Errorf("获取client失败"), restfulx.OperatorErr)
+	}
 }

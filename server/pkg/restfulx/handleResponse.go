@@ -14,18 +14,6 @@ type Response struct {
 	Message interface{} `json:"message,omitempty"`
 }
 
-//func (r *Response) ToJson() string {
-//	marshalData, err := json.Marshal(r.Data)
-//	if err != nil {
-//		fmt.Println("marshal data to json failed")
-//	}
-//	return string(marshalData)
-//}
-//
-//func (r *Response) IsSuccess() bool {
-//	return r.Code == http.StatusOK
-//}
-
 func SuccessX(data interface{}) *Response {
 	return &Response{Code: Success.code, Message: SuccessMsg, Data: data}
 }
@@ -39,8 +27,8 @@ func ErrorRes(r *restful.Response, err interface{}) {
 	case *OpsError:
 		r.WriteEntity(Error(t))
 	case error:
-		debug.PrintStack()
 		r.WriteEntity(ServerError())
+		debug.PrintStack()
 		//log.Logger.Error(message)
 	//case string:
 	//	r.WriteEntity(ServerError())

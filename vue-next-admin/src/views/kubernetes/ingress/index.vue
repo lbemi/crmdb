@@ -234,7 +234,7 @@ const deleteIngress = (service: Ingress) => {
 			data.loading = true;
 			ingressApi
 				.deleteIngress({ cloud: k8sStore.state.activeCluster }, service.metadata!.name!, service.metadata!.namespace!)
-				.then((res) => {
+				.then((res: any) => {
 					listIngress();
 					ElMessage.success(res.message);
 				})

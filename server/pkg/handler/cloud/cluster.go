@@ -18,7 +18,7 @@ func (c *cluster) Delete(id uint64) {
 	info := c.factory.Cluster().Get(id)
 	c.factory.Cluster().Delete(id)
 	// 停止informer监听
-	c.factory.Cluster().ShutDownInformer(c.clusterName)
+	go c.factory.Cluster().ShutDownInformer(info.Name)
 	c.factory.Cluster().RemoveFromStore(info.Name)
 }
 
