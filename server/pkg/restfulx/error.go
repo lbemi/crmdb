@@ -30,6 +30,7 @@ var (
 	//ks8相关
 	RegisterClusterErr *OpsError = NewOpsErrCode(5001, "导入集群失败，请检查配置文件")
 	ClusterUnHealth    *OpsError = NewOpsErrCode(5002, "集群异常，请检查")
+	ClusterNotSet      *OpsError = NewOpsErrCode(5003, "请先选择集群")
 )
 
 type OpsError struct {

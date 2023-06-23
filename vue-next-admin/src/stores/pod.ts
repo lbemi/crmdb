@@ -3,6 +3,7 @@ import { reactive } from 'vue';
 import { Pod } from 'kubernetes-types/core/v1';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { usePodApi } from '@/api/kubernetes/pod';
+import { ElMessage } from 'element-plus';
 
 /**
  * k8s集群信息
@@ -50,10 +51,15 @@ export const podInfo = defineStore(
 				delete state.query.name;
 			}
 			state.query.cloud = k8sStore.state.activeCluster;
-			await podApi.listPods(k8sStore.state.activeNamespace, state.query).then((res) => {
-				state.pods = res.data.data;
-				state.total = res.data.total;
-			});
+			await podApi
+				.listPods(k8sStore.state.activeNamespace, state.query)
+				.then((res) => {
+					state.pods = res.data.data;
+					state.total = res.data.total;
+				})
+				.catch((e: any) => {
+					if (e.code != 5003) ElMessage.error(e.message);
+				});
 			state.loading = false;
 		};
 

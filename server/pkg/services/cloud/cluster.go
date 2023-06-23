@@ -135,6 +135,7 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 	//生成informer factory
 	client.SharedInformerFactory = informers.NewSharedInformerFactory(clientSet, 0)
 	client.IsInit = true
+	client.StopChan = make(chan struct{})
 	c.store.Add(name, &client)
 
 	//go c.StartInformer(client)
@@ -213,18 +214,18 @@ func (c *Cluster) StartInformer(clusterName string) {
 	//client.SharedInformerFactory.Extensions().V1beta1().Ingresses().Informer().AddEventHandler(k8s.NewIngressHandle())
 	client.SharedInformerFactory.Apps().V1().StatefulSets().Informer().AddEventHandler(k8s.NewStatefulSetHandle())
 
-	stopChan := make(chan struct{})
+	//stopChan := make(chan struct{})
 	// 启动informer
-	client.SharedInformerFactory.Start(stopChan)
+	client.SharedInformerFactory.Start(client.StopChan)
 	// 等待informer同步完成
-	client.SharedInformerFactory.WaitForCacheSync(stopChan)
+	client.SharedInformerFactory.WaitForCacheSync(client.StopChan)
 }
 
 func (c *Cluster) ShutDownInformer(clusterName string) {
 	client := c.store.Get(clusterName)
 	if client != nil {
-		client.SharedInformerFactory.Shutdown()
+		close(client.StopChan)
 	} else {
-		restfulx.ErrIsNil(fmt.Errorf("获取client失败"), restfulx.OperatorErr)
+		restfulx.ErrNotNilDebug(fmt.Errorf("获取client失败"), restfulx.OperatorErr)
 	}
 }

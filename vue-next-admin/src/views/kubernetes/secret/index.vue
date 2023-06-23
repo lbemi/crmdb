@@ -11,7 +11,12 @@
 					size="small"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
+					<el-option
+						v-for="item in k8sStore.state.namespace"
+						:key="item.metadata?.name"
+						:label="item.metadata?.name!"
+						:value="item.metadata!.name!"
+					/>
 				</el-select>
 				<el-input
 					v-model="data.inputValue"
@@ -36,7 +41,7 @@
 						</el-button>
 					</template>
 				</el-input>
-				<el-button type="primary" size="small" class="ml10" @click="createConfigMap" :icon="Edit">创建</el-button>
+				<el-button type="primary" size="small" class="ml10" @click="createSecret" :icon="Edit">创建</el-button>
 				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete">批量删除</el-button>
 				<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
 					<el-icon>
@@ -46,7 +51,7 @@
 				</el-button>
 			</div>
 			<el-table
-				:data="data.configMaps"
+				:data="data.Secrets"
 				@selection-change="handleSelectionChange"
 				style="width: 100%"
 				max-height="100vh - 235px"
@@ -90,10 +95,10 @@
 
 				<el-table-column fixed="right" label="操作" width="260px" flex>
 					<template #default="scope">
-						<el-button link type="primary" size="small" @click="updateConfigMap(scope.row)">详情</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="updateConfigMap(scope.row)">编辑</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" size="small" @click="updateSecret(scope.row)">详情</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" size="small" @click="updateSecret(scope.row)">编辑</el-button><el-divider direction="vertical" />
 						<el-button link type="primary" size="small" @click="showYaml(scope.row)">查看YAML</el-button><el-divider direction="vertical" />
-						<el-button :disabled="scope.row.metadata.name === 'kubernetes'" link type="danger" size="small" @click="deleteConfigMap(scope.row)"
+						<el-button :disabled="scope.row.metadata.name === 'kubernetes'" link type="danger" size="small" @click="deleteSecret(scope.row)"
 							>删除</el-button
 						>
 					</template>
@@ -105,18 +110,25 @@
 		<YamlDialog
 			v-model:dialogVisible="data.dialogVisible"
 			:code-data="data.codeData"
-			:resourceType="'configMap'"
-			@update="updateConfigMapYaml"
+			:resourceType="'Secret'"
+			@update="updateSecretYaml"
 			v-if="data.dialogVisible"
 		/>
+		<DrawDialog
+			v-model:visible="data.draw.visible"
+			:secret="data.draw.secret"
+			:title="data.draw.title"
+			@refresh="listSecret"
+			v-if="data.draw.visible"
+		/>
+		<SecretDetail v-model:visible="data.detail.visible" :configMap="data.detail.secret" :title="data.detail.title" v-if="data.detail.visible" />
 	</div>
 </template>
 
 <script setup lang="ts" name="k8sSecret">
-import { ConfigMap } from 'kubernetes-types/core/v1';
+import { Secret } from 'kubernetes-types/core/v1';
 import { defineAsyncComponent, h, onMounted, reactive, ref } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { ResponseType } from '@/types/response';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -124,10 +136,12 @@ import { dateStrFormat } from '@/utils/formatTime';
 import { PageInfo } from '@/types/kubernetes/common';
 import { Edit, Delete, List } from '@element-plus/icons-vue';
 import { useThemeConfig } from '@/stores/themeConfig';
-import { useConfigMapApi } from '@/api/kubernetes/configMap';
+import { useSecretApi } from '@/api/kubernetes/secret';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
+const DrawDialog = defineAsyncComponent(() => import('./component/draw.vue'));
+const SecretDetail = defineAsyncComponent(() => import('./component/detail.vue'));
 
 type queryType = {
 	key: string;
@@ -136,78 +150,91 @@ type queryType = {
 	cloud: string;
 	name?: string;
 	label?: string;
-}
+};
 const k8sStore = kubernetesInfo();
-const ConfigMapApi = useConfigMapApi();
-const configMapApi = useConfigMapApi();
+const SecretApi = useSecretApi();
 const route = useRoute();
 const theme = useThemeConfig();
 const data = reactive({
+	detail: {
+		title: '',
+		visible: false,
+		secret: {} as Secret,
+	},
+	draw: {
+		title: '',
+		visible: false,
+		secret: {} as Secret,
+	},
 	dialogVisible: false,
-	codeData: {} as ConfigMap,
+	codeData: {} as Secret,
 	loading: false,
-	selectData: [] as ConfigMap[],
-	configMaps: [] as ConfigMap[],
-	tmpConfigMap: [] as ConfigMap[],
+	selectData: [] as Secret[],
+	Secrets: [] as Secret[],
+	tmpSecret: [] as Secret[],
 	total: 0,
-	type: "1",
-	inputValue: "",
-	query:<queryType> {
+	type: '1',
+	inputValue: '',
+	query: <queryType>{
 		page: 1,
 		limit: 10,
 		cloud: k8sStore.state.activeCluster,
 	},
 });
 onMounted(() => {
-	listConfigMap();
+	listSecret();
 });
 
 const search = () => {
-	if (data.type =='1') {
-		data.query.name = data.inputValue
+	if (data.type == '1') {
+		data.query.name = data.inputValue;
 		delete data.query.label;
-	} else if  (data.type == "0") {
-		data.query.label = data.inputValue
+	} else if (data.type == '0') {
+		data.query.label = data.inputValue;
 		delete data.query.name;
 	}
-	if (data.inputValue === "") {
+	if (data.inputValue === '') {
 		delete data.query.label;
 		delete data.query.name;
 	}
-	listConfigMap();
+	listSecret();
 };
 const handleChange = () => {
-	listConfigMap();
+	listSecret();
 };
-const filterConfigMap = (configMaps: Array<ConfigMap>) => {
-	const configMapList = [] as ConfigMap[];
+const filterSecret = (Secrets: Array<Secret>) => {
+	const SecretList = [] as Secret[];
 	if (data.query.type === '1') {
-		configMaps.forEach((configMap: ConfigMap) => {
-			if (configMap.metadata?.name?.includes(data.query.key)) {
-				configMapList.push(configMap);
+		Secrets.forEach((Secret: Secret) => {
+			if (Secret.metadata?.name?.includes(data.query.key)) {
+				SecretList.push(Secret);
 			}
 		});
 	} else {
-		configMaps.forEach((configMap: ConfigMap) => {
-			if (configMap.metadata?.labels) {
-				for (let k in configMap.metadata.labels) {
-					if (k.includes(data.query.key) || configMap.metadata.labels[k].includes(data.query.key)) {
-						configMapList.push(configMap);
+		Secrets.forEach((Secret: Secret) => {
+			if (Secret.metadata?.labels) {
+				for (let k in Secret.metadata.labels) {
+					if (k.includes(data.query.key) || Secret.metadata.labels[k].includes(data.query.key)) {
+						SecretList.push(Secret);
 						break;
 					}
 				}
 			}
 		});
 	}
-	data.configMaps = configMapList;
+	data.Secrets = SecretList;
 };
-const createConfigMap = () => {};
-const deleteConfigMap = (configMap: ConfigMap) => {
+const createSecret = () => {
+	data.draw.visible = true;
+	data.draw.title = '创建Secret';
+	data.draw.secret = {};
+};
+const deleteSecret = (Secret: Secret) => {
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
 			h('span', null, '此操作将删除 '),
-			h('i', { style: 'color: teal' }, `${configMap.metadata!.name}`),
+			h('i', { style: 'color: teal' }, `${Secret.metadata!.name}`),
 			h('span', null, ' 服务. 是否继续? '),
 		]),
 		buttonSize: 'small',
@@ -219,9 +246,9 @@ const deleteConfigMap = (configMap: ConfigMap) => {
 	})
 		.then(() => {
 			data.loading = true;
-			ConfigMapApi.deleteConfigMap(configMap.metadata!.namespace!, configMap.metadata!.name!, { cloud: k8sStore.state.activeCluster })
-				.then((res) => {
-					listConfigMap();
+			SecretApi.deleteSecret(Secret.metadata!.namespace!, Secret.metadata!.name!, { cloud: k8sStore.state.activeCluster })
+				.then((res: any) => {
+					listSecret();
 					ElMessage.success(res.message);
 				})
 				.catch((e) => {
@@ -233,37 +260,35 @@ const deleteConfigMap = (configMap: ConfigMap) => {
 		});
 	data.loading = false;
 };
-const showYaml = (ConfigMap: ConfigMap) => {
+const showYaml = (Secret: Secret) => {
 	data.dialogVisible = true;
-	delete ConfigMap.metadata?.managedFields;
-	data.codeData = ConfigMap;
-	// yamlRef.value.openDialog(ConfigMap);
+	delete Secret.metadata?.managedFields;
+	data.codeData = Secret;
+	// yamlRef.value.openDialog(Secret);
 };
-const updateConfigMapYaml = (code: any) => {
-	console.log('更新ConfigMap', code);
+const updateSecretYaml = (code: any) => {
+	console.log('更新Secret', code);
 };
 
 const handleSelectionChange = () => {};
-const updateConfigMap = (ervice: ConfigMap) => {};
+const updateSecret = (secret: Secret) => {};
 const handlePageChange = (page: PageInfo) => {
 	data.query.page = page.page;
 	data.query.limit = page.limit;
-	listConfigMap();
+	listSecret();
 };
-const listConfigMap = () => {
-	data.loading = true
-	ConfigMapApi.listConfigMap(k8sStore.state.activeNamespace, data.query)
-		.then((res: ResponseType) => {
-			if (res.code === 200) {
-				data.configMaps = res.data.data;
-				data.tmpConfigMap = res.data.data;
-				data.total = res.data.total;
-			}
+const listSecret = () => {
+	data.loading = true;
+	SecretApi.listSecret(k8sStore.state.activeNamespace, data.query)
+		.then((res: any) => {
+			data.Secrets = res.data.data;
+			data.tmpSecret = res.data.data;
+			data.total = res.data.total;
 		})
-		.catch((e) => {
-			ElMessage.error(e);
+		.catch((e: any) => {
+			if (e.code != 5003) ElMessage.error(e.message);
 		});
-		data.loading = false
+	data.loading = false;
 };
 const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));

@@ -18,6 +18,7 @@ type ClientConfig struct {
 	SharedInformerFactory informers.SharedInformerFactory
 	IsInit                bool
 	Config                *rest.Config
+	StopChan              chan struct{}
 }
 
 type ClientMap struct {

@@ -266,15 +266,13 @@ const listIngress = () => {
 	data.loading = true;
 	ingressApi
 		.listIngress(k8sStore.state.activeNamespace, data.query)
-		.then((res: ResponseType) => {
-			if (res.code === 200) {
-				data.services = res.data.data;
-				data.tmpIngress = res.data.data;
-				data.total = res.data.total;
-			}
+		.then((res: any) => {
+			data.services = res.data.data;
+			data.tmpIngress = res.data.data;
+			data.total = res.data.total;
 		})
-		.catch((e) => {
-			ElMessage.error(e);
+		.catch((e: any) => {
+			if (e.code != 5003) ElMessage.error(e.message);
 		});
 
 	data.loading = false;

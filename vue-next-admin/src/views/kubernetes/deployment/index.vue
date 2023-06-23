@@ -462,7 +462,7 @@ const listDeployment = async () => {
 			data.total = res.data.total;
 		});
 	} catch (e: any) {
-		ElMessage.error(e);
+		if (e.code != 5003) ElMessage.error(e.message);
 	}
 	data.loading = false;
 };

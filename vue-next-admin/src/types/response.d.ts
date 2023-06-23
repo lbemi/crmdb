@@ -1,9 +1,9 @@
 //返回结果
-export interface ResponseType {
-	code: Number;
-	data: {
+export type ResponseType = {
+	code: number;
+	data?: {
 		data: any;
 		total: number;
 	};
 	message: string;
-}
+};

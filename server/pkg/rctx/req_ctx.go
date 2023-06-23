@@ -174,7 +174,7 @@ func (rc *ReqCtx) Query(key string) string {
 func (rc *ReqCtx) QueryCloud() string {
 	cloud := rc.Request.QueryParameter("cloud")
 	if cloud == "" {
-		restfulx.ErrNotNilDebug(fmt.Errorf("cloud is empty"), restfulx.ParamErr)
+		restfulx.ErrIsNil(fmt.Errorf("cloud is empty"), restfulx.ClusterNotSet)
 	}
 	return cloud
 }

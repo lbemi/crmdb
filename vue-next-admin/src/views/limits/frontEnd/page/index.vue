@@ -27,11 +27,13 @@ import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useUserInfo } from '@/stores/userInfo';
 import { frontEndsResetRoute, setAddRoute, setFilterMenuAndCacheTagsViewRoutes } from '@/router/frontEnd';
-import {Session} from "@/utils/storage";
+import { Session } from '@/utils/storage';
+import { useThemeConfig } from '@/stores/themeConfig';
 
 // 定义变量内容
 const storesUserInfo = useUserInfo();
 const { userInfos } = storeToRefs(storesUserInfo);
+
 const userAuth = ref('');
 
 // 初始化用户权限

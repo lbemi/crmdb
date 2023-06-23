@@ -205,13 +205,8 @@ const schedulable = (node: Node) => {
 		type: 'warning',
 	})
 		.then(() => {
-			nodeApi.schedulable(data.query, node.metadata!.name!, status).then((res) => {
-				if (res.code === 200) {
-					ElMessage.success(res.message);
-					listNodes();
-				} else {
-					ElMessage.error(res.message);
-				}
+			nodeApi.schedulable(data.query, node.metadata!.name!, status).then((res: any) => {
+				listNodes();
 			});
 		})
 		.catch(() => {
@@ -230,8 +225,8 @@ const listNodes = () => {
 			data.nodes = result.data.data;
 			data.total = result.data.total;
 		})
-		.catch((err) => {
-			console.log(err);
+		.catch((e: any) => {
+			if (e.code != 5003) ElMessage.error(e.message);
 		});
 };
 

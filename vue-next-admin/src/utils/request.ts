@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Session } from '@/utils/storage';
 import qs from 'qs';
+import Router from '@/router';
 
 // 配置新建一个 axios 实例
 const service: AxiosInstance = axios.create({
@@ -35,7 +36,7 @@ service.interceptors.response.use(
 	(response) => {
 		// 对响应数据做点什么
 		const res = response.data;
-        // 此处code为后端返回的业务code状态
+		// 此处code为后端返回的业务code状态
 		if (res.code && res.code !== 200) {
 			// `token` 过期或者账号已在别处登录
 			if (res.code === 401 || res.code === 4001) {
@@ -44,8 +45,14 @@ service.interceptors.response.use(
 				ElMessageBox.alert('你已被登出，请重新登录', '提示', {})
 					.then(() => {})
 					.catch(() => {});
+			} else if (res.code === 5003) {
+				ElMessage.error(res.message);
+				const route = Router;
+				route.push({
+					name: 'kubernetesCluster',
+				});
 			}
-            // ElMessage.error(res.message)
+			// ElMessage.error(res.message)
 			return Promise.reject(res);
 		} else {
 			return res;

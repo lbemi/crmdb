@@ -341,7 +341,7 @@ const listService = () => {
 			data.tmpService = res.data.data;
 		})
 		.catch((e: any) => {
-			ElMessage.error(e.message);
+			if (e.code != 5003) ElMessage.error(e.message);
 		});
 	data.loading = false;
 };
