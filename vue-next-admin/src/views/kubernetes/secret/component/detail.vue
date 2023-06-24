@@ -1,5 +1,5 @@
 <template>
-	<el-drawer v-model="data.visible" @close="handleClose" size="45%">
+	<el-drawer v-model="data.visible" @close="handleClose" size="60%">
 		<template #header="{ titleId, titleClass }">
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
@@ -23,8 +23,15 @@
 				</el-descriptions-item>
 				<el-descriptions-item label="数据" label-align="right" align="center" :span="2">
 					<el-table :data="data.keyValues">
-						<el-table-column prop="key" label="名称" />
+						<el-table-column prop="key" label="名称" width="120" />
 						<el-table-column prop="value" label="值" />
+						<el-table-column width="80" label="查看">
+							<template #default="scope">
+								<el-icon color="#409EFC" @click="parseData(scope.row)"><View /></el-icon>
+								<el-icon @click="secData(scope.row)"><Hide /></el-icon>
+								<!--								<el-button :icon="View" size="small" circle @click="parseData(scope.row)"></el-button>-->
+							</template>
+						</el-table-column>
 					</el-table>
 				</el-descriptions-item>
 			</el-descriptions>
@@ -34,6 +41,7 @@
 
 <script lang="ts" setup>
 import { ElDrawer } from 'element-plus';
+import { View, Hide } from '@element-plus/icons-vue';
 import { ConfigMap } from 'kubernetes-types/core/v1';
 import { onMounted, reactive } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
@@ -57,6 +65,13 @@ const props = defineProps({
 	},
 	title: String,
 });
+
+const parseData = (data: any) => {
+	data.value = atob(data.value);
+};
+const secData = (data: any) => {
+	data.value = btoa(data.value);
+};
 
 const convertConfigMapTo = () => {
 	let kvs = [] as Array<{ key: string; value: string }>;

@@ -23,6 +23,9 @@
 						/>
 					</el-select>
 				</el-form-item>
+				<el-form-item label="不可修改:"
+					><el-checkbox v-model="data.secrets.immutable" size="default" label="创建后不可修改" :disabled="data.isUpdate"></el-checkbox>
+				</el-form-item>
 				<div>
 					<el-form-item label="Secret名称:" v-if="data.secrets.metadata"
 						><el-input :disabled="data.isUpdate" size="small" v-model="data.secrets.metadata.name"></el-input>
@@ -38,7 +41,7 @@
 				</el-form-item>
 				<div>
 					<el-form-item label="类型">
-						<el-radio-group v-model="data.secrets.type" size="small">
+						<el-radio-group v-model="data.secrets.type" size="small" :disabled="data.isUpdate">
 							<el-radio-button v-for="(item, index) in secretType" :label="item.value" :key="index">{{ item.key }}</el-radio-button>
 						</el-radio-group>
 					</el-form-item>
@@ -52,12 +55,12 @@
 								<el-input v-model="scope.row.key" size="small" />
 							</template>
 						</el-table-column>
-						<el-table-column label="值" width="280">
+						<el-table-column label="值" width="380">
 							<template #default="scope">
-								<el-input type="textarea" v-model="scope.row.value" size="small" :rows="1" />
+								<el-input type="textarea" v-model="scope.row.value" size="small" :rows="4" />
 							</template>
 						</el-table-column>
-						<el-table-column>
+						<el-table-column width="30px">
 							<template #default="scope">
 								<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.keyValues.splice(scope.$index, 1)"></el-button>
 							</template>
@@ -82,11 +85,16 @@
 							</template>
 						</el-table-column>
 					</el-table>
+					<div>
+						<el-button size="small" @click="addKey()" style="width: 90%" type="primary" plain
+							><el-icon><Plus /></el-icon>添加</el-button
+						>
+					</div>
 				</div>
-				<div v-if="data.secrets.type === 'kubernetes.io/tls'">
-					<el-form-item label="证书公钥名称">
-						<el-input size="small" v-model="data.tlsValue[0].key" style="width: 400px"></el-input>
-					</el-form-item>
+				<div v-else-if="data.secrets.type === 'kubernetes.io/tls'">
+					<!--					<el-form-item label="证书公钥名称">-->
+					<!--						<el-input size="small" v-model="data.tlsValue[0].key" style="width: 400px"></el-input>-->
+					<!--					</el-form-item>-->
 					<div>
 						<el-form-item label="证书公钥内容">
 							<el-input
@@ -111,9 +119,9 @@
 						</el-form-item>
 					</div>
 
-					<el-form-item label="证书私钥名称">
-						<el-input size="small" v-model="data.tlsValue[1].key" style="width: 400px"></el-input>
-					</el-form-item>
+					<!--					<el-form-item label="证书私钥名称">-->
+					<!--						<el-input size="small" v-model="data.tlsValue[1].key" style="width: 400px"></el-input>-->
+					<!--					</el-form-item>-->
 					<div>
 						<el-form-item label="证书私钥内容">
 							<el-input
@@ -138,7 +146,7 @@
 						</el-form-item>
 					</div>
 				</div>
-				<div v-if="data.secrets.type === 'kubernetes.io/dockerconfigjson'">
+				<div v-else-if="data.secrets.type === 'kubernetes.io/dockerconfigjson'">
 					<el-form-item label="仓库地址:">
 						<el-input v-model="data.registerInfo.register" size="small"></el-input>
 					</el-form-item>
@@ -148,17 +156,65 @@
 						</el-form-item>
 					</div>
 					<el-form-item label="密码:">
-						<el-input size="small" v-model="data.registerInfo.password"></el-input>
+						<el-input size="small" type="password" show-password v-model="data.registerInfo.password"></el-input>
 					</el-form-item>
 					<el-form-item label="邮箱:">
 						<el-input size="small" v-model="data.registerInfo.email"></el-input>
 					</el-form-item>
 				</div>
 				<!--				</el-form-item>-->
-				<div v-if="data.secrets.type === 'Opaque'">
-					<el-button size="small" @click="addKey()" style="width: 90%" type="primary" plain
-						><el-icon><Plus /></el-icon>添加</el-button
-					>
+				<div v-else-if="data.secrets.type === 'kubernetes.io/basic-auth'">
+					<div>
+						<el-form-item label="用户名:">
+							<el-input v-model="data.basicAuth.username" size="small"></el-input>
+						</el-form-item>
+					</div>
+					<el-form-item label="密码:">
+						<el-input type="password" show-password size="small" v-model="data.basicAuth.password"></el-input>
+					</el-form-item>
+				</div>
+				<div v-else>
+					<el-table :data="data.keyValues" style="width: 100%">
+						<el-table-column label="名称" width="180">
+							<template #default="scope">
+								<el-input v-model="scope.row.key" size="small" />
+							</template>
+						</el-table-column>
+						<el-table-column label="值" width="380">
+							<template #default="scope">
+								<el-input type="textarea" v-model="scope.row.value" size="small" :rows="4" />
+							</template>
+						</el-table-column>
+						<el-table-column width="30px">
+							<template #default="scope">
+								<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.keyValues.splice(scope.$index, 1)"></el-button>
+							</template>
+						</el-table-column>
+						<el-table-column width="200px">
+							<template #default="scope">
+								<el-upload
+									ref="upload"
+									class="upload-demo"
+									:limit="1"
+									:on-change="($evnet) => submitUpload($evnet, scope.row)"
+									:on-exceed="handleExceed"
+									:auto-upload="false"
+								>
+									<!--										<template #tip>-->
+									<!--											<div class="el-upload__tip text-red">limit 1 file</div>-->
+									<!--										</template>-->
+									<template #trigger>
+										<el-button type="primary" size="small" text>从文件上传</el-button>
+									</template>
+								</el-upload>
+							</template>
+						</el-table-column>
+					</el-table>
+					<div>
+						<el-button size="small" @click="addKey()" style="width: 90%" type="primary" plain
+							><el-icon><Plus /></el-icon>添加</el-button
+						>
+					</div>
 				</div>
 			</el-form>
 			<div class="footer">
@@ -180,6 +236,7 @@ import { Plus, RemoveFilled } from '@element-plus/icons-vue';
 import { useSecretApi } from '@/api/kubernetes/secret';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
+import { RegisterInfo } from '@/types/kubernetes/common';
 
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 
@@ -202,6 +259,10 @@ const data = reactive({
 			value: '',
 		},
 	],
+	basicAuth: {
+		username: '',
+		password: '',
+	},
 	registerInfo: {
 		register: '',
 		username: '',
@@ -215,6 +276,7 @@ const data = reactive({
 		},
 		type: 'Opaque',
 		stringData: {},
+		immutable: false,
 	},
 });
 
@@ -322,7 +384,7 @@ const convertRegister = () => {
 	data.secrets.stringData = {
 		'.dockerconfigjson': JSON.stringify({
 			auths: {
-				d: {
+				[data.registerInfo.register]: {
 					username: data.registerInfo.username,
 					password: data.registerInfo.password,
 					email: data.registerInfo.email,
@@ -332,7 +394,28 @@ const convertRegister = () => {
 		}),
 	};
 };
+
+const convertBasicAuth = () => {
+	data.secrets.stringData = data.basicAuth;
+};
 const confirm = async () => {
+	switch (data.secrets.type) {
+		case 'Opaque':
+			convertSecret(data.keyValues);
+			break;
+		case 'kubernetes.io/tls':
+			convertSecret(data.tlsValue);
+			break;
+		case 'kubernetes.io/dockerconfigjson':
+			convertRegister();
+			break;
+		case 'kubernetes.io/basic-auth':
+			convertBasicAuth();
+			break;
+		default:
+			convertSecret(data.keyValues);
+			break;
+	}
 	if (data.secrets.type === 'Opaque') {
 		convertSecret(data.keyValues);
 	} else if (data.secrets.type === 'kubernetes.io/tls') {
@@ -364,7 +447,6 @@ const confirm = async () => {
 				ElMessage.error(e.message);
 			});
 	}
-	console.log(data.secrets);
 };
 
 const handleClose = () => {
@@ -372,14 +454,67 @@ const handleClose = () => {
 };
 
 const convertSecretTo = () => {
-	let kvs = [] as Array<{ key: string; value: string }>;
-	Object.keys(data.secrets.data).forEach((k) => {
-		kvs.push({
-			key: k,
-			value: data.secrets.data![k],
-		});
-	});
-	data.keyValues = kvs;
+	switch (data.secrets.type) {
+		case 'kubernetes.io/tls':
+			if (data.secrets.data) {
+				data.tlsValue[0].value = atob(data.secrets.data['tls.crt']);
+				data.tlsValue[1].value = atob(data.secrets.data['tls.key']);
+			}
+			break;
+		case 'Opaque':
+			let kvs = [] as Array<{ key: string; value: string }>;
+			if (data.secrets.data) {
+				Object.keys(data.secrets.data).forEach((k) => {
+					kvs.push({
+						key: k,
+						value: atob(data.secrets.data![k]),
+					});
+				});
+				data.keyValues = kvs;
+			}
+			break;
+		case 'kubernetes.io/dockerconfigjson':
+			if (data.secrets.data) {
+				const obj = JSON.parse(decodeURI(atob(data.secrets.data['.dockerconfigjson']))) as RegisterInfo<string>;
+				let register = '';
+				for (let key in obj.auths) {
+					register = key;
+				}
+				if (obj.auths[register]) {
+					data.registerInfo = {
+						register: register,
+						username: obj.auths[register].username,
+						password: obj.auths[register].password,
+						email: obj.auths[register].email,
+					};
+				}
+			}
+			break;
+		case 'kubernetes.io/basic-auth':
+			if (data.secrets.data) {
+				// const obj = JSON.parse(data.secrets.data);
+				data.basicAuth.username = atob(data.secrets.data.username);
+				data.basicAuth.password = atob(data.secrets.data.password);
+			}
+			break;
+		default:
+			let kvss = [] as Array<{ key: string; value: string }>;
+			if (data.secrets.data && data.secrets.type) {
+				Object.keys(data.secrets.data).forEach((k) => {
+					kvss.push({
+						key: k,
+						value: atob(data.secrets.data![k]),
+					});
+				});
+				data.keyValues = kvss;
+				secretType.push({
+					key: data.secrets.type,
+					value: data.secrets.type,
+				});
+			}
+			break;
+	}
+
 	handleLabels(data.secrets.metadata!.labels!);
 	handAnnotations(data.secrets.metadata!.annotations!);
 };
@@ -393,7 +528,7 @@ onMounted(() => {
 		convertSecretTo();
 	}
 });
-const secretType = [
+let secretType = [
 	{
 		key: 'Opaque',
 		value: 'Opaque',
@@ -405,6 +540,10 @@ const secretType = [
 	{
 		key: 'TLS证书',
 		value: 'kubernetes.io/tls',
+	},
+	{
+		key: '基础认证',
+		value: 'kubernetes.io/basic-auth',
 	},
 ];
 </script>

@@ -1,4 +1,4 @@
-import { Node, NodeSpec, NodeStatus } from 'kubernetes-types/core/v1';
+import { NodeSpec, NodeStatus } from 'kubernetes-types/core/v1';
 import { ObjectMeta } from 'kubernetes-types/meta/v1';
 import { UploadFile } from 'element-plus';
 

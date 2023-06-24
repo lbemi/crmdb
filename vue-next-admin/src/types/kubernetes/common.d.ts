@@ -10,6 +10,16 @@ import {
 	VolumeMount,
 } from 'kubernetes-types/core/v1';
 
+export interface RegisterInfo<T> {
+	auths: {
+		[T]: {
+			username: string;
+			password: string;
+			email: string;
+			auth: string;
+		};
+	};
+}
 declare class QueryType<T = any> {
 	query: {
 		page: number;

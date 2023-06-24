@@ -42,7 +42,9 @@
 					</template>
 				</el-input>
 				<el-button type="primary" size="small" class="ml10" @click="createSecret" :icon="Edit">创建</el-button>
-				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete">批量删除</el-button>
+				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" @click="deleteSecret" :icon="Delete"
+					>批量删除</el-button
+				>
 				<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
 					<el-icon>
 						<ele-RefreshRight />
@@ -60,11 +62,17 @@
 				<el-table-column type="selection" width="35" />
 				<el-table-column label="名称">
 					<template #default="scope">
-						<el-button :size="theme.themeConfig.globalComponentSize" type="primary" text> {{ scope.row.metadata.name }}</el-button>
+						<el-button :size="theme.themeConfig.globalComponentSize" type="primary" text @click="secretDetail(scope.row)">
+							{{ scope.row.metadata.name }}</el-button
+						>
 					</template>
 				</el-table-column>
 				<el-table-column prop="metadata.namespace" label="命名空间" />
-
+				<el-table-column prop="type" label="类型">
+					<template #default="scope">
+						{{ secretType(scope.row) }}
+					</template>
+				</el-table-column>
 				<el-table-column label="标签" width="70px">
 					<template #default="scope">
 						<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
@@ -95,7 +103,7 @@
 
 				<el-table-column fixed="right" label="操作" width="260px" flex>
 					<template #default="scope">
-						<el-button link type="primary" size="small" @click="updateSecret(scope.row)">详情</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" size="small" @click="secretDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
 						<el-button link type="primary" size="small" @click="updateSecret(scope.row)">编辑</el-button><el-divider direction="vertical" />
 						<el-button link type="primary" size="small" @click="showYaml(scope.row)">查看YAML</el-button><el-divider direction="vertical" />
 						<el-button :disabled="scope.row.metadata.name === 'kubernetes'" link type="danger" size="small" @click="deleteSecret(scope.row)"
@@ -271,7 +279,16 @@ const updateSecretYaml = (code: any) => {
 };
 
 const handleSelectionChange = () => {};
-const updateSecret = (secret: Secret) => {};
+const updateSecret = (secret: Secret) => {
+	data.draw.visible = true;
+	data.draw.title = '修改';
+	data.draw.secret = secret;
+};
+const secretDetail = (secret: Secret) => {
+	data.detail.visible = true;
+	data.detail.title = '详情';
+	data.detail.secret = secret;
+};
 const handlePageChange = (page: PageInfo) => {
 	data.query.page = page.page;
 	data.query.limit = page.limit;
@@ -289,6 +306,20 @@ const listSecret = () => {
 			if (e.code != 5003) ElMessage.error(e.message);
 		});
 	data.loading = false;
+};
+const secretType = (secret: Secret) => {
+	switch (secret.type) {
+		case 'Opaque':
+			return 'Opaque';
+		case 'kubernetes.io/tls':
+			return 'TLS';
+		case 'kubernetes.io/dockerconfigjson':
+			return '镜像凭证';
+		case 'kubernetes.io/basic-auth':
+			return '用户密码认证';
+		default:
+			return secret.type;
+	}
 };
 const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
