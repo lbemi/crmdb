@@ -3,9 +3,9 @@ package cloud
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/api/cloud/v1beat1"
 	v1 "k8s.io/api/apps/v1"
 
-	"github.com/lbemi/lbemi/api/v1/cloud"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
@@ -17,7 +17,7 @@ func KubernetesReplicaSetRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("ReplicaSet").
-			WithHandle(cloud.ListReplicaSets).Do()
+			WithHandle(v1beat1.ListReplicaSets).Do()
 	}).Doc("获取ReplicaSet列表").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(&form.PageResult{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -30,7 +30,7 @@ func KubernetesReplicaSetRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("ReplicaSet").
-			WithHandle(cloud.GetReplicaSet).Do()
+			WithHandle(v1beat1.GetReplicaSet).Do()
 	}).Doc("获取ReplicaSet信息").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(v1.ReplicaSet{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).

@@ -1,6 +1,6 @@
 package k8s
 
-import "github.com/lbemi/lbemi/pkg/common/store"
+import "github.com/lbemi/lbemi/pkg/common/cache"
 
 type FactoryImp interface {
 	Deployment() DeploymentImp
@@ -21,7 +21,7 @@ type FactoryImp interface {
 }
 
 type Factory struct {
-	client    *store.ClientConfig
+	client    *cache.ClientConfig
 	namespace string
 }
 
@@ -76,6 +76,6 @@ func (f *Factory) StatefulSet() StatefulSetImp {
 func (f *Factory) PersistentVolumeClaim() PersistentVolumeClaimImp {
 	return newPersistentVolumeClaim(f.client, f.namespace)
 }
-func NewK8sFactory(client *store.ClientConfig, namespace string) *Factory {
+func NewK8sFactory(client *cache.ClientConfig, namespace string) *Factory {
 	return &Factory{client: client, namespace: namespace}
 }

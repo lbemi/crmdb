@@ -3,8 +3,8 @@ package sys
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/api/sys/v1"
 
-	"github.com/lbemi/lbemi/api/v1/sys"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	model "github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/rctx"
@@ -18,17 +18,17 @@ func UserRoutes() *restful.WebService {
 	// 获取图片验证码
 	ws.Route(ws.GET("/captcha").To(
 		func(request *restful.Request, response *restful.Response) {
-			rctx.NewReqCtx(request, response).WithToken(false).WithCasbin(false).WithHandle(sys.GetCaptcha).Do()
+			rctx.NewReqCtx(request, response).WithToken(false).WithCasbin(false).WithHandle(v1.GetCaptcha).Do()
 		}).
 		Doc("获取验证码").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Writes(sys.CaptchaInfo{}).
-		Returns(200, "success", sys.CaptchaInfo{}).
+		Writes(v1.CaptchaInfo{}).
+		Returns(200, "success", v1.CaptchaInfo{}).
 		Returns(500, restfulx.ServerErr.Error(), restfulx.ServerErr))
 
 	// 用户退出登录
 	ws.Route(ws.POST("/logout").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithToken(true).WithCasbin(false).WithLog("logout").WithHandle(sys.Logout).Do()
+		rctx.NewReqCtx(request, response).WithToken(true).WithCasbin(false).WithLog("logout").WithHandle(v1.Logout).Do()
 	}).
 		Doc("登出").
 		Metadata(restfulspec.KeyOpenAPITags, tags))
@@ -38,7 +38,7 @@ func UserRoutes() *restful.WebService {
 			WithToken(false).
 			WithCasbin(false).
 			WithLog("login").
-			WithHandle(sys.Login).
+			WithHandle(v1.Login).
 			Do()
 	}).
 		Doc("登录").
@@ -51,7 +51,7 @@ func UserRoutes() *restful.WebService {
 		Returns(1002, restfulx.TokenInvalid.Error(), restfulx.TokenInvalid))
 	// 根据用户ID获取用户的菜单
 	ws.Route(ws.GET("/menus").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("users").WithHandle(sys.GetLeftMenusByCurrentUser).Do()
+		rctx.NewReqCtx(request, response).WithLog("users").WithHandle(v1.GetLeftMenusByCurrentUser).Do()
 	}).
 		Doc("获取当前登录用户菜单").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -59,7 +59,7 @@ func UserRoutes() *restful.WebService {
 
 	// 获取用户列表
 	ws.Route(ws.GET("").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("users").WithHandle(sys.GetUserList).Do()
+		rctx.NewReqCtx(request, response).WithLog("users").WithHandle(v1.GetUserList).Do()
 	}).
 		Doc("获取用户列表").
 		Param(ws.QueryParameter("page", "page").DataType("int")).
@@ -73,7 +73,7 @@ func UserRoutes() *restful.WebService {
 	ws.Route(ws.POST("/register").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).
 			WithLog("users").
-			WithHandle(sys.Register).
+			WithHandle(v1.Register).
 			Do()
 	}).
 		Doc("注册用户").
@@ -86,7 +86,7 @@ func UserRoutes() *restful.WebService {
 		func(request *restful.Request, response *restful.Response) {
 			rctx.NewReqCtx(request, response).
 				WithLog("users").
-				WithHandle(sys.DeleteUserByUserId).
+				WithHandle(v1.DeleteUserByUserId).
 				Do()
 		}).
 		Doc("删除用户").
@@ -98,7 +98,7 @@ func UserRoutes() *restful.WebService {
 	ws.Route(ws.GET("/{id}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).
 			WithLog("users").
-			WithHandle(sys.GetUserInfoById).
+			WithHandle(v1.GetUserInfoById).
 			Do()
 	}).
 		Doc("根据用户ID获取用户信息").
@@ -111,7 +111,7 @@ func UserRoutes() *restful.WebService {
 	ws.Route(ws.PUT("/{id}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).
 			WithLog("users").
-			WithHandle(sys.UpdateUser).
+			WithHandle(v1.UpdateUser).
 			Do()
 	}).
 		Doc("修改取用户信息").
@@ -123,7 +123,7 @@ func UserRoutes() *restful.WebService {
 	ws.Route(ws.GET("/{id}/roles").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).
 			WithLog("users").
-			WithHandle(sys.GetUserRoles).
+			WithHandle(v1.GetUserRoles).
 			Do()
 	}).
 		Doc("查询当前用户角色").
@@ -135,7 +135,7 @@ func UserRoutes() *restful.WebService {
 	ws.Route(ws.POST("/{id}/roles").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).
 			WithLog("users").
-			WithHandle(sys.SetUserRoles).
+			WithHandle(v1.SetUserRoles).
 			Do()
 	}).
 		Doc("根据用户id分配角色").
@@ -147,7 +147,7 @@ func UserRoutes() *restful.WebService {
 	ws.Route(ws.GET("/permissions").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).
 			WithLog("users").
-			WithHandle(sys.GetButtonsByCurrentUser).
+			WithHandle(v1.GetButtonsByCurrentUser).
 			Do()
 	}).
 		Doc("根据用户ID获取当前用户的权限").
@@ -160,7 +160,7 @@ func UserRoutes() *restful.WebService {
 	ws.Route(ws.PUT("/{id}/status/{status}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).
 			WithLog("users").
-			WithHandle(sys.UpdateUserStatus).
+			WithHandle(v1.UpdateUserStatus).
 			Do()
 	}).
 		Doc("修改用户状态").

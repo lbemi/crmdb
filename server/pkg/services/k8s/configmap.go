@@ -3,7 +3,7 @@ package k8s
 import (
 	"context"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	v1 "k8s.io/api/core/v1"
@@ -20,7 +20,7 @@ type ConfigMapImp interface {
 }
 
 type configMap struct {
-	client *store.ClientConfig
+	client *cache.ClientConfig
 	ns     string
 }
 
@@ -53,16 +53,16 @@ func (s *configMap) Update(ctx context.Context, configMap *v1.ConfigMap) *v1.Con
 	return res
 }
 
-func newConfigMap(client *store.ClientConfig, namespace string) *configMap {
+func newConfigMap(client *cache.ClientConfig, namespace string) *configMap {
 	return &configMap{client: client, ns: namespace}
 }
 
 type ConfigMapHandler struct {
-	client      *store.ClientConfig
+	client      *cache.ClientConfig
 	clusterName string
 }
 
-func NewConfigMapHandler(client *store.ClientConfig, clusterName string) *ConfigMapHandler {
+func NewConfigMapHandler(client *cache.ClientConfig, clusterName string) *ConfigMapHandler {
 	return &ConfigMapHandler{client: client, clusterName: clusterName}
 }
 

@@ -3,7 +3,7 @@ package k8s
 import (
 	"context"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	v1 "k8s.io/api/apps/v1"
@@ -20,11 +20,11 @@ type DaemonSetImp interface {
 }
 
 type daemonSet struct {
-	cli *store.ClientConfig
+	cli *cache.ClientConfig
 	ns  string
 }
 
-func newDaemonSet(cli *store.ClientConfig, ns string) *daemonSet {
+func newDaemonSet(cli *cache.ClientConfig, ns string) *daemonSet {
 	return &daemonSet{cli: cli, ns: ns}
 }
 

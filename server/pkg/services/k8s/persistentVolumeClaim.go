@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	v1 "k8s.io/api/core/v1"
@@ -21,7 +21,7 @@ type PersistentVolumeClaimImp interface {
 }
 
 type persistentVolumeClaim struct {
-	client *store.ClientConfig
+	client *cache.ClientConfig
 	ns     string
 }
 
@@ -57,16 +57,16 @@ func (s *persistentVolumeClaim) Update(ctx context.Context, pvc *v1.PersistentVo
 	return res
 }
 
-func newPersistentVolumeClaim(client *store.ClientConfig, namespace string) *persistentVolumeClaim {
+func newPersistentVolumeClaim(client *cache.ClientConfig, namespace string) *persistentVolumeClaim {
 	return &persistentVolumeClaim{client: client, ns: namespace}
 }
 
 type PersistentVolumeClaimHandler struct {
-	client      *store.ClientConfig
+	client      *cache.ClientConfig
 	clusterName string
 }
 
-func NewPersistentVolumeClaimHandler(client *store.ClientConfig, clusterName string) *PersistentVolumeClaimHandler {
+func NewPersistentVolumeClaimHandler(client *cache.ClientConfig, clusterName string) *PersistentVolumeClaimHandler {
 	return &PersistentVolumeClaimHandler{client: client, clusterName: clusterName}
 }
 

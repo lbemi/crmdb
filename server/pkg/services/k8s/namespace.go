@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	v1 "k8s.io/api/core/v1"
@@ -21,7 +21,7 @@ type NamespaceImp interface {
 }
 
 type namespace struct {
-	cli *store.ClientConfig
+	cli *cache.ClientConfig
 }
 
 func (n *namespace) List(ctx context.Context) []*v1.Namespace {
@@ -55,16 +55,16 @@ func (n *namespace) Delete(ctx context.Context, name string) {
 	restfulx.ErrNotNilDebug(n.cli.ClientSet.CoreV1().Namespaces().Delete(ctx, name, metav1.DeleteOptions{}), restfulx.OperatorErr)
 }
 
-func newNamespace(cli *store.ClientConfig) *namespace {
+func newNamespace(cli *cache.ClientConfig) *namespace {
 	return &namespace{cli: cli}
 }
 
 type NameSpaceHandler struct {
-	cli *store.ClientConfig
+	cli *cache.ClientConfig
 	ns  string
 }
 
-func NewNameSpaceHandler(cli *store.ClientConfig, ns string) *NameSpaceHandler {
+func NewNameSpaceHandler(cli *cache.ClientConfig, ns string) *NameSpaceHandler {
 	return &NameSpaceHandler{cli: cli, ns: ns}
 }
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	v1 "k8s.io/api/core/v1"
@@ -21,7 +21,7 @@ type SecretImp interface {
 }
 
 type secret struct {
-	client *store.ClientConfig
+	client *cache.ClientConfig
 	ns     string
 }
 
@@ -57,7 +57,7 @@ func (s *secret) Update(ctx context.Context, secret *v1.Secret) *v1.Secret {
 	return res
 }
 
-func newSecret(client *store.ClientConfig, namespace string) *secret {
+func newSecret(client *cache.ClientConfig, namespace string) *secret {
 	return &secret{client: client, ns: namespace}
 }
 

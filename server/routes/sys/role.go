@@ -3,16 +3,12 @@ package sys
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
-	"github.com/gin-gonic/gin"
+	"github.com/lbemi/lbemi/api/sys/v1"
 
-	"github.com/lbemi/lbemi/api/v1/sys"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	model "github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
-
-func NewRoleRouter(router *gin.RouterGroup) {
-}
 
 func RoleRoutes() *restful.WebService {
 	role := new(restful.WebService)
@@ -21,7 +17,7 @@ func RoleRoutes() *restful.WebService {
 
 	// 根据角色ID获取角色信息
 	role.Route(role.GET("/{id}").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.GetRole).Do()
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(v1.GetRole).Do()
 	}).
 		Doc("根据角色ID获取角色信息").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -31,7 +27,7 @@ func RoleRoutes() *restful.WebService {
 
 	// 获取所有角色
 	role.Route(role.GET("").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.ListRoles).Do()
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(v1.ListRoles).Do()
 	}).
 		Doc("获取角色列表").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -44,7 +40,7 @@ func RoleRoutes() *restful.WebService {
 
 	// 根据角色ID获取角色权限
 	role.Route(role.GET("{id}/menus").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.GetMenusByRole).Do()
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(v1.GetMenusByRole).Do()
 	}).
 		Doc("根据角色ID获取角色权限").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -55,7 +51,7 @@ func RoleRoutes() *restful.WebService {
 
 	// 添加角色
 	role.Route(role.POST("").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.AddRole).Do()
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(v1.AddRole).Do()
 	}).
 		Doc("添加角色").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -64,7 +60,7 @@ func RoleRoutes() *restful.WebService {
 
 	// 根据角色ID设置角色权限
 	role.Route(role.POST("/{id}/menus").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.SetRoleMenus).Do()
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(v1.SetRoleMenus).Do()
 	}).
 		Doc("根据角色ID设置角色权限").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -74,7 +70,7 @@ func RoleRoutes() *restful.WebService {
 
 	// 根据角色ID更新角色信息
 	role.Route(role.PUT("/{id}").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.UpdateRole).Do()
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(v1.UpdateRole).Do()
 	}).
 		Doc("根据角色ID更新角色信息").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -84,7 +80,7 @@ func RoleRoutes() *restful.WebService {
 
 	// 修改角色状态
 	role.Route(role.PUT("/{id}/status/{status}").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.UpdateRoleStatus).Do()
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(v1.UpdateRoleStatus).Do()
 	}).
 		Doc("根据角色ID更新角色信息").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -94,7 +90,7 @@ func RoleRoutes() *restful.WebService {
 
 	// 删除角色
 	role.Route(role.DELETE("/{id}").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(sys.DeleteRole).Do()
+		rctx.NewReqCtx(request, response).WithLog("roles").WithHandle(v1.DeleteRole).Do()
 	}).
 		Doc("删除角色").
 		Metadata(restfulspec.KeyOpenAPITags, tags).

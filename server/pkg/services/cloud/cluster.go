@@ -13,7 +13,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/metrics/pkg/client/clientset/versioned"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
@@ -21,7 +21,7 @@ import (
 )
 
 type ICluster interface {
-	GenerateClient(name, config string) (*store.ClientConfig, *cloud.Cluster, error)
+	GenerateClient(name, config string) (*cache.ClientConfig, *cloud.Cluster, error)
 	CheckCusterHealth(name string) bool
 
 	Create(config *cloud.Cluster)
@@ -30,7 +30,7 @@ type ICluster interface {
 	Get(id uint64) *cloud.Cluster
 	GetByName(name string) *cloud.Cluster
 	List() *[]cloud.Cluster
-	GetClient(name string) *store.ClientConfig
+	GetClient(name string) *cache.ClientConfig
 	ChangeStatus(id uint64, status bool)
 
 	RemoveFromStore(name string)
@@ -40,10 +40,10 @@ type ICluster interface {
 
 type Cluster struct {
 	db    *gorm.DB
-	store *store.ClientMap
+	store *cache.ClientMap
 }
 
-func NewCluster(db *gorm.DB, store *store.ClientMap) *Cluster {
+func NewCluster(db *gorm.DB, store *cache.ClientMap) *Cluster {
 	return &Cluster{
 		db:    db,
 		store: store,
@@ -67,7 +67,7 @@ func (c *Cluster) CheckCusterHealth(name string) bool {
 	return true
 }
 
-func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *cloud.Cluster, error) {
+func (c *Cluster) GenerateClient(name, config string) (*cache.ClientConfig, *cloud.Cluster, error) {
 
 	//如果已经存在或者已经初始化client则退出
 	clients := c.store.Get(name)
@@ -75,7 +75,7 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 		return nil, nil, errors.New("client has already been initialized")
 	}
 
-	var client store.ClientConfig
+	var client cache.ClientConfig
 	clientConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(config))
 	if err != nil {
 		c.store.Delete(name)
@@ -187,7 +187,7 @@ func (c *Cluster) RemoveFromStore(name string) {
 	c.store.Delete(name)
 }
 
-func (c *Cluster) GetClient(name string) *store.ClientConfig {
+func (c *Cluster) GetClient(name string) *cache.ClientConfig {
 	health := c.CheckCusterHealth(name)
 	restfulx.ErrNotTrue(health, restfulx.ClusterUnHealth)
 	return c.store.Get(name)

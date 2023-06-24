@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	v1 "k8s.io/api/networking/v1"
@@ -21,7 +21,7 @@ type IngressesImp interface {
 }
 
 type ingresses struct {
-	client *store.ClientConfig
+	client *cache.ClientConfig
 	ns     string
 }
 
@@ -57,7 +57,7 @@ func (s *ingresses) Update(ctx context.Context, ingresses *v1.Ingress) *v1.Ingre
 	return res
 }
 
-func newIngress(client *store.ClientConfig, namespace string) *ingresses {
+func newIngress(client *cache.ClientConfig, namespace string) *ingresses {
 	return &ingresses{client: client, ns: namespace}
 }
 

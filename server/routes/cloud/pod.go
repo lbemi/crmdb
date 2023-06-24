@@ -3,9 +3,9 @@ package cloud
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/api/cloud/v1beat1"
 	v1 "k8s.io/api/core/v1"
 
-	"github.com/lbemi/lbemi/api/v1/cloud"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
@@ -17,7 +17,7 @@ func KubernetesPodRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Pod").
-			WithHandle(cloud.ListPods).Do()
+			WithHandle(v1beat1.ListPods).Do()
 	}).Doc("获取Pod列表").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(&form.PageResult{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -30,7 +30,7 @@ func KubernetesPodRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Pod").
-			WithHandle(cloud.GetPod).Do()
+			WithHandle(v1beat1.GetPod).Do()
 	}).Doc("获取Pod信息").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(v1.Pod{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -40,7 +40,7 @@ func KubernetesPodRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}/{name}/events").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Pod").
-			WithHandle(cloud.GetPodEvents).Do()
+			WithHandle(v1beat1.GetPodEvents).Do()
 	}).Doc("获取Pod事件").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes([]*v1.Event{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -50,7 +50,7 @@ func KubernetesPodRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}/exec/{name}/{container}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("websocket").WithNoRes().
-			WithHandle(cloud.PodExec).Do()
+			WithHandle(v1beat1.PodExec).Do()
 	}).Doc("pod exec命令行 websocket").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
 		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
@@ -60,7 +60,7 @@ func KubernetesPodRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}/logs/{name}/{container}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("websocket").WithNoRes().
-			WithHandle(cloud.GetPodLog).Do()
+			WithHandle(v1beat1.GetPodLog).Do()
 	}).Doc("获取pod日志 websocket").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
 		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
@@ -69,7 +69,7 @@ func KubernetesPodRoutes() *restful.WebService {
 		Returns(200, "success", nil))
 	ws.Route(ws.POST("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Pod").
-			WithHandle(cloud.CreatePod).Do()
+			WithHandle(v1beat1.CreatePod).Do()
 	}).Doc("创建Pod").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
 		Reads(v1.Pod{}).
@@ -78,7 +78,7 @@ func KubernetesPodRoutes() *restful.WebService {
 
 	ws.Route(ws.PUT("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Pod").
-			WithHandle(cloud.UpdatePod).Do()
+			WithHandle(v1beat1.UpdatePod).Do()
 	}).Doc("修改Pod").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
 		Reads(v1.Pod{}).
@@ -87,7 +87,7 @@ func KubernetesPodRoutes() *restful.WebService {
 
 	ws.Route(ws.DELETE("/namespaces/{namespace}/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Pod").
-			WithHandle(cloud.DeletePod).Do()
+			WithHandle(v1beat1.DeletePod).Do()
 	}).Doc("删除Pod").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
 		Param(ws.PathParameter("name", "Pod名称").Required(true).DataType("string")).

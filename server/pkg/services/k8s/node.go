@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
@@ -32,7 +32,7 @@ type NodeImp interface {
 }
 
 type node struct {
-	cli *store.ClientConfig
+	cli *cache.ClientConfig
 }
 
 func (n *node) List(ctx context.Context) []*types.Node {
@@ -161,7 +161,7 @@ func (n *node) Drain(ctx context.Context, name string) {
 	}
 }
 
-func newNode(cli *store.ClientConfig) *node {
+func newNode(cli *cache.ClientConfig) *node {
 	return &node{cli: cli}
 }
 

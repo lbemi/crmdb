@@ -3,8 +3,8 @@ package logsys
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/api/logsys/v1beat1"
 
-	"github.com/lbemi/lbemi/api/v1/logsys"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	logModel "github.com/lbemi/lbemi/pkg/model/logsys"
 	"github.com/lbemi/lbemi/pkg/rctx"
@@ -17,7 +17,7 @@ func LoginLogRoutes() *restful.WebService {
 	// 获取登录日志列表
 	ws.Route(ws.GET("").To(
 		func(request *restful.Request, response *restful.Response) {
-			rctx.NewReqCtx(request, response).WithLog("loginLog").WithHandle(logsys.ListLoginLog).Do()
+			rctx.NewReqCtx(request, response).WithLog("loginLog").WithHandle(v1beat1.ListLoginLog).Do()
 		}).
 		Doc("获取登录日志列表").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -30,7 +30,7 @@ func LoginLogRoutes() *restful.WebService {
 
 	// 根据ID获取登录日志
 	ws.Route(ws.GET("/{id}").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("loginLog").WithHandle(logsys.GetLoginLog).Do()
+		rctx.NewReqCtx(request, response).WithLog("loginLog").WithHandle(v1beat1.GetLoginLog).Do()
 	}).Doc("根据id获取登录日志").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.QueryParameter("id", "登录日志id").DataType("int")).
@@ -42,7 +42,7 @@ func LoginLogRoutes() *restful.WebService {
 		func(request *restful.Request, response *restful.Response) {
 			rctx.NewReqCtx(request, response).
 				WithLog("loginLog").
-				WithHandle(logsys.DeleteLoginLogs).
+				WithHandle(v1beat1.DeleteLoginLogs).
 				Do()
 		}).
 		Doc("删除指定日志").
@@ -54,7 +54,7 @@ func LoginLogRoutes() *restful.WebService {
 		func(request *restful.Request, response *restful.Response) {
 			rctx.NewReqCtx(request, response).
 				WithLog("loginLog").
-				WithHandle(logsys.DeleteAllLoginLog).
+				WithHandle(v1beat1.DeleteAllLoginLog).
 				Do()
 		}).
 		Doc("删除所有日志").

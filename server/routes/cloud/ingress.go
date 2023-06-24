@@ -3,9 +3,9 @@ package cloud
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/api/cloud/v1beat1"
 	v1 "k8s.io/api/networking/v1"
 
-	"github.com/lbemi/lbemi/api/v1/cloud"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
@@ -17,7 +17,7 @@ func KubernetesIngressRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Ingress").
-			WithHandle(cloud.ListIngresses).Do()
+			WithHandle(v1beat1.ListIngresses).Do()
 	}).Doc("获取Ingress列表").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(&form.PageResult{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -30,7 +30,7 @@ func KubernetesIngressRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Ingress").
-			WithHandle(cloud.GetIngress).Do()
+			WithHandle(v1beat1.GetIngress).Do()
 	}).Doc("获取Ingress信息").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(v1.Ingress{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -40,7 +40,7 @@ func KubernetesIngressRoutes() *restful.WebService {
 
 	ws.Route(ws.POST("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Ingress").
-			WithHandle(cloud.CreateIngress).Do()
+			WithHandle(v1beat1.CreateIngress).Do()
 	}).Doc("创建Ingress").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
 		Reads(v1.Ingress{}).
@@ -49,7 +49,7 @@ func KubernetesIngressRoutes() *restful.WebService {
 
 	ws.Route(ws.PUT("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Ingress").
-			WithHandle(cloud.UpdateIngress).Do()
+			WithHandle(v1beat1.UpdateIngress).Do()
 	}).Doc("修改Ingress").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
 		Reads(v1.Ingress{}).
@@ -58,7 +58,7 @@ func KubernetesIngressRoutes() *restful.WebService {
 
 	ws.Route(ws.DELETE("/namespaces/{namespace}/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Ingress").
-			WithHandle(cloud.DeleteIngress).Do()
+			WithHandle(v1beat1.DeleteIngress).Do()
 	}).Doc("删除Ingress").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
 		Param(ws.PathParameter("name", "Ingress名称").Required(true).DataType("string")).

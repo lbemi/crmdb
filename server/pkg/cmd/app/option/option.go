@@ -8,7 +8,7 @@ import (
 
 	"github.com/lbemi/lbemi/pkg/bootstrap"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/model/config"
 	"github.com/lbemi/lbemi/pkg/services"
 )
@@ -37,8 +37,6 @@ func (o *Options) WithLog() *Options {
 	return o
 }
 func (o *Options) Complete() *Options {
-	// 加载配置文件
-	//o.Config = bootstrap.InitializeConfig()
 	// 初始化日志
 	log.Register(&o.Config.Log)
 	// 初始化数据库
@@ -51,8 +49,8 @@ func (o *Options) Complete() *Options {
 	//o.GinEngine = gin.New()
 	// 初始化casbin enforcer
 	o.Enforcer = bootstrap.InitPolicyEnforcer(o.DB)
-	// 初始化client store
-	clientStore := store.NewClientStore()
+	// 初始化client cache
+	clientStore := cache.NewClientStore()
 
 	// 初始化dbFactory
 	o.Factory = services.NewDbFactory(o.DB, o.Enforcer, clientStore)

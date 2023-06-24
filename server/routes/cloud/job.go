@@ -3,9 +3,9 @@ package cloud
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/api/cloud/v1beat1"
 	v1 "k8s.io/api/batch/v1"
 
-	"github.com/lbemi/lbemi/api/v1/cloud"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
@@ -17,7 +17,7 @@ func KubernetesJobRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Job").
-			WithHandle(cloud.ListJobs).Do()
+			WithHandle(v1beat1.ListJobs).Do()
 	}).Doc("获取Job列表").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(&form.PageResult{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -30,7 +30,7 @@ func KubernetesJobRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Job").
-			WithHandle(cloud.GetJob).Do()
+			WithHandle(v1beat1.GetJob).Do()
 	}).Doc("获取Job信息").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(v1.Job{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -40,7 +40,7 @@ func KubernetesJobRoutes() *restful.WebService {
 
 	ws.Route(ws.POST("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Job").
-			WithHandle(cloud.CreateJob).Do()
+			WithHandle(v1beat1.CreateJob).Do()
 	}).Doc("创建Job").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
 		Reads(v1.Job{}).
@@ -49,7 +49,7 @@ func KubernetesJobRoutes() *restful.WebService {
 
 	ws.Route(ws.PUT("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Job").
-			WithHandle(cloud.UpdateJob).Do()
+			WithHandle(v1beat1.UpdateJob).Do()
 	}).Doc("修改Job").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
 		Reads(v1.Job{}).
@@ -58,7 +58,7 @@ func KubernetesJobRoutes() *restful.WebService {
 
 	ws.Route(ws.DELETE("/namespaces/{namespace}/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Job").
-			WithHandle(cloud.DeleteJob).Do()
+			WithHandle(v1beat1.DeleteJob).Do()
 	}).Doc("删除Job").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
 		Param(ws.PathParameter("name", "Job名称").Required(true).DataType("string")).

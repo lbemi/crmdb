@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	corev1 "k8s.io/api/core/v1"
@@ -18,7 +18,7 @@ type EventImp interface {
 }
 
 type event struct {
-	cli *store.ClientConfig
+	cli *cache.ClientConfig
 	ns  string
 }
 
@@ -44,7 +44,7 @@ func (e *event) Get(ctx context.Context, name string) *corev1.Event {
 	return res
 }
 
-func newEvent(client *store.ClientConfig, namespace string) *event {
+func newEvent(client *cache.ClientConfig, namespace string) *event {
 	return &event{cli: client, ns: namespace}
 }
 

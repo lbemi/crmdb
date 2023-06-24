@@ -3,8 +3,8 @@ package logsys
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/api/logsys/v1beat1"
 
-	"github.com/lbemi/lbemi/api/v1/logsys"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	logModel "github.com/lbemi/lbemi/pkg/model/logsys"
 	"github.com/lbemi/lbemi/pkg/rctx"
@@ -17,7 +17,7 @@ func OperatorLogRoutes() *restful.WebService {
 	// 获取操作日志列表
 	ws.Route(ws.GET("").To(
 		func(request *restful.Request, response *restful.Response) {
-			rctx.NewReqCtx(request, response).WithLog("operatorLog").WithHandle(logsys.ListOperatorLog).Do()
+			rctx.NewReqCtx(request, response).WithLog("operatorLog").WithHandle(v1beat1.ListOperatorLog).Do()
 		}).
 		Doc("获取操作日志列表").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -32,7 +32,7 @@ func OperatorLogRoutes() *restful.WebService {
 
 	// 根据ID获取操作日志
 	ws.Route(ws.GET("/{id}").To(func(request *restful.Request, response *restful.Response) {
-		rctx.NewReqCtx(request, response).WithLog("operatorLog").WithHandle(logsys.GetOperatorLog).Do()
+		rctx.NewReqCtx(request, response).WithLog("operatorLog").WithHandle(v1beat1.GetOperatorLog).Do()
 	}).Doc("根据id获取操作日志").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.QueryParameter("id", "操作日志id").DataType("int")).
@@ -44,7 +44,7 @@ func OperatorLogRoutes() *restful.WebService {
 		func(request *restful.Request, response *restful.Response) {
 			rctx.NewReqCtx(request, response).
 				WithLog("operatorLog").
-				WithHandle(logsys.DeleteOperatorLogs).
+				WithHandle(v1beat1.DeleteOperatorLogs).
 				Do()
 		}).
 		Doc("删除指定日志").
@@ -57,7 +57,7 @@ func OperatorLogRoutes() *restful.WebService {
 		func(request *restful.Request, response *restful.Response) {
 			rctx.NewReqCtx(request, response).
 				WithLog("operatorLog").
-				WithHandle(logsys.DeleteAllOperatorLog).
+				WithHandle(v1beat1.DeleteAllOperatorLog).
 				Do()
 		}).
 		Doc("删除所有日志").

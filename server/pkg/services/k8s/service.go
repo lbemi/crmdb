@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
@@ -24,7 +24,7 @@ type ServiceImp interface {
 }
 
 type service struct {
-	client *store.ClientConfig
+	client *cache.ClientConfig
 	ns     string
 }
 
@@ -99,7 +99,7 @@ func (s *service) Update(ctx context.Context, service *v1.Service) *v1.Service {
 	return res
 }
 
-func newService(client *store.ClientConfig, namespace string) *service {
+func newService(client *cache.ClientConfig, namespace string) *service {
 	return &service{client: client, ns: namespace}
 }
 

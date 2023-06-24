@@ -3,9 +3,9 @@ package cloud
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/api/cloud/v1beat1"
 	v1 "k8s.io/api/core/v1"
 
-	"github.com/lbemi/lbemi/api/v1/cloud"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
@@ -17,7 +17,7 @@ func KubernetesNamespaceRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("namespace").
-			WithHandle(cloud.ListNamespace).Do()
+			WithHandle(v1beat1.ListNamespace).Do()
 	}).Doc("获取Namespace列表").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(&form.PageResult{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -29,7 +29,7 @@ func KubernetesNamespaceRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("namespace").
-			WithHandle(cloud.GetNamespace).Do()
+			WithHandle(v1beat1.GetNamespace).Do()
 	}).Doc("获取Namespace信息").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(v1.Namespace{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -38,7 +38,7 @@ func KubernetesNamespaceRoutes() *restful.WebService {
 
 	ws.Route(ws.POST("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("namespace").
-			WithHandle(cloud.CreateNamespace).Do()
+			WithHandle(v1beat1.CreateNamespace).Do()
 	}).Doc("创建Namespace").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
 		Reads(v1.Namespace{}).
@@ -47,7 +47,7 @@ func KubernetesNamespaceRoutes() *restful.WebService {
 
 	ws.Route(ws.PUT("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("namespace").
-			WithHandle(cloud.UpdateNamespace).Do()
+			WithHandle(v1beat1.UpdateNamespace).Do()
 	}).Doc("修改Namespace").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
 		Reads(v1.Namespace{}).
@@ -56,7 +56,7 @@ func KubernetesNamespaceRoutes() *restful.WebService {
 
 	ws.Route(ws.DELETE("/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("namespace").
-			WithHandle(cloud.DeleteNamespace).Do()
+			WithHandle(v1beat1.DeleteNamespace).Do()
 	}).Doc("删除Namespace").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
 		Param(ws.PathParameter("name", "namespace名称").Required(true).DataType("string")).

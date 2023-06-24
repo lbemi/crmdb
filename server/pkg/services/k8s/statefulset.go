@@ -3,7 +3,7 @@ package k8s
 import (
 	"context"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	v1 "k8s.io/api/apps/v1"
@@ -20,7 +20,7 @@ type StatefulSetImp interface {
 }
 
 type statefulSet struct {
-	cli *store.ClientConfig
+	cli *cache.ClientConfig
 	ns  string
 }
 
@@ -53,7 +53,7 @@ func (d *statefulSet) Delete(ctx context.Context, name string) {
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func newStatefulSet(cli *store.ClientConfig, namespace string) *statefulSet {
+func newStatefulSet(cli *cache.ClientConfig, namespace string) *statefulSet {
 	return &statefulSet{cli: cli, ns: namespace}
 }
 

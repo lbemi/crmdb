@@ -3,9 +3,9 @@ package cloud
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/api/cloud/v1beat1"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/lbemi/lbemi/api/v1/cloud"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
@@ -17,7 +17,7 @@ func KubernetesPersistentVolumeClaimRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("pvc").
-			WithHandle(cloud.ListPersistentVolumeClaim).Do()
+			WithHandle(v1beat1.ListPersistentVolumeClaim).Do()
 	}).Doc("获取Pvc列表").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(&form.PageResult{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -30,7 +30,7 @@ func KubernetesPersistentVolumeClaimRoutes() *restful.WebService {
 
 	ws.Route(ws.GET("/namespaces/{namespace}/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("pvc").
-			WithHandle(cloud.GetPersistentVolumeClaim).Do()
+			WithHandle(v1beat1.GetPersistentVolumeClaim).Do()
 	}).Doc("获取Pvc信息").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(corev1.PersistentVolumeClaim{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
@@ -40,7 +40,7 @@ func KubernetesPersistentVolumeClaimRoutes() *restful.WebService {
 
 	ws.Route(ws.POST("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("pvc").
-			WithHandle(cloud.CreatePersistentVolumeClaim).Do()
+			WithHandle(v1beat1.CreatePersistentVolumeClaim).Do()
 	}).Doc("创建Pvc").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
 		Reads(corev1.PersistentVolumeClaim{}).
@@ -49,7 +49,7 @@ func KubernetesPersistentVolumeClaimRoutes() *restful.WebService {
 
 	ws.Route(ws.PUT("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("pvc").
-			WithHandle(cloud.UpdatePersistentVolumeClaim).Do()
+			WithHandle(v1beat1.UpdatePersistentVolumeClaim).Do()
 	}).Doc("修改Pvc").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
 		Reads(corev1.PersistentVolumeClaim{}).
@@ -58,7 +58,7 @@ func KubernetesPersistentVolumeClaimRoutes() *restful.WebService {
 
 	ws.Route(ws.DELETE("/namespaces/{namespace}/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("pvc").
-			WithHandle(cloud.DeletePersistentVolumeClaim).Do()
+			WithHandle(v1beat1.DeletePersistentVolumeClaim).Do()
 	}).Doc("删除Pvc").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
 		Param(ws.PathParameter("name", "Pvc名称").Required(true).DataType("string")).

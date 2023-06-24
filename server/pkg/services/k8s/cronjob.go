@@ -3,7 +3,7 @@ package k8s
 import (
 	"context"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	v1 "k8s.io/api/batch/v1"
@@ -20,7 +20,7 @@ type CronJobImp interface {
 }
 
 type cronJob struct {
-	cli *store.ClientConfig
+	cli *cache.ClientConfig
 	ns  string
 }
 
@@ -53,6 +53,6 @@ func (d *cronJob) Delete(ctx context.Context, name string) {
 		Delete(ctx, name, metav1.DeleteOptions{}), restfulx.OperatorErr)
 }
 
-func newCronJob(cli *store.ClientConfig, namespace string) *cronJob {
+func newCronJob(cli *cache.ClientConfig, namespace string) *cronJob {
 	return &cronJob{cli: cli, ns: namespace}
 }

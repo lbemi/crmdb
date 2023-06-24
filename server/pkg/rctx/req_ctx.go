@@ -102,7 +102,7 @@ func (rc *ReqCtx) Do() {
 	}
 }
 
-// Set is used to store a new key/value pair exclusively for this context.
+// Set is used to cache a new key/value pair exclusively for this context.
 // It also lazy initializes  c.Keys if it was not used previously.
 func (rc *ReqCtx) Set(key string, value any) {
 	rc.mu.Lock()

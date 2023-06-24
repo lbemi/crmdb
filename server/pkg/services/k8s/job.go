@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	v1 "k8s.io/api/batch/v1"
@@ -21,7 +21,7 @@ type JobImp interface {
 }
 
 type job struct {
-	cli *store.ClientConfig
+	cli *cache.ClientConfig
 	ns  string
 }
 
@@ -57,6 +57,6 @@ func (d *job) Delete(ctx context.Context, name string) {
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func newJob(cli *store.ClientConfig, namespace string) *job {
+func newJob(cli *cache.ClientConfig, namespace string) *job {
 	return &job{cli: cli, ns: namespace}
 }

@@ -5,8 +5,7 @@ import (
 	"sort"
 
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/common/store"
-	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -19,7 +18,7 @@ type ReplicasetImp interface {
 }
 
 type Replicaset struct {
-	cli *store.ClientConfig
+	cli *cache.ClientConfig
 	ns  string
 }
 
@@ -38,16 +37,16 @@ func (r *Replicaset) Get(ctx context.Context, name string) *appsv1.ReplicaSet {
 	return replicaSet
 }
 
-func newReplicaset(cli *store.ClientConfig, ns string) *Replicaset {
+func newReplicaset(cli *cache.ClientConfig, ns string) *Replicaset {
 	return &Replicaset{cli: cli, ns: ns}
 }
 
 type ReplicasetHandler struct {
-	client      *store.ClientConfig
+	client      *cache.ClientConfig
 	clusterName string
 }
 
-func NewReplicasetHandler(client *store.ClientConfig, clusterName string) *ReplicasetHandler {
+func NewReplicasetHandler(client *cache.ClientConfig, clusterName string) *ReplicasetHandler {
 	return &ReplicasetHandler{client: client, clusterName: clusterName}
 }
 
@@ -75,7 +74,7 @@ func (r *ReplicasetHandler) notifyReplicaset(obj interface{}) {
 		return replicates[j].ObjectMeta.GetCreationTimestamp().Time.Before(replicates[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 	//fmt.Println(r.clusterName, "-----这个空间-----发生数据变化------------")
-	go wsstore.WsClientMap.SendClusterResource(r.clusterName, "replicaset", map[string]interface{}{
+	go cache.WsClientMap.SendClusterResource(r.clusterName, "replicaset", map[string]interface{}{
 		"cluster": r.clusterName,
 		"type":    "replicaset",
 		"result": map[string]interface{}{

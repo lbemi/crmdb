@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	client "github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/services/asset"
 	"github.com/lbemi/lbemi/pkg/services/auth"
@@ -28,7 +28,7 @@ type DbFactory struct {
 	db      *gorm.DB
 	enforce *casbin.SyncedEnforcer
 	client  *client.KubernetesClient
-	store   *store.ClientMap
+	store   *cache.ClientMap
 }
 
 func (f *DbFactory) Authentication() auth.AuthenticationInterface {
@@ -62,7 +62,7 @@ func (f *DbFactory) Operator() logsys.IOperatorLog {
 	return logsys.NewOperatorLog(f.db)
 }
 
-func NewDbFactory(db *gorm.DB, enforcer *casbin.SyncedEnforcer, store *store.ClientMap) FactoryImp {
+func NewDbFactory(db *gorm.DB, enforcer *casbin.SyncedEnforcer, store *cache.ClientMap) FactoryImp {
 	return &DbFactory{
 		db:      db,
 		enforce: enforcer,

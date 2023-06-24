@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/lbemi/lbemi/pkg/bootstrap"
-	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/services"
 )
 
@@ -11,7 +11,7 @@ func TestInit(c string) services.FactoryImp {
 	db := bootstrap.InitializeDB(config)
 	// 初始化casbin enforcer
 	//enforcer := bootstrap.InitPolicyEnforcer(db)
-	clientStore := store.NewClientStore()
+	clientStore := cache.NewClientStore()
 	// 初始化dbFactory
 	return services.NewDbFactory(db, nil, clientStore)
 }
