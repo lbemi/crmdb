@@ -6,7 +6,6 @@ import (
 	"syscall"
 
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
-	"github.com/emicklei/go-restful/v3"
 	"github.com/go-openapi/spec"
 	"github.com/spf13/cobra"
 
@@ -52,6 +51,20 @@ func run(cmd *cobra.Command, args []string) {
 	container := httpSever.Container
 	container.Filter(middleware.Cors(container).Filter)
 	//注册路由
+	registerRoute(httpSever)
+
+	httpSever.Start()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	<-quit
+	if err := httpSever.Stop(); err != nil {
+		log.Logger.Errorf("fault stop server. %s", err)
+		os.Exit(-3)
+	}
+}
+
+func registerRoute(httpSever *server.HttpSever) {
+	//注册路由
 	httpSever.RegisterRoutes(
 		sys.UserRoutes(),
 		sys.RoleRoutes(),
@@ -78,27 +91,13 @@ func run(cmd *cobra.Command, args []string) {
 		cloud.KubernetesStatefulSetRoutes(),
 	)
 
-	//注册swagger路由
-	registerSwaggerRoute(container)
-
-	httpSever.Start()
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	if err := httpSever.Stop(); err != nil {
-		log.Logger.Errorf("fault stop server. %s", err)
-		os.Exit(-3)
-	}
-}
-
-func registerSwaggerRoute(container *restful.Container) {
 	// 注册swagger路由，必须放到最后,否则swagger无法获取所有的路由信息
 	config := restfulspec.Config{
-		WebServices:                   container.RegisteredWebServices(), // you control what services are visible
+		WebServices:                   httpSever.Container.RegisteredWebServices(), // you control what services are visible
 		APIPath:                       "/apidocs.json",
 		PostBuildSwaggerObjectHandler: enrichSwaggerObject}
 
-	container.Add(restfulspec.NewOpenAPIService(config))
+	httpSever.Container.Add(restfulspec.NewOpenAPIService(config))
 }
 
 func enrichSwaggerObject(swo *spec.Swagger) {
@@ -122,7 +121,7 @@ func enrichSwaggerObject(swo *spec.Swagger) {
 			Version: "1.0.0",
 		},
 	}
-	swo.Tags = []spec.Tag{spec.Tag{TagProps: spec.TagProps{
-		Name:        "users***",
-		Description: "Managing users"}}}
+	//swo.Tags = []spec.Tag{spec.Tag{TagProps: spec.TagProps{
+	//	Name:        "users***",
+	//	Description: "Managing users"}}}
 }
