@@ -205,7 +205,7 @@ onBeforeMount(() => {
 	updateCodeMirror();
 });
 
-const emit = defineEmits(['update', 'update:dialogVisible', 'refresh']);
+const emit = defineEmits(['update:dialogVisible', 'refresh']);
 
 const handleClose = () => {
 	emit('update:dialogVisible', false);
@@ -222,7 +222,6 @@ onMounted(() => {
 	dialogVisible.value = props.dialogVisible;
 	if (!isObjectValueEqual(props.deployment, {})) {
 		data.isUpdate = true;
-		console.log(props.deployment);
 		data.deployments = props.deployment as Deployment;
 		data.bindMetaData.metadata = data.deployments.metadata;
 		data.bindMetaData.replicas = data.deployments.spec?.replicas;
@@ -235,28 +234,6 @@ onMounted(() => {
 		}
 	}
 });
-// watch(
-// 	() => props,
-// 	() => {
-// 		dialogVisible.value = props.dialogVisible;
-// 		if (!isObjectValueEqual(props.deployments, {})) {
-// 			data.isUpdate = true;
-// 			data.deployments = props.deployments as Deployment;
-// 			data.bindMetaData.metadata = data.deployments.metadata;
-// 			data.bindMetaData.replicas = data.deployments.spec?.replicas;
-// 			if (data.deployments.spec?.template.spec?.initContainers) {
-// 				data.initContainers = data.deployments.spec!.template.spec!.initContainers!;
-// 			}
-// 			if (data.deployments.spec?.template.spec?.containers) {
-// 				data.containers = data.deployments.spec!.template.spec!.containers!;
-// 			}
-// 		}
-// 	},
-// 	{
-// 		immediate: true,
-// 		deep: true,
-// 	}
-// );
 </script>
 
 <style scoped>

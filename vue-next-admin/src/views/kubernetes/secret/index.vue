@@ -243,7 +243,7 @@ const deleteSecret = (Secret: Secret) => {
 		message: h('p', null, [
 			h('span', null, '此操作将删除 '),
 			h('i', { style: 'color: teal' }, `${Secret.metadata!.name}`),
-			h('span', null, ' 服务. 是否继续? '),
+			h('span', null, ' Secret. 是否继续? '),
 		]),
 		buttonSize: 'small',
 		showCancelButton: true,

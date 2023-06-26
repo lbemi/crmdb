@@ -265,7 +265,7 @@
 			v-model:dialogVisible="data.update.dialogVisible"
 			:title="data.update.title"
 			:deployment="data.deployment"
-			:refresh="k8sStore.refreshActiveDeployment()"
+			@refresh="refreshActiveDeployment"
 			v-if="data.update.dialogVisible"
 		/>
 	</div>
@@ -296,6 +296,7 @@ const route = useRoute();
 const websocketApi = useWebsocketApi();
 const podStore = podInfo();
 const k8sStore = kubernetesInfo();
+const { refreshActiveDeployment } = kubernetesInfo();
 const podApi = usePodApi();
 const deploymentApi = useDeploymentApi();
 const timer = ref();
@@ -616,7 +617,7 @@ const buildWebsocket = () => {
 };
 
 const refreshCurrentTagsView = () => {
-	k8sStore.refreshActiveDeployment();
+	refreshActiveDeployment();
 };
 </script>
 <style lang="scss">

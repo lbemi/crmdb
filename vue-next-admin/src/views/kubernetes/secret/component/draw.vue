@@ -305,7 +305,9 @@ const uploadCert = (uploadFile: UploadFile | undefined) => {
 	if (uploadFile?.raw) {
 		let fileReader = new FileReader();
 		fileReader.onload = async () => {
-			data.tlsValue[0].value = JSON.stringify(fileReader.result);
+			if (typeof fileReader.result === 'string') {
+				data.tlsValue[0].value = fileReader.result;
+			}
 		};
 		fileReader.readAsText(uploadFile.raw);
 	}
@@ -314,7 +316,9 @@ const uploadKey = (uploadFile: UploadFile | undefined) => {
 	if (uploadFile?.raw) {
 		let fileReader = new FileReader();
 		fileReader.onload = async () => {
-			data.tlsValue[1].value = JSON.stringify(fileReader.result);
+			if (typeof fileReader.result === 'string') {
+				data.tlsValue[1].value = fileReader.result;
+			}
 		};
 		fileReader.readAsText(uploadFile.raw);
 	}
