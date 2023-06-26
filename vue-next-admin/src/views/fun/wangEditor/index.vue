@@ -8,8 +8,10 @@
 				class="mb15"
 			></el-alert>
 			<Editor v-model:get-html="state.editor.htmlVal" v-model:get-text="state.editor.textVal" :disable="state.editor.disable" />
+			<el-button @click="commit">提交</el-button>
 		</el-card>
 	</div>
+	<div v-html="state.editor.htmlVal"></div>
 </template>
 
 <script setup lang="ts" name="funWangEditor">
@@ -27,4 +29,8 @@ const state = reactive({
 		disable: false,
 	},
 });
+
+const commit = () => {
+	console.log(state.editor.htmlVal);
+};
 </script>
