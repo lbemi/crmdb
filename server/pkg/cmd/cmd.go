@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 	"os/signal"
+	"runtime/trace"
 	"syscall"
 
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
@@ -61,6 +62,23 @@ func run(cmd *cobra.Command, args []string) {
 		log.Logger.Errorf("fault stop server. %s", err)
 		os.Exit(-3)
 	}
+
+	//GC分析  go tool trace trace.out  或者 GODEBUG=gctrace=1 go run cmd/main.go
+	f, err := os.Create("/Users/lei/Documents/GitHub/lbemi/server/trace.out")
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+
+		}
+	}(f)
+	err = trace.Start(f)
+	if err != nil {
+		return
+	}
+	defer trace.Stop()
 }
 
 func registerRoute(httpSever *server.HttpSever) {

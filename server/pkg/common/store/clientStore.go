@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	"k8s.io/client-go/dynamic"
 	"sync"
 
 	"github.com/lbemi/lbemi/pkg/restfulx"
@@ -15,6 +16,7 @@ import (
 type ClientConfig struct {
 	ClientSet             *kubernetes.Clientset
 	MetricSet             *versioned.Clientset
+	DynamicSet            *dynamic.DynamicClient
 	SharedInformerFactory informers.SharedInformerFactory
 	IsInit                bool
 	Config                *rest.Config
@@ -52,6 +54,8 @@ func (c *ClientMap) Get(key string) *ClientConfig {
 func (c *ClientMap) Delete(key string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
+	// 关闭informer
+	close(c.data[key].StopChan)
 	delete(c.data, key)
 }
 

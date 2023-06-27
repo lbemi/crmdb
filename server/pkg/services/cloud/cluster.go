@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/metadata"
 	"time"
 
 	"gorm.io/gorm"
@@ -77,6 +79,9 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 
 	var client store.ClientConfig
 	clientConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(config))
+
+	// 使用protobuf传输数据
+	clientConfig = metadata.ConfigFor(clientConfig)
 	if err != nil {
 		c.store.Delete(name)
 		return nil, nil, err
@@ -84,6 +89,12 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 
 	//生成clientSet
 	clientSet, err := kubernetes.NewForConfig(clientConfig)
+	if err != nil {
+		c.store.Delete(name)
+		return nil, nil, err
+	}
+
+	dynamicClient, err := dynamic.NewForConfig(clientConfig)
 	if err != nil {
 		c.store.Delete(name)
 		return nil, nil, err
@@ -132,13 +143,15 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 	client.MetricSet = metricSet
 	client.ClientSet = clientSet
 	client.Config = clientConfig
-	//生成informer factory
+	client.DynamicSet = dynamicClient
+
+	//生成SharedInformerFactory
 	client.SharedInformerFactory = informers.NewSharedInformerFactory(clientSet, 0)
 	client.IsInit = true
 	client.StopChan = make(chan struct{})
 	c.store.Add(name, &client)
 
-	//go c.StartInformer(client)
+	//异步启动informer
 	go c.StartInformer(name)
 
 	return &client, &conf, nil
@@ -219,6 +232,12 @@ func (c *Cluster) StartInformer(clusterName string) {
 	client.SharedInformerFactory.Start(client.StopChan)
 	// 等待informer同步完成
 	client.SharedInformerFactory.WaitForCacheSync(client.StopChan)
+	in := client.SharedInformerFactory.Core().V1().Pods().Informer()
+	getStore := in.GetStore()
+	err := getStore.Resync()
+	if err != nil {
+		return
+	}
 }
 
 func (c *Cluster) ShutDownInformer(clusterName string) {
