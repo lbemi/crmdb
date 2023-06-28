@@ -55,12 +55,12 @@
 					v-loading="data.loading"
 				>
 					<el-table-column type="selection" width="35" />
+					<el-table-column prop="metadata.namespace" label="命名空间" width="200px" v-if="k8sStore.state.activeNamespace === 'all'" />
 					<el-table-column prop="metadata.name" label="名称">
 						<template #default="scope">
 							<el-button link type="primary" size="small" @click="serviceDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
 						</template>
 					</el-table-column>
-					<el-table-column prop="metadata.namespace" label="命名空间" />
 					<el-table-column prop="spec.type" label="类型" />
 					<el-table-column prop="spec.clusterIP" label="集群IP" />
 

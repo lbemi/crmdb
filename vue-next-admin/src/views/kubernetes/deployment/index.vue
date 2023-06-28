@@ -67,7 +67,7 @@
 			</div>
 			<el-table :data="data.deployments" style="width: 100%" @selection-change="handleSelectionChange" v-loading="data.loading" size="small">
 				<el-table-column type="selection" width="55" />
-
+				<el-table-column prop="metadata.namespace" label="命名空间" width="200px" v-if="k8sStore.state.activeNamespace === 'all'" />
 				<el-table-column prop="metadata.name" label="名称">
 					<template #default="scope">
 						<el-button link type="primary" size="small" @click="deployDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>

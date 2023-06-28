@@ -2,12 +2,14 @@ package util
 
 import (
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func GVKForObject(obj runtime.Object, scheme *runtime.Scheme) (schema.GroupVersionKind, error) {
+func gvkForObject(obj runtime.Object, scheme *runtime.Scheme) (schema.GroupVersionKind, error) {
 	_, ok := obj.(*metav1.PartialObjectMetadata)
 	_, ok2 := obj.(*metav1.PartialObjectMetadataList)
 
@@ -42,14 +44,23 @@ func GVKForObject(obj runtime.Object, scheme *runtime.Scheme) (schema.GroupVersi
 	return gvks[0], nil
 }
 
-//func RestoreGVKForList(objects []runtime.Object) error {
-//	if len(objects) != 0 {
-//		gvk, err := GVKForObject(objects[0], scheme.Scheme)
-//		if err != nil {
-//			return err
-//		}
-//		for _, obj := range objects {
-//			obj.GetObjectKind()
-//		}
-//	}
-//}
+func RestoreGVKForList(objects []runtime.Object) {
+	if len(objects) != 0 {
+		gvk, err := gvkForObject(objects[0], scheme.Scheme)
+		if err != nil {
+			restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+		}
+
+		for _, obj := range objects {
+			obj.GetObjectKind().SetGroupVersionKind(gvk)
+		}
+	}
+}
+
+func RestoreGVK(obj runtime.Object) {
+	gvk, err := gvkForObject(obj, scheme.Scheme)
+	if err != nil {
+		restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	}
+	obj.GetObjectKind().SetGroupVersionKind(gvk)
+}

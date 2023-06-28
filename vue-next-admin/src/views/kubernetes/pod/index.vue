@@ -53,7 +53,7 @@
 				max-height="100vh - 235px"
 			>
 				<el-table-column type="selection" width="55" />
-
+				<el-table-column prop="metadata.namespace" label="命名空间" width="200px" v-if="k8sStore.state.activeNamespace === 'all'" />
 				<el-table-column prop="metadata.name" label="名称" width="300px" show-overflow-tooltip>
 					<template #default="scope">
 						<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>

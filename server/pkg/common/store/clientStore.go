@@ -2,7 +2,9 @@ package store
 
 import (
 	"errors"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	"sync"
 
 	"github.com/lbemi/lbemi/pkg/restfulx"
@@ -14,13 +16,15 @@ import (
 )
 
 type ClientConfig struct {
-	ClientSet             *kubernetes.Clientset
-	MetricSet             *versioned.Clientset
-	DynamicSet            *dynamic.DynamicClient
-	SharedInformerFactory informers.SharedInformerFactory
-	IsInit                bool
-	Config                *rest.Config
-	StopChan              chan struct{}
+	ClientSet                    *kubernetes.Clientset
+	MetricSet                    *versioned.Clientset
+	DynamicSet                   *dynamic.DynamicClient
+	DiscoveryClient              *discovery.DiscoveryClient
+	SharedInformerFactory        informers.SharedInformerFactory
+	DynamicSharedInformerFactory dynamicinformer.DynamicSharedInformerFactory
+	IsInit                       bool
+	Config                       *rest.Config
+	StopChan                     chan struct{}
 }
 
 type ClientMap struct {

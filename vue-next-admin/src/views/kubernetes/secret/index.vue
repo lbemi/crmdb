@@ -60,6 +60,7 @@
 				v-loading="data.loading"
 			>
 				<el-table-column type="selection" width="35" />
+				<el-table-column prop="metadata.namespace" label="命名空间" width="200px" v-if="k8sStore.state.activeNamespace === 'all'" />
 				<el-table-column label="名称">
 					<template #default="scope">
 						<el-button :size="theme.themeConfig.globalComponentSize" type="primary" text @click="secretDetail(scope.row)">
@@ -67,7 +68,6 @@
 						>
 					</template>
 				</el-table-column>
-				<el-table-column prop="metadata.namespace" label="命名空间" />
 				<el-table-column prop="type" label="类型">
 					<template #default="scope">
 						{{ secretType(scope.row) }}

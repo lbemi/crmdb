@@ -3,6 +3,8 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/util"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sort"
 	"strings"
 
@@ -46,7 +48,7 @@ func newPod(cli *store.ClientConfig, ns string) *pod {
 func (p *pod) List(ctx context.Context) []*corev1.Pod {
 	list, err := p.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(p.ns).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
-
+	restoreGVKForList(list)
 	sort.Slice(list, func(i, j int) bool {
 		return list[j].ObjectMeta.CreationTimestamp.Time.Before(list[i].ObjectMeta.CreationTimestamp.Time)
 	})
@@ -56,6 +58,7 @@ func (p *pod) List(ctx context.Context) []*corev1.Pod {
 
 func (p *pod) Get(ctx context.Context, name string) *corev1.Pod {
 	dep, err := p.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(p.ns).Get(name)
+	util.RestoreGVK(dep)
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return dep
 }
@@ -63,12 +66,14 @@ func (p *pod) Get(ctx context.Context, name string) *corev1.Pod {
 func (p *pod) Create(ctx context.Context, obj *corev1.Pod) *corev1.Pod {
 	newPod, err := p.cli.ClientSet.CoreV1().Pods(p.ns).Create(ctx, obj, metav1.CreateOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	util.RestoreGVK(newPod)
 	return newPod
 }
 
 func (p *pod) Update(ctx context.Context, obj *corev1.Pod) *corev1.Pod {
 	updatePod, err := p.cli.ClientSet.CoreV1().Pods(p.ns).Update(ctx, obj, metav1.UpdateOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	util.RestoreGVK(updatePod)
 	return updatePod
 }
 
@@ -97,6 +102,7 @@ func (p *pod) GetPodByLabels(ctx context.Context, namespace string, label []map[
 			}
 		}
 	}
+	restoreGVKForList(res)
 	return res
 }
 
@@ -174,7 +180,7 @@ func (p *pod) Search(ctx context.Context, key string, searchType int) []*corev1.
 	sort.Slice(podList, func(i, j int) bool {
 		return podList[j].ObjectMeta.GetCreationTimestamp().Time.Before(podList[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
-
+	restoreGVKForList(podList)
 	return podList
 }
 
@@ -208,6 +214,7 @@ func (p *PodHandler) notifyPods(obj interface{}) {
 		log.Logger.Error(err)
 	}
 
+	restoreGVKForList(pods)
 	//按时间排序
 	sort.Slice(pods, func(i, j int) bool {
 		return pods[j].ObjectMeta.GetCreationTimestamp().Time.Before(pods[i].ObjectMeta.GetCreationTimestamp().Time)
@@ -221,4 +228,12 @@ func (p *PodHandler) notifyPods(obj interface{}) {
 			"data":      pods,
 		},
 	})
+}
+
+func restoreGVKForList(podList []*corev1.Pod) {
+	objects := make([]runtime.Object, len(podList))
+	for i, p := range podList {
+		objects[i] = p
+	}
+	util.RestoreGVKForList(objects)
 }

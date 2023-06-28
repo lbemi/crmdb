@@ -4,8 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/services/k8s"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/metadata"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -18,7 +24,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/restfulx"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
 	"github.com/lbemi/lbemi/pkg/util"
 )
 
@@ -86,6 +91,11 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 		c.store.Delete(name)
 		return nil, nil, err
 	}
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(clientConfig)
+	if err != nil {
+		c.store.Delete(name)
+		return nil, nil, err
+	}
 
 	//生成clientSet
 	clientSet, err := kubernetes.NewForConfig(clientConfig)
@@ -140,11 +150,7 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 	metricSet, err := versioned.NewForConfig(clientConfig)
 	restfulx.ErrNotNilDebug(err, restfulx.RegisterClusterErr)
 
-	client.MetricSet = metricSet
-	client.ClientSet = clientSet
-	client.Config = clientConfig
-	client.DynamicSet = dynamicClient
-
+	dynamicSharedInformerFactory := dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, 0)
 	//生成SharedInformerFactory
 	client.SharedInformerFactory = informers.NewSharedInformerFactory(clientSet, 0)
 	client.IsInit = true
@@ -154,6 +160,12 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 	//异步启动informer
 	go c.StartInformer(name)
 
+	client.MetricSet = metricSet
+	client.ClientSet = clientSet
+	client.Config = clientConfig
+	client.DynamicSet = dynamicClient
+	client.DynamicSharedInformerFactory = dynamicSharedInformerFactory
+	client.DiscoveryClient = discoveryClient
 	return &client, &conf, nil
 }
 
@@ -212,32 +224,60 @@ func (c *Cluster) StartInformer(clusterName string) {
 		restfulx.ErrNotNilDebug(fmt.Errorf("初始化Informer失败"), restfulx.OperatorErr)
 	}
 
+	resources, err := client.DiscoveryClient.ServerPreferredResources()
+	if err != nil {
+		restfulx.ErrNotNilDebug(fmt.Errorf("初始化Informer失败"), restfulx.OperatorErr)
+	}
+	for _, apiResource := range resources {
+		groupVersion := strings.Split(apiResource.GroupVersion, "/")
+		gvr := schema.GroupVersionResource{}
+		if len(groupVersion) == 1 {
+			gvr.Group = ""
+			gvr.Version = groupVersion[0]
+		} else {
+			gvr.Group = groupVersion[0]
+			gvr.Version = groupVersion[1]
+		}
+		for _, v := range apiResource.APIResources {
+			// v1 ComponentStatus is deprecated in v1.19+
+			if v.Name == "componentstatuses" {
+				continue
+			}
+			gvr.Resource = v.Name
+
+			_, err := client.SharedInformerFactory.ForResource(gvr)
+			if err != nil {
+				log.Logger.Error(err)
+			}
+			//
+			//informer := client.DynamicSharedInformerFactory.ForResource(gvr)
+			//_ = informer
+		}
+
+	}
+
 	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(k8s.NewDeploymentHandler(client, clusterName))
-	client.SharedInformerFactory.Apps().V1().ReplicaSets().Informer().AddEventHandler(k8s.NewReplicasetHandler(client, clusterName))
+	//client.SharedInformerFactory.Apps().V1().ReplicaSets().Informer().AddEventHandler(k8s.NewReplicasetHandler(client, clusterName))
 	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(k8s.NewPodHandler(client, clusterName))
-	client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(k8s.NewNameSpaceHandler(client, clusterName))
-	client.SharedInformerFactory.Core().V1().Events().Informer().AddEventHandler(k8s.NewEventHandler())
-	client.SharedInformerFactory.Core().V1().Nodes().Informer().AddEventHandler(k8s.NewNodeHandler())
-	client.SharedInformerFactory.Core().V1().ConfigMaps().Informer().AddEventHandler(k8s.NewConfigMapHandler(client, clusterName))
-	client.SharedInformerFactory.Core().V1().Secrets().Informer().AddEventHandler(k8s.NewSecretHandle())
-	client.SharedInformerFactory.Core().V1().Services().Informer().AddEventHandler(k8s.NewServiceHandle())
-	client.SharedInformerFactory.Core().V1().PersistentVolumeClaims().Informer().AddEventHandler(k8s.NewPersistentVolumeClaimHandler(client, clusterName))
-	client.SharedInformerFactory.Networking().V1().Ingresses().Informer().AddEventHandler(k8s.NewIngressHandle())
+	//client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(k8s.NewNameSpaceHandler(client, clusterName))
+	//client.SharedInformerFactory.Core().V1().Events().Informer().AddEventHandler(k8s.NewEventHandler())
+	//client.SharedInformerFactory.Core().V1().Nodes().Informer().AddEventHandler(k8s.NewNodeHandler())
+	//client.SharedInformerFactory.Core().V1().ConfigMaps().Informer().AddEventHandler(k8s.NewConfigMapHandler(client, clusterName))
+	//client.SharedInformerFactory.Core().V1().Secrets().Informer().AddEventHandler(k8s.NewSecretHandle())
+	//client.SharedInformerFactory.Core().V1().Services().Informer().AddEventHandler(k8s.NewServiceHandle())
+	//client.SharedInformerFactory.Core().V1().PersistentVolumeClaims().Informer().AddEventHandler(k8s.NewPersistentVolumeClaimHandler(client, clusterName))
+	//client.SharedInformerFactory.Networking().V1().Ingresses().Informer().AddEventHandler(k8s.NewIngressHandle())
 	//client.SharedInformerFactory.Networking().V1beta1().Ingresses().Informer().AddEventHandler(k8s.NewIngressHandle())
 	//client.SharedInformerFactory.Extensions().V1beta1().Ingresses().Informer().AddEventHandler(k8s.NewIngressHandle())
-	client.SharedInformerFactory.Apps().V1().StatefulSets().Informer().AddEventHandler(k8s.NewStatefulSetHandle())
+	//client.SharedInformerFactory.Apps().V1().StatefulSets().Informer().AddEventHandler(k8s.NewStatefulSetHandle())
 
-	//stopChan := make(chan struct{})
+	//client.DynamicSharedInformerFactory.Start(client.StopChan)
+	//client.DynamicSharedInformerFactory.WaitForCacheSync(client.StopChan)
 	// 启动informer
 	client.SharedInformerFactory.Start(client.StopChan)
 	// 等待informer同步完成
 	client.SharedInformerFactory.WaitForCacheSync(client.StopChan)
-	in := client.SharedInformerFactory.Core().V1().Pods().Informer()
-	getStore := in.GetStore()
-	err := getStore.Resync()
-	if err != nil {
-		return
-	}
+
 }
 
 func (c *Cluster) ShutDownInformer(clusterName string) {

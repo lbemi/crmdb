@@ -507,7 +507,6 @@
 			v-model:dialogVisible="data.dialogVisible"
 			:disabled-update="true"
 			:code-data="data.codeData"
-			:resourceType="'pod'"
 			@update="updatePod"
 			v-if="data.dialogVisible"
 		/>
