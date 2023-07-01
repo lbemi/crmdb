@@ -138,6 +138,8 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 	replicaSets := d.k8s.Replicaset().List(ctx)
 	res := make([]map[string]string, 0)
 	PodReplicaSets := make([]*appsv1.ReplicaSet, 0)
+
+	// TODO 可以使用k8s内置方法v1.IsControlledBy()替换
 	for _, item := range replicaSets {
 		if d.isRsFromDep(dep, item) {
 			selectorAsMap, err := v1.LabelSelectorAsMap(item.Spec.Selector)
@@ -192,10 +194,12 @@ func (d *Deployment) Search(ctx context.Context, key string, searchType int) []*
 }
 
 func (d *Deployment) isRsFromDep(dep *appsv1.Deployment, rs *appsv1.ReplicaSet) bool {
-	for _, ref := range rs.OwnerReferences {
-		if ref.Kind == "Deployment" && ref.Name == dep.Name {
-			return true
-		}
-	}
-	return false
+	return v1.IsControlledBy(rs, dep)
+
+	//for _, ref := range rs.OwnerReferences {
+	//	if ref.Kind == "Deployment" && ref.Name == dep.Name {
+	//		return true
+	//	}
+	//}
+	//return false
 }
