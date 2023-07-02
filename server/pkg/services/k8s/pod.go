@@ -3,11 +3,11 @@ package k8s
 import (
 	"context"
 	"fmt"
+	cache2 "github.com/lbemi/lbemi/pkg/cache"
 	"sort"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
@@ -34,11 +34,11 @@ type PodImp interface {
 }
 
 type pod struct {
-	cli *cache.ClientConfig
+	cli *cache2.ClientConfig
 	ns  string
 }
 
-func newPod(cli *cache.ClientConfig, ns string) *pod {
+func newPod(cli *cache2.ClientConfig, ns string) *pod {
 	return &pod{cli: cli, ns: ns}
 }
 
@@ -178,11 +178,11 @@ func (p *pod) Search(ctx context.Context, key string, searchType int) []*corev1.
 }
 
 type PodHandler struct {
-	client      *cache.ClientConfig
+	client      *cache2.ClientConfig
 	clusterName string
 }
 
-func NewPodHandler(client *cache.ClientConfig, clusterName string) *PodHandler {
+func NewPodHandler(client *cache2.ClientConfig, clusterName string) *PodHandler {
 	return &PodHandler{client: client, clusterName: clusterName}
 }
 
@@ -212,7 +212,7 @@ func (p *PodHandler) notifyPods(obj interface{}) {
 		return pods[j].ObjectMeta.GetCreationTimestamp().Time.Before(pods[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 
-	go cache.WsClientMap.SendClusterResource(p.clusterName, "pod", map[string]interface{}{
+	go cache2.WsClientMap.SendClusterResource(p.clusterName, "pod", map[string]interface{}{
 		"cluster": p.clusterName,
 		"type":    "pod",
 		"result": map[string]interface{}{

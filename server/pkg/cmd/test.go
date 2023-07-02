@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/lbemi/lbemi/pkg/bootstrap"
-	"github.com/lbemi/lbemi/pkg/common/cache"
+	"github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/services"
 )
 

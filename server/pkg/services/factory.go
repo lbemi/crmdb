@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/lbemi/lbemi/pkg/common/cache"
+	"github.com/lbemi/lbemi/pkg/cache"
 	client "github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/services/asset"
 	"github.com/lbemi/lbemi/pkg/services/auth"

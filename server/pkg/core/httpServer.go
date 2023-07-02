@@ -1,4 +1,4 @@
-package server
+package core
 
 import (
 	"context"
@@ -13,17 +13,14 @@ import (
 )
 
 type HttpSever struct {
-	Addr string
-	srv  *http.Server
-
+	Addr      string
+	srv       *http.Server
 	Container *restful.Container
 }
 
 func NewHttpSever(addr string) *HttpSever {
 	container := restful.NewContainer()
 	container.EnableContentEncoding(true)
-	//restful.TraceLogger(&httpLog{})
-	//restful.SetLogger(&httpLog{})
 	container.Router(restful.CurlyRouter{}) //设置路由为快速路由
 	return &HttpSever{Addr: addr, Container: container, srv: &http.Server{
 		Addr:           addr,
@@ -35,7 +32,7 @@ func NewHttpSever(addr string) *HttpSever {
 	}}
 }
 
-func (h *HttpSever) Type() Type {
+func (h *HttpSever) ServerType() Type {
 	return HTTP
 }
 
@@ -47,7 +44,6 @@ func (h *HttpSever) Start() {
 		}
 		h.welcomeMsg()
 	}()
-
 }
 
 func (h *HttpSever) Stop() error {
@@ -61,16 +57,6 @@ func (h *HttpSever) RegisterRoutes(routes ...*restful.WebService) {
 	for _, route := range routes {
 		h.Container.Add(route)
 	}
-}
-
-type httpLog struct{}
-
-func (t *httpLog) Print(v ...any) {
-	log.Logger.Info(v...)
-}
-
-func (t *httpLog) Printf(format string, v ...any) {
-	log.Logger.Infof(format, v...)
 }
 
 func getIP() *[]string {

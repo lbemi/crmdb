@@ -1,7 +1,7 @@
 package cloud
 
 import (
-	store "github.com/lbemi/lbemi/pkg/common/cache"
+	store "github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/restfulx"

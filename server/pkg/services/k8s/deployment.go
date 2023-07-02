@@ -3,11 +3,11 @@ package k8s
 import (
 	"context"
 	"fmt"
+	cache2 "github.com/lbemi/lbemi/pkg/cache"
 	"sort"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
@@ -27,11 +27,11 @@ type DeploymentImp interface {
 }
 
 type Deployment struct {
-	cli       *cache.ClientConfig
+	cli       *cache2.ClientConfig
 	namespace string
 }
 
-func newDeployment(cli *cache.ClientConfig, namespace string) *Deployment {
+func newDeployment(cli *cache2.ClientConfig, namespace string) *Deployment {
 	return &Deployment{cli: cli, namespace: namespace}
 }
 
@@ -111,11 +111,11 @@ func (d *Deployment) Search(ctx context.Context, key string, searchType int) []*
 }
 
 type DeploymentHandler struct {
-	client      *cache.ClientConfig
+	client      *cache2.ClientConfig
 	clusterName string
 }
 
-func NewDeploymentHandler(client *cache.ClientConfig, clusterName string) *DeploymentHandler {
+func NewDeploymentHandler(client *cache2.ClientConfig, clusterName string) *DeploymentHandler {
 	return &DeploymentHandler{client: client, clusterName: clusterName}
 }
 
@@ -143,7 +143,7 @@ func (d *DeploymentHandler) notifyDeployments(obj interface{}) {
 		return deployments[j].ObjectMeta.GetCreationTimestamp().Time.Before(deployments[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 
-	go cache.WsClientMap.SendClusterResource(d.clusterName, "deployment", map[string]interface{}{
+	go cache2.WsClientMap.SendClusterResource(d.clusterName, "deployment", map[string]interface{}{
 		"cluster": d.clusterName,
 		"type":    "deployment",
 		"result": map[string]interface{}{

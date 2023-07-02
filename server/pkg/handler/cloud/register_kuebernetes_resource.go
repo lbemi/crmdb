@@ -17,10 +17,8 @@ type ICluster interface {
 	GetByName(name string) *cloud.Cluster
 	ChangeStatus(id uint64, status bool)
 	CheckHealth() bool
-	//GenerateClient(name, config string) (*cloud2.ClientConfig, *cloud.Cluster, error)
 
 	// 注册资源接口
-
 	kubernetes.DeploymentGetter
 	kubernetes.StatefulSetGetter
 	kubernetes.DaemonSetGetter

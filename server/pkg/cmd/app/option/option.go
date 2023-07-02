@@ -4,11 +4,11 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
+	"github.com/lbemi/lbemi/pkg/cache"
 	"gorm.io/gorm"
 
 	"github.com/lbemi/lbemi/pkg/bootstrap"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/common/cache"
 	"github.com/lbemi/lbemi/pkg/model/config"
 	"github.com/lbemi/lbemi/pkg/services"
 )

@@ -1,4 +1,4 @@
-package server
+package core
 
 const (
 	HTTP Type = "HTTP"
@@ -8,7 +8,7 @@ const (
 type Type string
 
 type Server interface {
-	Type() Type
-	Start() error
+	ServerType() Type
+	Start()
 	Stop() error
 }

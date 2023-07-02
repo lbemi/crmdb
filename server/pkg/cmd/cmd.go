@@ -13,7 +13,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/cmd/app/option"
 	"github.com/lbemi/lbemi/pkg/core"
-	"github.com/lbemi/lbemi/pkg/core/server"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/routes/cloud"
@@ -37,6 +36,7 @@ func NewDefaultAppCommand() *cobra.Command {
 			// 注册handler
 			core.Register(completedOptions)
 
+			//注册中间件
 			rctx.UserAfterHandlerInterceptor(middleware.LogHandler)
 			rctx.UseBeforeHandlerInterceptor(middleware.JWTAuth)
 		},
@@ -48,8 +48,7 @@ func NewDefaultAppCommand() *cobra.Command {
 }
 
 func run(cmd *cobra.Command, args []string) {
-	log.Logger.Infof("config: %v", completedOptions.Config)
-	httpSever := server.NewHttpSever(":" + completedOptions.Config.App.Port)
+	httpSever := core.NewHttpSever(":" + completedOptions.Config.App.Port)
 	container := httpSever.Container
 	container.Filter(middleware.Cors(container).Filter)
 	//注册路由

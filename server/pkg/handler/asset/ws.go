@@ -3,7 +3,7 @@ package asset
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/lbemi/lbemi/pkg/common/cache"
+	"github.com/lbemi/lbemi/pkg/cache"
 	"time"
 	"unicode/utf8"
 

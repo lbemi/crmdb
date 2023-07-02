@@ -1,6 +1,8 @@
 package k8s
 
-import "github.com/lbemi/lbemi/pkg/common/cache"
+import (
+	"github.com/lbemi/lbemi/pkg/cache"
+)
 
 type FactoryImp interface {
 	Deployment() DeploymentImp
