@@ -1,16 +1,19 @@
 package asset
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"github.com/lbemi/lbemi/pkg/model"
 	"time"
-
-	"github.com/lbemi/lbemi/pkg/model/basemodel"
 
 	"gorm.io/gorm"
 )
 
 // Host 机器信息
 type Host struct {
-	basemodel.Model
+	model.Model
+	GroupId    uint64 `json:"group_id" gorm:"column:group_id;not null;comment:'主机分组'"` // 主机分组
+	Labels     string `json:"labels" gorm:"labels;comment:标签"`
 	Ip         string `json:"ip" gorm:"column:ip; not null;unique_index:uk_host_ip;"`        // IP地址
 	Label      string `json:"label" gorm:"column:label;size:128;"`                           // 标签
 	Remark     string `json:"remark" gorm:"column:remark;size:128;"`                         // 备注
@@ -38,6 +41,7 @@ func (m *Host) BeforeUpdate(*gorm.DB) error {
 
 type HostReq struct {
 	Name       string `json:"name"`
+	GroupId    uint64 `json:"group_id"`    // 主机分组
 	Label      string `json:"label"`       // 标签
 	Remark     string `json:"remark"`      // 备注
 	Ip         string `json:"ip"`          // IP地址
@@ -48,4 +52,15 @@ type HostReq struct {
 	Secret     string `json:"secret"`
 	Status     int8   `json:"status"`     // 状态 1:启用；2:停用
 	EnableSSH  int8   `json:"enable_ssh"` // 是否允许SSH 1:启用；2:停用
+}
+
+type Tag []string
+
+func (t *Tag) Scan(value interface{}) error {
+	bytesValue, _ := value.([]byte)
+	return json.Unmarshal(bytesValue, t)
+}
+
+func (t Tag) Value() (driver.Value, error) {
+	return json.Marshal(t)
 }

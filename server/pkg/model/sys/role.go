@@ -1,16 +1,15 @@
 package sys
 
 import (
+	"github.com/lbemi/lbemi/pkg/model"
 	"time"
 
 	"gorm.io/gorm"
-
-	"github.com/lbemi/lbemi/pkg/model/basemodel"
 )
 
 // Role 角色
 type Role struct {
-	basemodel.Model
+	model.Model
 	Memo     string `gorm:"column:memo;size:128;comment:备注" json:"memo" form:"memo"`                                    // 备注
 	Name     string `gorm:"column:name;size:128;not null;unique_index:uk_role_name;comment:名称" json:"name" form:"name"` // 名称
 	Sequence int    `gorm:"column:sequence;not null;comment:排序值" json:"sequence" form:"sequence"`                       //

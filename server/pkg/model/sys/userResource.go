@@ -1,15 +1,14 @@
 package sys
 
 import (
+	"github.com/lbemi/lbemi/pkg/model"
 	"time"
-
-	"github.com/lbemi/lbemi/pkg/model/basemodel"
 
 	"gorm.io/gorm"
 )
 
 type UserResource struct {
-	basemodel.Model
+	model.Model
 	UserID     uint64 `gorm:"column:user_id;not null;comment:用户ID" json:"user_id"` // 用户ID
 	Type       string `json:"type" gorm:"column:type;comment:资源类型"`
 	ResourceID uint64 `json:"resourceID" gorm:"resourceID;comment:资源ID"`

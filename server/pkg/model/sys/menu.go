@@ -1,16 +1,15 @@
 package sys
 
 import (
+	"github.com/lbemi/lbemi/pkg/model"
 	"time"
 
 	"gorm.io/gorm"
-
-	"github.com/lbemi/lbemi/pkg/model/basemodel"
 )
 
 // Menu 菜单
 type Menu struct {
-	basemodel.Model
+	model.Model
 	Status    int8   `gorm:"column:status;type:tinyint(1);not null;default:1;comment:状态(1:启用 2:不启用)" json:"status" form:"status"`          // 状态(1:启用 2:不启用)
 	Memo      string `gorm:"column:memo;size:128;comment:备注" json:"memo" form:"memo"`                                                      // 备注
 	ParentID  uint64 `gorm:"column:parentID;not null;comment:父级ID" json:"parentID" form:"parent_id"`                                       // 父级ID
@@ -35,7 +34,7 @@ type Meta struct {
 	IsAffix     bool   `json:"isAffix" gorm:"column:isAffix"`
 	IsIframe    bool   `json:"isIframe" gorm:"column:isIframe"`
 	IsK8s       bool   `json:"isK8S" gorm:"column:isK8S"`
-	Icon        string `gorm:"column:icon;size:32;comment:icon图标" json:"icon" form:"icon"`
+	Icon        string `gorm:"column:icon;size:128;comment:icon图标" json:"icon" form:"icon"`
 }
 
 // TableName 表名

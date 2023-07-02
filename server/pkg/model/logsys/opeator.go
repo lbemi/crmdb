@@ -1,15 +1,14 @@
 package logsys
 
 import (
+	"github.com/lbemi/lbemi/pkg/model"
 	"time"
 
-	"github.com/lbemi/lbemi/pkg/model/basemodel"
-	
 	"gorm.io/gorm"
 )
 
 type LogOperator struct {
-	basemodel.Model
+	model.Model
 	Title        string `json:"title" gorm:"column:title;type:varchar(128);comment:操作的模块"`
 	BusinessType string `json:"businessType" gorm:"column:businessType;type:varchar(2);comment:04其它 01新增 02修改 03删除"`
 	Method       string `json:"method" gorm:"column:method;type:varchar(255);comment:请求方法"`

@@ -1,6 +1,7 @@
 package asset
 
 import (
+	"github.com/lbemi/lbemi/pkg/rctx"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -12,22 +13,11 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/asset"
 )
 
-func AddHost(c *gin.Context) {
+func AddHost(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	var machine asset.HostReq
-	if err := c.ShouldBindJSON(&machine); err != nil {
-		log.Logger.Error(err)
-		response.Fail(c, response.ErrCodeParameter)
-		return
-	}
-
-	if err := core.V1.Host().Create(c, &machine); err != nil {
-		log.Logger.Error(err)
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
-
-	response.Success(c, response.StatusOK, nil)
-
+	rc.ShouldBind(&machine)
+	core.V1.Host().Create(c, &machine)
 }
 
 // @Summary      List host

@@ -1,8 +1,10 @@
 package sys
 
-import "github.com/lbemi/lbemi/pkg/model/basemodel"
+import (
+	"github.com/lbemi/lbemi/pkg/model"
+)
 
 type Tenant struct {
-	basemodel.Model
+	model.Model
 	TenantName string `json:"tenant_Name"`
 }

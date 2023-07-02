@@ -1,13 +1,13 @@
 package sys
 
 import (
-	"github.com/lbemi/lbemi/pkg/model/basemodel"
+	"github.com/lbemi/lbemi/pkg/model"
 	"gorm.io/gorm"
 	"time"
 )
 
 type DepartmentRole struct {
-	basemodel.Model
+	model.Model
 	DeptName string `json:"deptName" gorm:"column:deptName"`
 	Remark   string `json:"remark" gorm:"column:remark"`
 	Status   int8   `json:"status" gorm:"column:status"`

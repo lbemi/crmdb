@@ -3,12 +3,9 @@ package asset
 import (
 	"context"
 
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model/asset"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services"
-
-	"gorm.io/gorm"
 )
 
 type HostGetter interface {
@@ -27,17 +24,18 @@ func NewHost(f services.FactoryImp) IHost {
 
 // IHost 主机操作接口
 type IHost interface {
-	Create(ctx context.Context, host *asset.HostReq) error
-	Delete(ctx context.Context, hostId int64) error
-	Update(ctx context.Context, hostId int64, host *asset.HostReq) error
-	List(ctx context.Context, page, limit int) (*form.PageHost, error)
-	GetByHostId(ctx context.Context, hostId int64) (host *asset.Host, err error)
-	UpdateFiledStatus(ctx context.Context, hostId int64, updateFiled string, status int8) error
+	Create(ctx context.Context, host *asset.HostReq)
+	Delete(ctx context.Context, hostId int64)
+	Update(ctx context.Context, hostId int64, host *asset.HostReq)
+	List(ctx context.Context, page, limit int) *form.PageHost
+	GetByHostId(ctx context.Context, hostId int64) (host *asset.Host)
+	UpdateFiledStatus(ctx context.Context, hostId int64, updateFiled string, status int8)
 	CheckHostExist(ctx context.Context, hostId int64) bool
 }
 
-func (m *host) Create(ctx context.Context, host *asset.HostReq) error {
-	return m.factory.Host().Create(ctx, &asset.Host{
+func (m *host) Create(ctx context.Context, host *asset.HostReq) {
+	m.factory.Host().Create(ctx, &asset.Host{
+		GroupId:    host.GroupId,
 		Label:      host.Label,
 		Remark:     host.Remark,
 		Ip:         host.Ip,
@@ -51,16 +49,13 @@ func (m *host) Create(ctx context.Context, host *asset.HostReq) error {
 	})
 }
 
-func (m *host) Delete(ctx context.Context, hostId int64) error {
-	err := m.factory.Host().Delete(ctx, hostId)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return err
+func (m *host) Delete(ctx context.Context, hostId int64) {
+	m.factory.Host().Delete(ctx, hostId)
+
 }
 
-func (m *host) Update(ctx context.Context, hostId int64, host *asset.HostReq) error {
-	err := m.factory.Host().Update(ctx, hostId, &asset.Host{
+func (m *host) Update(ctx context.Context, hostId int64, host *asset.HostReq) {
+	m.factory.Host().Update(ctx, hostId, &asset.Host{
 		Label:      host.Label,
 		Remark:     host.Remark,
 		Ip:         host.Ip,
@@ -71,41 +66,28 @@ func (m *host) Update(ctx context.Context, hostId int64, host *asset.HostReq) er
 		Status:     host.Status,
 		EnableSSH:  host.EnableSSH,
 	})
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return err
+
 }
 
-func (m *host) List(ctx context.Context, page, limit int) (*form.PageHost, error) {
+func (m *host) List(ctx context.Context, page, limit int) *form.PageHost {
 
-	hosts, err := m.factory.Host().List(page, limit)
-	if err != nil {
-		log.Logger.Error(err)
-		return nil, err
-	}
-	return hosts, nil
+	return m.factory.Host().List(page, limit)
+
 }
 
-func (m *host) GetByHostId(ctx context.Context, hostId int64) (host *asset.Host, err error) {
-	host, err = m.factory.Host().GetByHostId(ctx, hostId)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return
+func (m *host) GetByHostId(ctx context.Context, hostId int64) (host *asset.Host) {
+	return m.factory.Host().GetByHostId(ctx, hostId)
+
 }
 
-func (m *host) UpdateFiledStatus(ctx context.Context, hostId int64, updateFiled string, status int8) error {
-	err := m.factory.Host().UpdateFiledStatus(ctx, hostId, updateFiled, status)
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	return err
+func (m *host) UpdateFiledStatus(ctx context.Context, hostId int64, updateFiled string, status int8) {
+	m.factory.Host().UpdateFiledStatus(ctx, hostId, updateFiled, status)
+
 }
 
 func (m *host) CheckHostExist(ctx context.Context, hostId int64) bool {
-	_, err := m.factory.Host().GetByHostId(ctx, hostId)
-	if err != nil || err == gorm.ErrRecordNotFound {
+	h := m.factory.Host().GetByHostId(ctx, hostId)
+	if h == nil {
 		return false
 	}
 	return true

@@ -1,15 +1,14 @@
 package cloud
 
 import (
+	"github.com/lbemi/lbemi/pkg/model"
 	"time"
-
-	"github.com/lbemi/lbemi/pkg/model/basemodel"
 
 	"gorm.io/gorm"
 )
 
 type Cluster struct {
-	basemodel.Model
+	model.Model
 	Name        string  `json:"name" gorm:"column:name;not null;unique_index:kube_name;comment:集群名称"`
 	KubeConfig  string  `json:"-" gorm:"column:kube_config;not null;type:text;comment:cloud config"`
 	Version     string  `json:"version" gorm:"version:name;comment:kubernetes版本"`

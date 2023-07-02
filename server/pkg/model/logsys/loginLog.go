@@ -1,15 +1,14 @@
 package logsys
 
 import (
+	"github.com/lbemi/lbemi/pkg/model"
 	"time"
-
-	"github.com/lbemi/lbemi/pkg/model/basemodel"
 
 	"gorm.io/gorm"
 )
 
 type LogLogin struct {
-	basemodel.Model
+	model.Model
 	Username      string    `json:"username" gorm:"column:username;type:varchar(128);comment:用户名"`
 	Status        string    `json:"status" gorm:"column:status;type:varchar(2);comment:状态"`
 	Ipaddr        string    `json:"ipaddr" gorm:"column:ipaddr;type:varchar(255);comment:ip地址"`
