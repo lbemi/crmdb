@@ -19,6 +19,8 @@ type FactoryImp interface {
 	Role() sys.IRole
 	Menu() sys.IMenu
 	Host() asset.IHost
+	Account() asset.IAccount
+	Group() asset.IGroup
 	Cluster() cloud.ICluster
 	Log() logsys.ILoginLog
 	Operator() logsys.IOperatorLog
@@ -49,6 +51,13 @@ func (f *DbFactory) Menu() sys.IMenu {
 
 func (f *DbFactory) Host() asset.IHost {
 	return asset.NewHost(f.db)
+}
+func (f *DbFactory) Account() asset.IAccount {
+	return asset.NewAccount(f.db)
+}
+
+func (f *DbFactory) Group() asset.IGroup {
+	return asset.NewGroup(f.db)
 }
 
 func (f *DbFactory) Cluster() cloud.ICluster {

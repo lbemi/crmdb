@@ -89,6 +89,8 @@ func migration(db *gorm.DB) {
 		&asset.Host{},
 		&asset.Group{},
 		&asset.HostGroup{},
+		&asset.HostAccount{},
+		&asset.Account{},
 		&cloud.Cluster{},
 		&sys.UserResource{},
 		&logsys.LogLogin{},

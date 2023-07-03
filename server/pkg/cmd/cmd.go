@@ -86,6 +86,7 @@ func registerRoute(httpSever *server.HttpSever) {
 		sys.UserRoutes(),
 		sys.RoleRoutes(),
 		sys.MenuRoutes(),
+		asset.GroupRoutes(),
 		logsys.LoginLogRoutes(),
 		logsys.OperatorLogRoutes(),
 		cloud.WebSocketRoutes(),
