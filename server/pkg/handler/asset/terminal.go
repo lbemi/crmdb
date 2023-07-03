@@ -3,6 +3,7 @@ package asset
 import (
 	"context"
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"net"
 	"time"
 
@@ -26,10 +27,10 @@ func NewTerminal(f services.FactoryImp) *terminal {
 }
 
 type ITerminal interface {
-	GenerateClient(ctx context.Context, hostID int64, col, row int) (*ssh.Client, *ssh.Session, ssh.Channel, error)
+	GenerateClient(ctx context.Context, hostID int64, col, row int) (*ssh.Client, *ssh.Session, ssh.Channel)
 }
 
-func (t *terminal) GenerateClient(ctx context.Context, hostID int64, col, row int) (client *ssh.Client, session *ssh.Session, channel ssh.Channel, err error) {
+func (t *terminal) GenerateClient(ctx context.Context, hostID int64, col, row int) (client *ssh.Client, session *ssh.Session, channel ssh.Channel) {
 
 	var (
 		auth         []ssh.AuthMethod
@@ -37,11 +38,7 @@ func (t *terminal) GenerateClient(ctx context.Context, hostID int64, col, row in
 		clientConfig *ssh.ClientConfig
 		config       ssh.Config
 	)
-	res, err := t.factory.Host().GetByHostId(ctx, hostID)
-	if err != nil {
-		log.Logger.Error(err)
-		return
-	}
+	res := t.factory.Host().GetByHostId(ctx, hostID)
 
 	auth = make([]ssh.AuthMethod, 0)
 	auth = append(auth, ssh.Password(res.Password))
@@ -58,14 +55,10 @@ func (t *terminal) GenerateClient(ctx context.Context, hostID int64, col, row in
 		},
 	}
 	addr = fmt.Sprintf("%s:%d", res.Ip, res.Port)
-	if client, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
-		log.Logger.Error(err)
-		return
-	}
+	client, err := ssh.Dial("tcp", addr, clientConfig)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	session, channel, err = t.generateRequestTerminal(ctx, client, col, row)
-	if err != nil {
-		log.Logger.Error(err)
-	}
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return
 }
 

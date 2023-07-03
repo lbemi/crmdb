@@ -3,6 +3,7 @@ package asset
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"time"
 	"unicode/utf8"
 
@@ -33,10 +34,10 @@ type WsMsg struct {
 }
 
 type IWs interface {
-	GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.Session, channel ssh.Channel) error
+	GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.Session, channel ssh.Channel)
 }
 
-func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.Session, channel ssh.Channel) error {
+func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.Session, channel ssh.Channel) {
 	wsstore.WsClientMap.Store("", "ssh", ws)
 	go func() {
 		for {
@@ -141,9 +142,8 @@ func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.S
 	defer func() {
 		if err := recover(); err != nil {
 			wsstore.WsClientMap.Remove(ws)
-			log.Logger.Error(err)
+			restfulx.ErrNotNilDebug(err.(error), restfulx.OperatorErr)
 		}
 	}()
 
-	return nil
 }

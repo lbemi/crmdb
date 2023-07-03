@@ -3,8 +3,8 @@ package logsys
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/lbemi/lbemi/api/logsys"
 
-	"github.com/lbemi/lbemi/api/v1/logsys"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	logModel "github.com/lbemi/lbemi/pkg/model/logsys"
 	"github.com/lbemi/lbemi/pkg/rctx"

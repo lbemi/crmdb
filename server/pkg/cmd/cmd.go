@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/lbemi/lbemi/routes/asset"
 	"os"
 	"os/signal"
 	"runtime/trace"
@@ -36,14 +37,12 @@ func NewDefaultAppCommand() *cobra.Command {
 			completedOptions = option.NewOptions().WithConfig(configFile).WithLog().Complete()
 			// 注册handler
 			core.Register(completedOptions)
-
 			rctx.UserAfterHandlerInterceptor(middleware.LogHandler)
 			rctx.UseBeforeHandlerInterceptor(middleware.JWTAuth)
 		},
 		Run: run,
 	}
 	rootCmd.Flags().StringVar(&configFile, "config", "", "Set the GO-OPS startup configuration file path")
-
 	return rootCmd
 }
 
@@ -90,6 +89,7 @@ func registerRoute(httpSever *server.HttpSever) {
 		logsys.LoginLogRoutes(),
 		logsys.OperatorLogRoutes(),
 		cloud.WebSocketRoutes(),
+		asset.HostRotes(),
 		//k8s集群
 		cloud.ClusterRoutes(),
 		cloud.KubernetesConfigMapRoutes(),
