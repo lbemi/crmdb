@@ -19,22 +19,22 @@ func NewHost(DB *gorm.DB) IHost {
 
 type IHost interface {
 	Create(ctx context.Context, host *asset.Host)
-	Delete(ctx context.Context, hostId int64)
-	Update(ctx context.Context, hostId int64, host *asset.Host)
+	Delete(ctx context.Context, hostId uint64)
+	Update(ctx context.Context, hostId uint64, host *asset.Host)
 	List(page, limit int) *form.PageHost
-	GetByHostId(ctx context.Context, hostId int64) (host *asset.Host)
-	UpdateFiledStatus(ctx context.Context, hostId int64, updateFiled string, status int8)
+	GetByHostId(ctx context.Context, hostId uint64) (host *asset.Host)
+	UpdateFiledStatus(ctx context.Context, hostId uint64, updateFiled string, status int8)
 }
 
 func (m *host) Create(ctx context.Context, host *asset.Host) {
 	restfulx.ErrNotNilDebug(m.db.Create(host).Error, restfulx.OperatorErr)
 }
 
-func (m *host) Delete(ctx context.Context, hostId int64) {
+func (m *host) Delete(ctx context.Context, hostId uint64) {
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", hostId).Delete(&asset.Host{}).Error, restfulx.OperatorErr)
 }
 
-func (m *host) Update(ctx context.Context, hostId int64, host *asset.Host) {
+func (m *host) Update(ctx context.Context, hostId uint64, host *asset.Host) {
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", hostId).Updates(host).Error, restfulx.OperatorErr)
 }
 
@@ -69,12 +69,12 @@ func (m *host) List(page, limit int) *form.PageHost {
 	return res
 }
 
-func (m *host) GetByHostId(ctx context.Context, hostId int64) (host *asset.Host) {
+func (m *host) GetByHostId(ctx context.Context, hostId uint64) (host *asset.Host) {
 	host = &asset.Host{}
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", hostId).Find(&host).Error, restfulx.OperatorErr)
 	return host
 }
 
-func (m *host) UpdateFiledStatus(ctx context.Context, hostId int64, updateFiled string, status int8) {
+func (m *host) UpdateFiledStatus(ctx context.Context, hostId uint64, updateFiled string, status int8) {
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", hostId).Update(updateFiled, status).Error, restfulx.OperatorErr)
 }

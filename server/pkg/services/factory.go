@@ -24,6 +24,7 @@ type FactoryImp interface {
 	Cluster() cloud.ICluster
 	Log() logsys.ILoginLog
 	Operator() logsys.IOperatorLog
+	ResourceBindAccount() asset.IResourceAccount
 }
 
 type DbFactory struct {
@@ -69,6 +70,10 @@ func (f *DbFactory) Log() logsys.ILoginLog {
 }
 func (f *DbFactory) Operator() logsys.IOperatorLog {
 	return logsys.NewOperatorLog(f.db)
+}
+
+func (f *DbFactory) ResourceBindAccount() asset.IResourceAccount {
+	return asset.NewResourceBindAccount(f.db)
 }
 
 func NewDbFactory(db *gorm.DB, enforcer *casbin.SyncedEnforcer, store *store.ClientMap) FactoryImp {

@@ -3,6 +3,7 @@ package asset
 import (
 	"context"
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	"net"
 	"time"
 
@@ -26,10 +27,10 @@ func NewTerminal(f services.FactoryImp) *terminal {
 }
 
 type ITerminal interface {
-	GenerateClient(ctx context.Context, hostID int64, accountId int64, col, row int) (*ssh.Client, *ssh.Session, ssh.Channel, error)
+	GenerateClient(ctx context.Context, hostID uint64, accountId uint64, col, row int) (*ssh.Client, *ssh.Session, ssh.Channel)
 }
 
-func (t *terminal) GenerateClient(ctx context.Context, hostID int64, accountId int64, col, row int) (client *ssh.Client, session *ssh.Session, channel ssh.Channel, err error) {
+func (t *terminal) GenerateClient(ctx context.Context, hostID uint64, accountId uint64, col, row int) (client *ssh.Client, session *ssh.Session, channel ssh.Channel) {
 
 	var (
 		auth         []ssh.AuthMethod
@@ -38,15 +39,15 @@ func (t *terminal) GenerateClient(ctx context.Context, hostID int64, accountId i
 		config       ssh.Config
 	)
 	host := t.factory.Host().GetByHostId(ctx, hostID)
-	accoount := t.factory.Account().GetByAccountId(ctx, accountId)
+	account := t.factory.Account().GetByAccountId(ctx, accountId)
 
 	auth = make([]ssh.AuthMethod, 0)
-	auth = append(auth, ssh.Password(accoount.Password))
+	auth = append(auth, ssh.Password(account.Password))
 	config = ssh.Config{
 		Ciphers: []string{"aes128-ctr", "aes192-ctr", "aes256-ctr", "aes128-gcm@openssh.com", "arcfour256", "arcfour128", "aes128-cbc", "3des-cbc", "aes192-cbc", "aes256-cbc"},
 	}
 	clientConfig = &ssh.ClientConfig{
-		User:    accoount.UserName,
+		User:    account.UserName,
 		Auth:    auth,
 		Timeout: 5 * time.Second,
 		Config:  config,
@@ -55,29 +56,19 @@ func (t *terminal) GenerateClient(ctx context.Context, hostID int64, accountId i
 		},
 	}
 	addr = fmt.Sprintf("%s:%d", host.Ip, host.Port)
-	if client, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
-		log.Logger.Error(err)
-		return
-	}
-	session, channel, err = t.generateRequestTerminal(ctx, client, col, row)
-	if err != nil {
-		log.Logger.Error(err)
-	}
+	client, err := ssh.Dial("tcp", addr, clientConfig)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	session, channel = t.generateRequestTerminal(ctx, client, col, row)
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return
 }
 
-func (t *terminal) generateRequestTerminal(ctx context.Context, client *ssh.Client, col, row int) (*ssh.Session, ssh.Channel, error) {
+func (t *terminal) generateRequestTerminal(ctx context.Context, client *ssh.Client, col, row int) (*ssh.Session, ssh.Channel) {
 	session, err := client.NewSession()
-	if err != nil {
-		log.Logger.Error(err)
-		return nil, nil, err
-	}
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 
 	channel, inRequests, err := client.OpenChannel("session", nil)
-	if err != nil {
-		log.Logger.Error(err)
-		return nil, nil, err
-	}
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	// 处理无需返回数据的channel
 	go func() {
 		for req := range inRequests {
@@ -117,14 +108,13 @@ func (t *terminal) generateRequestTerminal(ctx context.Context, client *ssh.Clie
 	ok, err := channel.SendRequest("pty-req", true, ssh.Marshal(&req))
 	if !ok || err != nil {
 		log.Logger.Error(err)
-		return nil, nil, err
+		return nil, nil
 	}
 
 	ok, err = channel.SendRequest("shell", true, nil)
 	if !ok || err != nil {
-		log.Logger.Error(err)
-		return nil, nil, err
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
 
-	return session, channel, nil
+	return session, channel
 }

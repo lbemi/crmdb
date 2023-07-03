@@ -26,6 +26,7 @@ type Getter interface {
 	cloud.ClusterGetter
 	logsys.LoginLogGetter
 	logsys.OperatorLogGetter
+	asset.ResourceAccountGetter
 	//cloud.ResourceGetter
 }
 
@@ -92,4 +93,8 @@ func (c *Handler) Login() logsys.LoginLogImp {
 
 func (c *Handler) Operator() logsys.OperatorLogImp {
 	return logsys.NewOperator(c.DbFactory)
+}
+
+func (c *Handler) ResourceBindAccount() asset.IResourceBindAccount {
+	return asset.NewResourceBindAccount(c.DbFactory)
 }

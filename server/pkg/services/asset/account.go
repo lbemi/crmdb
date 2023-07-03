@@ -19,22 +19,22 @@ func NewAccount(DB *gorm.DB) IAccount {
 
 type IAccount interface {
 	Create(ctx context.Context, account *asset.Account)
-	Delete(ctx context.Context, accountId int64)
-	Update(ctx context.Context, accountId int64, account *asset.Account)
+	Delete(ctx context.Context, accountId uint64)
+	Update(ctx context.Context, accountId uint64, account *asset.Account)
 	List(page, limit int) *form.PageResult
-	GetByAccountId(ctx context.Context, accountId int64) (account *asset.Account)
-	UpdateFiledStatus(ctx context.Context, accountId int64, updateFiled string, status int8)
+	GetByAccountId(ctx context.Context, accountId uint64) (account *asset.Account)
+	UpdateFiledStatus(ctx context.Context, accountId uint64, updateFiled string, status int8)
 }
 
 func (m *account) Create(ctx context.Context, account *asset.Account) {
 	restfulx.ErrNotNilDebug(m.db.Create(account).Error, restfulx.OperatorErr)
 }
 
-func (m *account) Delete(ctx context.Context, accountId int64) {
+func (m *account) Delete(ctx context.Context, accountId uint64) {
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", accountId).Delete(&asset.Account{}).Error, restfulx.OperatorErr)
 }
 
-func (m *account) Update(ctx context.Context, accountId int64, account *asset.Account) {
+func (m *account) Update(ctx context.Context, accountId uint64, account *asset.Account) {
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", accountId).Updates(account).Error, restfulx.OperatorErr)
 }
 
@@ -69,12 +69,12 @@ func (m *account) List(page, limit int) *form.PageResult {
 	return res
 }
 
-func (m *account) GetByAccountId(ctx context.Context, accountId int64) (account *asset.Account) {
+func (m *account) GetByAccountId(ctx context.Context, accountId uint64) (account *asset.Account) {
 	account = &asset.Account{}
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", accountId).Find(&account).Error, restfulx.OperatorErr)
 	return account
 }
 
-func (m *account) UpdateFiledStatus(ctx context.Context, accountId int64, updateFiled string, status int8) {
+func (m *account) UpdateFiledStatus(ctx context.Context, accountId uint64, updateFiled string, status int8) {
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", accountId).Update(updateFiled, status).Error, restfulx.OperatorErr)
 }

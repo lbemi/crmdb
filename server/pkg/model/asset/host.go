@@ -12,13 +12,14 @@ import (
 // Host 机器信息
 type Host struct {
 	model.Model
+	GroupId   uint64 `json:"group_id" gorm:"column:group_id;comment:组id"`
 	Labels    string `json:"labels" gorm:"labels;comment:标签"`
-	Ip        string `json:"ip" gorm:"column:ip; not null;unique_index:uk_host_ip;"`        // IP地址
-	Label     string `json:"label" gorm:"column:label;size:128;"`                           // 标签
-	Remark    string `json:"remark" gorm:"column:remark;size:128;"`                         // 备注
-	Port      int    `json:"port" gorm:"column:port; not null; default 22"`                 // 端口号
-	Status    int8   `json:"status" gorm:"column:status;type:tinyint(1);not null;"`         // 状态 1:启用；2:停用
-	EnableSSH int8   `json:"enable_ssh" gorm:"column:enable_ssh;type:tinyint(1);not null;"` // 是否允许SSH 1:启用；2:停用
+	Ip        string `json:"ip" gorm:"column:ip; not null;unique_index:uk_host_ip;"`                  // IP地址
+	Label     string `json:"label" gorm:"column:label;size:128;"`                                     // 标签
+	Remark    string `json:"remark" gorm:"column:remark;size:128;"`                                   // 备注
+	Port      int    `json:"port" gorm:"column:port; not null; default:22"`                           // 端口号
+	Status    int8   `json:"status" gorm:"column:status;type:tinyint(1);default:1;not null;"`         // 状态 1:启用；2:停用
+	EnableSSH int8   `json:"enable_ssh" gorm:"column:enable_ssh;type:tinyint(1);default:1;not null;"` // 是否允许SSH 1:启用；2:停用
 }
 
 // BeforeCreate 添加前
@@ -35,6 +36,7 @@ func (m *Host) BeforeUpdate(*gorm.DB) error {
 }
 
 type HostReq struct {
+	GroupId   uint64 `json:"groupId"`
 	Name      string `json:"name"`
 	Label     string `json:"label"`      // 标签
 	Remark    string `json:"remark"`     // 备注

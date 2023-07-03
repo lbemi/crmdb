@@ -91,6 +91,7 @@ func registerRoute(httpSever *server.HttpSever) {
 		logsys.OperatorLogRoutes(),
 		cloud.WebSocketRoutes(),
 		asset.HostRotes(),
+		asset.ResourceAccountRoutes(),
 		//k8s集群
 		cloud.ClusterRoutes(),
 		cloud.KubernetesConfigMapRoutes(),
