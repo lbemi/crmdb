@@ -35,17 +35,12 @@ type IHost interface {
 
 func (m *host) Create(ctx context.Context, host *asset.HostReq) {
 	m.factory.Host().Create(ctx, &asset.Host{
-		GroupId:    host.GroupId,
-		Label:      host.Label,
-		Remark:     host.Remark,
-		Ip:         host.Ip,
-		Port:       host.Port,
-		Username:   host.Username,
-		AuthMethod: host.AuthMethod,
-		Password:   host.Password,
-		Secret:     host.Secret,
-		Status:     host.Status,
-		EnableSSH:  host.EnableSSH,
+		Label:     host.Label,
+		Remark:    host.Remark,
+		Ip:        host.Ip,
+		Port:      host.Port,
+		Status:    host.Status,
+		EnableSSH: host.EnableSSH,
 	})
 }
 
@@ -56,15 +51,12 @@ func (m *host) Delete(ctx context.Context, hostId int64) {
 
 func (m *host) Update(ctx context.Context, hostId int64, host *asset.HostReq) {
 	m.factory.Host().Update(ctx, hostId, &asset.Host{
-		Label:      host.Label,
-		Remark:     host.Remark,
-		Ip:         host.Ip,
-		Port:       host.Port,
-		Username:   host.Username,
-		AuthMethod: host.AuthMethod,
-		Password:   host.Password,
-		Status:     host.Status,
-		EnableSSH:  host.EnableSSH,
+		Label:     host.Label,
+		Remark:    host.Remark,
+		Ip:        host.Ip,
+		Port:      host.Port,
+		Status:    host.Status,
+		EnableSSH: host.EnableSSH,
 	})
 
 }

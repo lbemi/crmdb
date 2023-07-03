@@ -43,12 +43,7 @@ func ListHosts(c *gin.Context) {
 		return
 	}
 
-	res, err := core.V1.Host().List(c, page, limit)
-	if err != nil {
-		log.Logger.Error(err)
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
+	res := core.V1.Host().List(c, page, limit)
 
 	response.Success(c, response.StatusOK, res)
 }
@@ -71,12 +66,7 @@ func GetHostById(c *gin.Context) {
 		response.Fail(c, response.ErrCodeParameter)
 		return
 	}
-	res, err := core.V1.Host().GetByHostId(c, id)
-	if err != nil {
-		log.Logger.Error(err)
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
+	res := core.V1.Host().GetByHostId(c, id)
 
 	response.Success(c, response.StatusOK, res)
 }
@@ -114,11 +104,7 @@ func UpdateHost(c *gin.Context) {
 		return
 	}
 
-	if err := core.V1.Host().Update(c, id, &machine); err != nil {
-		log.Logger.Error(err)
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
+	core.V1.Host().Update(c, id, &machine)
 
 	response.Success(c, response.StatusOK, nil)
 }
@@ -131,11 +117,7 @@ func DeleteHost(c *gin.Context) {
 		return
 	}
 
-	if err := core.V1.Host().Delete(c, id); err != nil {
-		log.Logger.Error(err)
-		response.Fail(c, response.ErrOperateFailed)
-		return
-	}
+	core.V1.Host().Delete(c, id)
 	response.Success(c, response.StatusOK, nil)
 }
 
@@ -156,8 +138,8 @@ func WsShell(c *gin.Context) {
 	rows := c.DefaultQuery("rows", "38")
 	col, _ := strconv.Atoi(cols)
 	row, _ := strconv.Atoi(rows)
-
-	client, session, channel, err := core.V1.Terminal().GenerateClient(c, id, col, row)
+	acccountId, _ := strconv.Atoi(rows)
+	client, session, channel, err := core.V1.Terminal().GenerateClient(c, id, int64(acccountId), col, row)
 	if err != nil {
 		log.Logger.Error(err)
 		response.Fail(c, response.ErrOperateFailed)

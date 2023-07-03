@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/lbemi/lbemi/routes/asset"
 	"os"
 	"os/signal"
 	"runtime/trace"
@@ -87,6 +88,7 @@ func registerRoute(httpSever *server.HttpSever) {
 		sys.UserRoutes(),
 		sys.RoleRoutes(),
 		sys.MenuRoutes(),
+		asset.GroupRoutes(),
 		logsys.LoginLogRoutes(),
 		logsys.OperatorLogRoutes(),
 		cloud.WebSocketRoutes(),

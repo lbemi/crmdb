@@ -19,7 +19,9 @@ type Getter interface {
 	sys.RoleGetter
 	sys.MenuGetter
 	asset.HostGetter
+	asset.AccountGetter
 	asset.TerminalGetter
+	asset.GroupGetter
 	asset.WsGetter
 	cloud.ClusterGetter
 	logsys.LoginLogGetter
@@ -62,6 +64,14 @@ func (c *Handler) Menu() sys.IMenu {
 
 func (c *Handler) Host() asset.IHost {
 	return asset.NewHost(c.DbFactory)
+}
+
+func (c *Handler) Account() asset.IAccount {
+	return asset.NewAccount(c.DbFactory)
+}
+
+func (c *Handler) Group() asset.IGroup {
+	return asset.NewGroup(c.DbFactory)
 }
 
 func (c *Handler) Terminal() asset.ITerminal {

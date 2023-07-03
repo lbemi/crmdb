@@ -9,7 +9,7 @@ import (
 func NewHostRouter(router *gin.RouterGroup) {
 	host := router.Group("/host")
 	{
-		host.POST("", asset.AddHost)          // 添加主机
+		//host.POST("", asset.AddHost)          // 添加主机
 		host.GET("", asset.ListHosts)         // 获取主机列表
 		host.GET("/:id", asset.GetHostById)   // 根据id获取主机
 		host.PUT("/:id", asset.UpdateHost)    // 根据id修改主机
