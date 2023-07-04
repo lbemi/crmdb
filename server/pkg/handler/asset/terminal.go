@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/lbemi/lbemi/pkg/restfulx"
+	"github.com/lbemi/lbemi/pkg/util"
 	"net"
 	"time"
 
@@ -22,7 +23,7 @@ type terminal struct {
 	factory services.FactoryImp
 }
 
-func NewTerminal(f services.FactoryImp) *terminal {
+func NewTerminal(f services.FactoryImp) ITerminal {
 	return &terminal{factory: f}
 }
 
@@ -42,7 +43,7 @@ func (t *terminal) GenerateClient(ctx context.Context, hostID uint64, accountId 
 	account := t.factory.Account().GetByAccountId(ctx, accountId)
 
 	auth = make([]ssh.AuthMethod, 0)
-	auth = append(auth, ssh.Password(account.Password))
+	auth = append(auth, ssh.Password(util.Decrypt(account.Password)))
 	config = ssh.Config{
 		Ciphers: []string{"aes128-ctr", "aes192-ctr", "aes256-ctr", "aes128-gcm@openssh.com", "arcfour256", "arcfour128", "aes128-cbc", "3des-cbc", "aes192-cbc", "aes256-cbc"},
 	}

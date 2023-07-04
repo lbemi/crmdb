@@ -23,6 +23,7 @@ type IAccount interface {
 	Update(ctx context.Context, accountId uint64, account *asset.Account)
 	List(page, limit int) *form.PageResult
 	GetByAccountId(ctx context.Context, accountId uint64) (account *asset.Account)
+	GetByIds(ctx context.Context, ids []uint64) []*asset.Account
 	UpdateFiledStatus(ctx context.Context, accountId uint64, updateFiled string, status int8)
 }
 
@@ -72,6 +73,12 @@ func (m *account) List(page, limit int) *form.PageResult {
 func (m *account) GetByAccountId(ctx context.Context, accountId uint64) (account *asset.Account) {
 	account = &asset.Account{}
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", accountId).Find(&account).Error, restfulx.OperatorErr)
+	return account
+}
+
+func (m *account) GetByIds(ctx context.Context, accountIds []uint64) (account []*asset.Account) {
+	account = make([]*asset.Account, 0)
+	restfulx.ErrNotNilDebug(m.db.Where("id in (?)", accountIds).Find(&account).Error, restfulx.OperatorErr)
 	return account
 }
 

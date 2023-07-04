@@ -2,6 +2,9 @@ package asset
 
 import (
 	"context"
+	"fmt"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	"github.com/lbemi/lbemi/pkg/util"
 
 	"github.com/lbemi/lbemi/pkg/model/asset"
 	"github.com/lbemi/lbemi/pkg/model/form"
@@ -33,18 +36,35 @@ type IAccount interface {
 	CheckAccountExist(ctx context.Context, accountId uint64) bool
 }
 
-func (m *account) Create(ctx context.Context, account *asset.Account) {
-	m.factory.Account().Create(ctx, account)
+func (m *account) Create(ctx context.Context, a *asset.Account) {
+	if a.Password != "" {
+		a.Password = util.Encrypt(a.Password)
+	}
+
+	if a.Secret != "" {
+		a.Password = util.Encrypt(a.Secret)
+	}
+
+	m.factory.Account().Create(ctx, a)
 }
 
 func (m *account) Delete(ctx context.Context, accountId uint64) {
 	m.factory.Account().Delete(ctx, accountId)
-
 }
 
-func (m *account) Update(ctx context.Context, accountId uint64, account *asset.Account) {
-	m.factory.Account().Update(ctx, accountId, account)
+func (m *account) Update(ctx context.Context, accountId uint64, a *asset.Account) {
+	exist := m.CheckAccountExist(ctx, accountId)
+	if !exist {
+		restfulx.ErrNotNil(fmt.Errorf("账户不存在"), restfulx.OperatorErr)
+	}
+	if a.Password != "" {
+		a.Password = util.Encrypt(a.Password)
+	}
 
+	if a.Secret != "" {
+		a.Password = util.Encrypt(a.Secret)
+	}
+	m.factory.Account().Update(ctx, accountId, a)
 }
 
 func (m *account) List(ctx context.Context, page, limit int) *form.PageResult {
@@ -59,7 +79,6 @@ func (m *account) GetByAccountId(ctx context.Context, accountId uint64) (account
 
 func (m *account) UpdateFiledStatus(ctx context.Context, accountId uint64, updateFiled string, status int8) {
 	m.factory.Account().UpdateFiledStatus(ctx, accountId, updateFiled, status)
-
 }
 
 func (m *account) CheckAccountExist(ctx context.Context, accountId uint64) bool {

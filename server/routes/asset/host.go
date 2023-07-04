@@ -47,5 +47,20 @@ func HostRotes() *restful.WebService {
 	}).Doc("根据id删除主机").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("id", "主机id").DataType("int")).
 		Returns(200, "success", nil))
+
+	ws.Route(ws.GET("/{id}/accounts").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("hosts").WithHandle(asset.GetHostAccounts).Do()
+	}).Doc("根据id获取主机账户").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.PathParameter("id", "主机id").DataType("int")).
+		Reads([]model.Account{}).
+		Returns(200, "success", []model.Account{}))
+
+	ws.Route(ws.GET("/{id}/shell/{account}").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithNoRes().WithLog("websocket").WithHandle(asset.WsShell).Do()
+	}).Doc("webshell").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.PathParameter("id", "主机id").DataType("int")).
+		Param(ws.PathParameter("account", "用户id").DataType("int")).
+		Returns(200, "success", nil))
+
 	return ws
 }

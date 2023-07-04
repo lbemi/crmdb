@@ -91,6 +91,7 @@ function initXterm() {
 
 function initSocket() {
 	state.socket = webSocketApi.createShellWebsocket(pod.metadata?.namespace!, pod.metadata?.name!, selectContainer.value);
+	// state.socket = webSocketApi.createTestShellWebsocket();
 
 	// 监听socket错误信息
 	state.socket.onerror = () => {

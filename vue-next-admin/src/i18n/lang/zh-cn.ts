@@ -15,6 +15,8 @@ export default {
 		limitsFrontEndBtn: '按钮权限',
 		limitsBackEnd: '后端控制',
 		limitsBackEndEndPage: '页面权限',
+		asset: '资产管理',
+		hosts: '主机管理',
 		kubernetes: 'kubernetes容器',
 		kubernetesCluster: 'kubernetes列表',
 		kubernetesDashboard: 'Dashboard',

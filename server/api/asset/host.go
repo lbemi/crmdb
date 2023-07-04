@@ -40,14 +40,21 @@ func DeleteHost(rc *rctx.ReqCtx) {
 	core.V1.Host().Delete(c, id)
 }
 
+func GetHostAccounts(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	id := rc.PathParamUint64("id")
+	rc.ResData = core.V1.Host().GetHostAccounts(c, id)
+}
+
 func WsShell(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	id := rc.PathParamUint64("id")
-	account_id := rc.PathParamUint64("account_id")
+	accountId := rc.PathParamUint64("account")
 	col := rc.QueryDefaultInt("cols", 170)
 	row := rc.QueryDefaultInt("rows", 38)
-	client, session, channel := core.V1.Terminal().GenerateClient(c, id, account_id, col, row)
+	client, session, channel := core.V1.Terminal().GenerateClient(c, id, accountId, col, row)
 	conn, err := wsstore.Upgrader.Upgrade(rc.Response.ResponseWriter, rc.Request.Request, nil)
+	wsstore.Upgrader.Subprotocols = []string{rc.Request.Request.Header.Get("Sec-WebSocket-Protocol")}
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	core.V1.Ws().GenerateConn(conn, client, session, channel)
 }

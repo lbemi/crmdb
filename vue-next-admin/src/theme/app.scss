@@ -41,7 +41,9 @@ body,
 	position: relative;
 }
 
-
+	.el-dialog {
+		border-radius: 10px;
+	}
 /* 主布局样式
 ------------------------------- */
 .desc-body{
@@ -58,7 +60,7 @@ body,
 		flex-direction: column;
 		flex: 1;
 	}
-  
+
 	.layout-aside {
 		background: var(--next-bg-menuBar);
 		box-shadow: 2px 0 6px rgb(0 21 41 / 1%);

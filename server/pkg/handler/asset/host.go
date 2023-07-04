@@ -29,6 +29,7 @@ type IHost interface {
 	Update(ctx context.Context, hostId uint64, host *asset.Host)
 	List(ctx context.Context, page, limit int) *form.PageHost
 	GetByHostId(ctx context.Context, hostId uint64) (host *asset.Host)
+	GetHostAccounts(ctx context.Context, hostId uint64) []*asset.Account
 	UpdateFiledStatus(ctx context.Context, hostId uint64, updateFiled string, status int8)
 	CheckHostExist(ctx context.Context, hostId uint64) bool
 }
@@ -63,10 +64,37 @@ func (m *host) UpdateFiledStatus(ctx context.Context, hostId uint64, updateFiled
 
 }
 
+func (m *host) GetHostAccounts(ctx context.Context, hostId uint64) []*asset.Account {
+	accountIds := make([]uint64, 0)
+	list := m.factory.ResourceBindAccount().List(ctx, 0, 0)
+	for _, ha := range list.Data.([]*asset.HostAccount) {
+		for _, ra := range ha.ResourceId {
+			if ra == hostId {
+				accountIds = append(accountIds, ha.AccountId...)
+			}
+		}
+	}
+	accountIds = RemoveRepByMap(accountIds)
+	return m.factory.Account().GetByIds(ctx, accountIds)
+}
+
 func (m *host) CheckHostExist(ctx context.Context, hostId uint64) bool {
 	h := m.factory.Host().GetByHostId(ctx, hostId)
 	if h == nil {
 		return false
 	}
 	return true
+}
+
+func RemoveRepByMap(slc []uint64) []uint64 {
+	var result []uint64
+	tempMap := map[uint64]byte{} // 存放不重复主键
+	for _, e := range slc {
+		l := len(tempMap)
+		tempMap[e] = 0
+		if len(tempMap) != l { // 加入map后，map长度变化，则元素不重复
+			result = append(result, e)
+		}
+	}
+	return result
 }
