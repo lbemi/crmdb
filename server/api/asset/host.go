@@ -1,11 +1,13 @@
 package asset
 
 import (
+	"github.com/lbemi/lbemi/api/form"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/model/asset"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
+	"github.com/lbemi/lbemi/pkg/util"
 )
 
 func AddHost(rc *rctx.ReqCtx) {
@@ -18,13 +20,22 @@ func AddHost(rc *rctx.ReqCtx) {
 func ListHosts(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	pageParam := rc.GetPageQueryParam()
-	rc.ResData = core.V1.Host().List(c, pageParam.Page, pageParam.Limit)
+	groupStr := rc.Query("groups")
+	groups := util.ConvertSliceStrToInt(groupStr)
+	rc.ResData = core.V1.Host().List(c, pageParam.Page, pageParam.Limit, groups)
 }
 
 func GetHostById(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	id := rc.PathParamUint64("id")
 	rc.ResData = core.V1.Host().GetByHostId(c, id)
+}
+func GetHostByGroups(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	pageParam := rc.GetPageQueryParam()
+	group := form.GroupVo{}
+	rc.ShouldBind(&group)
+	rc.ResData = core.V1.Host().GetByGroup(c, group.Groups, pageParam.Page, pageParam.Limit)
 }
 
 func UpdateHost(rc *rctx.ReqCtx) {

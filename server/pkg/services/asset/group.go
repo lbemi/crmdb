@@ -49,8 +49,9 @@ func (g *group) List(page, limit int) *form.PageResult {
 		restfulx.ErrNotNilDebug(g.db.Find(&groupList).Error, restfulx.OperatorErr)
 		restfulx.ErrNotNilDebug(g.db.Model(&asset.Group{}).Count(&total).Error, restfulx.OperatorErr)
 
+		groups := GetTree(groupList, 0)
 		res := &form.PageResult{
-			Data:  groupList,
+			Data:  groups,
 			Total: total,
 		}
 		return res
@@ -90,4 +91,5 @@ func GetTree(groups []asset.Group, parentID uint64) (treeGroups []asset.Group) {
 		}
 	}
 	return treeGroups
+
 }

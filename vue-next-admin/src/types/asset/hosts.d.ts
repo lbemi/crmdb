@@ -1,3 +1,5 @@
+import { Group } from '@/types/asset/group';
+
 declare interface Host {
 	id: number;
 	created_at: string;
@@ -22,10 +24,17 @@ export type HostResponseType = {
 	message: string;
 };
 
-interface HosTableType extends TableType {
-	data: Host[];
+interface HostTableType extends TableType {
+	hosts: Host[];
+	groups: Group[];
 }
 
 declare interface HostState {
-	tableData: HosTableType;
+	defaultProps: {
+		children: string;
+		label: string;
+	};
+	groupName: string;
+	groupIds: string;
+	tableData: HostTableType;
 }

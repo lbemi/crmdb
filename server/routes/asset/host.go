@@ -4,6 +4,7 @@ import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/lbemi/lbemi/api/asset"
+	form2 "github.com/lbemi/lbemi/api/form"
 	model "github.com/lbemi/lbemi/pkg/model/asset"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/rctx"
@@ -19,6 +20,7 @@ func HostRotes() *restful.WebService {
 	}).Doc("获取主机列表").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.QueryParameter("page", "page").DataType("int")).
 		Param(ws.QueryParameter("limit", "limit").DataType("int")).
+		Param(ws.QueryParameter("groups", "分组id").DataType("string")).
 		Writes(form.PageHost{}).
 		Returns(200, "success", form.PageHost{}))
 
@@ -27,6 +29,14 @@ func HostRotes() *restful.WebService {
 			Do()
 	}).Doc("根据id获取主机").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Param(ws.PathParameter("id", "主机id").DataType("int")).
+		Writes(model.Host{}).
+		Returns(200, "success", model.Host{}))
+
+	ws.Route(ws.GET("/groups").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("hosts").WithHandle(asset.GetHostByGroups).
+			Do()
+	}).Doc("根据id获取主机").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Reads(form2.GroupVo{}).
 		Writes(model.Host{}).
 		Returns(200, "success", model.Host{}))
 

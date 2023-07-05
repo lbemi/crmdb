@@ -10,7 +10,7 @@
 			<el-button type="primary" size="small" class="ml10" @click="logs = ''">清空</el-button>
 			<el-button type="success" size="small" class="ml10" v-if="stop" @click="stop = !stop" :icon="VideoPlay">{{ stop ? '继续' : '暂停' }}</el-button>
 			<el-button type="danger" size="small" class="ml10" v-else @click="stop = !stop" :icon="VideoPause">{{ stop ? '继续' : '暂停' }}</el-button>
-			<el-scrollbar ref="scrollbarRef" height="800px" class="logs">
+			<el-scrollbar ref="scrollbarRef" height="770px" class="logs">
 				<div ref="innerRef" id="logs">
 					{{ logs }}
 				</div>
@@ -53,7 +53,8 @@ const getLog = async () => {
 				logs.value += e.data;
 				if (logDiv && logDiv?.scrollTop != undefined) {
 					// logDiv.scrollTop = logDiv.scrollHeight;
-					scrollbarRef.value!.setScrollTop(innerRef.value!.clientHeight + 10);
+					console.log(innerRef.value!.clientHeight);
+					scrollbarRef.value!.setScrollTop(innerRef.value!.clientHeight);
 				}
 			} else {
 				cacheLog.value += e.data; //暂停的时候保存日志，否则会丢失这部分日志
@@ -69,16 +70,25 @@ onBeforeUnmount(() => {
 <style lang="scss">
 .logs {
 	margin-top: 10px;
-	color: #27aa5e;
+	color: white;
+	font-size: 15px;
 	line-height: 18pt;
 	width: 100%;
-	//height: 800px;
-	//overflow-y: scroll;
-	background-color: #414141;
-	border: 1px solid black;
-	padding: 10px;
+	//background-color: black;
+	//border: 1px solid black;
+	//padding: 10px;
 	white-space: pre-line;
+
+	font-family: PT Mono, Monaco, Menlo, Consolas, Courier New, monospace;
+	//min-height: calc(100vh - 240px);
+	//max-height: 780px;
+	padding: 10px 20px;
+	border-radius: 4px;
+	background-color: #000000;
+	overflow: auto;
+	outline: none;
 }
+
 .container {
 	:deep(.el-card__body) {
 		display: flex;

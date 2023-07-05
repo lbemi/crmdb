@@ -9,6 +9,14 @@ export function useHostApi() {
 				params: query,
 			});
 		},
+		lisHostByGroup: (query: any, data: any) => {
+			return request({
+				url: '/hosts/groups',
+				method: 'get',
+				params: query,
+				data: data,
+			});
+		},
 		updateHost: (id: number, data: any) => {
 			return request({
 				url: '/hosts/' + id,
