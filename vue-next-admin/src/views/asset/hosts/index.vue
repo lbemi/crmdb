@@ -2,7 +2,7 @@
 	<div class="system-dept-container layout-padding">
 		<el-row :gutter="24">
 			<el-col :span="4" :xs="24">
-				<el-card shadow="always">
+				<el-card shadow="hover">
 					<div class="head-container">
 						<el-input v-model="state.groupName" placeholder="请输入分组名称" clearable prefix-icon="el-icon-search" style="margin-bottom: 20px" />
 					</div>
@@ -34,7 +34,7 @@
 							<el-icon>
 								<ele-FolderAdd />
 							</el-icon>
-							新增部门
+							新增主机
 						</el-button>
 					</div>
 					<el-table
@@ -47,11 +47,7 @@
 					>
 						<el-table-column prop="ip" label="主机IP" show-overflow-tooltip> </el-table-column>
 						<el-table-column prop="remark" label="描述" show-overflow-tooltip> </el-table-column>
-						<el-table-column label="排序" show-overflow-tooltip width="80">
-							<template #default="scope">
-								{{ scope.$index }}
-							</template>
-						</el-table-column>
+
 						<el-table-column prop="status" label="是否禁用" show-overflow-tooltip>
 							<template #default="scope">
 								<el-tag type="success" v-if="scope.row.status">启用</el-tag>
@@ -77,7 +73,7 @@
 								{{ dateStrFormat(scope.row.created_at) }}
 							</template>
 						</el-table-column>
-						<el-table-column label="操作" show-overflow-tooltip width="140">
+						<el-table-column label="操作" show-overflow-tooltip width="150" fixed="right">
 							<template #default="scope">
 								<el-button size="small" text type="primary" @click="onOpenAddDept('add')">远程连接</el-button>
 								<el-button size="small" text type="primary" @click="onOpenEditDept('edit', scope.row)">修改</el-button>
@@ -104,9 +100,10 @@ import { HostState } from '@/types/asset/hosts';
 import { useGroupApi } from '@/api/asset/group';
 import { Group } from '@/types/asset/group';
 import { PageInfo } from '@/types/kubernetes/common';
+import { dateStrFormat } from '../../../utils/formatTime';
 
 // 引入组件
-const DeptDialog = defineAsyncComponent(() => import('@/views/system/dept/dialog.vue'));
+const DeptDialog = defineAsyncComponent(() => import('./dialog.vue'));
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 
 const hostApi = useHostApi();
@@ -192,7 +189,7 @@ const getAllNode = (group: Group) => {
 
 // 打开新增菜单弹窗
 const onOpenAddDept = (type: string) => {
-	deptDialogRef.value.openDialog(type);
+	deptDialogRef.value.openDialog(type, state.tableData.groups);
 };
 // 打开编辑菜单弹窗
 const onOpenEditDept = (type: string, row: DeptTreeType) => {

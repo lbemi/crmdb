@@ -26,7 +26,7 @@ export function useHostApi() {
 		},
 		addHost: (data: any) => {
 			return request({
-				url: '/hosts/register',
+				url: '/hosts',
 				method: 'post',
 				data: data,
 			});
