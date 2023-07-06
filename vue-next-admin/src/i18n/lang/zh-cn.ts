@@ -17,6 +17,8 @@ export default {
 		limitsBackEndEndPage: '页面权限',
 		asset: '资产管理',
 		hosts: '主机管理',
+		accounts: '账户管理',
+		hba: '主机权限',
 		kubernetes: 'kubernetes容器',
 		kubernetesCluster: 'kubernetes列表',
 		kubernetesDashboard: 'Dashboard',
