@@ -9,16 +9,17 @@ export function useAccountApi() {
 				params: query,
 			});
 		},
-		updateAccount: (id: number, data: any) => {
+		updateAccount: (data: any) => {
 			return request({
-				url: '/accounts/' + id,
+				url: '/accounts',
 				method: 'put',
 				data: data,
 			});
 		},
+
 		addAccount: (data: any) => {
 			return request({
-				url: '/accounts/register',
+				url: '/accounts',
 				method: 'post',
 				data: data,
 			});

@@ -73,6 +73,7 @@ import { dateStrFormat } from '@/utils/formatTime';
 import { useAccountApi } from '@/api/asset/account';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
+import { deepClone } from '@/utils/other';
 
 // 引入组件
 const AccountDialog = defineAsyncComponent(() => import('./dialog.vue'));
@@ -131,7 +132,7 @@ const onOpenAddAccount = (type: string) => {
 };
 // 打开编辑菜单弹窗
 const onOpenEditAccount = (type: string, row: Account) => {
-	deptDialogRef.value.openDialog(type, row);
+	deptDialogRef.value.openDialog(type, deepClone(row));
 };
 // 删除当前行
 const onTabelRowDel = (row: Account) => {

@@ -14,11 +14,21 @@
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="密码" prop="password">
-							<el-input type="password" v-model.number="state.account.password" placeholder="请输密码" clearable></el-input>
+						<el-form-item label="登录方式">
+							<el-radio-group v-model="state.account.auth_method" size="small">
+								<el-radio-button label="01">密码</el-radio-button>
+								<el-radio-button label="02">密钥</el-radio-button>
+							</el-radio-group>
 						</el-form-item>
 					</el-col>
-
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="密码" prop="password" v-if="state.account.auth_method === '01'">
+							<el-input type="password" v-model="state.account.password" placeholder="请输密码" clearable></el-input>
+						</el-form-item>
+						<el-form-item label="密钥" prop="password" v-else>
+							<el-input type="password" v-model="state.account.secret" placeholder="请输密钥" clearable></el-input>
+						</el-form-item>
+					</el-col>
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="账户状态" prop="status">
 							<el-radio-group v-model="state.account.status">
@@ -90,7 +100,6 @@ const onSubmit = (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	formEl.validate(async (valid) => {
 		if (valid) {
-			console.log(state.account);
 			if (state.dialog.title === '新增账户') {
 				await accountApi
 					.addAccount(state.account)
@@ -102,6 +111,17 @@ const onSubmit = (formEl: FormInstance | undefined) => {
 					.catch((e: any) => {
 						ElMessage.error(e.message);
 					});
+			} else {
+				await accountApi
+					.updateAccount(state.account)
+					.then((res: any) => {
+						ElMessage.success(res.message);
+					})
+					.catch((e: any) => {
+						ElMessage.error(e.message);
+					});
+				emit('refresh');
+				closeDialog();
 			}
 		} else {
 			console.log('error submit!');
