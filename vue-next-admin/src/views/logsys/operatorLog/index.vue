@@ -65,6 +65,7 @@
 					</template>
 				</el-table-column> -->
 				<el-table-column label="IP" prop="ip" width="180" />
+				<el-table-column label="IP所在地" prop="location" />
 				<el-table-column label="请求地址" prop="url" />
 				<el-table-column label="操作状态" width="120">
 					<template #default="scope">

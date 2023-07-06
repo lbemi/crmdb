@@ -66,6 +66,7 @@ func Logout(rc *rctx.ReqCtx) {
 			LoginTime:     time.Now(),
 			Remark:        req.UserAgent(),
 		}
+		log.LoginLocation = util.GetRealAddressByIP(log.Ipaddr)
 		log.Status = "1"
 		log.Msg = "退出登录"
 		core.V1.Login().Add(log)

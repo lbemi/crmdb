@@ -38,6 +38,7 @@
 				<el-table-column label="ID" prop="id" />
 				<el-table-column label="登录名" prop="username" />
 				<el-table-column label="登录IP" prop="ipaddr" />
+				<el-table-column label="登录地" prop="loginLocation" />
 				<el-table-column
 					label="登录状态"
 					prop="status"

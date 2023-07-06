@@ -75,6 +75,7 @@ func (u *user) Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *sys.Use
 			LoginTime:     time.Now(),
 			Remark:        req.UserAgent(),
 		}
+		log.LoginLocation = util.GetRealAddressByIP(log.Ipaddr)
 		if pass && err == nil {
 			log.Status = "1"
 			log.Msg = "登录成功"

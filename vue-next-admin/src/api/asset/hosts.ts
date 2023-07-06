@@ -1,15 +1,30 @@
+import { Host } from '@/types/asset/hosts';
 import request from '@/utils/request';
+import { Group } from 'jsplumb';
 
 export function useHostApi() {
 	return {
-		lisHost: (query: any) => {
+		/**
+		 * Retrieves a list of hosts based on the given query parameters.
+		 *
+		 * @param {any} query - The query parameters for retrieving hosts.
+		 * @return {Promise<any>} - A promise that resolves to the list of hosts.
+		 */
+		lisHost: (query: any): Promise<any> => {
 			return request({
 				url: '/hosts',
 				method: 'get',
 				params: query,
 			});
 		},
-		lisHostByGroup: (query: any, data: any) => {
+		/**
+		 * Fetches the list of hosts by group.
+		 *
+		 * @param {any} query - The query parameters.
+		 * @param {Group[]} data - The data parameters.
+		 * @return {Promise<any>} A promise that resolves with the list of hosts.
+		 */
+		lisHostByGroup: (query: any, data: Group[]): Promise<any> => {
 			return request({
 				url: '/hosts/groups',
 				method: 'get',
@@ -17,21 +32,39 @@ export function useHostApi() {
 				data: data,
 			});
 		},
-		updateHost: (id: number, data: any) => {
+		/**
+		 * Update the host with the given data.
+		 *
+		 * @param {Host} data - The data to update the host with.
+		 * @return {Promise<any>} - A promise that resolves with the updated host.
+		 */
+		updateHost: (data: Host): Promise<any> => {
 			return request({
-				url: '/hosts/' + id,
+				url: '/hosts',
 				method: 'put',
 				data: data,
 			});
 		},
-		addHost: (data: any) => {
+		/**
+		 * Adds a host to the system.
+		 *
+		 * @param {Host} data - The data for the host.
+		 * @return {any} The response from the server.
+		 */
+		addHost: (data: Host): any => {
 			return request({
 				url: '/hosts',
 				method: 'post',
 				data: data,
 			});
 		},
-		deleteHost: (id: number) => {
+		/**
+		 * Deletes a host with the given ID.
+		 *
+		 * @param {number} id - The ID of the host to be deleted.
+		 * @return {Promise<void>} A promise that resolves when the host is successfully deleted.
+		 */
+		deleteHost: (id: number): Promise<void> => {
 			return request({
 				url: '/hosts/' + id,
 				method: 'delete',

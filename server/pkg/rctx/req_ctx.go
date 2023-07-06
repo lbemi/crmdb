@@ -87,7 +87,6 @@ func (rc *ReqCtx) Do() {
 	}()
 	// 如果rc.Response 为nil，则panic
 	restfulx.ErrNotTrue(rc.Request != nil, restfulx.NewErr("Request == nil"))
-	//util.IsTrue(rc.Response != nil, "Response == nil")
 	rc.ReqParam = 0
 	rc.ResData = nil
 	err := ApplyHandlerInterceptor(beforeHandlers, rc)
@@ -134,6 +133,8 @@ func (rc *ReqCtx) ClientIP() string {
 
 	return ip
 }
+
+// GetLocation identifies the location of a user based on their IP address.
 
 func (rc *ReqCtx) ShouldBind(data interface{}) {
 	if err := rc.Request.ReadEntity(data); err != nil {

@@ -1,6 +1,6 @@
 <template>
 	<div class="system-dept-dialog-container">
-		<el-dialog class="my-dialog" :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="769px">
+		<el-dialog class="my-dialog" :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="769px" @close="closeDialog">
 			<el-form ref="formRef" :model="state.host" size="default" label-width="90px" :rules="formRules">
 				<el-row :gutter="35">
 					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
@@ -27,7 +27,7 @@
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="主机描述">
+						<el-form-item label="主机描述" prop="remark">
 							<el-input v-model="state.host.remark" placeholder="请输入描述信息" clearable></el-input>
 						</el-form-item>
 					</el-col>
@@ -107,13 +107,10 @@ const formRef = ref<FormInstance>();
 const state = reactive({
 	inputValue: '',
 	inputVisible: false,
-	groupId: [],
+	groupId: [] as number[],
 	host: {
 		enable_ssh: 1,
 		status: 1,
-		labels: ['asd', 'sad'],
-		ip: '192.168.1.1',
-		port: 22,
 	} as Host,
 	groups: [] as Group[], // 主机数据
 	dialog: {
@@ -125,20 +122,18 @@ const state = reactive({
 });
 
 // 打开弹窗
-const openDialog = (type: string, row: Group[]) => {
-	state.groups = row;
+const openDialog = (type: string, groups: Group[], host: Host) => {
+	state.groups = groups;
+	state.groupId = [];
 	if (type === 'edit') {
 		state.dialog.title = '修改主机';
 		state.dialog.submitTxt = '修 改';
+		state.host = host;
+		state.groupId.push(host.group_id);
 	} else {
 		state.dialog.title = '新增主机';
 		state.dialog.submitTxt = '新 增';
-		// 清空表单，此项需加表单验证才能使用
-		// nextTick(() => {
-		// 	deptDialogFormRef.value.resetFields();
-		// });
 	}
-	console.log(state.groups);
 	state.dialog.isShowDialog = true;
 };
 // 关闭弹窗
@@ -150,46 +145,52 @@ const closeDialog = () => {
 const onCancel = () => {
 	closeDialog();
 };
-// 提交
-const onSubmit = (formEl: FormInstance | undefined) => {
-	if (!formEl) return;
+/**
+ * Submits the form.
+ * @param formEl The form instance.
+ * @returns Whether the form submission was successful.
+ */
+const onSubmit = (formEl: FormInstance | undefined): boolean => {
+	if (!formEl) return false;
 	formEl.validate(async (valid) => {
 		if (valid) {
-			state.host.group_id = state.groupId.pop();
-
-			console.log(state.host);
 			if (state.dialog.title === '新增主机') {
-				await hostApi
-					.addHost(state.host)
-					.then((res: any) => {
-						ElMessage.success(res.message);
-						emit('refresh');
-						closeDialog();
-					})
-					.catch((e: any) => {
-						ElMessage.error(e.message);
-					});
+				try {
+					const res = await hostApi.addHost(state.host);
+					ElMessage.success(res.message);
+					emit('refresh');
+					closeDialog();
+				} catch (e: any) {
+					ElMessage.error(e.message);
+				}
+			} else {
+				try {
+					const res = await hostApi.updateHost(state.host);
+					ElMessage.success(res.message);
+					emit('refresh');
+					closeDialog();
+				} catch (e: any) {
+					ElMessage.error(e.message);
+				}
 			}
 		} else {
-			console.log('error submit!');
+			ElMessage.error('请填写完整信息');
 			return false;
 		}
 	});
+	return true;
 };
 
 const resetForm = (formEl: FormInstance | undefined) => {
-	if (!formEl) return;
-	formEl.resetFields();
+	if (formEl) formEl.resetFields();
 };
-const props = defineProps({
-	groups: Array<Group>,
-});
 
 const getGroupId = () => {
 	if (state.groupId.length > 0) {
 		state.host.group_id = state.groupId[state.groupId.length - 1];
 	}
 };
+
 const validateIP = (rule: any, value: any, callback: any) => {
 	if (value === '' || typeof value === 'undefined' || value == null) {
 		callback(new Error('请输入正确的IP地址'));
@@ -207,6 +208,7 @@ const validateIP = (rule: any, value: any, callback: any) => {
 const handleClose = (tag: string) => {
 	state.host.labels.splice(state.host.labels.indexOf(tag), 1);
 };
+
 const showInput = () => {
 	state.inputVisible = true;
 	nextTick(() => {

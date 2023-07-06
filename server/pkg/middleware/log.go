@@ -52,6 +52,7 @@ func LogHandler(rc *rctx.ReqCtx) error {
 			Ip:           rc.ClientIP(),
 			Status:       200,
 		}
+		log.Location = util.GetRealAddressByIP(log.Ip)
 		if rc.Err != nil {
 			switch t := rc.Err.(type) {
 			case *restfulx.OpsError:

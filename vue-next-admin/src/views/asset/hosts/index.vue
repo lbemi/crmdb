@@ -30,11 +30,17 @@
 							</el-icon>
 							查询
 						</el-button>
-						<el-button size="default" type="success" class="ml10" @click="onOpenAddDept('add')">
+						<el-button size="default" type="success" class="ml10" @click="onOpenAddHost('add')">
 							<el-icon>
 								<ele-FolderAdd />
 							</el-icon>
 							新增主机
+						</el-button>
+						<el-button type="warning" size="default" @click="refreshCurrentTagsView" style="margin-left: 10px">
+							<el-icon>
+								<ele-RefreshRight />
+							</el-icon>
+							刷新
 						</el-button>
 					</div>
 					<el-table
@@ -50,8 +56,8 @@
 
 						<el-table-column prop="status" label="是否禁用" show-overflow-tooltip>
 							<template #default="scope">
-								<el-tag type="success" v-if="scope.row.status">启用</el-tag>
-								<el-tag type="info" v-else>禁用</el-tag>
+								<el-tag size="small" type="success" v-if="scope.row.status">启用</el-tag>
+								<el-tag size="small" type="info" v-else>禁用</el-tag>
 							</template>
 						</el-table-column>
 						<el-table-column prop="port" label="端口" show-overflow-tooltip></el-table-column>
@@ -64,8 +70,8 @@
 						</el-table-column>
 						<el-table-column label="SSH" show-overflow-tooltip>
 							<template #default="scope">
-								<el-tag type="success" v-if="scope.row.enable_ssh">启用</el-tag>
-								<el-tag type="info" v-else>禁用</el-tag>
+								<el-tag size="small" type="success" v-if="scope.row.enable_ssh">启用</el-tag>
+								<el-tag size="small" type="info" v-else>禁用</el-tag>
 							</template>
 						</el-table-column>
 						<el-table-column label="创建时间" show-overflow-tooltip>
@@ -75,8 +81,8 @@
 						</el-table-column>
 						<el-table-column label="操作" show-overflow-tooltip width="150" fixed="right">
 							<template #default="scope">
-								<el-button size="small" text type="primary" @click="onOpenAddDept('add')">远程连接</el-button>
-								<el-button size="small" text type="primary" @click="onOpenEditDept('edit', scope.row)">修改</el-button>
+								<el-button size="small" text type="primary" @click="onOpenAddHost('add')">SSH</el-button>
+								<el-button size="small" text type="primary" @click="onOpenEditHost('edit', scope.row)">修改</el-button>
 								<el-button size="small" text type="primary" @click="onTabelRowDel(scope.row)">删除</el-button>
 							</template>
 						</el-table-column>
@@ -87,30 +93,33 @@
 			</el-col>
 		</el-row>
 
-		<DeptDialog ref="deptDialogRef" @refresh="getTableData()" />
+		<HostDialog ref="hostDialogRef" @refresh="getTableData()" />
 	</div>
 </template>
 
 <script setup lang="ts" name="hosts">
-import { defineAsyncComponent, ref, reactive, onMounted } from 'vue';
+import { defineAsyncComponent, ref, reactive, onMounted, h } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { DeptTreeType } from '@/types/views';
 import { useHostApi } from '@/api/asset/hosts';
-import { HostState } from '@/types/asset/hosts';
+import { Host, HostState } from '@/types/asset/hosts';
 import { useGroupApi } from '@/api/asset/group';
 import { Group } from '@/types/asset/group';
 import { PageInfo } from '@/types/kubernetes/common';
 import { dateStrFormat } from '../../../utils/formatTime';
+import { deepClone } from '@/utils/other';
+import mittBus from '@/utils/mitt';
+import { useRoute } from 'vue-router';
 
 // 引入组件
-const DeptDialog = defineAsyncComponent(() => import('./dialog.vue'));
+const HostDialog = defineAsyncComponent(() => import('./dialog.vue'));
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 
+const route = useRoute();
 const hostApi = useHostApi();
 const groupApi = useGroupApi();
 const tree = ref('');
 // 定义变量内容
-const deptDialogRef = ref();
+const hostDialogRef = ref();
 const state = reactive<HostState>({
 	defaultProps: {
 		children: 'children',
@@ -188,25 +197,42 @@ const getAllNode = (group: Group) => {
 };
 
 // 打开新增菜单弹窗
-const onOpenAddDept = (type: string) => {
-	deptDialogRef.value.openDialog(type, state.tableData.groups);
+const onOpenAddHost = (type: string) => {
+	hostDialogRef.value.openDialog(type, state.tableData.groups);
 };
 // 打开编辑菜单弹窗
-const onOpenEditDept = (type: string, row: DeptTreeType) => {
-	deptDialogRef.value.openDialog(type, row);
+const onOpenEditHost = (type: string, host: Host) => {
+	hostDialogRef.value.openDialog(type, state.tableData.groups, deepClone(host));
 };
 // 删除当前行
-const onTabelRowDel = (row: DeptTreeType) => {
-	ElMessageBox.confirm(`此操作将永久删除部门：${row.deptName}, 是否继续?`, '提示', {
-		confirmButtonText: '删除',
+const onTabelRowDel = (row: Host) => {
+	ElMessageBox({
+		title: '提示',
+		message: h('p', null, [h('span', null, '此操作将删除 '), h('i', { style: 'color: teal' }, `${row.ip}`), h('span', null, ' 主机. 是否继续? ')]),
+		buttonSize: 'small',
+		showCancelButton: true,
+		confirmButtonText: '确定',
 		cancelButtonText: '取消',
 		type: 'warning',
+		draggable: true,
 	})
 		.then(() => {
+			hostApi
+				.deleteHost(row.id)
+				.then(() => {
+					ElMessage.success('删除成功');
+				})
+				.catch((e: any) => {
+					ElMessage.error(e.message);
+				});
 			getTableData();
-			ElMessage.success('删除成功');
 		})
-		.catch(() => {});
+		.catch(() => {
+			ElMessage.info('已取消删除');
+		});
+};
+const refreshCurrentTagsView = () => {
+	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
 };
 // 页面加载时
 onMounted(() => {

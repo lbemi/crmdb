@@ -1,4 +1,4 @@
-package util
+package main
 
 import (
 	"encoding/json"
@@ -25,10 +25,6 @@ type ipInfo struct {
 	*/
 }
 
-// GetRealAddressByIP retrieves the real address by the given IP.
-//
-// It takes in a string parameter `ip` representing the IP address.
-// The function returns a string representing the real address.
 func GetRealAddressByIP(ip string) string {
 	if ip == "127.0.0.1" {
 		return "内网IP"
@@ -48,4 +44,12 @@ func GetRealAddressByIP(ip string) string {
 
 	location := strings.Join(ipInfo.Data, "")
 	return location
+}
+func main() {
+	// https://www.inte.net/tool/ip/api.ashx?ip=183.136.213.98&datatype=json&key=12
+	// http://ip-api.com/json/123.123.123.123?lang=zh-CN
+	ip := "127.0.0.1"
+	res := GetRealAddressByIP(ip)
+	fmt.Println(res)
+
 }

@@ -41,7 +41,7 @@ func (d *Deployment) List(ctx context.Context) []*appsv1.Deployment {
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 
 	//按时间排序
-	sort.Slice(list, func(i, j int) bool {
+	sort.SliceStable(list, func(i, j int) bool {
 		return list[j].ObjectMeta.GetCreationTimestamp().Time.Before(list[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 	return list
@@ -79,7 +79,7 @@ func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) {
 }
 
 func (d *Deployment) Search(ctx context.Context, key string, searchType int) []*appsv1.Deployment {
-	var deploymentList = make([]*appsv1.Deployment, 0)
+	var deploymentList []*appsv1.Deployment
 	deployments := d.List(ctx)
 
 	switch searchType {
@@ -140,7 +140,7 @@ func (d *DeploymentHandler) notifyDeployments(obj interface{}) {
 	}
 
 	//按时间排序
-	sort.Slice(deployments, func(i, j int) bool {
+	sort.SliceStable(deployments, func(i, j int) bool {
 		return deployments[j].ObjectMeta.GetCreationTimestamp().Time.Before(deployments[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 
