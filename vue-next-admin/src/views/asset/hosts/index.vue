@@ -23,16 +23,16 @@
 			<el-col :span="20" :xs="24">
 				<el-card shadow="hover" class="layout-padding-auto">
 					<div class="system-dept-search ml10">
-						<el-input v-model="state.inputValue" placeholder="输入IP/标签/描述" clearable @change="search" style="width: 300px">
+						<el-input v-model="state.inputValue" placeholder="输入IP/标签/描述" clearable @change="search" style="width: 300px" size="default">
 							<template #prepend>
-								<el-select v-model="state.type" placeholder="输入IP/标签/描述" style="width: 80px">
-									<el-option label="IP" value="0" size="small" />
-									<el-option label="标签" value="1" size="small" />
-									<el-option label="描述" value="2" size="small" />
+								<el-select v-model="state.type" placeholder="输入IP/标签/描述" style="width: 80px" size="default">
+									<el-option label="IP" value="0" size="default" />
+									<el-option label="标签" value="1" size="default" />
+									<el-option label="描述" value="2" size="default" />
 								</el-select>
 							</template>
 							<template #append>
-								<el-button size="small" @click="search">
+								<el-button size="default" @click="search">
 									<el-icon>
 										<ele-Search />
 									</el-icon>

@@ -1,92 +1,56 @@
 <template>
 	<div class="system-dept-container layout-padding">
-		<el-row :gutter="24">
-			<el-col :span="4" :xs="24">
-				<el-card shadow="hover">
-					<div class="head-container">
-						<el-input v-model="state.groupName" placeholder="请输入分组名称" clearable prefix-icon="el-icon-search" style="margin-bottom: 20px" />
-					</div>
-					<div class="head-container">
-						<el-tree
-							:data="state.tableData.groups"
-							node-key="id"
-							:filter-node-method="filterNode"
-							:props="state.defaultProps"
-							:expand-on-click-node="false"
-							ref="tree"
-							default-expand-all
-							@node-click="handleNodeClick"
-						/>
-					</div>
-				</el-card>
-			</el-col>
-			<el-col :span="20" :xs="24">
-				<el-card shadow="hover" class="layout-padding-auto">
-					<div class="system-dept-search mb15">
-						<el-input size="default" placeholder="请输入主机ip" style="max-width: 180px"> </el-input>
-						<el-button size="default" type="primary" class="ml10">
-							<el-icon>
-								<ele-Search />
-							</el-icon>
-							查询
-						</el-button>
-						<el-button size="default" type="success" class="ml10" @click="onOpenAddDept('add')">
-							<el-icon>
-								<ele-FolderAdd />
-							</el-icon>
-							新增主机
-						</el-button>
-					</div>
-					<el-table
-						:data="state.tableData.hosts"
-						v-loading="state.tableData.loading"
-						style="width: 100%"
-						row-key="id"
-						default-expand-all
-						:tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-					>
-						<el-table-column prop="ip" label="主机IP" show-overflow-tooltip> </el-table-column>
-						<el-table-column prop="remark" label="描述" show-overflow-tooltip> </el-table-column>
+		<el-card shadow="hover" class="layout-padding-auto">
+			<div class="system-dept-search mb15">
+				<el-input size="default" placeholder="请输入主机ip" style="max-width: 180px"> </el-input>
+				<el-button size="default" type="primary" class="ml10">
+					<el-icon>
+						<ele-Search />
+					</el-icon>
+					查询
+				</el-button>
+				<el-button size="default" type="success" class="ml10" @click="onOpenAddDept('add')">
+					<el-icon>
+						<ele-FolderAdd />
+					</el-icon>
+					新增规则
+				</el-button>
+			</div>
+			<el-table
+				:data="state.tableData.hbas"
+				v-loading="state.tableData.loading"
+				style="width: 100%"
+				row-key="id"
+				default-expand-all
+				:tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+			>
+				<el-table-column prop="id" label="ID" show-overflow-tooltip> </el-table-column>
+				<el-table-column prop="rule_name" label="规则名称" show-overflow-tooltip> </el-table-column>
 
-						<el-table-column prop="status" label="是否禁用" show-overflow-tooltip>
-							<template #default="scope">
-								<el-tag type="success" v-if="scope.row.status">启用</el-tag>
-								<el-tag type="info" v-else>禁用</el-tag>
-							</template>
-						</el-table-column>
-						<el-table-column prop="port" label="端口" show-overflow-tooltip></el-table-column>
-						<el-table-column label="标签" show-overflow-tooltip>
-							<template #default="scope">
-								<div v-for="(tag, index) in scope.row.labels" :key="index" class="tag">
-									<el-tag effect="plain" size="small">{{ tag }}</el-tag>
-								</div>
-							</template>
-						</el-table-column>
-						<el-table-column label="SSH" show-overflow-tooltip>
-							<template #default="scope">
-								<el-tag type="success" v-if="scope.row.enable_ssh">启用</el-tag>
-								<el-tag type="info" v-else>禁用</el-tag>
-							</template>
-						</el-table-column>
-						<el-table-column label="创建时间" show-overflow-tooltip>
-							<template #default="scope">
-								{{ dateStrFormat(scope.row.created_at) }}
-							</template>
-						</el-table-column>
-						<el-table-column label="操作" show-overflow-tooltip width="150" fixed="right">
-							<template #default="scope">
-								<el-button size="small" text type="primary" @click="onOpenAddDept('add')">远程连接</el-button>
-								<el-button size="small" text type="primary" @click="onOpenEditDept('edit', scope.row)">修改</el-button>
-								<el-button size="small" text type="primary" @click="onTabelRowDel(scope.row)">删除</el-button>
-							</template>
-						</el-table-column>
-					</el-table>
-					<!-- 分页区域 -->
-					<Pagination :total="state.tableData.total" @handlePageChange="handlePageChange" />
-				</el-card>
-			</el-col>
-		</el-row>
+				<!-- <el-table-column prop="account_id" label="账户ID" show-overflow-tooltip></el-table-column>
+				<el-table-column prop="resource_id" label="主机ID" show-overflow-tooltip></el-table-column> -->
 
+				<el-table-column label="创建时间" show-overflow-tooltip>
+					<template #default="scope">
+						{{ dateStrFormat(scope.row.created_at) }}
+					</template>
+				</el-table-column>
+				<el-table-column label="更新时间" show-overflow-tooltip>
+					<template #default="scope">
+						{{ dateStrFormat(scope.row.updated_at) }}
+					</template>
+				</el-table-column>
+				<el-table-column label="操作" show-overflow-tooltip fixed="right">
+					<template #default="scope">
+						<el-button size="small" text type="primary" @click="onOpenAddDept('add')">详情</el-button>
+						<el-button size="small" text type="primary" @click="onOpenEditDept('edit', scope.row)">修改</el-button>
+						<el-button size="small" text type="primary" @click="onTabelRowDel(scope.row)">删除</el-button>
+					</template>
+				</el-table-column>
+			</el-table>
+			<!-- 分页区域 -->
+			<Pagination :total="state.tableData.total" @handlePageChange="handlePageChange" />
+		</el-card>
 		<DeptDialog ref="deptDialogRef" @refresh="getTableData()" />
 	</div>
 </template>
@@ -101,17 +65,20 @@ import { useGroupApi } from '@/api/asset/group';
 import { Group } from '@/types/asset/group';
 import { PageInfo } from '@/types/kubernetes/common';
 import { dateStrFormat } from '../../../utils/formatTime';
+import { useHBAApi } from '@/api/asset/hostBindAccount';
+import { useAccountApi } from '@/api/asset/account';
 
 // 引入组件
 const DeptDialog = defineAsyncComponent(() => import('./dialog.vue'));
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 
 const hostApi = useHostApi();
-const groupApi = useGroupApi();
+const accountApi = useAccountApi();
+const hbaApi = useHBAApi();
 const tree = ref('');
 // 定义变量内容
 const deptDialogRef = ref();
-const state = reactive<HostState>({
+const state = reactive({
 	defaultProps: {
 		children: 'children',
 		label: 'name',
@@ -119,34 +86,52 @@ const state = reactive<HostState>({
 	groupName: '',
 	groupIds: '',
 	tableData: {
+		hbas: [],
 		hosts: [],
-		groups: [],
+		accounts: [],
 		total: 0,
 		loading: false,
 		param: {
 			page: 1,
 			limit: 10,
-		},
+		} as ParamType,
 	},
 });
 
 // 初始化表格数据
 const getTableData = async () => {
 	state.tableData.loading = true;
-	state.tableData.hosts = [];
-	await groupApi
-		.lisGroup({ page: 0, limit: 0 })
+	state.tableData.hbas = [];
+	await hbaApi
+		.lisHba(state.tableData.param)
 		.then((res: any) => {
-			state.tableData.groups = res.data.data;
+			state.tableData.hbas = res.data.data;
+			state.tableData.total = res.data.total;
 		})
 		.catch((e: any) => {
 			ElMessage.error(e.message);
 		});
+	state.tableData.loading = false;
+};
+
+const getHosts = async () => {
+	state.tableData.loading = true;
 	await hostApi
-		.lisHost(state.tableData.param)
+		.lisHost()
 		.then((res: any) => {
-			state.tableData.hosts = res.data.hosts;
-			state.tableData.total = res.data.total;
+			state.tableData.hosts = res.data.data;
+		})
+		.catch((e: any) => {
+			ElMessage.error(e.message);
+		});
+	state.tableData.loading = false;
+};
+const getAccounts = async () => {
+	state.tableData.loading = true;
+	await accountApi
+		.listAccount()
+		.then((res: any) => {
+			state.tableData.accounts = res.data.data;
 		})
 		.catch((e: any) => {
 			ElMessage.error(e.message);
@@ -159,19 +144,6 @@ const handlePageChange = (pageInfo: PageInfo) => {
 	state.tableData.param.page = pageInfo.page;
 	state.tableData.param.limit = pageInfo.limit;
 	getTableData();
-};
-// 节点单击事件
-const handleNodeClick = (data: any) => {
-	state.groupIds = '';
-	getAllNode(data);
-	state.tableData.param['groups'] = state.groupIds;
-	getTableData();
-};
-
-// 筛选节点
-const filterNode = (value: string, state: any) => {
-	if (!value) return true;
-	return state.groupName.includes(value);
 };
 
 const getAllNode = (group: Group) => {
@@ -189,7 +161,7 @@ const getAllNode = (group: Group) => {
 
 // 打开新增菜单弹窗
 const onOpenAddDept = (type: string) => {
-	deptDialogRef.value.openDialog(type, state.tableData.groups);
+	// deptDialogRef.value.openDialog(type, state.tableData.groups);
 };
 // 打开编辑菜单弹窗
 const onOpenEditDept = (type: string, row: DeptTreeType) => {
@@ -211,5 +183,7 @@ const onTabelRowDel = (row: DeptTreeType) => {
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	getAccounts();
+	getHosts();
 });
 </script>

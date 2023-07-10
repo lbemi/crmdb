@@ -1,8 +1,11 @@
 package util
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestGetUUID(t *testing.T) {
-	t.Log(GetUUID())
-
+	id := GetUUID()
+	fmt.Println(id)
 }

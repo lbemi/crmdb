@@ -11,7 +11,7 @@ import (
 
 func ResourceAccountRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/rbas").Produces(restful.MIME_JSON)
+	ws.Path("/api/v1/hbas").Produces(restful.MIME_JSON)
 	tags := []string{"resourceBindAccount"}
 
 	ws.Route(ws.GET("/{id}").To(func(request *restful.Request, response *restful.Response) {

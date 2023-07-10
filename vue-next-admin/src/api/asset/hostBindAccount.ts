@@ -2,30 +2,55 @@ import request from '@/utils/request';
 
 export function useHBAApi() {
 	return {
-		lisGroup: (query: any) => {
+		/**
+		 * Retrieves a list of host bing accounts.
+		 *
+		 * @param {ParamType} query - Optional query parameters.
+		 * @return {Promise<HostBingAccounts[]>} A promise that resolves to an array of host bing accounts.
+		 */
+		lisHba: (query?: ParamType): Promise<HostBingAccounts[]> => {
 			return request({
-				url: '/groups',
+				url: '/hbas',
 				method: 'get',
 				params: query,
 			});
 		},
-		updateGroup: (id: number, data: any) => {
+		/**
+		 * Updates the host bing accounts.
+		 *
+		 * @param {HostBingAccounts} data - The data to update.
+		 * @return {Promise<Result>} A promise that resolves with the result.
+		 */
+		updateHba: (data: HostBingAccounts): Promise<Result> => {
 			return request({
-				url: '/groups/' + id,
+				url: '/hbas',
 				method: 'put',
 				data: data,
 			});
 		},
-		addGroup: (data: any) => {
+
+		/**
+		 * Adds a host bing account.
+		 *
+		 * @param {HostBingAccounts} data - The host bing account data.
+		 * @return {Promise<Result>} The result of the operation.
+		 */
+		addHba: (data: HostBingAccounts): Promise<Result> => {
 			return request({
-				url: '/groups/register',
+				url: '/hbas',
 				method: 'post',
 				data: data,
 			});
 		},
-		deleteGroup: (id: number) => {
+		/**
+		 * Deletes an HBA by its ID.
+		 *
+		 * @param {number} id - The ID of the HBA to delete.
+		 * @return {Promise<Result>} A promise that resolves with the result of the deletion.
+		 */
+		deleteHba: (id: number): Promise<Result> => {
 			return request({
-				url: '/groups/' + id,
+				url: '/hbas/' + id,
 				method: 'delete',
 			});
 		},

@@ -9,3 +9,12 @@ declare interface Account {
 	secret: string;
 	status: number;
 }
+
+declare interface HostBingAccounts {
+	id: number;
+	created_at: string;
+	updated_at: string;
+	rule_name: string;
+	account_id: number[];
+	resource_id: number[];
+}

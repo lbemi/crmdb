@@ -4,13 +4,14 @@ import { Group } from 'jsplumb';
 
 export function useHostApi() {
 	return {
+	
 		/**
-		 * Retrieves a list of hosts based on the given query parameters.
+		 * Get the list of hosts.
 		 *
-		 * @param {any} query - The query parameters for retrieving hosts.
-		 * @return {Promise<any>} - A promise that resolves to the list of hosts.
+		 * @param {any} query - Optional query parameters.
+		 * @return {Promise<any>} A Promise that resolves with the list of hosts.
 		 */
-		lisHost: (query: any): Promise<any> => {
+		lisHost: (query?: any): Promise<any> => {
 			return request({
 				url: '/hosts',
 				method: 'get',
