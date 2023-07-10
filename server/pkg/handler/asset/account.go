@@ -3,6 +3,7 @@ package asset
 import (
 	"context"
 	"fmt"
+
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
 
@@ -30,7 +31,7 @@ type IAccount interface {
 	Create(ctx context.Context, account *asset.Account)
 	Delete(ctx context.Context, accountId uint64)
 	Update(ctx context.Context, accountId uint64, account *asset.Account)
-	List(ctx context.Context, page, limit int) *form.PageResult
+	List(ctx context.Context, page, limit int, name, userName string) *form.PageResult
 	GetByAccountId(ctx context.Context, accountId uint64) (account *asset.Account)
 	UpdateFiledStatus(ctx context.Context, accountId uint64, updateFiled string, status int8)
 	CheckAccountExist(ctx context.Context, accountId uint64) bool
@@ -67,14 +68,12 @@ func (m *account) Update(ctx context.Context, accountId uint64, a *asset.Account
 	m.factory.Account().Update(ctx, accountId, a)
 }
 
-func (m *account) List(ctx context.Context, page, limit int) *form.PageResult {
-	return m.factory.Account().List(page, limit)
-
+func (m *account) List(ctx context.Context, page, limit int, name, userName string) *form.PageResult {
+	return m.factory.Account().List(ctx, page, limit, name, userName)
 }
 
 func (m *account) GetByAccountId(ctx context.Context, accountId uint64) (account *asset.Account) {
 	return m.factory.Account().GetByAccountId(ctx, accountId)
-
 }
 
 func (m *account) UpdateFiledStatus(ctx context.Context, accountId uint64, updateFiled string, status int8) {

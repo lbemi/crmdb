@@ -22,7 +22,10 @@ func ListHosts(rc *rctx.ReqCtx) {
 	pageParam := rc.GetPageQueryParam()
 	groupStr := rc.Query("groups")
 	groups := util.ConvertSliceStrToInt(groupStr)
-	rc.ResData = core.V1.Host().List(c, pageParam.Page, pageParam.Limit, groups)
+	ip := rc.Query("ip")
+	label := rc.Query("label")
+	description := rc.Query("description")
+	rc.ResData = core.V1.Host().List(c, pageParam.Page, pageParam.Limit, groups, ip, label, description)
 }
 
 func GetHostById(rc *rctx.ReqCtx) {

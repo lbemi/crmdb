@@ -2,6 +2,7 @@ package asset
 
 import (
 	"context"
+
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
 	"github.com/lbemi/lbemi/pkg/model/asset"
@@ -21,7 +22,7 @@ type IHost interface {
 	Create(ctx context.Context, host *asset.Host)
 	Delete(ctx context.Context, hostId uint64)
 	Update(ctx context.Context, hostId uint64, host *asset.Host)
-	List(page, limit int, groups []uint64) *form.PageHost
+	List(ctx context.Context, page, limit int, groups []uint64, ip, label, description string) *form.PageHost
 	GetByHostId(ctx context.Context, hostId uint64) (host *asset.Host)
 	GetByGroup(ctx context.Context, groups []uint64, page, limit int) *form.PageResult
 	UpdateFiledStatus(ctx context.Context, hostId uint64, updateFiled string, status int8)
@@ -39,7 +40,7 @@ func (m *host) Update(ctx context.Context, hostId uint64, host *asset.Host) {
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", hostId).Updates(host).Error, restfulx.OperatorErr)
 }
 
-func (m *host) List(page, limit int, groups []uint64) *form.PageHost {
+func (m *host) List(ctx context.Context, page, limit int, groups []uint64, ip, label, description string) *form.PageHost {
 	var (
 		hostList []asset.Host
 		total    int64
@@ -48,6 +49,15 @@ func (m *host) List(page, limit int, groups []uint64) *form.PageHost {
 
 	if len(groups) > 0 {
 		db = db.Where("group_id in (?)", groups)
+	}
+	if ip != "" {
+		db = db.Where("ip LIKE ?", "%"+ip+"%")
+	}
+	if label != "" {
+		db = db.Where("labels LIKE ?", "%"+label+"%")
+	}
+	if description != "" {
+		db = db.Where("remark LIKE ?", "%"+description+"%")
 	}
 
 	// 全量查询

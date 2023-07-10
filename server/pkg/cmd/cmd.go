@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"github.com/lbemi/lbemi/routes/asset"
 	"os"
 	"os/signal"
-	"runtime/trace"
 	"syscall"
 
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
@@ -17,6 +15,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/core/server"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/rctx"
+	"github.com/lbemi/lbemi/routes/asset"
 	"github.com/lbemi/lbemi/routes/cloud"
 	"github.com/lbemi/lbemi/routes/logsys"
 	"github.com/lbemi/lbemi/routes/sys"
@@ -63,23 +62,27 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	//GC分析  go tool trace trace.out  或者 GODEBUG=gctrace=1 go run cmd/main.go
-	f, err := os.Create("/Users/lei/Documents/GitHub/lbemi/server/trace.out")
-	if err != nil {
-		log.Logger.Error(err)
-	}
-	defer func(f *os.File) {
-		err := f.Close()
-		if err != nil {
+	// f, err := os.Create("/Users/lei/Documents/GitHub/lbemi/server/trace.out")
+	// if err != nil {
+	// 	log.Logger.Error(err)
+	// }
+	// defer func(f *os.File) {
+	// 	err := f.Close()
+	// 	if err != nil {
 
-		}
-	}(f)
-	err = trace.Start(f)
-	if err != nil {
-		return
-	}
-	defer trace.Stop()
+	// 	}
+	// }(f)
+	// err = trace.Start(f)
+	// if err != nil {
+	// 	return
+	// }
+	// defer trace.Stop()
 }
 
+// registerRoute registers the routes for the HTTP server.
+//
+// It takes a pointer to a `server.HttpSever` as its parameter.
+// There is no return value.
 func registerRoute(httpSever *server.HttpSever) {
 	//注册路由
 	httpSever.RegisterRoutes(
@@ -121,6 +124,7 @@ func registerRoute(httpSever *server.HttpSever) {
 	httpSever.Container.Add(restfulspec.NewOpenAPIService(config))
 }
 
+// enrichSwaggerObject modifies the given Swagger object by adding additional information to it.
 func enrichSwaggerObject(swo *spec.Swagger) {
 	swo.Info = &spec.Info{
 		InfoProps: spec.InfoProps{

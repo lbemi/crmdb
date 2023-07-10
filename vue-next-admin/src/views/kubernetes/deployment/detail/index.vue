@@ -27,7 +27,7 @@
 					k8sStore.state.activeDeployment?.metadata?.namespace
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
-					dateStrFormat(k8sStore.state.activeDeployment?.metadata?.creationTimestamp?.toString())
+					dateStrFormat(k8sStore.state.activeDeployment?.metadata?.creationTimestamp?.toString() || '')
 				}}</el-descriptions-item>
 				<el-descriptions-item label="副本数" label-align="right" align="center"
 					><el-button

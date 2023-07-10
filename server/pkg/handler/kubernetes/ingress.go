@@ -36,37 +36,26 @@ func (s *ingresses) List(ctx context.Context, query *model.PageParam, name strin
 	data := s.k8s.Ingress().List(ctx)
 	res := &form.PageResult{}
 	var ingressList = make([]*v1.Ingress, 0)
-	if name != "" {
-		for _, item := range data {
-			if strings.Contains(item.Name, name) {
-				ingressList = append(ingressList, item)
-			}
+
+	for _, item := range data {
+		if (name == "" || strings.Contains(item.Name, name)) && (label == "" || strings.Contains(labels.FormatLabels(item.Labels), label)) {
+			ingressList = append(ingressList, item)
 		}
-		data = ingressList
 	}
 
-	if label != "" {
-		for _, item := range data {
-			if strings.Contains(labels.FormatLabels(item.Labels), label) {
-				ingressList = append(ingressList, item)
-			}
-		}
-		data = ingressList
-	}
-
-	total := len(data)
-	// 未传递分页查询参数
+	total := len(ingressList)
 	if query.Limit == 0 && query.Page == 0 {
-		res.Data = data
+		res.Data = ingressList
 	} else {
 		if total <= query.Limit {
-			res.Data = data
+			res.Data = ingressList
 		} else if query.Page*query.Limit >= total {
-			res.Data = data[(query.Page-1)*query.Limit : total]
+			res.Data = ingressList[(query.Page-1)*query.Limit : total]
 		} else {
-			res.Data = data[(query.Page-1)*query.Limit : query.Page*query.Limit]
+			res.Data = ingressList[(query.Page-1)*query.Limit : query.Page*query.Limit]
 		}
 	}
+
 	res.Total = int64(total)
 	return res
 }

@@ -22,14 +22,25 @@
 			</el-col>
 			<el-col :span="20" :xs="24">
 				<el-card shadow="hover" class="layout-padding-auto">
-					<div class="system-dept-search mb15">
-						<el-input size="default" placeholder="请输入主机ip" style="max-width: 180px"> </el-input>
-						<el-button size="default" type="primary" class="ml10">
-							<el-icon>
-								<ele-Search />
-							</el-icon>
-							查询
-						</el-button>
+					<div class="system-dept-search ml10">
+						<el-input v-model="state.inputValue" placeholder="输入IP/标签/描述" clearable @change="search" style="width: 300px">
+							<template #prepend>
+								<el-select v-model="state.type" placeholder="输入IP/标签/描述" style="width: 80px">
+									<el-option label="IP" value="0" size="small" />
+									<el-option label="标签" value="1" size="small" />
+									<el-option label="描述" value="2" size="small" />
+								</el-select>
+							</template>
+							<template #append>
+								<el-button size="small" @click="search">
+									<el-icon>
+										<ele-Search />
+									</el-icon>
+									查询
+								</el-button>
+							</template>
+						</el-input>
+
 						<el-button size="default" type="success" class="ml10" @click="onOpenAddHost('add')">
 							<el-icon>
 								<ele-FolderAdd />
@@ -121,6 +132,8 @@ const tree = ref('');
 // 定义变量内容
 const hostDialogRef = ref();
 const state = reactive<HostState>({
+	inputValue: '',
+	type: '0',
 	defaultProps: {
 		children: 'children',
 		label: 'name',
@@ -138,7 +151,22 @@ const state = reactive<HostState>({
 		},
 	},
 });
-
+const search = () => {
+	if (state.type == '0') {
+		state.tableData.param.ip = state.inputValue;
+		delete state.tableData.param.label;
+		delete state.tableData.param.description;
+	} else if (state.type == '1') {
+		state.tableData.param.label = state.inputValue;
+		delete state.tableData.param.ip;
+		delete state.tableData.param.description;
+	} else {
+		state.tableData.param.description = state.inputValue;
+		delete state.tableData.param.ip;
+		delete state.tableData.param.label;
+	}
+	getTableData();
+};
 // 初始化表格数据
 const getTableData = async () => {
 	state.tableData.loading = true;

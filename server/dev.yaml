@@ -7,14 +7,14 @@ app:
 log:
   level: info
   root_dir: ./log
-  is_file: false        #是否写入文件
+  is_file: false #是否写入文件
   file_name: server.log
-  format:          # 格式化： json
-  show_line: true      # 是否显示打印行
-  max_backup: 10       # 最大备份文件个数
-  max_size: 10          # 最大备份文件大小(M)
-  max_age: 10           # 文件最大保留天数
-  compress: true        # 是否压缩文件
+  format: # 格式化： json
+  show_line: true # 是否显示打印行
+  max_backup: 10 # 最大备份文件个数
+  max_size: 10 # 最大备份文件大小(M)
+  max_age: 10 # 文件最大保留天数
+  compress: true # 是否压缩文件
 database:
   driver: mysql
   host: 42.192.54.11
@@ -25,10 +25,10 @@ database:
   charset: utf8mb4
   max_idle_conns: 10
   max_open_conns: 100
-  log_mode: error # silent,error,warn,info
+  log_mode: info # silent,error,warn,info
   enable_file_log_write: false
   log_filename: sql.log
-  is_initialize: true  # 是否初始化数据库表
+  is_initialize: false # 是否初始化数据库表
 jwt:
   key: 3Bde3BGEbYqtqyEUzW3ry8jKFcaPH17fRmTmqE7MDr05Lwj95uruRKrrkb44TJ4s
   ttl: 30 #过期时间 :天

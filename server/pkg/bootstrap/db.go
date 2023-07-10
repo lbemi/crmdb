@@ -1,10 +1,11 @@
 package bootstrap
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
-	"strconv"
+	"path/filepath"
 	"time"
 
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -38,8 +39,14 @@ func initMysqlGorm(c *config.Config) *gorm.DB {
 		return nil
 	}
 
-	dsn := dataConfig.User + ":" + dataConfig.Password + "@tcp(" + dataConfig.Host + ":" + strconv.Itoa(dataConfig.Port) + ")/" +
-		dataConfig.Database + "?charset=" + dataConfig.Charset + "&parseTime=True&loc=Local"
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local",
+		dataConfig.User,
+		dataConfig.Password,
+		dataConfig.Host,
+		dataConfig.Port,
+		dataConfig.Database,
+		dataConfig.Charset,
+	)
 
 	mysqlConfig := mysql.Config{
 		DSN:                       dsn,   // DSN data source name
@@ -50,36 +57,28 @@ func initMysqlGorm(c *config.Config) *gorm.DB {
 		SkipInitializeWithVersion: false, // 根据版本自动配置
 	}
 
-	if db, err := gorm.Open(mysql.New(mysqlConfig), &gorm.Config{
-
+	db, err := gorm.Open(mysql.New(mysqlConfig), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true, //禁用自动创建外键约束
 		Logger:                                   getGormLogger(c),
+	})
 
-		//NamingStrategy: schema.NamingStrategy{
-		//	TablePrefix:   "tb_",
-		//	SingularTable: true,
-		//},
-	}); err != nil {
-
-		//log.Logger.Err.Logger.Error("mysql connect failed. err:", err)
-		//fmt.Println("mysql connect failed. err:", err)
+	if err != nil {
 		opsLog.Logger.Errorf("mysql connect failed. err: %v", err)
 		os.Exit(-13)
 		return nil
-	} else {
-		sqlDB, _ := db.DB()
-		sqlDB.SetMaxIdleConns(dataConfig.MaxIdleConns)
-		sqlDB.SetMaxOpenConns(dataConfig.MaxOpenConns)
-		if dataConfig.IsInitialize {
-			migration(db)
-		}
-		return db
 	}
+
+	sqlDB, _ := db.DB()
+	sqlDB.SetMaxIdleConns(dataConfig.MaxIdleConns)
+	sqlDB.SetMaxOpenConns(dataConfig.MaxOpenConns)
+	if dataConfig.IsInitialize {
+		migration(db)
+	}
+	return db
 }
 
 func migration(db *gorm.DB) {
-	opsLog.Logger.Info("Initialized database ...")
-	err := db.AutoMigrate(
+	entities := []interface{}{
 		&sys.Menu{},
 		&sys.User{},
 		&sys.Role{},
@@ -95,20 +94,47 @@ func migration(db *gorm.DB) {
 		&sys.UserResource{},
 		&logsys.LogLogin{},
 		&logsys.LogOperator{},
-	)
-	if err != nil {
-		opsLog.Logger.Errorf("Initialized database failed. err: %v", err)
+	}
+	opsLog.Logger.Info("Initializing database ...")
+	if err := db.AutoMigrate(entities...); err != nil {
+		opsLog.Logger.Errorf("Failed to initialize database. err: %v", err)
 		return
 	}
+}
 
+func getGormLogger(c *config.Config) logger.Interface {
+	logMode := getLoggerMode(c.LogMode)
+	config := logger.Config{
+		SlowThreshold:             time.Second,
+		LogLevel:                  logMode,
+		IgnoreRecordNotFoundError: true,
+		Colorful:                  !c.EnableFileLogWrite,
+	}
+	return logger.New(getGormLogWriter(c), config)
+}
+
+func getLoggerMode(logMode string) logger.LogLevel {
+	switch logMode {
+	case "silent":
+		return logger.Silent
+	case "error":
+		return logger.Error
+	case "warn":
+		return logger.Warn
+	case "info":
+		return logger.Info
+	default:
+		return logger.Info
+	}
 }
 
 func getGormLogWriter(c *config.Config) logger.Writer {
 	logConfig := c.Log
+
 	var writer io.Writer
 	if c.Database.EnableFileLogWrite {
 		writer = &lumberjack.Logger{
-			Filename:   logConfig.RootDir + "/" + c.LogFilename,
+			Filename:   filepath.Join(logConfig.RootDir, c.LogFilename),
 			MaxSize:    logConfig.MaxSize,
 			MaxAge:     logConfig.MaxAge,
 			MaxBackups: logConfig.MaxBackup,
@@ -117,27 +143,6 @@ func getGormLogWriter(c *config.Config) logger.Writer {
 	} else {
 		writer = os.Stdout
 	}
-	return log.New(writer, "\r\n", log.LstdFlags)
-}
 
-func getGormLogger(c *config.Config) logger.Interface {
-	var logMode logger.LogLevel
-	switch c.LogMode {
-	case "silent":
-		logMode = logger.Silent
-	case "error":
-		logMode = logger.Error
-	case "warn":
-		logMode = logger.Warn
-	case "info":
-		logMode = logger.Info
-	default:
-		logMode = logger.Info
-	}
-	return logger.New(getGormLogWriter(c), logger.Config{
-		SlowThreshold:             time.Second,
-		LogLevel:                  logMode,
-		IgnoreRecordNotFoundError: true,
-		Colorful:                  !c.EnableFileLogWrite,
-	})
+	return log.New(writer, "\r\n", log.LstdFlags)
 }

@@ -22,7 +22,7 @@ type IAccount interface {
 	Create(ctx context.Context, account *asset.Account)
 	Delete(ctx context.Context, accountId uint64)
 	Update(ctx context.Context, accountId uint64, account *asset.Account)
-	List(page, limit int) *form.PageResult
+	List(ctx context.Context, page, limit int, name, userName string) *form.PageResult
 	GetByAccountId(ctx context.Context, accountId uint64) (account *asset.Account)
 	GetByIds(ctx context.Context, ids []uint64) []*asset.Account
 	UpdateFiledStatus(ctx context.Context, accountId uint64, updateFiled string, status int8)
@@ -49,23 +49,27 @@ func (m *account) Update(ctx context.Context, accountId uint64, account *asset.A
 	restfulx.ErrNotNilDebug(m.db.Where("id = ?", accountId).Updates(account).Error, restfulx.OperatorErr)
 }
 
-// List performs a full or partial query of the account list.
-//
-// If page and limit are both set to 0, the function performs a full query.
-// Otherwise, it performs a paginated query based on the given page and limit values.
-// The function returns a pointer to a PageResult struct.
-func (m *account) List(page, limit int) *form.PageResult {
+func (m *account) List(ctx context.Context, page, limit int, name, userName string) *form.PageResult {
 	var (
 		accountList []asset.Account
 		total       int64
 	)
 
+	db := m.db
+
+	if name != "" {
+		db = db.Where("name LIKE ?", "%"+name+"%")
+	}
+	if userName != "" {
+		db = db.Where("user_name LIKE ?", "%"+userName+"%")
+	}
+
+	restfulx.ErrNotNilDebug(db.Model(&asset.Account{}).Count(&total).Error, restfulx.OperatorErr)
+
 	if page == 0 && limit == 0 {
-		restfulx.ErrNotNilDebug(m.db.Find(&accountList).Error, restfulx.OperatorErr)
-		restfulx.ErrNotNilDebug(m.db.Model(&asset.Account{}).Count(&total).Error, restfulx.OperatorErr)
+		restfulx.ErrNotNilDebug(db.Find(&accountList).Error, restfulx.OperatorErr)
 	} else {
-		restfulx.ErrNotNilDebug(m.db.Limit(limit).Offset((page-1)*limit).Find(&accountList).Error, restfulx.OperatorErr)
-		restfulx.ErrNotNilDebug(m.db.Model(&asset.Account{}).Count(&total).Error, restfulx.OperatorErr)
+		restfulx.ErrNotNilDebug(db.Limit(limit).Offset((page-1)*limit).Find(&accountList).Error, restfulx.OperatorErr)
 	}
 
 	res := &form.PageResult{

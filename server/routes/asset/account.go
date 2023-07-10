@@ -9,6 +9,10 @@ import (
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
 
+// AccountRoutes returns a *restful.WebService.
+//
+// This function does not take any parameters.
+// It returns a *restful.WebService.
 func AccountRoutes() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.Path("/api/v1/accounts").Produces(restful.MIME_JSON)
@@ -28,6 +32,8 @@ func AccountRoutes() *restful.WebService {
 	}).
 		Doc("查看账户列表信息").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.QueryParameter("name", "名称,模糊查询").DataType("string")).
+		Param(ws.QueryParameter("user_name", "登录名,模糊查询").DataType("string")).
 		Reads(form.PageResult{}).
 		Returns(200, "success", form.PageResult{}))
 

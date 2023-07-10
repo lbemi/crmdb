@@ -27,7 +27,7 @@ type IHost interface {
 	Create(ctx context.Context, host *asset.Host)
 	Delete(ctx context.Context, hostId uint64)
 	Update(ctx context.Context, hostId uint64, host *asset.Host)
-	List(ctx context.Context, page, limit int, groups []uint64) *form.PageHost
+	List(ctx context.Context, page, limit int, groups []uint64, ip, label, description string) *form.PageHost
 	GetByHostId(ctx context.Context, hostId uint64) (host *asset.Host)
 	GetHostAccounts(ctx context.Context, hostId uint64) []*asset.Account
 	GetByGroup(ctx context.Context, groups []uint64, page, limit int) *form.PageResult
@@ -49,9 +49,8 @@ func (m *host) Update(ctx context.Context, hostId uint64, host *asset.Host) {
 
 }
 
-func (m *host) List(ctx context.Context, page, limit int, groups []uint64) *form.PageHost {
-
-	return m.factory.Host().List(page, limit, groups)
+func (m *host) List(ctx context.Context, page, limit int, groups []uint64, ip, label, description string) *form.PageHost {
+	return m.factory.Host().List(ctx, page, limit, groups, ip, label, description)
 
 }
 

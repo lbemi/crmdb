@@ -16,7 +16,9 @@ func AddAccount(rc *rctx.ReqCtx) {
 func ListAccount(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	page := rc.GetPageQueryParam()
-	rc.ResData = core.V1.Account().List(c, page.Page, page.Limit)
+	name := rc.Query("name")
+	userName := rc.Query("userName")
+	rc.ResData = core.V1.Account().List(c, page.Page, page.Limit, name, userName)
 }
 
 func GetAccount(rc *rctx.ReqCtx) {

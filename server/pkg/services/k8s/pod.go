@@ -3,10 +3,11 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"github.com/lbemi/lbemi/pkg/util"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sort"
 	"strings"
+
+	"github.com/lbemi/lbemi/pkg/util"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
@@ -177,7 +178,7 @@ func (p *pod) Search(ctx context.Context, key string, searchType int) []*corev1.
 		restfulx.ErrNotNilDebug(fmt.Errorf("参数错误"), restfulx.ParamErr)
 	}
 
-	sort.Slice(podList, func(i, j int) bool {
+	sort.SliceStable(podList, func(i, j int) bool {
 		return podList[j].ObjectMeta.GetCreationTimestamp().Time.Before(podList[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 	restoreGVKForList(podList)

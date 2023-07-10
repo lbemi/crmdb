@@ -62,22 +62,24 @@
 				<el-table-column prop="spec.type" label="类型" />
 				<el-table-column label="外部访问IP">
 					<template #default="scope">
-						<el-link
-							target="_blank"
-							type="primary"
-							:size="theme.themeConfig.globalComponentSize"
-							v-if="scope.row.status.loadBalancer.ingress"
-							v-for="item in scope.row.status.loadBalancer.ingress"
-							:href="'http://' + item.ip"
-						>
-							{{ item.ip }}</el-link
-						>
+						<a v-if="scope.row.status.loadBalancer.ingress">
+							<el-link
+								target="_blank"
+								type="primary"
+								:size="theme.themeConfig.globalComponentSize"
+								v-for="item in scope.row.status.loadBalancer.ingress"
+								:href="'http://' + item.ip"
+								:key="item.id"
+							>
+								{{ item.ip }}</el-link
+							>
+						</a>
 					</template>
 				</el-table-column>
 				<el-table-column label="规则" style="display: flex" min-width="200px">
 					<template #default="scope">
-						<div v-for="item in scope.row.spec.rules">
-							<div v-for="path in item.http.paths">
+						<div v-for="item in scope.row.spec.rules" :key="item.id">
+							<div v-for="(path, index) in item.http.paths" :key="index">
 								<el-link :size="theme.themeConfig.globalComponentSize" target="_blank" type="primary" :href="'http://' + item.host + path.path"
 									>{{ item.host }}{{ path.path }}</el-link
 								>
@@ -149,9 +151,8 @@
 
 <script setup lang="ts" name="k8sIngress">
 import { Ingress } from 'kubernetes-types/networking/v1';
-import { defineAsyncComponent, h, onMounted, reactive, ref } from 'vue';
+import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { ResponseType } from '@/types/response';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';

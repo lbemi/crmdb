@@ -21,6 +21,9 @@ func HostRotes() *restful.WebService {
 		Param(ws.QueryParameter("page", "page").DataType("int")).
 		Param(ws.QueryParameter("limit", "limit").DataType("int")).
 		Param(ws.QueryParameter("groups", "分组id").DataType("string")).
+		Param(ws.QueryParameter("ip", "ip地址,模糊查询").DataType("string")).
+		Param(ws.QueryParameter("label", "标签,模糊查询").DataType("string")).
+		Param(ws.QueryParameter("description", "描述信息,模糊查询").DataType("string")).
 		Writes(form.PageHost{}).
 		Returns(200, "success", form.PageHost{}))
 

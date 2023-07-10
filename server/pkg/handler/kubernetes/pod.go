@@ -43,37 +43,28 @@ func (p *pod) List(ctx context.Context, query *model.PageParam, name string, lab
 	data := p.k8s.Pod().List(ctx)
 	res := &form.PageResult{}
 	var podList = make([]*corev1.Pod, 0)
-	if name != "" {
-		for _, item := range data {
-			if strings.Contains(item.Name, name) {
-				podList = append(podList, item)
-			}
+
+	for _, item := range data {
+		if (name == "" || strings.Contains(item.Name, name)) && (label == "" || strings.Contains(labels.FormatLabels(item.Labels), label)) {
+			podList = append(podList, item)
 		}
-		data = podList
 	}
 
-	if label != "" {
-		for _, item := range data {
-			if strings.Contains(labels.FormatLabels(item.Labels), label) {
-				podList = append(podList, item)
-			}
-		}
-		data = podList
-	}
+	total := len(podList)
 
-	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {
-		res.Data = data
+		res.Data = podList
 	} else {
 		if total <= query.Limit {
-			res.Data = data
+			res.Data = podList
 		} else if query.Page*query.Limit >= total {
-			res.Data = data[(query.Page-1)*query.Limit : total]
+			res.Data = podList[(query.Page-1)*query.Limit : total]
 		} else {
-			res.Data = data[(query.Page-1)*query.Limit : query.Page*query.Limit]
+			res.Data = podList[(query.Page-1)*query.Limit : query.Page*query.Limit]
 		}
 	}
+
 	res.Total = int64(total)
 	return res
 }
@@ -103,8 +94,8 @@ func (p *pod) GetPodLog(ctx context.Context, pod, container string) *rest.Reques
 }
 
 func (p *pod) GetPodEvent(ctx context.Context, name string) []*corev1.Event {
-	events := make([]*corev1.Event, 0)
 	eventList := p.k8s.Event().List(ctx)
+	events := make([]*corev1.Event, 0, len(eventList))
 	for _, item := range eventList {
 		if item.InvolvedObject.Kind == "Pod" && item.InvolvedObject.Name == name {
 			events = append(events, item)

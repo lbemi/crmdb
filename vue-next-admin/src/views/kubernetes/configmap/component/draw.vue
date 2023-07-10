@@ -106,6 +106,7 @@ const k8sStore = kubernetesInfo();
 const configMapApi = useConfigMapApi();
 
 const data = reactive({
+	isBinaryData: false,
 	isUpdate: false,
 	visible: false,
 	labels: [],
@@ -187,11 +188,17 @@ const handAnnotations = (labels: { [key: string]: string }) => {
 };
 
 const convertConfigMap = () => {
+	const res = {};
 	data.keyValues.forEach((item) => {
 		let obj = {};
 		obj[item.key] = item.value;
-		Object.assign(data.configMap.data, obj);
+		Object.assign(res, obj);
 	});
+	if (data.isBinaryData) {
+		data.configMap.binaryData = res;
+	} else {
+		data.configMap.data = res;
+	}
 };
 
 const getAnnotations = (labels: any) => {
@@ -227,19 +234,18 @@ const confirm = async () => {
 				ElMessage.error(e.message);
 			});
 	}
-	console.log(data.configMap);
 };
 
 const handleClose = () => {
 	emit('update:visible', false);
 };
 
-const convertConfigMapTo = () => {
+const convertConfigMapTo = (obj: { [name: string]: string }) => {
 	let kvs = [] as Array<{ key: string; value: string }>;
-	Object.keys(data.configMap.data).forEach((k) => {
+	Object.keys(obj).forEach((k) => {
 		kvs.push({
 			key: k,
-			value: data.configMap.data![k],
+			value: obj[k],
 		});
 	});
 	data.keyValues = kvs;
@@ -253,27 +259,15 @@ onMounted(() => {
 	if (!isObjectValueEqual(props.configMap, {})) {
 		data.isUpdate = true;
 		data.configMap = props.configMap;
-		convertConfigMapTo();
+		if (data.configMap.binaryData) {
+			data.isBinaryData = true;
+			convertConfigMapTo(data.configMap.binaryData);
+		}
+		if (data.configMap.data) {
+			convertConfigMapTo(data.configMap.data);
+		}
 	}
 });
-
-// watch(
-// 	() => props,
-// 	() => {
-// 		console.log('----', props);
-// 		data.isUpdate = false;
-// 		data.visible = props.visible;
-// 		if (!isObjectValueEqual(props.configMap, {})) {
-// 			data.isUpdate = true;
-// 			data.configMap = props.configMap;
-// 			convertConfigMapTo();
-// 		}
-// 	},
-// 	{
-// 		deep: true,
-// 		immediate: true,
-// 	}
-// );
 </script>
 <style scoped>
 .el-form {

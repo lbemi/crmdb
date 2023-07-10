@@ -9,7 +9,7 @@ import (
 func main() {
 	command := cmd.NewDefaultAppCommand()
 	if err := command.Execute(); err != nil {
-		command.PrintErrf("GO-OPS start failed. %", err)
+		command.PrintErrf("GO-OPS start failed. %v", err)
 		os.Exit(1)
 	}
 }

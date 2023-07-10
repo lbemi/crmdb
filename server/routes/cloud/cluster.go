@@ -3,24 +3,11 @@ package cloud
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
-	"github.com/gin-gonic/gin"
-	"github.com/lbemi/lbemi/api/cloud"
 
+	"github.com/lbemi/lbemi/api/cloud"
 	clusterModel "github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
-
-func NewClusterRoutes(router *gin.RouterGroup) {
-
-	//cluster := router.Group("/cluster")
-	//{
-	//	cluster.POST("", cloud.CreateCluster)
-	//	cluster.GET("", cloud.ListCluster)
-	//	cluster.DELETE("/:id", cloud.DeleteCluster)
-	//	cluster.GET("/:name", cloud.GetCluster)
-	//}
-
-}
 
 func ClusterRoutes() *restful.WebService {
 	ws := new(restful.WebService)

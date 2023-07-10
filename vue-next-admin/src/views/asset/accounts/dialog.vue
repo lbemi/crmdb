@@ -4,7 +4,7 @@
 			<el-form ref="formRef" :model="state.account" size="default" label-width="90px" :rules="formRules">
 				<el-row :gutter="35">
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="账户" prop="name">
+						<el-form-item label="名称" prop="name">
 							<el-input v-model="state.account.name" placeholder="名称" clearable></el-input>
 						</el-form-item>
 					</el-col>

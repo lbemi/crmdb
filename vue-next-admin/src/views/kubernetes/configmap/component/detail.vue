@@ -22,9 +22,25 @@
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="数据" label-align="right" align="center" :span="2">
-					<el-table :data="data.keyValues">
+					<el-table class="custom-table" v-if="data.configMap.data" :data="data.keyValues">
 						<el-table-column prop="key" label="名称" />
-						<el-table-column prop="value" label="值" />
+						<el-table-column prop="value" label="值">
+							<template #default="scope">
+								<div class="custom-cell" :class="{ 'max-height': scope.row.value.length > 200 }">
+									{{ scope.row.value }}
+								</div>
+							</template>
+						</el-table-column>
+					</el-table>
+					<el-table class="custom-table" v-if="data.configMap.binaryData" :data="data.binaryKeyValues">
+						<el-table-column prop="key" label="名称" />
+						<el-table-column prop="value" label="值">
+							<template #default="scope">
+								<div class="custom-cell" :class="{ 'max-height': scope.row.value.length > 200 }">
+									{{ scope.row.value }}
+								</div>
+							</template>
+						</el-table-column>
 					</el-table>
 				</el-descriptions-item>
 			</el-descriptions>
@@ -46,8 +62,10 @@ const data = reactive({
 			namespace: '',
 		},
 		data: {},
+		binaryData: {},
 	} as ConfigMap,
 	keyValues: [] as Array<{ key: string; value: string }>,
+	binaryKeyValues: [] as Array<{ key: string; value: string }>,
 });
 
 const props = defineProps({
@@ -58,22 +76,27 @@ const props = defineProps({
 	title: String,
 });
 
-const convertConfigMapTo = () => {
+const convertConfigMapTo = (obj: { [name: string]: string }) => {
 	let kvs = [] as Array<{ key: string; value: string }>;
-	Object.keys(data.configMap.data).forEach((k) => {
+	Object.keys(obj).forEach((k) => {
 		kvs.push({
 			key: k,
-			value: data.configMap.data![k],
+			value: obj[k],
 		});
 	});
-	data.keyValues = kvs;
+	return kvs;
 };
 
 onMounted(() => {
 	data.visible = props.visible;
 	if (!isObjectValueEqual(props.configMap, {})) {
 		data.configMap = props.configMap;
-		convertConfigMapTo();
+		if (data.configMap.data) {
+			data.keyValues = convertConfigMapTo(data.configMap.data);
+		}
+		if (data.configMap.binaryData) {
+			data.binaryKeyValues = convertConfigMapTo(data.configMap.binaryData);
+		}
 	}
 });
 
@@ -86,6 +109,13 @@ const handleClose = () => {
 .box_body {
 	margin-left: 20px;
 	margin-top: 10px;
+}
+.custom-cell {
+	overflow: auto;
+}
+
+.custom-cell.max-height {
+	max-height: 200px; /* 设置最大高度为 200px，可以根据需要进行调整 */
 }
 .footer {
 	display: flex;

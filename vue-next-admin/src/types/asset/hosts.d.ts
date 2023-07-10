@@ -30,6 +30,8 @@ interface HostTableType extends TableType {
 }
 
 declare interface HostState {
+	inputValue: string;
+	type: string;
 	defaultProps: {
 		children: string;
 		label: string;
@@ -37,4 +39,11 @@ declare interface HostState {
 	groupName: string;
 	groupIds: string;
 	tableData: HostTableType;
+}
+
+declare interface HostParams {
+	page: number;
+	limit: number;
+	name?: string;
+	userName?: string;
 }
