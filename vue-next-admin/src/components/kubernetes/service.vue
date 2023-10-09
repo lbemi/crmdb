@@ -109,8 +109,8 @@
 </template>
 
 <script setup lang="ts">
-import { Service } from 'kubernetes-types/core/v1';
-import { DaemonSet, Deployment, StatefulSet } from 'kubernetes-types/apps/v1';
+import { Service } from '@/types/kubernetes-types/core/v1';
+import { DaemonSet, Deployment, StatefulSet } from '@/types/kubernetes-types/apps/v1';
 import { defineAsyncComponent, reactive, ref, watch } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';

@@ -168,7 +168,7 @@
 </template>
 
 <script setup lang="ts" name="k8sService">
-import { Service } from 'kubernetes-types/core/v1';
+import { Service } from '@/types/kubernetes-types/core/v1';
 import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { useServiceApi } from '@/api/kubernetes/service';

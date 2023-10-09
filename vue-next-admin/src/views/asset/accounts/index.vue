@@ -3,8 +3,15 @@
 		<el-row :gutter="24">
 			<el-col :span="24" :xs="24">
 				<el-card shadow="hover" class="layout-padding-auto">
-					<div class="system-dept-search mb15">
-						<el-input v-model="state.inputValue" placeholder="输入标签或者名称" clearable @change="search" style="width: 330px; margin-left: 10px">
+					<div class="system-dept-search ml10">
+						<el-input
+							style="width: 350px; margin-left: 10px"
+							size="default"
+							v-model="state.inputValue"
+							placeholder="输入标签或者名称"
+							clearable
+							@change="search"
+						>
 							<template #prepend>
 								<el-select v-model="state.type" style="width: 100px">
 									<el-option label="名称" value="0" />
@@ -12,7 +19,7 @@
 								</el-select>
 							</template>
 							<template #append>
-								<el-button size="small" @click="search">
+								<el-button @click="search">
 									<el-icon>
 										<ele-Search />
 									</el-icon>

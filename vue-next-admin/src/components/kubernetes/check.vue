@@ -120,7 +120,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue';
 import { CaretBottom, CaretTop } from '@element-plus/icons-vue';
-import { Probe } from 'kubernetes-types/core/v1';
+import { Probe } from '@/types/kubernetes-types/core/v1';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';

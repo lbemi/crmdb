@@ -31,7 +31,7 @@ func NewDefaultAppCommand() *cobra.Command {
 		Short:   "GO-OPS system is for operator",
 		Example: "go-ops --config config.yaml",
 		Version: "1.0.0",
-		PreRun: func(cmd *cobra.Command, args []string) {
+		PreRun: func(_ *cobra.Command, _ []string) {
 			//初始化
 			completedOptions = option.NewOptions().WithConfig(configFile).WithLog().Complete()
 			// 注册handler
@@ -45,7 +45,7 @@ func NewDefaultAppCommand() *cobra.Command {
 	return rootCmd
 }
 
-func run(cmd *cobra.Command, args []string) {
+func run(_ *cobra.Command, _ []string) {
 	httpSever := server.NewHttpSever(":" + completedOptions.Config.App.Port)
 	container := httpSever.Container
 	container.Filter(middleware.Cors(container).Filter)

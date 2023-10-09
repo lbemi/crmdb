@@ -35,7 +35,7 @@ import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
 import { CreateK8SBindData, CreateK8SMetaData, ResourceType } from '@/types/kubernetes/custom';
 import type { FormInstance, FormRules } from 'element-plus';
-import { ObjectMeta } from 'kubernetes-types/meta/v1';
+import { ObjectMeta } from '@/types/kubernetes-types/meta/v1';
 
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 

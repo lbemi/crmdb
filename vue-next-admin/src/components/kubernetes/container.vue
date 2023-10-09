@@ -157,7 +157,7 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, reactive, ref } from 'vue';
-import { Container, ContainerPort, EnvVar, Volume } from 'kubernetes-types/core/v1';
+import { Container, ContainerPort, EnvVar, Volume } from '@/types/kubernetes-types/core/v1';
 import { Delete, Edit, InfoFilled } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
 import { ContainerType } from '@/types/kubernetes/common';

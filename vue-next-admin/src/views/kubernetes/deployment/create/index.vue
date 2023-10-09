@@ -16,11 +16,13 @@
 					<el-card style="padding-left: 20px; margin-top: 15px">
 						<div>
 							<div style="margin-top: 10px" id="0" v-show="data.active === 0">
-								<Meta :bindData="data.bindMetaData" @updateData="getMeta" />
+								<Meta :bindData="data.bindMetaData" :is-update="true" @updateData="getMeta" />
 							</div>
 							<div style="margin-top: 10px" id="1" v-show="data.active === 1">
 								<Containers
 									:containers="deepClone(data.deployments.spec!.template.spec!.containers) as Array< Container>"
+									:init-containers="[]"
+									:volumes="[]"
 									@updateContainers="getContainers"
 								/>
 							</div>
@@ -55,11 +57,11 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeMount, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { defineAsyncComponent, onBeforeMount, onUnmounted, reactive, ref, watch } from 'vue';
 import { Codemirror } from 'vue-codemirror';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { Container } from 'kubernetes-types/core/v1';
-import { Deployment } from 'kubernetes-types/apps/v1';
+import { Container } from '@/types/kubernetes-types/core/v1';
+import { Deployment } from '@/types/kubernetes-types/apps/v1';
 import yamlJs from 'js-yaml';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
 import { kubernetesInfo } from '@/stores/kubernetes';

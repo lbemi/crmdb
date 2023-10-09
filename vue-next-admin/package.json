@@ -27,7 +27,6 @@
 		"js-yaml": "^4.1.0",
 		"json2yaml": "^1.1.0",
 		"jsplumb": "^2.15.6",
-		"kubernetes-types": "^1.26.0",
 		"mitt": "^3.0.0",
 		"nprogress": "^0.2.0",
 		"pinia": "^2.1.3",

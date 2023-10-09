@@ -11,6 +11,10 @@ import (
 	"github.com/lbemi/lbemi/pkg/restfulx"
 )
 
+// UserRoutes returns a new instance of *restful.WebService that handles user routes.
+//
+// This function does not take any parameters.
+// It returns a pointer to a *restful.WebService.
 func UserRoutes() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.Path("/api/v1/users").Produces(restful.MIME_JSON)

@@ -51,8 +51,8 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref } from 'vue';
-import { Container } from 'kubernetes-types/core/v1';
-import { Deployment } from 'kubernetes-types/apps/v1';
+import { Container } from '@/types/kubernetes-types/core/v1';
+import { Deployment } from '@/types/kubernetes-types/apps/v1';
 import yamlJs from 'js-yaml';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
