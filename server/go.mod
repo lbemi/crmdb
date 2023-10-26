@@ -24,6 +24,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.4.1
 	gorm.io/gorm v1.24.0
+	istio.io/client-go v1.18.5
 	k8s.io/api v0.28.0
 	k8s.io/apimachinery v0.28.0
 	k8s.io/metrics v0.26.2
@@ -34,11 +35,9 @@ require (
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/moby/spdystream v0.2.0 // indirect
-	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	istio.io/api v1.19.2-0.20231011000955-f3015ebb5bd4 // indirect
-	istio.io/client-go v1.19.3 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
 )
 
@@ -63,7 +62,6 @@ require (
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect

@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	"istio.io/client-go/pkg/informers/externalversions"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
@@ -27,6 +28,7 @@ type ClientConfig struct {
 	Config                       *rest.Config
 	StopChan                     chan struct{}
 	IstioClient                  *istio.Clientset
+	IstioSharedInformerFactory   externalversions.SharedInformerFactory
 }
 
 type ClientMap struct {

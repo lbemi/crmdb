@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	istio "istio.io/client-go/pkg/clientset/versioned"
+	"istio.io/client-go/pkg/informers/externalversions"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
@@ -297,4 +298,15 @@ func generateIstioClient(rc *rest.Config) *istio.Clientset {
 		log.Logger.Error(err)
 	}
 	return client
+}
+
+func (c *Cluster) StartIstioInformer(clusterName string) {
+	client := c.store.Get(clusterName)
+	if client == nil {
+		restfulx.ErrNotNilDebug(fmt.Errorf("初始化Istio Informer失败"), restfulx.OperatorErr)
+	}
+
+	factory := externalversions.NewSharedInformerFactory(client.IstioClient, 0)
+	factory.Start(client.StopChan)
+	client.IstioSharedInformerFactory = factory
 }
