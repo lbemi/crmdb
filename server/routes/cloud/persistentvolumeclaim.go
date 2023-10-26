@@ -12,7 +12,7 @@ import (
 
 func KubernetesPersistentVolumeClaimRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/persistentvolumeclaims")
+	ws.Path("/api/v1/persistentvolumeclaims").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-Pvc"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

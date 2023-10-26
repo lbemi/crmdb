@@ -9,6 +9,7 @@ import (
 
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
+	istio "istio.io/client-go/pkg/clientset/versioned"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -25,6 +26,7 @@ type ClientConfig struct {
 	IsInit                       bool
 	Config                       *rest.Config
 	StopChan                     chan struct{}
+	IstioClient                  *istio.Clientset
 }
 
 type ClientMap struct {

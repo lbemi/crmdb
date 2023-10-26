@@ -1,6 +1,9 @@
 package form
 
-import v1 "k8s.io/api/core/v1"
+import (
+	"istio.io/client-go/pkg/apis/networking/v1alpha3"
+	v1 "k8s.io/api/core/v1"
+)
 
 type PageResult struct {
 	Data  interface{} `json:"data"`
@@ -15,4 +18,8 @@ type PageConfigMap struct {
 type PatchNode struct {
 	Name   string            `json:"name"`
 	Labels map[string]string `json:"labels"`
+}
+type PageVirtualService struct {
+	Data  []*v1alpha3.VirtualService `json:"data"`
+	Total int64                      `json:"total"`
 }

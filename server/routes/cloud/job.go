@@ -12,7 +12,7 @@ import (
 
 func KubernetesJobRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/jobs")
+	ws.Path("/api/v1/jobs").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-Job"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

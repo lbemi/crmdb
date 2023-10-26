@@ -13,7 +13,7 @@ import (
 
 func KubernetesDeploymentRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/deployments")
+	ws.Path("/api/v1/deployments").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-deployment"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

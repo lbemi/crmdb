@@ -1,10 +1,12 @@
 package cloud
 
 import (
+	istioHandler "github.com/lbemi/lbemi/pkg/handler/istio"
 	"github.com/lbemi/lbemi/pkg/handler/kubernetes"
 	"github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services"
+	"github.com/lbemi/lbemi/pkg/services/istio"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 )
 
@@ -36,6 +38,8 @@ type ICluster interface {
 	kubernetes.EventGetter
 	kubernetes.ReplicasetGetter
 	kubernetes.PersistentVolumeClaimGetter
+
+	istioHandler.VirtualServiceGetter
 }
 
 type ClusterGetter interface {
@@ -45,6 +49,7 @@ type ClusterGetter interface {
 type cluster struct {
 	factory     services.FactoryImp
 	k8s         k8s.FactoryImp
+	istio       istio.FactoryImp
 	clusterName string
 }
 
@@ -145,4 +150,11 @@ func (c *cluster) PersistentVolumeClaim(namespace string) kubernetes.PersistentV
 		namespace = ""
 	}
 	return kubernetes.NewPersistentVolumeClaim(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+}
+
+func (c *cluster) VirtualServices(namespace string) istioHandler.IVirtualService {
+	if namespace == "all" {
+		namespace = ""
+	}
+	return istioHandler.NewVirtualService(istio.NewIstioFactory(c.getClient(c.clusterName), namespace))
 }

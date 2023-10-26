@@ -12,7 +12,7 @@ import (
 
 func KubernetesSecretRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/secrets")
+	ws.Path("/api/v1/secrets").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-Secret"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

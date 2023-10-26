@@ -12,7 +12,7 @@ import (
 
 func KubernetesDaemonSetRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/daemonsets")
+	ws.Path("/api/v1/daemonsets").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-daemonset"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

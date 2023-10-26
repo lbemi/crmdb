@@ -12,7 +12,7 @@ import (
 
 func KubernetesNodeRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/nodes")
+	ws.Path("/api/v1/nodes").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-node"}
 
 	ws.Route(ws.GET("").To(func(request *restful.Request, response *restful.Response) {

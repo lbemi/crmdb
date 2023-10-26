@@ -12,7 +12,7 @@ import (
 
 func KubernetesConfigMapRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/configmaps")
+	ws.Path("/api/v1/configmaps").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-configmap"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

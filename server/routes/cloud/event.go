@@ -12,7 +12,7 @@ import (
 
 func KubernetesEventRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/events")
+	ws.Path("/api/v1/events").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-event"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

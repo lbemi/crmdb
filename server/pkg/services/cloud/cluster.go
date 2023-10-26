@@ -5,12 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
+	istio "istio.io/client-go/pkg/clientset/versioned"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/metadata"
+	"k8s.io/client-go/rest"
 	"strings"
 	"time"
 
@@ -160,6 +161,7 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 	//异步启动informer
 	go c.StartInformer(name)
 
+	client.IstioClient = generateIstioClient(clientConfig)
 	client.MetricSet = metricSet
 	client.ClientSet = clientSet
 	client.Config = clientConfig
@@ -256,9 +258,9 @@ func (c *Cluster) StartInformer(clusterName string) {
 
 	}
 
-	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(k8s.NewDeploymentHandler(client, clusterName))
+	//client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(k8s.NewDeploymentHandler(client, clusterName))
 	//client.SharedInformerFactory.Apps().V1().ReplicaSets().Informer().AddEventHandler(k8s.NewReplicasetHandler(client, clusterName))
-	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(k8s.NewPodHandler(client, clusterName))
+	//client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(k8s.NewPodHandler(client, clusterName))
 	//client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(k8s.NewNameSpaceHandler(client, clusterName))
 	//client.SharedInformerFactory.Core().V1().Events().Informer().AddEventHandler(k8s.NewEventHandler())
 	//client.SharedInformerFactory.Core().V1().Nodes().Informer().AddEventHandler(k8s.NewNodeHandler())
@@ -287,4 +289,12 @@ func (c *Cluster) ShutDownInformer(clusterName string) {
 	} else {
 		restfulx.ErrNotNilDebug(fmt.Errorf("获取client失败"), restfulx.OperatorErr)
 	}
+}
+
+func generateIstioClient(rc *rest.Config) *istio.Clientset {
+	client, err := istio.NewForConfig(rc)
+	if err != nil {
+		log.Logger.Error(err)
+	}
+	return client
 }

@@ -10,7 +10,7 @@ import (
 
 func WebSocketRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/ws")
+	ws.Path("/api/v1/ws").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-websocket"}
 
 	ws.Route(ws.GET("/{cluster}/{type}").To(func(request *restful.Request, response *restful.Response) {

@@ -12,7 +12,7 @@ import (
 
 func KubernetesReplicaSetRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/replicasets")
+	ws.Path("/api/v1/replicasets").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-ReplicaSet"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

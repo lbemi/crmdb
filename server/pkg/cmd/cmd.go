@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/lbemi/lbemi/routes/istio"
 	"os"
 	"os/signal"
 	"syscall"
@@ -113,6 +114,9 @@ func registerRoute(httpSever *server.HttpSever) {
 		cloud.KubernetesSecretRoutes(),
 		cloud.KubernetesServiceRoutes(),
 		cloud.KubernetesStatefulSetRoutes(),
+
+		//istio路由
+		istio.IstioVirtualServiceRoutes(),
 	)
 
 	// 注册swagger路由，必须放到最后,否则swagger无法获取所有的路由信息

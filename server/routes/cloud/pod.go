@@ -12,7 +12,7 @@ import (
 
 func KubernetesPodRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/pods")
+	ws.Path("/api/v1/pods").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-Pod"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

@@ -12,7 +12,7 @@ import (
 
 func KubernetesStatefulSetRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/statefulsets")
+	ws.Path("/api/v1/statefulsets").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-StatefulSet"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

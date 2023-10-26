@@ -12,7 +12,7 @@ import (
 
 func KubernetesCronJobRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/cronjobs")
+	ws.Path("/api/v1/cronjobs").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-cronjob"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {

@@ -12,7 +12,7 @@ import (
 
 func KubernetesNamespaceRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/namespaces")
+	ws.Path("/api/v1/namespaces").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-namespace"}
 
 	ws.Route(ws.GET("").To(func(request *restful.Request, response *restful.Response) {

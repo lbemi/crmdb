@@ -12,7 +12,7 @@ import (
 
 func KubernetesIngressRoutes() *restful.WebService {
 	ws := new(restful.WebService)
-	ws.Path("/api/v1/ingress")
+	ws.Path("/api/v1/ingress").Produces(restful.MIME_JSON)
 	tags := []string{"kubernetes-Ingress"}
 
 	ws.Route(ws.GET("/namespaces/{namespace}").To(func(request *restful.Request, response *restful.Response) {
