@@ -155,20 +155,24 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 	dynamicSharedInformerFactory := dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, 0)
 	//生成SharedInformerFactory
 	client.SharedInformerFactory = informers.NewSharedInformerFactory(clientSet, 0)
+
+	// istio
+	client.IstioClient = generateIstioClient(clientConfig)
+	client.IstioSharedInformerFactory = externalversions.NewSharedInformerFactoryWithOptions(client.IstioClient, 0)
+
 	client.IsInit = true
 	client.StopChan = make(chan struct{})
-	c.store.Add(name, &client)
 
-	//异步启动informer
-	go c.StartInformer(name)
-
-	client.IstioClient = generateIstioClient(clientConfig)
 	client.MetricSet = metricSet
 	client.ClientSet = clientSet
 	client.Config = clientConfig
 	client.DynamicSet = dynamicClient
 	client.DynamicSharedInformerFactory = dynamicSharedInformerFactory
 	client.DiscoveryClient = discoveryClient
+
+	c.store.Add(name, &client)
+	//异步启动informer
+	go c.StartInformer(name)
 	return &client, &conf, nil
 }
 
@@ -241,6 +245,7 @@ func (c *Cluster) StartInformer(clusterName string) {
 			gvr.Group = groupVersion[0]
 			gvr.Version = groupVersion[1]
 		}
+
 		for _, v := range apiResource.APIResources {
 			// v1 ComponentStatus is deprecated in v1.19+
 			if v.Name == "componentstatuses" {
@@ -248,10 +253,20 @@ func (c *Cluster) StartInformer(clusterName string) {
 			}
 			gvr.Resource = v.Name
 
+			if strings.Contains(gvr.Group, "istio.io") {
+				fmt.Println("初始化istio资源-----:  ", groupVersion)
+				_, err := client.IstioSharedInformerFactory.ForResource(gvr)
+				if err != nil {
+					log.Logger.Error("istio_err:", err)
+				}
+				continue
+			}
+
 			_, err := client.SharedInformerFactory.ForResource(gvr)
 			if err != nil {
 				log.Logger.Error(err)
 			}
+
 			//
 			//informer := client.DynamicSharedInformerFactory.ForResource(gvr)
 			//_ = informer
@@ -276,10 +291,14 @@ func (c *Cluster) StartInformer(clusterName string) {
 
 	//client.DynamicSharedInformerFactory.Start(client.StopChan)
 	//client.DynamicSharedInformerFactory.WaitForCacheSync(client.StopChan)
-	// 启动informer
+
+	// start k8s informer
 	client.SharedInformerFactory.Start(client.StopChan)
-	// 等待informer同步完成
 	client.SharedInformerFactory.WaitForCacheSync(client.StopChan)
+
+	// start istio informer
+	client.IstioSharedInformerFactory.Start(client.StopChan)
+	client.IstioSharedInformerFactory.WaitForCacheSync(client.StopChan)
 
 }
 
@@ -300,13 +319,13 @@ func generateIstioClient(rc *rest.Config) *istio.Clientset {
 	return client
 }
 
-func (c *Cluster) StartIstioInformer(clusterName string) {
-	client := c.store.Get(clusterName)
-	if client == nil {
-		restfulx.ErrNotNilDebug(fmt.Errorf("初始化Istio Informer失败"), restfulx.OperatorErr)
-	}
-
-	factory := externalversions.NewSharedInformerFactory(client.IstioClient, 0)
-	factory.Start(client.StopChan)
-	client.IstioSharedInformerFactory = factory
-}
+//func (c *Cluster) StartIstioInformer(clusterName string) {
+//	client := c.store.Get(clusterName)
+//	if client == nil {
+//		restfulx.ErrNotNilDebug(fmt.Errorf("初始化Istio Informer失败"), restfulx.OperatorErr)
+//	}
+//	//
+//	//factory := externalversions.NewSharedInformerFactory(client.IstioClient, 0)
+//	//factory.Start(client.StopChan)
+//	//client.IstioSharedInformerFactory = factory
+//}

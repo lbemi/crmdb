@@ -2,10 +2,12 @@ package istio
 
 import (
 	"context"
+	"fmt"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type VirtualServiceImp interface {
@@ -22,9 +24,11 @@ type VirtualService struct {
 }
 
 func (d *VirtualService) List(ctx context.Context) []*v1alpha3.VirtualService {
-	list, err := d.cli.IstioClient.NetworkingV1alpha3().VirtualServices(d.ns).List(ctx, metav1.ListOptions{})
+	virtualServices, err := d.cli.IstioSharedInformerFactory.Networking().V1alpha3().VirtualServices().Lister().List(labels.Everything())
+	//list, err := d.cli.IstioClient.NetworkingV1alpha3().VirtualServices(d.ns).List(ctx, metav1.ListOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
-	return list.Items
+	fmt.Println("virtualservice list: ===============", len(virtualServices))
+	return virtualServices
 }
 
 func (d *VirtualService) Get(ctx context.Context, name string) *v1alpha3.VirtualService {
