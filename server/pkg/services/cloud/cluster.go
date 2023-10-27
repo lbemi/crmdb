@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	istioService "github.com/lbemi/lbemi/pkg/services/istio"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	istio "istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/client-go/pkg/informers/externalversions"
@@ -295,6 +296,11 @@ func (c *Cluster) StartInformer(clusterName string) {
 	// start k8s informer
 	client.SharedInformerFactory.Start(client.StopChan)
 	client.SharedInformerFactory.WaitForCacheSync(client.StopChan)
+
+	_, err = client.IstioSharedInformerFactory.Networking().V1beta1().VirtualServices().Informer().AddEventHandler(istioService.NewVirtualServiceHandler(client, clusterName))
+	if err != nil {
+		log.Logger.Error("add informer handler failed. err:", err)
+	}
 
 	// start istio informer
 	client.IstioSharedInformerFactory.Start(client.StopChan)

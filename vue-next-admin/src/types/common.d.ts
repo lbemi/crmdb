@@ -13,3 +13,12 @@ declare type ParamType<T = any> = {
 	limit: number;
 	[key: string]: T;
 };
+
+declare type WebsocketResult<T = object> = {
+	cluster: string;
+	type: string;
+	result: {
+		namespace: string;
+		data: T;
+	};
+};

@@ -121,7 +121,7 @@
 
 <script setup lang="ts" name="virtualservice">
 import { VirtualService } from '@kubernetes-models/istio/networking.istio.io/v1beta1/VirtualService';
-import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
+import { defineAsyncComponent, h, onBeforeUnmount, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import mittBus from '@/utils/mitt';
@@ -132,6 +132,7 @@ import { Edit, Delete, List } from '@element-plus/icons-vue';
 import { useThemeConfig } from '@/stores/themeConfig';
 import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
 import { deepClone } from '@/utils/other';
+import { useWebsocketApi } from '@/api/kubernetes/websocket';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
@@ -150,6 +151,9 @@ const k8sStore = kubernetesInfo();
 const VirtualServiceApi = useVirtualServiceApi();
 const route = useRoute();
 const theme = useThemeConfig();
+const socketApi = useWebsocketApi();
+
+//定义数据
 const data = reactive({
 	detail: {
 		title: '',
@@ -176,10 +180,26 @@ const data = reactive({
 		cloud: k8sStore.state.activeCluster,
 	},
 });
+
 onMounted(() => {
 	listVirtualService();
 });
 
+const ws = socketApi.createWebsocket('virtualService');
+ws.onmessage = (e: any) => {
+	if (e.data === 'ping') {
+		return;
+	} else {
+		const object: WebsocketResult = JSON.parse(e.data);
+		if (
+			object.type === 'virtualService' &&
+			object.result.namespace === k8sStore.state.activeNamespace &&
+			object.cluster == k8sStore.state.activeCluster
+		) {
+			data.virtualServices = object.result.data as VirtualService[];
+		}
+	}
+};
 const search = () => {
 	if (data.type == '1') {
 		data.query.name = data.inputValue;
@@ -300,6 +320,10 @@ const listVirtualService = () => {
 const refreshCurrentTagsView = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 0, ...route }));
 };
+
+onBeforeUnmount(() => {
+	ws.close();
+});
 </script>
 
 <style scoped lang="scss">

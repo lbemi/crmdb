@@ -7,7 +7,6 @@ import (
 )
 
 func Ws(rc *rctx.ReqCtx) {
-
 	clusterName := rc.PathParam("cluster")
 	typeName := rc.PathParam("type")
 	wsstore.Upgrader.Subprotocols = []string{rc.Request.Request.Header.Get("Sec-WebSocket-Protocol")}

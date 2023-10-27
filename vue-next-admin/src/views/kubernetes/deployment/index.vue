@@ -505,6 +505,7 @@ const handleUpdate = (deployment: Deployment) => {
 	data.create.title = '更新deployment';
 	data.create.dialogVisible = true;
 };
+
 onMounted(() => {
 	listDeployment();
 });
