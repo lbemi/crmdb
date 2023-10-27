@@ -4,20 +4,20 @@
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
 		<div class="box_body">
-			<el-descriptions :title="data.configMap.metadata.name" :column="2" border>
+			<el-descriptions :title="data.virtualService.metadata.name" :column="2" border>
 				<el-descriptions-item label="命名空间" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">{{
-					data.configMap.metadata.namespace
+					data.virtualService.metadata.namespace
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center" :span="2">{{
-					dateStrFormat(data.configMap.metadata.creationTimestamp)
+					dateStrFormat(data.virtualService.metadata.creationTimestamp)
 				}}</el-descriptions-item>
 				<el-descriptions-item label="标签" label-align="right" align="center" :span="2">
-					<div v-for="(item, key, index) in data.configMap.metadata.labels" :key="index">
+					<div v-for="(item, key, index) in data.virtualService.metadata.labels" :key="index">
 						<el-tag class="label" type="success" size="small"> {{ key }}:{{ item }} </el-tag>
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="注解" label-align="right" align="center" :span="2">
-					<div v-for="(item, key, index) in data.configMap.metadata.annotations" :key="index">
+					<div v-for="(item, key, index) in data.virtualService.metadata.annotations" :key="index">
 						<span> {{ key }}:{{ item }} </span>
 					</div>
 				</el-descriptions-item>
@@ -42,26 +42,26 @@
 <script lang="ts" setup>
 import { ElDrawer } from 'element-plus';
 import { View, Hide } from '@element-plus/icons-vue';
-import { ConfigMap } from 'kubernetes-types/core/v1';
+import { virtualService } from 'kubernetes-types/core/v1';
 import { onMounted, reactive } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 
 const data = reactive({
 	visible: false,
-	configMap: {
+	virtualService: {
 		metadata: {
 			name: '',
 			namespace: '',
 		},
 		data: {},
-	} as ConfigMap,
+	} as virtualService,
 	keyValues: [] as Array<{ key: string; value: string }>,
 });
 
 const props = defineProps({
 	visible: Boolean,
-	configMap: {
-		type: Object as () => ConfigMap,
+	virtualService: {
+		type: Object as () => virtualService,
 	},
 	title: String,
 });
@@ -75,10 +75,10 @@ const secData = (data: any) => {
 
 const convertConfigMapTo = () => {
 	let kvs = [] as Array<{ key: string; value: string }>;
-	Object.keys(data.configMap.data).forEach((k) => {
+	Object.keys(data.virtualService.data).forEach((k) => {
 		kvs.push({
 			key: k,
-			value: data.configMap.data![k],
+			value: data.virtualService.data![k],
 		});
 	});
 	data.keyValues = kvs;
@@ -86,8 +86,8 @@ const convertConfigMapTo = () => {
 
 onMounted(() => {
 	data.visible = props.visible;
-	if (!isObjectValueEqual(props.configMap, {})) {
-		data.configMap = props.configMap;
+	if (!isObjectValueEqual(props.virtualService, {})) {
+		data.virtualService = props.virtualService;
 		convertConfigMapTo();
 	}
 });

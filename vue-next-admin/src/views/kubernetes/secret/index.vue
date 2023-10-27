@@ -129,7 +129,7 @@
 			@refresh="listSecret"
 			v-if="data.draw.visible"
 		/>
-		<SecretDetail v-model:visible="data.detail.visible" :configMap="data.detail.secret" :title="data.detail.title" v-if="data.detail.visible" />
+		<SecretDetail v-model:visible="data.detail.visible" :virtualService="data.detail.secret" :title="data.detail.title" v-if="data.detail.visible" />
 	</div>
 </template>
 

@@ -33,7 +33,7 @@ const data = reactive({
 });
 
 const props = defineProps({
-	configMap: Object,
+	virtualService: Object,
 	volumeIndex: Number,
 	dialogFormVisible: Boolean,
 });

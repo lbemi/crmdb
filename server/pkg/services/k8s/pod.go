@@ -194,7 +194,7 @@ func NewPodHandler(client *store.ClientConfig, clusterName string) *PodHandler {
 	return &PodHandler{client: client, clusterName: clusterName}
 }
 
-func (p *PodHandler) OnAdd(obj interface{}) {
+func (p *PodHandler) OnAdd(obj interface{}, isInInitialList bool) {
 	p.notifyPods(obj)
 }
 

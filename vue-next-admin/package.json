@@ -13,6 +13,7 @@
 		"@codemirror/legacy-modes": "^6.3.2",
 		"@codemirror/theme-one-dark": "^6.1.2",
 		"@element-plus/icons-vue": "^2.1.0",
+		"@kubernetes-models/istio": "^2.3.0",
 		"@types/echarts": "^4.9.17",
 		"@wangeditor/editor": "^5.1.23",
 		"@wangeditor/editor-for-vue": "^5.1.12",

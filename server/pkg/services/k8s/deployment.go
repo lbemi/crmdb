@@ -120,7 +120,7 @@ func NewDeploymentHandler(client *store.ClientConfig, clusterName string) *Deplo
 	return &DeploymentHandler{client: client, clusterName: clusterName}
 }
 
-func (d *DeploymentHandler) OnAdd(obj interface{}) {
+func (d *DeploymentHandler) OnAdd(obj interface{}, isInInitialList bool) {
 	d.notifyDeployments(obj)
 }
 

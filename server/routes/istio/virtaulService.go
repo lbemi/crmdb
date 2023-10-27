@@ -6,7 +6,7 @@ import (
 	"github.com/lbemi/lbemi/api/istio"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/rctx"
-	"istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"istio.io/client-go/pkg/apis/networking/v1beta1"
 )
 
 func IstioVirtualServiceRoutes() *restful.WebService {
@@ -31,29 +31,29 @@ func IstioVirtualServiceRoutes() *restful.WebService {
 		rctx.NewReqCtx(request, response).WithLog("virtualservice").
 			WithHandle(istio.GetVirtualService).Do()
 	}).Doc("获取virtualservice信息").Metadata(restfulspec.KeyOpenAPITags, tags).
-		Writes(v1alpha3.VirtualService{}).
+		Writes(v1beta1.VirtualService{}).
 		Param(ws.QueryParameter("istio", "集群名称").Required(true).DataType("string")).
 		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
 		Param(ws.PathParameter("name", "virtualservice名称").Required(true).DataType("string")).
-		Returns(200, "success", v1alpha3.VirtualService{}))
+		Returns(200, "success", v1beta1.VirtualService{}))
 
 	ws.Route(ws.POST("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("virtualservice").
 			WithHandle(istio.CreateVirtualService).Do()
 	}).Doc("创建virtualservice").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
-		Reads(v1alpha3.VirtualService{}).
+		Reads(v1beta1.VirtualService{}).
 		Param(ws.QueryParameter("istio", "集群名称").Required(true).DataType("string")).
-		Returns(200, "success", v1alpha3.VirtualService{}))
+		Returns(200, "success", v1beta1.VirtualService{}))
 
 	ws.Route(ws.PUT("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("virtualservice").
 			WithHandle(istio.UpdateVirtualService).Do()
 	}).Doc("修改virtualservice").Metadata(restfulspec.KeyOpenAPITags, tags).
 		Writes(form.PageResult{}).
-		Reads(v1alpha3.VirtualService{}).
+		Reads(v1beta1.VirtualService{}).
 		Param(ws.QueryParameter("istio", "集群名称").Required(true).DataType("string")).
-		Returns(200, "success", v1alpha3.VirtualService{}))
+		Returns(200, "success", v1beta1.VirtualService{}))
 
 	ws.Route(ws.DELETE("/namespaces/{namespace}/{name}").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("virtualservice").

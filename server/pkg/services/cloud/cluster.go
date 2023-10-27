@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/services/k8s"
 	istio "istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/client-go/pkg/informers/externalversions"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -84,7 +85,6 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 		return nil, nil, errors.New("client has already been initialized")
 	}
 
-	var client store.ClientConfig
 	clientConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(config))
 
 	// 使用protobuf传输数据
@@ -112,8 +112,6 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 		return nil, nil, err
 	}
 
-	var conf cloud.Cluster
-
 	withTimeout, cancelFunc := context.WithTimeout(context.TODO(), time.Second*3)
 	defer cancelFunc()
 
@@ -128,52 +126,54 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *clo
 		c.store.Delete(name)
 		return nil, nil, err
 	}
-
-	conf.PodCidr = list.Items[0].Spec.PodCIDR
-	conf.RunTime = list.Items[0].Status.NodeInfo.ContainerRuntimeVersion
 	version, _ := clientSet.ServerVersion()
-	conf.Version = version.String()
-	conf.Status = true
-	conf.Nodes = len(list.Items)
-	conf.InternalIP = list.Items[0].Status.Addresses[0].Address
-	conf.CPU = 0
-	conf.Memory = 0
 
-	for _, node := range list.Items {
-		conf.CPU = conf.CPU + node.Status.Capacity.Cpu().AsApproximateFloat64()
-		conf.Memory = conf.Memory + node.Status.Capacity.Memory().AsApproximateFloat64()
+	clusterInfo := &cloud.Cluster{
+		Name:       name,
+		KubeConfig: config,
+		PodCidr:    list.Items[0].Spec.PodCIDR,
+		RunTime:    list.Items[0].Status.NodeInfo.ContainerRuntimeVersion,
+		Version:    version.String(),
+		Status:     true,
+		Nodes:      len(list.Items),
+		InternalIP: list.Items[0].Status.Addresses[0].Address,
+		CPU:        0,
+		Memory:     0,
 	}
 
-	conf.Memory = conf.Memory / 1000
-	conf.Name = name
-	conf.KubeConfig = config
+	for _, node := range list.Items {
+		clusterInfo.CPU = clusterInfo.CPU + node.Status.Capacity.Cpu().AsApproximateFloat64()
+		clusterInfo.Memory = clusterInfo.Memory + node.Status.Capacity.Memory().AsApproximateFloat64()
+	}
+
+	clusterInfo.Memory = clusterInfo.Memory / 1000
 
 	//初始化metricSet
 	metricSet, err := versioned.NewForConfig(clientConfig)
 	restfulx.ErrNotNilDebug(err, restfulx.RegisterClusterErr)
 
 	dynamicSharedInformerFactory := dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, 0)
-	//生成SharedInformerFactory
-	client.SharedInformerFactory = informers.NewSharedInformerFactory(clientSet, 0)
+	istioClient := generateIstioClient(clientConfig)
 
-	// istio
-	client.IstioClient = generateIstioClient(clientConfig)
-	client.IstioSharedInformerFactory = externalversions.NewSharedInformerFactoryWithOptions(client.IstioClient, 0)
+	client := &store.ClientConfig{
+		//生成SharedInformerFactory
+		SharedInformerFactory:        informers.NewSharedInformerFactory(clientSet, 0),
+		Config:                       clientConfig,
+		DynamicSharedInformerFactory: dynamicSharedInformerFactory,
+		IstioClient:                  istioClient,
+		IstioSharedInformerFactory:   externalversions.NewSharedInformerFactoryWithOptions(istioClient, 0),
+		IsInit:                       true,
+		StopChan:                     make(chan struct{}),
+		MetricSet:                    metricSet,
+		ClientSet:                    clientSet,
+		DynamicSet:                   dynamicClient,
+		DiscoveryClient:              discoveryClient,
+	}
 
-	client.IsInit = true
-	client.StopChan = make(chan struct{})
-
-	client.MetricSet = metricSet
-	client.ClientSet = clientSet
-	client.Config = clientConfig
-	client.DynamicSet = dynamicClient
-	client.DynamicSharedInformerFactory = dynamicSharedInformerFactory
-	client.DiscoveryClient = discoveryClient
-
-	c.store.Add(name, &client)
+	c.store.Add(name, client)
 	//异步启动informer
 	go c.StartInformer(name)
-	return &client, &conf, nil
+	return client, clusterInfo, nil
 }
 
 func (c *Cluster) Create(config *cloud.Cluster) {
@@ -254,7 +254,7 @@ func (c *Cluster) StartInformer(clusterName string) {
 			gvr.Resource = v.Name
 
 			if strings.Contains(gvr.Group, "istio.io") {
-				fmt.Println("初始化istio资源-----:  ", groupVersion)
+				fmt.Println("初始化istio资源-----:  ", gvr)
 				_, err := client.IstioSharedInformerFactory.ForResource(gvr)
 				if err != nil {
 					log.Logger.Error("istio_err:", err)
@@ -274,9 +274,9 @@ func (c *Cluster) StartInformer(clusterName string) {
 
 	}
 
-	//client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(k8s.NewDeploymentHandler(client, clusterName))
+	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(k8s.NewDeploymentHandler(client, clusterName))
 	//client.SharedInformerFactory.Apps().V1().ReplicaSets().Informer().AddEventHandler(k8s.NewReplicasetHandler(client, clusterName))
-	//client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(k8s.NewPodHandler(client, clusterName))
+	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(k8s.NewPodHandler(client, clusterName))
 	//client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(k8s.NewNameSpaceHandler(client, clusterName))
 	//client.SharedInformerFactory.Core().V1().Events().Informer().AddEventHandler(k8s.NewEventHandler())
 	//client.SharedInformerFactory.Core().V1().Nodes().Informer().AddEventHandler(k8s.NewNodeHandler())
@@ -314,7 +314,7 @@ func (c *Cluster) ShutDownInformer(clusterName string) {
 func generateIstioClient(rc *rest.Config) *istio.Clientset {
 	client, err := istio.NewForConfig(rc)
 	if err != nil {
-		log.Logger.Error(err)
+		log.Logger.Errorf("generate istio clientSet failed. err : %v", err)
 	}
 	return client
 }

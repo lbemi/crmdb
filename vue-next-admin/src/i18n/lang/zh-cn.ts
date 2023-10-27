@@ -47,6 +47,8 @@ export default {
 		k8sNetwork: '网络',
 		k8sConfig: '配置',
 		k8sStorage: '存储',
+		istio: '服务网格',
+		virtualservice: '虚拟服务',
 		logs: '系统日志',
 		loginLog: '登录日志',
 		operatorLog: '操作日志',

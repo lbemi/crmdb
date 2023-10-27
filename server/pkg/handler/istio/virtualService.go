@@ -9,7 +9,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services/istio"
 
-	"istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"istio.io/client-go/pkg/apis/networking/v1beta1"
 )
 
 type VirtualServiceGetter interface {
@@ -18,10 +18,10 @@ type VirtualServiceGetter interface {
 
 type IVirtualService interface {
 	List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageVirtualService
-	Get(ctx context.Context, name string) *v1alpha3.VirtualService
+	Get(ctx context.Context, name string) *v1beta1.VirtualService
 	Delete(ctx context.Context, name string)
-	Create(ctx context.Context, node *v1alpha3.VirtualService) *v1alpha3.VirtualService
-	Update(ctx context.Context, VirtualService *v1alpha3.VirtualService) *v1alpha3.VirtualService
+	Create(ctx context.Context, node *v1beta1.VirtualService) *v1beta1.VirtualService
+	Update(ctx context.Context, VirtualService *v1beta1.VirtualService) *v1beta1.VirtualService
 }
 
 type VirtualService struct {
@@ -35,7 +35,7 @@ func NewVirtualService(istio *istio.Factory) *VirtualService {
 func (s *VirtualService) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageVirtualService {
 	data := s.istio.VirtualService().List(ctx)
 	res := &form.PageVirtualService{}
-	var VirtualServiceList = make([]*v1alpha3.VirtualService, 0)
+	var VirtualServiceList = make([]*v1beta1.VirtualService, 0)
 
 	if name != "" {
 		for _, item := range data {
@@ -72,7 +72,7 @@ func (s *VirtualService) List(ctx context.Context, query *model.PageParam, name 
 	return res
 }
 
-func (s *VirtualService) Get(ctx context.Context, name string) *v1alpha3.VirtualService {
+func (s *VirtualService) Get(ctx context.Context, name string) *v1beta1.VirtualService {
 	return s.istio.VirtualService().Get(ctx, name)
 }
 
@@ -80,10 +80,10 @@ func (s *VirtualService) Delete(ctx context.Context, name string) {
 	s.istio.VirtualService().Delete(ctx, name)
 }
 
-func (s *VirtualService) Create(ctx context.Context, VirtualService *v1alpha3.VirtualService) *v1alpha3.VirtualService {
+func (s *VirtualService) Create(ctx context.Context, VirtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
 	return s.istio.VirtualService().Create(ctx, VirtualService)
 }
 
-func (s *VirtualService) Update(ctx context.Context, VirtualService *v1alpha3.VirtualService) *v1alpha3.VirtualService {
+func (s *VirtualService) Update(ctx context.Context, VirtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
 	return s.istio.VirtualService().Update(ctx, VirtualService)
 }

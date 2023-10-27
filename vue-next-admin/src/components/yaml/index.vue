@@ -67,8 +67,8 @@ watch(
 				case 'service':
 					code.value = `apiVersion: v1\nkind: Service\n`;
 					break;
-				case 'configMap':
-					code.value = `apiVersion: v1\nkind: ConfigMap\n`;
+				case 'virtualService':
+					code.value = `apiVersion: v1\nkind: virtualService\n`;
 					break;
 				default:
 					code.value = '';

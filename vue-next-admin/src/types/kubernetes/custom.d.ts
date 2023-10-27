@@ -42,7 +42,7 @@ export declare type CreateK8SVolumeData = {
 	name: string;
 	hostPath?: HostPathVolumeSource | undefined;
 	secret?: SecretVolumeSource | undefined;
-	configMap?: ConfigMapVolumeSource | undefined;
+	virtualService?: ConfigMapVolumeSource | undefined;
 	persistentVolumeClaim?: PersistentVolumeClaimVolumeSource | undefined;
 	emptyDir?: EmptyDirVolumeSource | undefined;
 	volumeMountData?: VolumeMount | undefined;

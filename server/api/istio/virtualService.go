@@ -3,7 +3,7 @@ package istio
 import (
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/rctx"
-	"istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"istio.io/client-go/pkg/apis/networking/v1beta1"
 )
 
 func ListVirtualServices(rc *rctx.ReqCtx) {
@@ -27,7 +27,7 @@ func GetVirtualService(rc *rctx.ReqCtx) {
 func CreateVirtualService(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	clusterName := rc.Query("cloud")
-	var VirtualService *v1alpha3.VirtualService
+	var VirtualService *v1beta1.VirtualService
 	rc.ShouldBind(&VirtualService)
 	rc.ResData = core.V1.Cluster(clusterName).VirtualServices(VirtualService.Namespace).Create(c, VirtualService)
 }
@@ -35,7 +35,7 @@ func CreateVirtualService(rc *rctx.ReqCtx) {
 func UpdateVirtualService(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	clusterName := rc.Query("cloud")
-	var VirtualService *v1alpha3.VirtualService
+	var VirtualService *v1beta1.VirtualService
 	rc.ShouldBind(&VirtualService)
 	rc.ResData = core.V1.Cluster(clusterName).VirtualServices(VirtualService.Namespace).Update(c, VirtualService)
 }
