@@ -163,7 +163,7 @@
 <script setup lang="ts">
 import { CaretBottom, CaretTop, CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { onMounted, onUnmounted, reactive, ref } from 'vue';
-import { ConfigMap, PersistentVolumeClaim, Secret, Volume, VolumeMount, KeyToPath } from 'kubernetes-types/core/v1';
+import { ConfigMap, PersistentVolumeClaim, Secret, Volume, VolumeMount, KeyToPath } from '@/types/kubernetes-types/core/v1';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
 import { kubernetesInfo } from '@/stores/kubernetes';

@@ -10,6 +10,31 @@ import (
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
 
+// LoginLogRoutes returns a new instance of restful.WebService for handling login log routes.
+//
+// This function sets the path to "/api/v1/logs/login" and the response content type to JSON.
+// It also defines the "logs" tag for OpenAPI documentation.
+//
+// The function defines the following routes:
+// 1. GET /api/v1/logs/login - Retrieves a list of login logs.
+//   - Parameters: page (int), limit (int), status (string), name (string)
+//   - Response: form.PageResult{}
+//   - Returns: 200 - success, form.PageResult{}
+//
+// 2. GET /api/v1/logs/login/{id} - Retrieves a login log by its ID.
+//   - Parameters: id (int)
+//   - Response: logModel.LogLogin{}
+//   - Returns: 200 - success, logModel.LogLogin{}
+//
+// 3. DELETE /api/v1/logs/login - Deletes specified login logs.
+//   - Parameters: ids (string)
+//   - Returns: 200 - success, nil
+//
+// 4. DELETE /api/v1/logs/login/all - Deletes all login logs.
+//   - Returns: 200 - success, nil
+//
+// Returns:
+// - A pointer to a restful.WebService.
 func LoginLogRoutes() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.Path("/api/v1/logs/login").Produces(restful.MIME_JSON)

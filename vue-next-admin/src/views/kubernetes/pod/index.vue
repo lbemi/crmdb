@@ -131,7 +131,7 @@ import { ElMessageBox, ElMessage } from 'element-plus';
 import router from '@/router';
 import { podInfo } from '@/stores/pod';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
+import { ContainerStatus, Pod, PodCondition, PodStatus } from '@/types/kubernetes-types/core/v1';
 import { useWebsocketApi } from '@/api/kubernetes/websocket';
 import { PageInfo } from '@/types/kubernetes/common';
 import YAML from 'js-yaml';

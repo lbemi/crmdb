@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import { ComponentPublicInstance, ref } from 'vue-demi';
-import { Container, Volume } from 'kubernetes-types/core/v1';
+import { Container, Volume } from '@/types/kubernetes-types/core/v1';
 import type { TabPaneName } from 'element-plus';
 import { deepClone } from '@/utils/other';
 import { Plus } from '@element-plus/icons-vue';

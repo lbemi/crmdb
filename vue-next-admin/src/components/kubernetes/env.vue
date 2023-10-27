@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { EnvVar } from 'kubernetes-types/core/v1';
+import { EnvVar } from '@/types/kubernetes-types/core/v1';
 import { onMounted, reactive } from 'vue';
 import { deepClone } from '@/utils/other';
 

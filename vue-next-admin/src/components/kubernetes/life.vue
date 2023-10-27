@@ -80,7 +80,7 @@ import { onMounted, reactive, ref } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
-import { LifecycleHandler } from 'kubernetes-types/core/v1';
+import { LifecycleHandler } from '@/types/kubernetes-types/core/v1';
 import { CaretBottom, CaretTop } from '@element-plus/icons-vue';
 
 const data = reactive({

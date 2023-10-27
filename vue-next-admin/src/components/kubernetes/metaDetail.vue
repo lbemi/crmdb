@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ObjectMeta } from 'kubernetes-types/meta/v1';
+import { ObjectMeta } from '@/types/kubernetes-types/meta/v1';
 type propsType = {
 	metaData: ObjectMeta | undefined;
 };

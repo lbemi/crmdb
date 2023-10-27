@@ -77,7 +77,7 @@ import { defineAsyncComponent, reactive, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import router from '@/router';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
+import { ContainerStatus, Pod, PodCondition, PodStatus } from '@/types/kubernetes-types/core/v1';
 import { PageInfo } from '@/types/kubernetes/common';
 import { dateStrFormat } from '@/utils/formatTime';
 import { podInfo } from '@/stores/pod';

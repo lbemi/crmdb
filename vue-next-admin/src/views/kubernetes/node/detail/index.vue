@@ -227,8 +227,8 @@
 import { reactive, onMounted, ref, defineAsyncComponent } from 'vue';
 import { ArrowLeft, CaretBottom, View, Delete, Edit } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { Pod, ContainerStatus, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
-import { ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
+import { Pod, ContainerStatus, PodCondition, PodStatus } from '@/types/kubernetes-types/core/v1';
+import { ReplicaSet, ReplicaSetCondition } from '@/types/kubernetes-types/apps/v1';
 import router from '@/router';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';

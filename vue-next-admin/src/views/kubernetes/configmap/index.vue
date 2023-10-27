@@ -120,6 +120,10 @@
 </template>
 
 <script setup lang="ts" name="k8sConfigMap">
+<<<<<<< HEAD
+=======
+import { ConfigMap } from '@/types/kubernetes-types/core/v1';
+>>>>>>> 62ec404b482712b738a73e43236120395f5a0b9f
 import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage, ElMessageBox } from 'element-plus';

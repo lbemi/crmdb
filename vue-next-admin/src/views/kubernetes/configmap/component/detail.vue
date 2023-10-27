@@ -50,7 +50,7 @@
 
 <script lang="ts" setup>
 import { ElDrawer } from 'element-plus';
-import { ConfigMap } from 'kubernetes-types/core/v1';
+import { ConfigMap } from '@/types/kubernetes-types/core/v1';
 import { onMounted, reactive } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 
