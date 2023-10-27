@@ -1,5 +1,5 @@
 <template>
-	<el-dialog v-model="data.visible" @close="handleClose(formRef)" :title="title" style="width: 500px">
+	<el-dialog v-model="data.visible" @close="handleClose(formRef)" :title="title" style="width: 600px">
 		<el-form label-width="100px" ref="formRef" :rules="formRules" :model="data.namespace.metadata" style="max-width: 700px">
 			<el-form-item label="名字:" prop="name" class="name">
 				<el-input v-model="data.namespace.metadata!.name" :disabled="title === '更新命名空间'" size="small" />
@@ -159,7 +159,7 @@ const handleLabels = (labels: Array<{ [index: string]: string }>) => {
 };
 const btnOk = (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
-	formEl.validate((valid, fields) => {
+	formEl.validate((valid) => {
 		if (valid) {
 			if (props.title === '更新命名空间') {
 				handleLabels(table.tableData);

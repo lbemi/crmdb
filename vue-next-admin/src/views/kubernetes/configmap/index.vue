@@ -120,7 +120,6 @@
 </template>
 
 <script setup lang="ts" name="k8sConfigMap">
-import { ConfigMap } from 'kubernetes-types/core/v1';
 import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -132,6 +131,7 @@ import { Edit, Delete, List } from '@element-plus/icons-vue';
 import { useThemeConfig } from '@/stores/themeConfig';
 import { useConfigMapApi } from '@/api/kubernetes/configMap';
 import { deepClone } from '@/utils/other';
+import { ConfigMap } from 'kubernetes-types/core/v1';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));

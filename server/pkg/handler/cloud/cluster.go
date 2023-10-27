@@ -46,7 +46,7 @@ func (c *cluster) CheckHealth() bool {
 		return false
 	}
 
-	health := c.factory.Cluster().CheckCusterHealth(c.clusterName)
+	health := c.factory.Cluster().CheckClusterHealth(c.clusterName)
 	if health && !config.Status {
 		c.ChangeStatus(config.ID, true)
 	}

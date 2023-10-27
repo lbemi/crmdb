@@ -17,7 +17,7 @@ func LoadKubernetes(f services.FactoryImp) {
 			if cluster.Status {
 				f.Cluster().ChangeStatus(cluster.ID, false)
 			}
-			log.Logger.Errorf("%s 集群异常，请检查集群. %v", cluster.Name, err)
+			log.Logger.Errorf("连接 %s 集群异常，请检查集群. %v", cluster.Name, err)
 			// TODO 是否手设置手动启动监听  启动informer监听
 			//go f.Cluster().StartInformer(cluster.Name)
 		} else {

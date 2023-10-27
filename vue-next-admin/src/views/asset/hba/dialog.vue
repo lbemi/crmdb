@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts" name="hostDialog">
-import { nextTick, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { Host } from '@/types/asset/hosts';
 import { ElInput, ElMessage, FormInstance, FormRules } from 'element-plus';
 import { useHostApi } from '@/api/asset/hosts';
