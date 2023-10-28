@@ -2,7 +2,6 @@ package istio
 
 import (
 	"context"
-	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
@@ -28,9 +27,7 @@ type VirtualService struct {
 
 func (d *VirtualService) List(ctx context.Context) []*v1beta1.VirtualService {
 	virtualServices, err := d.cli.IstioSharedInformerFactory.Networking().V1beta1().VirtualServices().Lister().VirtualServices(d.ns).List(labels.Everything())
-	//list, err := d.cli.IstioClient.NetworkingV1alpha3().VirtualServices(d.ns).List(ctx, metav1.ListOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
-	fmt.Println("virtualservice list: ===============", len(virtualServices))
 	return virtualServices
 }
 

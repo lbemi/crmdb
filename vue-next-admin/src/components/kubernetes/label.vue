@@ -1,24 +1,25 @@
 <template>
 	<div>
+		<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+			<el-form-item :label="name">
+				<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="data.labels!.push({ key: '', value: '' })">新增</el-button>
+			</el-form-item>
+		</el-col>
 		<el-form-item>
-			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0" @click="data.labels!.push({ key: '', value: '' })"
-				>新增</el-button
-			>
+			<el-form ref="labelRef" :key="index" :model="data" v-for="(item, index) in data.labels">
+				<div v-if="item.key !== 'app'" style="display: flex; margin-bottom: 20px">
+					<el-form-item label="key" :prop="'labels.' + index + '.key'" :rules="labelRules.key">
+						<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
+					</el-form-item>
+					<el-form-item label="value" :prop="'labels.' + index + '.value'" style="margin-left: 10px" :rules="labelRules.value">
+						<el-input placeholder="value" v-model="item.value" size="small" />
+					</el-form-item>
+					<el-form-item>
+						<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.labels.splice(index, 1)"></el-button>
+					</el-form-item>
+				</div>
+			</el-form>
 		</el-form-item>
-
-		<el-form ref="labelRef" :key="index" :model="data" v-for="(item, index) in data.labels">
-			<div v-if="item.key !== 'app'" style="display: flex">
-				<el-form-item label="key" :prop="'labels.' + index + '.key'" :rules="labelRules.key">
-					<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
-				</el-form-item>
-				<el-form-item label="value" :prop="'labels.' + index + '.value'" style="margin-left: 10px" :rules="labelRules.value">
-					<el-input placeholder="value" v-model="item.value" size="small" />
-				</el-form-item>
-				<el-form-item>
-					<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.labels.splice(index, 1)"></el-button>
-				</el-form-item>
-			</div>
-		</el-form>
 	</div>
 </template>
 
@@ -27,7 +28,7 @@ import { RemoveFilled } from '@element-plus/icons-vue';
 import { reactive, watch, ref } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { CirclePlusFilled } from '@element-plus/icons-vue';
-import { ElMessage, FormInstance } from 'element-plus';
+import { FormInstance } from 'element-plus';
 
 const labelRef = ref<Array<FormInstance>>();
 interface label {
@@ -71,6 +72,7 @@ const labelRules = {
 //指定接收值
 const props = defineProps({
 	labelData: Array,
+	name: String,
 });
 
 const handleLabels = () => {

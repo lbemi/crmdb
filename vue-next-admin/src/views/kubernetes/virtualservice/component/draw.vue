@@ -4,84 +4,66 @@
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
 		<div v-if="data.virtualService.metadata">
-			<el-form :inline="true" class="demo-form-inline" v-model="data" :rules="formRules">
-				<el-form-item label="命名空间：" prop="data.virtualService.metadata.namespace">
-					<el-select
-						v-model="data.virtualService.metadata.name"
-						style="max-width: 180px"
-						size="small"
-						class="m-2"
-						placeholder="Select"
-						:disabled="data.isUpdate"
-						><el-option key="all" label="所有命名空间" value="all"></el-option>
-						<el-option
-							v-for="item in k8sStore.state.namespace"
-							:key="item.metadata?.name"
-							:label="item.metadata?.name"
-							:value="item.metadata!.name!"
-						/>
-					</el-select>
-				</el-form-item>
-				<div>
-					<el-form-item label="配置项名称:"
+			<el-form v-model="data.virtualService" ref="formRulesOneRef" label-width="100px" class="mt35">
+				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+					<el-form-item label="命名空间：" prop="data.virtualService.metadata.namespace">
+						<el-select
+							v-model="data.virtualService.metadata.namespace"
+							style="max-width: 180px"
+							size="small"
+							class="m-2"
+							placeholder="Select"
+							:disabled="data.isUpdate"
+						>
+							<el-option
+								v-for="item in k8sStore.state.namespace"
+								:key="item.metadata?.name"
+								:label="item.metadata?.name"
+								:value="item.metadata!.name!"
+							/>
+						</el-select>
+					</el-form-item>
+				</el-col>
+				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+					<el-form-item label="虚拟服务名称:"
 						><el-input :disabled="data.isUpdate" size="small" v-model="data.virtualService.metadata.name"></el-input>
 					</el-form-item>
-				</div>
-				<div>
-					<el-form-item label="标签">
-						<Label class="label" :labelData="data.labels" @updateLabels="getLabels" />
+				</el-col>
+				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+					<Label class="label" :labelData="data.labels" :name="'标签'" @updateLabels="getLabels" />
+				</el-col>
+				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+					<Label class="label" :labelData="data.annotations" :name="'注解'" @updateLabels="getAnnotations" />
+				</el-col>
+				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+					<el-form-item label="Hosts">
+						<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+							<el-form-item>
+								<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="onAddRow">新增</el-button>
+							</el-form-item>
+						</el-col>
+						<div v-if="data.virtualService.spec?.hosts">
+							<el-form-item
+								v-for="(val, i) in data.virtualService.spec?.hosts"
+								:prop="data.virtualService.spec.hosts[i]"
+								:key="i"
+								:rules="{ required: true, validator: (rule, value, callback) => validateHost(i, rule, value, callback), trigger: 'blur' }"
+							>
+								<div style="display: flex; margin-bottom: 20px">
+									<el-input v-model="data.virtualService.spec.hosts[i]" />
+									<el-button
+										:icon="RemoveFilled"
+										type="primary"
+										size="small"
+										text
+										@click="data.virtualService.spec.hosts.splice(i, 1)"
+										class="ml-2"
+									></el-button>
+								</div>
+							</el-form-item>
+						</div>
 					</el-form-item>
-				</div>
-
-				<el-form-item label="注解">
-					<Label class="label" :labelData="data.annotations" @updateLabels="getAnnotations" />
-				</el-form-item>
-				<el-form-item label="数据:">
-					<div>
-						<el-table :data="data.keyValues" style="width: 100%">
-							<el-table-column label="名称" width="180">
-								<template #default="scope">
-									<el-input v-model="scope.row.key" size="small" />
-								</template>
-							</el-table-column>
-							<el-table-column label="值" width="380">
-								<template #default="scope">
-									<el-input type="textarea" v-model="scope.row.value" size="small" />
-								</template>
-							</el-table-column>
-							<el-table-column>
-								<template #default="scope">
-									<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.keyValues.splice(scope.$index, 1)"></el-button>
-								</template>
-							</el-table-column>
-							<el-table-column width="200px">
-								<template #default="scope">
-									<el-upload
-										ref="upload"
-										class="upload-demo"
-										:limit="1"
-										:on-change="($evnet) => submitUpload($evnet, scope.row)"
-										:on-exceed="handleExceed"
-										:auto-upload="false"
-									>
-										<template #tip>
-											<div class="el-upload__tip text-red">limit 1 file</div>
-										</template>
-										<template #trigger>
-											<el-button type="primary" size="small" text>从文件上传</el-button>
-										</template>
-										<!--									<el-button class="ml-3" type="success" @click="submitUpload"> upload to server </el-button>-->
-									</el-upload>
-								</template>
-							</el-table-column>
-						</el-table>
-					</div>
-				</el-form-item>
-				<div>
-					<el-button size="small" @click="addKey()" style="width: 90%" type="primary" plain
-						><el-icon><Plus /></el-icon>添加</el-button
-					>
-				</div>
+				</el-col>
 			</el-form>
 			<div class="footer">
 				<el-button size="small" @click="handleClose">取消</el-button>
@@ -92,7 +74,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ElDrawer, ElMessage, FormRules, UploadFile } from 'element-plus';
+import { ElDrawer, ElMessage, FormInstance, FormRules, UploadFile } from 'element-plus';
 
 import { VirtualService } from '@kubernetes-models/istio/networking.istio.io/v1beta1/VirtualService';
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
@@ -100,25 +82,50 @@ import { ref } from 'vue';
 import { genFileId } from 'element-plus';
 import type { UploadInstance, UploadProps, UploadRawFile } from 'element-plus';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { RemoveFilled, Plus } from '@element-plus/icons-vue';
+import { RemoveFilled, CirclePlusFilled } from '@element-plus/icons-vue';
 import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
-
+const formRulesOneRef = ref<FormInstance>();
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 
 const k8sStore = kubernetesInfo();
 const virtualServiceApi = useVirtualServiceApi();
-
+const validateHost = (index, rule, value, callback) => {
+	console.log('校验--->', data.virtualService.spec.hosts[index]);
+	if (!data.virtualService.spec.hosts[index]) {
+		console.log('--', value, data.virtualService.spec?.hosts![index]);
+		callback(new Error('Host cannot be empty'));
+	} else {
+		console.log('---校验完成');
+		callback();
+	}
+};
 const data = reactive({
 	isBinaryData: false,
 	isUpdate: false,
 	visible: false,
 	labels: [],
 	annotations: [],
-	virtualService: {} as VirtualService,
+	host: '',
+	virtualService: {
+		metadata: {
+			name: '',
+			labels: {},
+		},
+		spec: {
+			hosts: [''],
+		},
+	} as VirtualService,
 	keyValues: [] as Array<{ key: string; value: string }>,
 });
+
+const onAddRow = () => {
+	data.virtualService.spec?.hosts?.push('');
+};
+const onDelRow = (k: number) => {
+	data.virtualService.spec?.hosts?.splice(k, 1);
+};
 
 const formRules = reactive<FormRules>({});
 
@@ -250,7 +257,7 @@ const convertConfigMapTo = (obj: { [name: string]: string }) => {
 onMounted(() => {
 	data.isUpdate = false;
 	data.visible = props.visible;
-	if (props.virtualService && !isObjectValueEqual(props.virtualService, data.virtualService)) {
+	if (props.virtualService && !isObjectValueEqual(props.virtualService, Object.create({}))) {
 		data.isUpdate = true;
 		data.virtualService = props.virtualService;
 	}
