@@ -37,7 +37,7 @@ import { CreateK8SBindData, CreateK8SMetaData, ResourceType } from '@/types/kube
 import type { FormInstance, FormRules } from 'element-plus';
 import { ObjectMeta } from 'kubernetes-types/meta/v1';
 
-const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
+const Label = defineAsyncComponent(() => import('@/components/istio/kubernetes/label.vue'));
 
 const metaRef = ref<FormInstance>();
 const k8sStore = kubernetesInfo();

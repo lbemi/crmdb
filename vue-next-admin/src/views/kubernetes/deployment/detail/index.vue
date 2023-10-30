@@ -289,7 +289,7 @@ import { deepClone } from '@/utils/other';
 import { dateStrFormat } from '@/utils/formatTime';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
-const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDetail.vue'));
+const MetaDetail = defineAsyncComponent(() => import('@/components/istio/kubernetes/metaDetail.vue'));
 const CreateDialog = defineAsyncComponent(() => import('../component/dialog.vue'));
 
 const route = useRoute();

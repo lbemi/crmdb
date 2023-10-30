@@ -36,33 +36,7 @@
 					<Label class="label" :labelData="data.annotations" :name="'注解'" @updateLabels="getAnnotations" />
 				</el-col>
 				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-					<el-form-item label="Hosts">
-						<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-							<el-form-item>
-								<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="onAddRow">新增</el-button>
-							</el-form-item>
-						</el-col>
-						<div v-if="data.virtualService.spec?.hosts">
-							<el-form-item
-								v-for="(val, i) in data.virtualService.spec?.hosts"
-								:prop="data.virtualService.spec.hosts[i]"
-								:key="i"
-								:rules="{ required: true, validator: (rule, value, callback) => validateHost(i, rule, value, callback), trigger: 'blur' }"
-							>
-								<div style="display: flex; margin-bottom: 20px">
-									<el-input v-model="data.virtualService.spec.hosts[i]" />
-									<el-button
-										:icon="RemoveFilled"
-										type="primary"
-										size="small"
-										text
-										@click="data.virtualService.spec.hosts.splice(i, 1)"
-										class="ml-2"
-									></el-button>
-								</div>
-							</el-form-item>
-						</div>
-					</el-form-item>
+					<Hosts :hosts="data.virtualService.spec?.hosts" :name="'Hosts'" />
 				</el-col>
 			</el-form>
 			<div class="footer">
@@ -82,25 +56,15 @@ import { ref } from 'vue';
 import { genFileId } from 'element-plus';
 import type { UploadInstance, UploadProps, UploadRawFile } from 'element-plus';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { RemoveFilled, CirclePlusFilled } from '@element-plus/icons-vue';
 import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
 const formRulesOneRef = ref<FormInstance>();
-const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
-
+const Label = defineAsyncComponent(() => import('@/components/istio/kubernetes/label.vue'));
+const Hosts = defineAsyncComponent(() => import('@/components/istio/kubernetes/hosts.vue'));
 const k8sStore = kubernetesInfo();
 const virtualServiceApi = useVirtualServiceApi();
-const validateHost = (index, rule, value, callback) => {
-	console.log('校验--->', data.virtualService.spec.hosts[index]);
-	if (!data.virtualService.spec.hosts[index]) {
-		console.log('--', value, data.virtualService.spec?.hosts![index]);
-		callback(new Error('Host cannot be empty'));
-	} else {
-		console.log('---校验完成');
-		callback();
-	}
-};
+
 const data = reactive({
 	isBinaryData: false,
 	isUpdate: false,
@@ -213,16 +177,17 @@ const getLabels = (labels: any) => {
 const confirm = async () => {
 	convertConfigMap();
 	if (!data.isUpdate) {
-		await virtualServiceApi
-			.createVirtualService({ cloud: k8sStore.state.activeCluster }, data.virtualService)
-			.then(() => {
-				ElMessage.success('创建成功');
-				handleClose();
-				emit('refresh');
-			})
-			.catch((e: any) => {
-				ElMessage.error(e.message);
-			});
+		console.log(data.virtualService);
+		// await virtualServiceApi
+		// 	.createVirtualService({ cloud: k8sStore.state.activeCluster }, data.virtualService)
+		// 	.then(() => {
+		// 		ElMessage.success('创建成功');
+		// 		handleClose();
+		// 		emit('refresh');
+		// 	})
+		// 	.catch((e: any) => {
+		// 		ElMessage.error(e.message);
+		// 	});
 	} else {
 		await virtualServiceApi
 			.updateVirtualService({ cloud: k8sStore.state.activeCluster }, data.virtualService)

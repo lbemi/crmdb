@@ -273,7 +273,7 @@ import { podInfo } from '@/stores/pod';
 import { deepClone } from '@/utils/other';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
-const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDetail.vue'));
+const MetaDetail = defineAsyncComponent(() => import('@/components/istio/kubernetes/metaDetail.vue'));
 const ServiceDialog = defineAsyncComponent(() => import('../component/dialog.vue'));
 
 const route = useRoute();

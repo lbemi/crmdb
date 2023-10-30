@@ -73,8 +73,8 @@ import type { FormInstance } from 'element-plus';
 import { StreamLanguage } from '@codemirror/language';
 import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
-const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
-const Containers = defineAsyncComponent(() => import('@/components/kubernetes/containers.vue'));
+const Meta = defineAsyncComponent(() => import('@/components/istio/kubernetes/meta.vue'));
+const Containers = defineAsyncComponent(() => import('@/components/istio/kubernetes/containers.vue'));
 
 const kubeInfo = kubernetesInfo();
 const deployApi = useDeploymentApi();
