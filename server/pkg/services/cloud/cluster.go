@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	kubernetes2 "github.com/lbemi/lbemi/pkg/handler/kubernetes"
 	istioService "github.com/lbemi/lbemi/pkg/services/istio"
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 	istio "istio.io/client-go/pkg/clientset/versioned"
@@ -275,7 +276,7 @@ func (c *Cluster) StartInformer(clusterName string) {
 
 	}
 
-	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(k8s.NewDeploymentHandler(client, clusterName))
+	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(kubernetes2.NewDeploymentHandler(client, clusterName))
 	//client.SharedInformerFactory.Apps().V1().ReplicaSets().Informer().AddEventHandler(k8s.NewReplicasetHandler(client, clusterName))
 	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(k8s.NewPodHandler(client, clusterName))
 	//client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(k8s.NewNameSpaceHandler(client, clusterName))

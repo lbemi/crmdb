@@ -70,7 +70,7 @@ func (c *cluster) ConfigMaps(namespace string) kubernetes.IConfigMap {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewConfigMap(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewConfigMap(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) CronJobs(namespace string) kubernetes.ICronJob {
@@ -136,7 +136,7 @@ func (c *cluster) Deployments(namespace string) kubernetes.IDeployment {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewDeployment(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewDeployment(c.getClient(c.clusterName), namespace)
 }
 func (c *cluster) Replicaset(namespace string) kubernetes.ReplicasetImp {
 	if namespace == "all" {

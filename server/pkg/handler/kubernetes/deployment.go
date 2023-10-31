@@ -3,6 +3,11 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
+	"github.com/lbemi/lbemi/pkg/handler/types"
+	"github.com/lbemi/lbemi/pkg/util"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -11,10 +16,9 @@ import (
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/restfulx"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -38,18 +42,18 @@ type IDeployment interface {
 }
 
 type Deployment struct {
-	k8s *k8s.Factory
+	cli       *store.ClientConfig
+	namespace string
 }
 
-var deployment *Deployment
+func NewDeployment(client *store.ClientConfig, namespace string) *Deployment {
+	return &Deployment{cli: client, namespace: namespace}
 
-func NewDeployment(k8s *k8s.Factory) *Deployment {
-	deployment = &Deployment{k8s: k8s}
-	return deployment
 }
 
 func (d *Deployment) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
-	data := d.k8s.Deployment().List(ctx)
+	data, err := d.cli.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageResult{}
 
 	var deploymentList = make([]*appsv1.Deployment, 0)
@@ -71,6 +75,10 @@ func (d *Deployment) List(ctx context.Context, query *model.PageParam, name stri
 		}
 		data = deploymentList
 	}
+	//按时间排序
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
 	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {
@@ -84,29 +92,39 @@ func (d *Deployment) List(ctx context.Context, query *model.PageParam, name stri
 			res.Data = data[(query.Page-1)*query.Limit : query.Page*query.Limit]
 		}
 	}
+
 	res.Total = int64(total)
 
 	return res
 }
 
 func (d *Deployment) Get(ctx context.Context, name string) *appsv1.Deployment {
-	return d.k8s.Deployment().Get(ctx, name)
+	dep, err := d.cli.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return dep
 }
 
 func (d *Deployment) Create(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment {
-	return d.k8s.Deployment().Create(ctx, obj)
+	newDeployment, err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).Create(ctx, obj, metav1.CreateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return newDeployment
 }
 
 func (d *Deployment) Update(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment {
-	return d.k8s.Deployment().Update(ctx, obj)
+	result, err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).Update(ctx, obj, metav1.UpdateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return result
 }
 
 func (d *Deployment) RollBack(ctx context.Context, depName string, reversion int64) *appsv1.Deployment {
 	if reversion < 0 {
 		restfulx.ErrNotNilDebug(fmt.Errorf("reversion not fount"), restfulx.OperatorErr)
 	}
-	dep := d.k8s.Deployment().Get(ctx, depName)
-	replicaSets := d.k8s.Replicaset().List(ctx)
+
+	dep := d.Get(ctx, depName)
+	replicaSets, err := d.cli.SharedInformerFactory.Apps().V1().ReplicaSets().Lister().ReplicaSets(d.namespace).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+
 	var replicaSet *appsv1.ReplicaSet
 	//找到对应的rs
 	for _, item := range replicaSets {
@@ -121,22 +139,29 @@ func (d *Deployment) RollBack(ctx context.Context, depName string, reversion int
 		restfulx.ErrNotNilDebug(fmt.Errorf("reversion not fount"), restfulx.OperatorErr)
 	}
 	dep.Spec.Template = replicaSet.Spec.Template
-	updateDeployment := d.k8s.Deployment().Update(ctx, dep)
+	updateDeployment := d.Update(ctx, dep)
 	return updateDeployment
 }
 
 func (d *Deployment) Delete(ctx context.Context, name string) {
-	d.k8s.Deployment().Delete(ctx, name)
+	err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
 func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) {
-	d.k8s.Deployment().Scale(ctx, name, replicaNum)
+	oldScale, err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).GetScale(ctx, name, metav1.GetOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	oldScale.Spec.Replicas = replicaNum
+	_, err = d.cli.ClientSet.AppsV1().Deployments(d.namespace).UpdateScale(ctx, name, oldScale, metav1.UpdateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
 func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, []*appsv1.ReplicaSet) {
-	dep := d.k8s.Deployment().Get(ctx, name)
-	replicaSets := d.k8s.Replicaset().List(ctx)
-	res := make([]map[string]string, 0)
+	dep := d.Get(ctx, name)
+	replicaSets, err := d.cli.SharedInformerFactory.Apps().V1().ReplicaSets().Lister().ReplicaSets(d.namespace).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+
+	rsLabels := make([]map[string]string, 0)
 	PodReplicaSets := make([]*appsv1.ReplicaSet, 0)
 
 	// TODO 可以使用k8s内置方法v1.IsControlledBy()替换
@@ -145,11 +170,30 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 			selectorAsMap, err := v1.LabelSelectorAsMap(item.Spec.Selector)
 			restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 			PodReplicaSets = append(PodReplicaSets, item)
-			res = append(res, selectorAsMap)
+			rsLabels = append(rsLabels, selectorAsMap)
 		}
 	}
 
-	pods := d.k8s.Pod().GetPodByLabels(ctx, dep.Namespace, res)
+	res := make([]*corev1.Pod, 0)
+	pods, err := d.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(d.namespace).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	for _, item := range pods {
+		for _, l := range rsLabels {
+			i := 0
+			for k1, v1 := range l {
+				for k2, v2 := range item.Labels {
+					if k1 == k2 && v1 == v2 {
+						i++
+					}
+				}
+			}
+			if i == len(l) {
+				res = append(res, item)
+			}
+		}
+	}
+	restoreGVKForList(res)
+
 	sort.Slice(pods, func(i, j int) bool {
 		// sort by creation timestamp in descending order
 		if pods[j].ObjectMeta.GetCreationTimestamp().Time.Before(pods[i].ObjectMeta.GetCreationTimestamp().Time) {
@@ -178,8 +222,9 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 }
 
 func (d *Deployment) GetDeploymentEvent(ctx context.Context, name string) []*corev1.Event {
+	eventList, err := d.cli.SharedInformerFactory.Core().V1().Events().Lister().Events(d.namespace).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	events := make([]*corev1.Event, 0)
-	eventList := d.k8s.Event().List(ctx)
 	for _, item := range eventList {
 		if (item.InvolvedObject.Kind == "ReplicaSet" || item.InvolvedObject.Kind == "Deployment") && item.InvolvedObject.Name == name {
 			events = append(events, item)
@@ -190,7 +235,36 @@ func (d *Deployment) GetDeploymentEvent(ctx context.Context, name string) []*cor
 }
 
 func (d *Deployment) Search(ctx context.Context, key string, searchType int) []*appsv1.Deployment {
-	return d.k8s.Deployment().Search(ctx, key, searchType)
+	var deploymentList []*appsv1.Deployment
+	deployments, err := d.cli.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	switch searchType {
+	case types.SearchByName:
+		// 遍历deployment，如果name包含key则保存返回
+		for _, item := range deployments {
+			if strings.Contains(item.Name, key) {
+				deploymentList = append(deploymentList, item)
+			}
+		}
+	case types.SearchByLabel:
+		// 遍历deployment，如果name包含key则保存返回
+		for _, item := range deployments {
+			for k, label := range item.Labels {
+				if strings.Contains(label, key) || strings.Contains(k, key) {
+					deploymentList = append(deploymentList, item)
+					break
+				}
+			}
+		}
+	default:
+		restfulx.ErrNotNilDebug(fmt.Errorf("参数错误"), restfulx.ParamErr)
+	}
+
+	sort.Slice(deploymentList, func(i, j int) bool {
+		return deploymentList[j].ObjectMeta.GetCreationTimestamp().Time.Before(deploymentList[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
+
+	return deploymentList
 }
 
 func (d *Deployment) isRsFromDep(dep *appsv1.Deployment, rs *appsv1.ReplicaSet) bool {
@@ -202,4 +276,54 @@ func (d *Deployment) isRsFromDep(dep *appsv1.Deployment, rs *appsv1.ReplicaSet) 
 	//	}
 	//}
 	//return false
+}
+
+type DeploymentHandler struct {
+	client      *store.ClientConfig
+	clusterName string
+}
+
+func NewDeploymentHandler(client *store.ClientConfig, clusterName string) *DeploymentHandler {
+	return &DeploymentHandler{client: client, clusterName: clusterName}
+}
+
+func (d *DeploymentHandler) OnAdd(obj interface{}, isInInitialList bool) {
+	d.notifyDeployments(obj)
+}
+
+func (d *DeploymentHandler) OnUpdate(oldObj, newObj interface{}) {
+	d.notifyDeployments(newObj)
+}
+
+func (d *DeploymentHandler) OnDelete(obj interface{}) {
+	d.notifyDeployments(obj)
+}
+
+func (d *DeploymentHandler) notifyDeployments(obj interface{}) {
+	namespace := obj.(*appsv1.Deployment).Namespace
+	deployments, err := d.client.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(namespace).List(labels.Everything())
+	if err != nil {
+		log.Logger.Error(err)
+	}
+
+	//按时间排序
+	sort.SliceStable(deployments, func(i, j int) bool {
+		return deployments[j].ObjectMeta.GetCreationTimestamp().Time.Before(deployments[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
+
+	go wsstore.WsClientMap.SendClusterResource(d.clusterName, "deployment", map[string]interface{}{
+		"cluster": d.clusterName,
+		"type":    "deployment",
+		"result": map[string]interface{}{
+			"namespace": namespace,
+			"data":      deployments,
+		},
+	})
+}
+func restoreGVKForList(podList []*corev1.Pod) {
+	objects := make([]runtime.Object, len(podList))
+	for i, p := range podList {
+		objects[i] = p
+	}
+	util.RestoreGVKForList(objects)
 }

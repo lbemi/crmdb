@@ -2,12 +2,14 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
-
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -25,15 +27,17 @@ type IConfigMap interface {
 }
 
 type configMap struct {
-	k8s *k8s.Factory
+	client *store.ClientConfig
+	ns     string
 }
 
-func NewConfigMap(k8s *k8s.Factory) *configMap {
-	return &configMap{k8s: k8s}
+func NewConfigMap(client *store.ClientConfig, namespace string) *configMap {
+	return &configMap{client: client, ns: namespace}
 }
 
-func (s *configMap) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageConfigMap {
-	data := s.k8s.ConfigMap().List(ctx)
+func (c *configMap) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageConfigMap {
+	data, err := c.client.SharedInformerFactory.Core().V1().ConfigMaps().Lister().ConfigMaps(c.ns).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageConfigMap{}
 	var configMapList = make([]*v1.ConfigMap, 0)
 
@@ -73,18 +77,26 @@ func (s *configMap) List(ctx context.Context, query *model.PageParam, name strin
 	return res
 }
 
-func (s *configMap) Get(ctx context.Context, name string) *v1.ConfigMap {
-	return s.k8s.ConfigMap().Get(ctx, name)
+func (c *configMap) Get(ctx context.Context, name string) *v1.ConfigMap {
+	res, err := c.client.SharedInformerFactory.Core().V1().ConfigMaps().Lister().ConfigMaps(c.ns).Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return res
 }
 
-func (s *configMap) Delete(ctx context.Context, name string) {
-	s.k8s.ConfigMap().Delete(ctx, name)
+func (c *configMap) Delete(ctx context.Context, name string) {
+	restfulx.ErrNotNilDebug(
+		c.client.ClientSet.CoreV1().ConfigMaps(c.ns).Delete(ctx, name, metav1.DeleteOptions{}), restfulx.OperatorErr)
 }
 
-func (s *configMap) Create(ctx context.Context, configMap *v1.ConfigMap) *v1.ConfigMap {
-	return s.k8s.ConfigMap().Create(ctx, configMap)
+func (c *configMap) Create(ctx context.Context, configMap *v1.ConfigMap) *v1.ConfigMap {
+	log.Logger.Error(c.ns)
+	res, err := c.client.ClientSet.CoreV1().ConfigMaps(c.ns).Create(ctx, configMap, metav1.CreateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return res
 }
 
-func (s *configMap) Update(ctx context.Context, configMap *v1.ConfigMap) *v1.ConfigMap {
-	return s.k8s.ConfigMap().Update(ctx, configMap)
+func (c *configMap) Update(ctx context.Context, configMap *v1.ConfigMap) *v1.ConfigMap {
+	res, err := c.client.ClientSet.CoreV1().ConfigMaps(c.ns).Update(ctx, configMap, metav1.UpdateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return res
 }

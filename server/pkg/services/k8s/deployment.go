@@ -6,9 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
-	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 
@@ -116,40 +114,41 @@ type DeploymentHandler struct {
 	clusterName string
 }
 
-func NewDeploymentHandler(client *store.ClientConfig, clusterName string) *DeploymentHandler {
-	return &DeploymentHandler{client: client, clusterName: clusterName}
-}
-
-func (d *DeploymentHandler) OnAdd(obj interface{}, isInInitialList bool) {
-	d.notifyDeployments(obj)
-}
-
-func (d *DeploymentHandler) OnUpdate(oldObj, newObj interface{}) {
-	d.notifyDeployments(newObj)
-}
-
-func (d *DeploymentHandler) OnDelete(obj interface{}) {
-	d.notifyDeployments(obj)
-}
-
-func (d *DeploymentHandler) notifyDeployments(obj interface{}) {
-	namespace := obj.(*appsv1.Deployment).Namespace
-	deployments, err := d.client.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(namespace).List(labels.Everything())
-	if err != nil {
-		log.Logger.Error(err)
-	}
-
-	//按时间排序
-	sort.SliceStable(deployments, func(i, j int) bool {
-		return deployments[j].ObjectMeta.GetCreationTimestamp().Time.Before(deployments[i].ObjectMeta.GetCreationTimestamp().Time)
-	})
-
-	go wsstore.WsClientMap.SendClusterResource(d.clusterName, "deployment", map[string]interface{}{
-		"cluster": d.clusterName,
-		"type":    "deployment",
-		"result": map[string]interface{}{
-			"namespace": namespace,
-			"data":      deployments,
-		},
-	})
-}
+//
+//func NewDeploymentHandler(client *store.ClientConfig, clusterName string) *DeploymentHandler {
+//	return &DeploymentHandler{client: client, clusterName: clusterName}
+//}
+//
+//func (d *DeploymentHandler) OnAdd(obj interface{}, isInInitialList bool) {
+//	d.notifyDeployments(obj)
+//}
+//
+//func (d *DeploymentHandler) OnUpdate(oldObj, newObj interface{}) {
+//	d.notifyDeployments(newObj)
+//}
+//
+//func (d *DeploymentHandler) OnDelete(obj interface{}) {
+//	d.notifyDeployments(obj)
+//}
+//
+//func (d *DeploymentHandler) notifyDeployments(obj interface{}) {
+//	namespace := obj.(*appsv1.Deployment).Namespace
+//	deployments, err := d.client.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(namespace).List(labels.Everything())
+//	if err != nil {
+//		log.Logger.Error(err)
+//	}
+//
+//	//按时间排序
+//	sort.SliceStable(deployments, func(i, j int) bool {
+//		return deployments[j].ObjectMeta.GetCreationTimestamp().Time.Before(deployments[i].ObjectMeta.GetCreationTimestamp().Time)
+//	})
+//
+//	go wsstore.WsClientMap.SendClusterResource(d.clusterName, "deployment", map[string]interface{}{
+//		"cluster": d.clusterName,
+//		"type":    "deployment",
+//		"result": map[string]interface{}{
+//			"namespace": namespace,
+//			"data":      deployments,
+//		},
+//	})
+//}

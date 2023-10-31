@@ -4,7 +4,7 @@ import "github.com/lbemi/lbemi/pkg/common/store"
 
 type Interface interface {
 	Deployment() DeploymentImp
-	ConfigMap() ConfigMapImp
+	//ConfigMap() ConfigMapImp
 	CronJob() CronJobImp
 	DaemonSet() DaemonSetImp
 	Event() EventImp
@@ -29,9 +29,9 @@ func (f *Factory) Deployment() DeploymentImp {
 	return newDeployment(f.client, f.namespace)
 }
 
-func (f *Factory) ConfigMap() ConfigMapImp {
-	return newConfigMap(f.client, f.namespace)
-}
+//func (f *Factory) ConfigMap() ConfigMapImp {
+//	return newConfigMap(f.client, f.namespace)
+//}
 
 func (f *Factory) CronJob() CronJobImp {
 	return newCronJob(f.client, f.namespace)
