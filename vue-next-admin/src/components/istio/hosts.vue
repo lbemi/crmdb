@@ -9,7 +9,7 @@
 		<div v-if="hosts">
 			<el-form-item v-for="(host, i) in hosts" :key="i">
 				<div style="display: flex; margin-bottom: 20px">
-					<el-input v-model="props.hosts[i]" />
+					<el-input v-model="props.hosts[i]" size="small" />
 					<el-button v-if="i > 0" :icon="RemoveFilled" type="primary" size="small" text @click="onDelRow(i)" class="ml-2"></el-button>
 				</div>
 			</el-form-item>

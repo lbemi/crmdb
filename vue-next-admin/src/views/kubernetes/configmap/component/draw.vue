@@ -100,7 +100,7 @@ import { useConfigMapApi } from '@/api/kubernetes/configMap';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
 
-const Label = defineAsyncComponent(() => import('@/components/istio/kubernetes/label.vue'));
+const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 
 const k8sStore = kubernetesInfo();
 const configMapApi = useConfigMapApi();

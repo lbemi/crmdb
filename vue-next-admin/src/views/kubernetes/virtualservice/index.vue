@@ -241,7 +241,7 @@ const handleChange = () => {
 // 	data.virtualServices = virtualServiceList;
 // };
 const createVirtualService = () => {
-	data.draw.title = '创建';
+	data.draw.title = '创建虚拟服务';
 	data.draw.visible = true;
 };
 const deleteVirtualService = (virtualService: VirtualService) => {

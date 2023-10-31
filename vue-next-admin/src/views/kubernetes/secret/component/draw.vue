@@ -238,7 +238,7 @@ import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
 import { RegisterInfo } from '@/types/kubernetes/common';
 
-const Label = defineAsyncComponent(() => import('@/components/istio/kubernetes/label.vue'));
+const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 
 const k8sStore = kubernetesInfo();
 const secretApi = useSecretApi();

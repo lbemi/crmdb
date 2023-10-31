@@ -120,8 +120,8 @@ import { ElMessage } from 'element-plus';
 import { useServiceApi } from '@/api/kubernetes/service';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 
-const Label = defineAsyncComponent(() => import('@/components/istio/kubernetes/labels.vue'));
-const ServicePort = defineAsyncComponent(() => import('@/components/istio/kubernetes/servicePort.vue'));
+const Label = defineAsyncComponent(() => import('@/components/kubernetes/labels.vue'));
+const ServicePort = defineAsyncComponent(() => import('@/components/kubernetes/servicePort.vue'));
 
 const dialogVisible = ref(false);
 const k8sStore = kubernetesInfo();

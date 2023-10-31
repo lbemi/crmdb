@@ -63,8 +63,8 @@ import type { FormInstance } from 'element-plus';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 
-const Meta = defineAsyncComponent(() => import('@/components/istio/kubernetes/meta.vue'));
-const Containers = defineAsyncComponent(() => import('@/components/istio/kubernetes/containers.vue'));
+const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
+const Containers = defineAsyncComponent(() => import('@/components/kubernetes/containers.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 
 const dialogVisible = ref(false);

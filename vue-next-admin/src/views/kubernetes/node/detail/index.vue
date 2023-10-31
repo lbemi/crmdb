@@ -242,7 +242,7 @@ import { PageInfo } from '@/types/kubernetes/common';
 import { dateStrFormat } from '@/utils/formatTime';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
-const MetaDetail = defineAsyncComponent(() => import('@/components/istio/kubernetes/metaDetail.vue'));
+const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDetail.vue'));
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 
 onMounted(() => {

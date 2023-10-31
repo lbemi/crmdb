@@ -3,41 +3,58 @@
 		<template #header="{ titleId, titleClass }">
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
+
 		<div v-if="data.virtualService.metadata">
-			<el-form v-model="data.virtualService" ref="formRulesOneRef" label-width="100px" class="mt35">
-				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-					<el-form-item label="命名空间：" prop="data.virtualService.metadata.namespace">
-						<el-select
-							v-model="data.virtualService.metadata.namespace"
-							style="max-width: 180px"
-							size="small"
-							class="m-2"
-							placeholder="Select"
-							:disabled="data.isUpdate"
-						>
-							<el-option
-								v-for="item in k8sStore.state.namespace"
-								:key="item.metadata?.name"
-								:label="item.metadata?.name"
-								:value="item.metadata!.name!"
-							/>
-						</el-select>
-					</el-form-item>
-				</el-col>
-				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-					<el-form-item label="虚拟服务名称:"
-						><el-input :disabled="data.isUpdate" size="small" v-model="data.virtualService.metadata.name"></el-input>
-					</el-form-item>
-				</el-col>
-				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-					<Label class="label" :labelData="data.labels" :name="'标签'" @updateLabels="getLabels" />
-				</el-col>
-				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-					<Label class="label" :labelData="data.annotations" :name="'注解'" @updateLabels="getAnnotations" />
-				</el-col>
-				<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-					<Hosts :hosts="data.virtualService.spec?.hosts" :name="'Hosts'" />
-				</el-col>
+			<el-form v-model="data.virtualService" ref="formRulesOneRef" label-width="100px">
+				<div>
+					<el-collapse v-model="data.activeCollapse">
+						<el-collapse-item name="1">
+							<template #title>
+								基础设置
+								<el-icon>
+									<info-filled />
+								</el-icon>
+							</template>
+							<el-form-item label="命名空间：" prop="data.virtualService.metadata.namespace">
+								<el-select
+									v-model="data.virtualService.metadata.namespace"
+									style="max-width: 200px"
+									size="small"
+									class="m-2"
+									placeholder="Select"
+									:disabled="data.isUpdate"
+								>
+									<el-option
+										v-for="item in k8sStore.state.namespace"
+										:key="item.metadata?.name"
+										:label="item.metadata?.name"
+										:value="item.metadata!.name!"
+									/>
+								</el-select>
+							</el-form-item>
+							<el-form-item label="名称:"
+								><el-input :disabled="data.isUpdate" size="small" v-model="data.virtualService.metadata.name" style="max-width: 160px"></el-input>
+							</el-form-item>
+							<Label class="label" :labelData="data.labels" :name="'标签'" @updateLabels="getLabels" />
+							<Label class="label" :labelData="data.annotations" :name="'注解'" @updateLabels="getAnnotations" />
+						</el-collapse-item>
+						<el-collapse-item title="主机设置" name="2">
+							<Hosts :hosts="data.virtualService.spec?.hosts" :name="'Hosts'" />
+						</el-collapse-item>
+						<el-collapse-item title="HTTP设置" name="3">
+							<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+								<VSHTTP></VSHTTP>
+							</el-col>
+						</el-collapse-item>
+						<el-collapse-item title="Controllability" name="4">
+							<div>Decision making: giving advices about operations is acceptable, but do not make decisions for the users;</div>
+							<div>
+								Controlled consequences: users should be granted the freedom to operate, including canceling, aborting or terminating current
+								operation.
+							</div>
+						</el-collapse-item>
+					</el-collapse>
+				</div>
 			</el-form>
 			<div class="footer">
 				<el-button size="small" @click="handleClose">取消</el-button>
@@ -59,13 +76,17 @@ import { kubernetesInfo } from '@/stores/kubernetes';
 import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
+import { Check, InfoFilled } from '@element-plus/icons-vue';
 const formRulesOneRef = ref<FormInstance>();
-const Label = defineAsyncComponent(() => import('@/components/istio/kubernetes/label.vue'));
-const Hosts = defineAsyncComponent(() => import('@/components/istio/kubernetes/hosts.vue'));
+const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
+const Hosts = defineAsyncComponent(() => import('@/components/istio/hosts.vue'));
+const VSHTTP = defineAsyncComponent(() => import('@/components/istio/vshttp.vue'));
+
 const k8sStore = kubernetesInfo();
 const virtualServiceApi = useVirtualServiceApi();
 
 const data = reactive({
+	activeCollapse: '1',
 	isBinaryData: false,
 	isUpdate: false,
 	visible: false,
@@ -228,7 +249,7 @@ onMounted(() => {
 	}
 });
 </script>
-<style scoped>
+<style scoped lang="scss">
 .el-form {
 	margin-left: 20px;
 	margin-top: 10px;
@@ -242,4 +263,26 @@ onMounted(() => {
 .label {
 	margin-top: 10px;
 }
+
+.el-icon {
+	margin-left: 10px;
+}
+:deep .el-collapse-item__header {
+	background-color: #f1f1f1 !important;
+	//position: relative;
+	padding-left: 20px;
+	margin-bottom: 5px;
+	border: none;
+}
+
+//:deep .el-collapse-item__content {
+//	text-align: left;
+//	color: #fff;
+//	background-color: #313743;
+//	padding-bottom: 0;
+//	div {
+//		height: 0.96rem;
+//		line-height: 0.96rem;
+//	}
+//}
 </style>

@@ -529,7 +529,7 @@ import { dateStrFormat } from '@/utils/formatTime';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
-const MetaDetail = defineAsyncComponent(() => import('@/components/istio/kubernetes/metaDetail.vue'));
+const MetaDetail = defineAsyncComponent(() => import('@/components/kubernetes/metaDetail.vue'));
 // ContainerStateTerminated
 const route = useRoute();
 const podStore = podInfo();
