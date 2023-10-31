@@ -2,7 +2,7 @@ package k8s
 
 import "github.com/lbemi/lbemi/pkg/common/store"
 
-type FactoryImp interface {
+type Interface interface {
 	Deployment() DeploymentImp
 	ConfigMap() ConfigMapImp
 	CronJob() CronJobImp

@@ -14,7 +14,7 @@ import (
 )
 
 type Options struct {
-	Factory   services.FactoryImp
+	Factory   services.Interface
 	Config    *config.Config
 	DB        *gorm.DB
 	Redis     *redis.Client

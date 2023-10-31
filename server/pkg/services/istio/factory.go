@@ -2,7 +2,7 @@ package istio
 
 import "github.com/lbemi/lbemi/pkg/common/store"
 
-type FactoryImp interface {
+type Interface interface {
 	VirtualService() VirtualServiceImp
 }
 

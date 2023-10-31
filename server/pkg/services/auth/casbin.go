@@ -14,7 +14,7 @@ import (
 
 // TODO: 整体优化
 
-type AuthenticationInterface interface {
+type IAuthentication interface {
 	GetEnforce() *casbin.SyncedEnforcer
 	AddRoleForUser(userID uint64, roleIDs []uint64) (err error)
 	SetRolePermission(roleId uint64, menus *[]sys.Menu) (bool, error)

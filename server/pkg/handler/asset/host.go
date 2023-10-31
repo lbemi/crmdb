@@ -13,10 +13,10 @@ type HostGetter interface {
 }
 
 type host struct {
-	factory services.FactoryImp
+	factory services.Interface
 }
 
-func NewHost(f services.FactoryImp) IHost {
+func NewHost(f services.Interface) IHost {
 	return &host{
 		factory: f,
 	}

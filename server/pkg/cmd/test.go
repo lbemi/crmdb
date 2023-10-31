@@ -6,7 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/services"
 )
 
-func TestInit(c string) services.FactoryImp {
+func TestInit(c string) services.Interface {
 	config := bootstrap.InitializeConfig(c)
 	db := bootstrap.InitializeDB(config)
 	// 初始化casbin enforcer

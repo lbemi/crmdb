@@ -27,16 +27,15 @@ type Getter interface {
 	logsys.LoginLogGetter
 	logsys.OperatorLogGetter
 	asset.ResourceAccountGetter
-	//cloud.ResourceGetter
 }
 
 type Handler struct {
 	Config    *config.Config
-	DbFactory services.FactoryImp
+	DbFactory services.Interface
 	RedisCli  *r.Client
 }
 
-func NewHandler(factory services.FactoryImp, redisCli *r.Client) Getter {
+func NewHandler(factory services.Interface, redisCli *r.Client) Getter {
 	return &Handler{
 		DbFactory: factory,
 		RedisCli:  redisCli,

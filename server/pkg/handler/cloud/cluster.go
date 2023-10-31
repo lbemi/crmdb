@@ -66,6 +66,6 @@ func (c *cluster) getClient(name string) *store.ClientConfig {
 	return c.factory.Cluster().GetClient(name)
 }
 
-func NewCluster(factory services.FactoryImp, clusterName string) *cluster {
+func NewCluster(factory services.Interface, clusterName string) *cluster {
 	return &cluster{factory: factory, clusterName: clusterName}
 }

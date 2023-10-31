@@ -1,4 +1,4 @@
-declare interface VirtualServiceHttp {
+export interface VirtualServiceHttp {
 	/**
 	 * Cross-Origin Resource Sharing policy (CORS).
 	 */
@@ -16,84 +16,14 @@ declare interface VirtualServiceHttp {
 		/**
 		 * String patterns that match allowed origins.
 		 */
-		allowOrigins?: Array<
-			{
-				exact?: string;
-				prefix?: string;
-				/**
-				 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-				 */
-				regex?: string;
-			} & (
-				| Exclude<
-						{
-							exact?: string;
-							prefix?: string;
-							/**
-							 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-							 */
-							regex?: string;
-						},
-						{
-							exact?: string;
-							prefix?: string;
-							/**
-							 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-							 */
-							regex?: string;
-						} & (
-							| {
-									exact: string;
-									prefix?: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex?: string;
-							  }
-							| {
-									exact?: string;
-									prefix: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex?: string;
-							  }
-							| {
-									exact?: string;
-									prefix?: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex: string;
-							  }
-						)
-				  >
-				| {
-						exact: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-				  }
-				| {
-						exact?: string;
-						prefix: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-				  }
-				| {
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex: string;
-				  }
-			)
-		>;
+		allowOrigins?: Array<{
+			exact?: string;
+			prefix?: string;
+			/**
+			 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
+			 */
+			regex?: string;
+		}>;
 		exposeHeaders?: Array<string>;
 		maxAge?: string;
 	};
@@ -120,53 +50,7 @@ declare interface VirtualServiceHttp {
 			 */
 			bytes?: string;
 			string?: string;
-		} & (
-			| Exclude<
-					{
-						/**
-						 * response body as base64 encoded bytes.
-						 */
-						bytes?: string;
-						string?: string;
-					},
-					{
-						/**
-						 * response body as base64 encoded bytes.
-						 */
-						bytes?: string;
-						string?: string;
-					} & (
-						| {
-								/**
-								 * response body as base64 encoded bytes.
-								 */
-								bytes?: string;
-								string: string;
-						  }
-						| {
-								/**
-								 * response body as base64 encoded bytes.
-								 */
-								bytes: string;
-								string?: string;
-						  }
-					)
-			  >
-			| {
-					/**
-					 * response body as base64 encoded bytes.
-					 */
-					bytes?: string;
-					string: string;
-			  }
-			| {
-					/**
-					 * response body as base64 encoded bytes.
-					 */
-					bytes: string;
-					string?: string;
-			  }
-		);
+		};
 		/**
 		 * Specifies the HTTP response status to be returned.
 		 */
@@ -192,148 +76,7 @@ declare interface VirtualServiceHttp {
 			percentage?: {
 				value?: number;
 			};
-		} & (
-			| Exclude<
-					{
-						/**
-						 * GRPC status code to use to abort the request.
-						 */
-						grpcStatus?: string;
-						http2Error?: string;
-						/**
-						 * HTTP status code to use to abort the Http request.
-						 */
-						httpStatus?: number;
-						/**
-						 * Percentage of requests to be aborted with the error code provided.
-						 */
-						percentage?: {
-							value?: number;
-						};
-					},
-					{
-						/**
-						 * GRPC status code to use to abort the request.
-						 */
-						grpcStatus?: string;
-						http2Error?: string;
-						/**
-						 * HTTP status code to use to abort the Http request.
-						 */
-						httpStatus?: number;
-						/**
-						 * Percentage of requests to be aborted with the error code provided.
-						 */
-						percentage?: {
-							value?: number;
-						};
-					} & (
-						| {
-								/**
-								 * GRPC status code to use to abort the request.
-								 */
-								grpcStatus?: string;
-								http2Error?: string;
-								/**
-								 * HTTP status code to use to abort the Http request.
-								 */
-								httpStatus: number;
-								/**
-								 * Percentage of requests to be aborted with the error code provided.
-								 */
-								percentage?: {
-									value?: number;
-								};
-						  }
-						| {
-								/**
-								 * GRPC status code to use to abort the request.
-								 */
-								grpcStatus: string;
-								http2Error?: string;
-								/**
-								 * HTTP status code to use to abort the Http request.
-								 */
-								httpStatus?: number;
-								/**
-								 * Percentage of requests to be aborted with the error code provided.
-								 */
-								percentage?: {
-									value?: number;
-								};
-						  }
-						| {
-								/**
-								 * GRPC status code to use to abort the request.
-								 */
-								grpcStatus?: string;
-								http2Error: string;
-								/**
-								 * HTTP status code to use to abort the Http request.
-								 */
-								httpStatus?: number;
-								/**
-								 * Percentage of requests to be aborted with the error code provided.
-								 */
-								percentage?: {
-									value?: number;
-								};
-						  }
-					)
-			  >
-			| {
-					/**
-					 * GRPC status code to use to abort the request.
-					 */
-					grpcStatus?: string;
-					http2Error?: string;
-					/**
-					 * HTTP status code to use to abort the Http request.
-					 */
-					httpStatus: number;
-					/**
-					 * Percentage of requests to be aborted with the error code provided.
-					 */
-					percentage?: {
-						value?: number;
-					};
-			  }
-			| {
-					/**
-					 * GRPC status code to use to abort the request.
-					 */
-					grpcStatus: string;
-					http2Error?: string;
-					/**
-					 * HTTP status code to use to abort the Http request.
-					 */
-					httpStatus?: number;
-					/**
-					 * Percentage of requests to be aborted with the error code provided.
-					 */
-					percentage?: {
-						value?: number;
-					};
-					// eslint-disable-next-line no-mixed-spaces-and-tabs
-			  }
-			| {
-					/**
-					 * GRPC status code to use to abort the request.
-					 */
-					grpcStatus?: string;
-					http2Error: string;
-					/**
-					 * HTTP status code to use to abort the Http request.
-					 */
-					httpStatus?: number;
-					/**
-					 * Percentage of requests to be aborted with the error code provided.
-					 */
-					percentage?: {
-						value?: number;
-					};
-			  }
-		);
+		};
 		delay?: {
 			exponentialDelay?: string;
 			/**
@@ -350,113 +93,7 @@ declare interface VirtualServiceHttp {
 			percentage?: {
 				value?: number;
 			};
-		} & (
-			| Exclude<
-					{
-						exponentialDelay?: string;
-						/**
-						 * Add a fixed delay before forwarding the request.
-						 */
-						fixedDelay?: string;
-						/**
-						 * Percentage of requests on which the delay will be injected (0-100).
-						 */
-						percent?: number;
-						/**
-						 * Percentage of requests on which the delay will be injected.
-						 */
-						percentage?: {
-							value?: number;
-						};
-					},
-					{
-						exponentialDelay?: string;
-						/**
-						 * Add a fixed delay before forwarding the request.
-						 */
-						fixedDelay?: string;
-						/**
-						 * Percentage of requests on which the delay will be injected (0-100).
-						 */
-						percent?: number;
-						/**
-						 * Percentage of requests on which the delay will be injected.
-						 */
-						percentage?: {
-							value?: number;
-						};
-					} & (
-						| {
-								exponentialDelay?: string;
-								/**
-								 * Add a fixed delay before forwarding the request.
-								 */
-								fixedDelay: string;
-								/**
-								 * Percentage of requests on which the delay will be injected (0-100).
-								 */
-								percent?: number;
-								/**
-								 * Percentage of requests on which the delay will be injected.
-								 */
-								percentage?: {
-									value?: number;
-								};
-						  }
-						| {
-								exponentialDelay: string;
-								/**
-								 * Add a fixed delay before forwarding the request.
-								 */
-								fixedDelay?: string;
-								/**
-								 * Percentage of requests on which the delay will be injected (0-100).
-								 */
-								percent?: number;
-								/**
-								 * Percentage of requests on which the delay will be injected.
-								 */
-								percentage?: {
-									value?: number;
-								};
-						  }
-					)
-			  >
-			| {
-					exponentialDelay?: string;
-					/**
-					 * Add a fixed delay before forwarding the request.
-					 */
-					fixedDelay: string;
-					/**
-					 * Percentage of requests on which the delay will be injected (0-100).
-					 */
-					percent?: number;
-					/**
-					 * Percentage of requests on which the delay will be injected.
-					 */
-					percentage?: {
-						value?: number;
-					};
-			  }
-			| {
-					exponentialDelay: string;
-					/**
-					 * Add a fixed delay before forwarding the request.
-					 */
-					fixedDelay?: string;
-					/**
-					 * Percentage of requests on which the delay will be injected (0-100).
-					 */
-					percent?: number;
-					/**
-					 * Percentage of requests on which the delay will be injected.
-					 */
-					percentage?: {
-						value?: number;
-					};
-			  }
-		);
+		};
 	};
 	headers?: {
 		request?: {
@@ -486,75 +123,7 @@ declare interface VirtualServiceHttp {
 			 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
 			 */
 			regex?: string;
-		} & (
-			| Exclude<
-					{
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-					},
-					{
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-					} & (
-						| {
-								exact: string;
-								prefix?: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex?: string;
-						  }
-						| {
-								exact?: string;
-								prefix: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex?: string;
-						  }
-						| {
-								exact?: string;
-								prefix?: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex: string;
-						  }
-					)
-			  >
-			| {
-					exact: string;
-					prefix?: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex?: string;
-			  }
-			| {
-					exact?: string;
-					prefix: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex?: string;
-			  }
-			| {
-					exact?: string;
-					prefix?: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex: string;
-			  }
-		);
+		};
 		/**
 		 * Names of gateways where the rule should be applied.
 		 */
@@ -567,75 +136,7 @@ declare interface VirtualServiceHttp {
 				 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
 				 */
 				regex?: string;
-			} & (
-				| Exclude<
-						{
-							exact?: string;
-							prefix?: string;
-							/**
-							 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-							 */
-							regex?: string;
-						},
-						{
-							exact?: string;
-							prefix?: string;
-							/**
-							 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-							 */
-							regex?: string;
-						} & (
-							| {
-									exact: string;
-									prefix?: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex?: string;
-							  }
-							| {
-									exact?: string;
-									prefix: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex?: string;
-							  }
-							| {
-									exact?: string;
-									prefix?: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex: string;
-							  }
-						)
-				  >
-				| {
-						exact: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-				  }
-				| {
-						exact?: string;
-						prefix: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-				  }
-				| {
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex: string;
-				  }
-			);
+			};
 		};
 		/**
 		 * Flag to specify whether the URI matching should be case-insensitive.
@@ -648,75 +149,8 @@ declare interface VirtualServiceHttp {
 			 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
 			 */
 			regex?: string;
-		} & (
-			| Exclude<
-					{
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-					},
-					{
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-					} & (
-						| {
-								exact: string;
-								prefix?: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex?: string;
-						  }
-						| {
-								exact?: string;
-								prefix: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex?: string;
-						  }
-						| {
-								exact?: string;
-								prefix?: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex: string;
-						  }
-					)
-			  >
-			| {
-					exact: string;
-					prefix?: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex?: string;
-			  }
-			| {
-					exact?: string;
-					prefix: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex?: string;
-			  }
-			| {
-					exact?: string;
-					prefix?: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex: string;
-			  }
-		);
+		};
+
 		/**
 		 * The name assigned to a match.
 		 */
@@ -736,75 +170,7 @@ declare interface VirtualServiceHttp {
 				 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
 				 */
 				regex?: string;
-			} & (
-				| Exclude<
-						{
-							exact?: string;
-							prefix?: string;
-							/**
-							 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-							 */
-							regex?: string;
-						},
-						{
-							exact?: string;
-							prefix?: string;
-							/**
-							 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-							 */
-							regex?: string;
-						} & (
-							| {
-									exact: string;
-									prefix?: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex?: string;
-							  }
-							| {
-									exact?: string;
-									prefix: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex?: string;
-							  }
-							| {
-									exact?: string;
-									prefix?: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex: string;
-							  }
-						)
-				  >
-				| {
-						exact: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-				  }
-				| {
-						exact?: string;
-						prefix: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-				  }
-				| {
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex: string;
-				  }
-			);
+			};
 		};
 		scheme?: {
 			exact?: string;
@@ -813,75 +179,7 @@ declare interface VirtualServiceHttp {
 			 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
 			 */
 			regex?: string;
-		} & (
-			| Exclude<
-					{
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-					},
-					{
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-					} & (
-						| {
-								exact: string;
-								prefix?: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex?: string;
-						  }
-						| {
-								exact?: string;
-								prefix: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex?: string;
-						  }
-						| {
-								exact?: string;
-								prefix?: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex: string;
-						  }
-					)
-			  >
-			| {
-					exact: string;
-					prefix?: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex?: string;
-			  }
-			| {
-					exact?: string;
-					prefix: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex?: string;
-			  }
-			| {
-					exact?: string;
-					prefix?: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex: string;
-			  }
-		);
+		};
 		sourceLabels?: {
 			[key: string]: string;
 		};
@@ -900,75 +198,7 @@ declare interface VirtualServiceHttp {
 			 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
 			 */
 			regex?: string;
-		} & (
-			| Exclude<
-					{
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-					},
-					{
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-					} & (
-						| {
-								exact: string;
-								prefix?: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex?: string;
-						  }
-						| {
-								exact?: string;
-								prefix: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex?: string;
-						  }
-						| {
-								exact?: string;
-								prefix?: string;
-								/**
-								 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-								 */
-								regex: string;
-						  }
-					)
-			  >
-			| {
-					exact: string;
-					prefix?: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex?: string;
-			  }
-			| {
-					exact?: string;
-					prefix: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex?: string;
-			  }
-			| {
-					exact?: string;
-					prefix?: string;
-					/**
-					 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-					 */
-					regex: string;
-			  }
-		);
+		};
 		/**
 		 * withoutHeader has the same syntax with the header, but has opposite meaning.
 		 */
@@ -980,75 +210,7 @@ declare interface VirtualServiceHttp {
 				 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
 				 */
 				regex?: string;
-			} & (
-				| Exclude<
-						{
-							exact?: string;
-							prefix?: string;
-							/**
-							 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-							 */
-							regex?: string;
-						},
-						{
-							exact?: string;
-							prefix?: string;
-							/**
-							 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-							 */
-							regex?: string;
-						} & (
-							| {
-									exact: string;
-									prefix?: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex?: string;
-							  }
-							| {
-									exact?: string;
-									prefix: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex?: string;
-							  }
-							| {
-									exact?: string;
-									prefix?: string;
-									/**
-									 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-									 */
-									regex: string;
-							  }
-						)
-				  >
-				| {
-						exact: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-				  }
-				| {
-						exact?: string;
-						prefix: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex?: string;
-				  }
-				| {
-						exact?: string;
-						prefix?: string;
-						/**
-						 * RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-						 */
-						regex: string;
-				  }
-			);
+			};
 		};
 	}>;
 	mirror?: {
@@ -1101,95 +263,7 @@ declare interface VirtualServiceHttp {
 		 */
 		scheme?: string;
 		uri?: string;
-	} & (
-		| Exclude<
-				{
-					authority?: string;
-					derivePort?: 'FROM_PROTOCOL_DEFAULT' | 'FROM_REQUEST_PORT';
-					/**
-					 * On a redirect, overwrite the port portion of the URL with this value.
-					 */
-					port?: number;
-					redirectCode?: number;
-					/**
-					 * On a redirect, overwrite the scheme portion of the URL with this value.
-					 */
-					scheme?: string;
-					uri?: string;
-				},
-				{
-					authority?: string;
-					derivePort?: 'FROM_PROTOCOL_DEFAULT' | 'FROM_REQUEST_PORT';
-					/**
-					 * On a redirect, overwrite the port portion of the URL with this value.
-					 */
-					port?: number;
-					redirectCode?: number;
-					/**
-					 * On a redirect, overwrite the scheme portion of the URL with this value.
-					 */
-					scheme?: string;
-					uri?: string;
-				} & (
-					| {
-							authority?: string;
-							derivePort?: 'FROM_PROTOCOL_DEFAULT' | 'FROM_REQUEST_PORT';
-							/**
-							 * On a redirect, overwrite the port portion of the URL with this value.
-							 */
-							port: number;
-							redirectCode?: number;
-							/**
-							 * On a redirect, overwrite the scheme portion of the URL with this value.
-							 */
-							scheme?: string;
-							uri?: string;
-					  }
-					| {
-							authority?: string;
-							derivePort: 'FROM_PROTOCOL_DEFAULT' | 'FROM_REQUEST_PORT';
-							/**
-							 * On a redirect, overwrite the port portion of the URL with this value.
-							 */
-							port?: number;
-							redirectCode?: number;
-							/**
-							 * On a redirect, overwrite the scheme portion of the URL with this value.
-							 */
-							scheme?: string;
-							uri?: string;
-					  }
-				)
-		  >
-		| {
-				authority?: string;
-				derivePort?: 'FROM_PROTOCOL_DEFAULT' | 'FROM_REQUEST_PORT';
-				/**
-				 * On a redirect, overwrite the port portion of the URL with this value.
-				 */
-				port: number;
-				redirectCode?: number;
-				/**
-				 * On a redirect, overwrite the scheme portion of the URL with this value.
-				 */
-				scheme?: string;
-				uri?: string;
-		  }
-		| {
-				authority?: string;
-				derivePort: 'FROM_PROTOCOL_DEFAULT' | 'FROM_REQUEST_PORT';
-				/**
-				 * On a redirect, overwrite the port portion of the URL with this value.
-				 */
-				port?: number;
-				redirectCode?: number;
-				/**
-				 * On a redirect, overwrite the scheme portion of the URL with this value.
-				 */
-				scheme?: string;
-				uri?: string;
-		  }
-	);
+	};
 	/**
 	 * Retry policy for HTTP requests.
 	 */

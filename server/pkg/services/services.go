@@ -13,8 +13,8 @@ import (
 	"gorm.io/gorm"
 )
 
-type FactoryImp interface {
-	Authentication() auth.AuthenticationInterface
+type Interface interface {
+	Authentication() auth.IAuthentication
 	User() sys.IUSer
 	Role() sys.IRole
 	Menu() sys.IMenu
@@ -34,7 +34,7 @@ type DbFactory struct {
 	store   *store.ClientMap
 }
 
-func (f *DbFactory) Authentication() auth.AuthenticationInterface {
+func (f *DbFactory) Authentication() auth.IAuthentication {
 	return auth.NewAuthentication(f.db, f.enforce)
 }
 
@@ -76,7 +76,7 @@ func (f *DbFactory) ResourceBindAccount() asset.IResourceAccount {
 	return asset.NewResourceBindAccount(f.db)
 }
 
-func NewDbFactory(db *gorm.DB, enforcer *casbin.SyncedEnforcer, store *store.ClientMap) FactoryImp {
+func NewDbFactory(db *gorm.DB, enforcer *casbin.SyncedEnforcer, store *store.ClientMap) Interface {
 	return &DbFactory{
 		db:      db,
 		enforce: enforcer,

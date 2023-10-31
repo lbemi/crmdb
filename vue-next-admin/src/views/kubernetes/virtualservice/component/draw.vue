@@ -76,7 +76,7 @@ import { kubernetesInfo } from '@/stores/kubernetes';
 import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
-import { Check, InfoFilled } from '@element-plus/icons-vue';
+import { InfoFilled } from '@element-plus/icons-vue';
 const formRulesOneRef = ref<FormInstance>();
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 const Hosts = defineAsyncComponent(() => import('@/components/istio/hosts.vue'));
@@ -273,6 +273,7 @@ onMounted(() => {
 	padding-left: 20px;
 	margin-bottom: 5px;
 	border: none;
+	height: 35px;
 }
 
 //:deep .el-collapse-item__content {

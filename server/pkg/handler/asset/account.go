@@ -17,10 +17,10 @@ type AccountGetter interface {
 }
 
 type account struct {
-	factory services.FactoryImp
+	factory services.Interface
 }
 
-func NewAccount(f services.FactoryImp) IAccount {
+func NewAccount(f services.Interface) IAccount {
 	return &account{
 		factory: f,
 	}

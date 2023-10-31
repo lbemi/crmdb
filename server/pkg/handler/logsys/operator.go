@@ -20,7 +20,7 @@ type OperatorLogImp interface {
 }
 
 type operator struct {
-	factory services.FactoryImp
+	factory services.Interface
 }
 
 func (l *operator) Get(id uint64) *logsys.LogOperator {
@@ -43,6 +43,6 @@ func (l *operator) DeleteAll() {
 	l.factory.Operator().DeleteAll()
 }
 
-func NewOperator(f services.FactoryImp) *operator {
+func NewOperator(f services.Interface) *operator {
 	return &operator{factory: f}
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/util"
 )
 
-func LoadKubernetes(f services.FactoryImp) {
+func LoadKubernetes(f services.Interface) {
 	clusterList := f.Cluster().List()
 	for _, cluster := range *clusterList {
 		config := util.Decrypt(cluster.KubeConfig)

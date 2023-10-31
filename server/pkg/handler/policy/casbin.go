@@ -24,10 +24,10 @@ type PolicyInterface interface {
 }
 
 type policy struct {
-	factory services.FactoryImp
+	factory services.Interface
 }
 
-func NewPolicy(f services.FactoryImp) PolicyInterface {
+func NewPolicy(f services.Interface) PolicyInterface {
 	return &policy{
 		factory: f,
 	}

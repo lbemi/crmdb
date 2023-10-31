@@ -20,10 +20,10 @@ type TerminalGetter interface {
 }
 
 type terminal struct {
-	factory services.FactoryImp
+	factory services.Interface
 }
 
-func NewTerminal(f services.FactoryImp) ITerminal {
+func NewTerminal(f services.Interface) ITerminal {
 	return &terminal{factory: f}
 }
 

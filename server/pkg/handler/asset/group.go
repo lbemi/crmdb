@@ -12,10 +12,10 @@ type GroupGetter interface {
 }
 
 type group struct {
-	factory services.FactoryImp
+	factory services.Interface
 }
 
-func NewGroup(f services.FactoryImp) IGroup {
+func NewGroup(f services.Interface) IGroup {
 	return &group{
 		factory: f,
 	}

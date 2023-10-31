@@ -21,10 +21,10 @@ type IResourceBindAccount interface {
 }
 
 type resourceBindAccount struct {
-	factory services.FactoryImp
+	factory services.Interface
 }
 
-func NewResourceBindAccount(f services.FactoryImp) IResourceBindAccount {
+func NewResourceBindAccount(f services.Interface) IResourceBindAccount {
 	return &resourceBindAccount{
 		factory: f,
 	}

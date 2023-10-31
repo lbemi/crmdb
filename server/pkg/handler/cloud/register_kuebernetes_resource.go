@@ -10,6 +10,10 @@ import (
 	"github.com/lbemi/lbemi/pkg/services/k8s"
 )
 
+type ClusterGetter interface {
+	Cluster(clusterName string) ICluster
+}
+
 type ICluster interface {
 	Create(config *form.ClusterReq)
 	Delete(id uint64)
@@ -42,14 +46,10 @@ type ICluster interface {
 	istioHandler.VirtualServiceGetter
 }
 
-type ClusterGetter interface {
-	Cluster(clusterName string) ICluster
-}
-
 type cluster struct {
-	factory     services.FactoryImp
-	k8s         k8s.FactoryImp
-	istio       istio.FactoryImp
+	factory     services.Interface
+	k8s         k8s.Interface
+	istio       istio.Interface
 	clusterName string
 }
 

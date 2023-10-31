@@ -20,7 +20,7 @@ type LoginLogImp interface {
 }
 
 type login struct {
-	factory services.FactoryImp
+	factory services.Interface
 }
 
 func (l *login) Get(id uint64) *logsys.LogLogin {
@@ -43,6 +43,6 @@ func (l *login) DeleteAll() {
 	l.factory.Log().DeleteAll()
 }
 
-func NewLogin(f services.FactoryImp) *login {
+func NewLogin(f services.Interface) *login {
 	return &login{factory: f}
 }
