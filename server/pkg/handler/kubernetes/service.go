@@ -2,13 +2,16 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sort"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/handler/types"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
-
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -26,16 +29,18 @@ type IService interface {
 	ListWorkLoad(ctx context.Context, name string) *types.ServiceWorkLoad
 }
 
-type service struct {
-	k8s *k8s.Factory
+type Service struct {
+	client *store.ClientConfig
+	ns     string
 }
 
-func NewService(k8s *k8s.Factory) *service {
-	return &service{k8s: k8s}
+func NewService(client *store.ClientConfig, namespace string) *Service {
+	return &Service{client: client, ns: namespace}
 }
 
-func (s *service) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
-	data := s.k8s.Service().List(ctx)
+func (s *Service) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
+	data, err := s.client.SharedInformerFactory.Core().V1().Services().Lister().Services(s.ns).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageResult{}
 	var serviceList = make([]*v1.Service, 0)
 	if name != "" {
@@ -55,7 +60,10 @@ func (s *service) List(ctx context.Context, query *model.PageParam, name string,
 		}
 		data = serviceList
 	}
-
+	//按时间排序
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
 	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {
@@ -73,22 +81,82 @@ func (s *service) List(ctx context.Context, query *model.PageParam, name string,
 	return res
 }
 
-func (s *service) ListWorkLoad(ctx context.Context, name string) *types.ServiceWorkLoad {
-	return s.k8s.Service().ListWorkLoad(ctx, name)
+func (s *Service) ListWorkLoad(ctx context.Context, name string) *types.ServiceWorkLoad {
+	workLoad := &types.ServiceWorkLoad{
+		Deployments:  make([]*appsv1.Deployment, 0),
+		StatefulSets: make([]*appsv1.StatefulSet, 0),
+		DaemonSets:   make([]*appsv1.DaemonSet, 0),
+		Events:       make([]*v1.Event, 0),
+	}
+	svc := s.Get(ctx, name)
+	selector := labels.SelectorFromSet(svc.Spec.Selector)
+
+	if selector.Empty() {
+		return workLoad
+	}
+	eventList, err := s.client.SharedInformerFactory.Core().V1().Events().Lister().Events(s.ns).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	for _, item := range eventList {
+		if item.InvolvedObject.Kind == "Service" && item.InvolvedObject.Name == name {
+			workLoad.Events = append(workLoad.Events, item)
+		}
+	}
+	endpoints, err := s.client.ClientSet.CoreV1().Endpoints(s.ns).Get(ctx, name, metav1.GetOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	deployments, err := s.client.SharedInformerFactory.Apps().V1().Deployments().Lister().List(selector)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+
+	daemonSets, err := s.client.SharedInformerFactory.Apps().V1().DaemonSets().Lister().List(selector)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+
+	statefulSets, err := s.client.SharedInformerFactory.Apps().V1().StatefulSets().Lister().List(selector)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+
+	workLoad.Deployments = deployments
+	workLoad.StatefulSets = statefulSets
+	workLoad.DaemonSets = daemonSets
+	workLoad.EndPoints = endpoints
+
+	return workLoad
 }
 
-func (s *service) Get(ctx context.Context, name string) *v1.Service {
-	return s.k8s.Service().Get(ctx, name)
+func (s *Service) Get(ctx context.Context, name string) *v1.Service {
+	res, err := s.client.SharedInformerFactory.Core().V1().Services().Lister().Services(s.ns).Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return res
 }
 
-func (s *service) Delete(ctx context.Context, name string) {
-	s.k8s.Service().Delete(ctx, name)
+func (s *Service) Delete(ctx context.Context, name string) {
+	err := s.client.ClientSet.CoreV1().Services(s.ns).Delete(ctx, name, metav1.DeleteOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func (s *service) Create(ctx context.Context, service *v1.Service) *v1.Service {
-	return s.k8s.Service().Create(ctx, service)
+func (s *Service) Create(ctx context.Context, service *v1.Service) *v1.Service {
+	res, err := s.client.ClientSet.CoreV1().Services(s.ns).Create(ctx, service, metav1.CreateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
-func (s *service) Update(ctx context.Context, service *v1.Service) *v1.Service {
-	return s.k8s.Service().Update(ctx, service)
+func (s *Service) Update(ctx context.Context, service *v1.Service) *v1.Service {
+	res, err := s.client.ClientSet.CoreV1().Services(s.ns).Update(ctx, service, metav1.UpdateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
+}
+
+type ServiceHandle struct{}
+
+func NewServiceHandle() *ServiceHandle {
+	return &ServiceHandle{}
+}
+
+func (s *ServiceHandle) OnAdd(obj interface{}) {
+	//TODO implement me
+}
+
+func (s *ServiceHandle) OnUpdate(oldObj, newObj interface{}) {
+	//TODO implement me
+}
+
+func (s *ServiceHandle) OnDelete(obj interface{}) {
+	//TODO implement me
 }

@@ -16,8 +16,8 @@ type PageConfigMap struct {
 }
 
 type PatchNode struct {
-	Name   string            `json:"name"`
-	Labels map[string]string `json:"labels"`
+	Name   string                 `json:"name"`
+	Labels map[string]interface{} `json:"labels"`
 }
 type PageVirtualService struct {
 	Data  []*v1beta1.VirtualService `json:"data"`

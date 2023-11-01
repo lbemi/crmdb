@@ -4,14 +4,15 @@ import (
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/logsys"
-	"github.com/lbemi/lbemi/pkg/services"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	"gorm.io/gorm"
 )
 
 type LoginLogGetter interface {
-	Login() LoginLogImp
+	Login() ILoginLog
 }
 
-type LoginLogImp interface {
+type ILoginLog interface {
 	Get(id uint64) *logsys.LogLogin
 	List(query *model.PageParam, condition *logsys.LogLogin) *form.PageResult
 	Add(*logsys.LogLogin)
@@ -19,30 +20,58 @@ type LoginLogImp interface {
 	DeleteAll()
 }
 
-type login struct {
-	factory services.Interface
+type LoginLog struct {
+	db *gorm.DB
 }
 
-func (l *login) Get(id uint64) *logsys.LogLogin {
-	return l.factory.Log().Get(id)
+func (l *LoginLog) Get(id uint64) *logsys.LogLogin {
+	log := &logsys.LogLogin{}
+	restfulx.ErrNotNilDebug(l.db.Where("id = ?", id).First(&log).Error, restfulx.GetResourceErr)
+	return log
 }
 
-func (l *login) List(query *model.PageParam, condition *logsys.LogLogin) *form.PageResult {
-	return l.factory.Log().List(query, condition)
+func (l *LoginLog) List(query *model.PageParam, condition *logsys.LogLogin) *form.PageResult {
+	result := &form.PageResult{}
+	db := l.db
+	logs := make([]*logsys.LogLogin, 0)
+	offset := (query.Page - 1) * query.Limit
+	if condition.Status != "" {
+		db = db.Where("status = ?", condition.Status)
+	}
+
+	if condition.Username != "" {
+		db = db.Where("username like ?", "%"+condition.Username+"%")
+	}
+
+	restfulx.ErrNotNilDebug(db.Model(&logsys.LogLogin{}).
+		Count(&result.Total).
+		Error,
+		restfulx.GetResourceErr)
+
+	restfulx.ErrNotNilDebug(db.Model(&logsys.LogLogin{}).
+		Order("loginTime DESC").
+		Offset(offset).
+		Limit(query.Limit).
+		Find(&logs).Error,
+		restfulx.GetResourceErr)
+
+	result.Data = logs
+
+	return result
 }
 
-func (l *login) Add(logLogin *logsys.LogLogin) {
-	l.factory.Log().Add(logLogin)
+func (l *LoginLog) Add(logLogin *logsys.LogLogin) {
+	restfulx.ErrNotNilDebug(l.db.Create(logLogin).Error, restfulx.OperatorErr)
 }
 
-func (l *login) Delete(ids []uint64) {
-	l.factory.Log().Delete(ids)
+func (l *LoginLog) Delete(ids []uint64) {
+	restfulx.ErrNotNilDebug(l.db.Where("id in (?)", ids).Delete(&logsys.LogLogin{}).Error, restfulx.OperatorErr)
 }
 
-func (l *login) DeleteAll() {
-	l.factory.Log().DeleteAll()
+func (l *LoginLog) DeleteAll() {
+	restfulx.ErrNotNilDebug(l.db.Exec("DELETE FROM log_login ").Error, restfulx.OperatorErr)
 }
 
-func NewLogin(f services.Interface) *login {
-	return &login{factory: f}
+func NewLogin(db *gorm.DB) ILoginLog {
+	return &LoginLog{db: db}
 }

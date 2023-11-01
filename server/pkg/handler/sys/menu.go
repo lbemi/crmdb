@@ -1,11 +1,13 @@
 package sys
 
 import (
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"context"
+	"github.com/fatih/structs"
+	"github.com/lbemi/lbemi/pkg/handler/policy"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/restfulx"
-	"github.com/lbemi/lbemi/pkg/services"
+	"gorm.io/gorm"
 )
 
 type MenuGetter interface {
@@ -14,34 +16,36 @@ type MenuGetter interface {
 
 // IMenu 菜单操作接口
 type IMenu interface {
-	Create(obj *form.MenusReq) *sys.Menu
-	Update(menu *form.UpdateMenusReq, menuID uint64)
-	Delete(menuID uint64)
-	Get(menuID uint64) *sys.Menu
-	List(page, limit int, menuType []int8, isTree bool, condition *sys.Menu) *form.PageMenu
+	Create(ctx context.Context, obj *form.MenusReq) *sys.Menu
+	Update(ctx context.Context, menu *form.UpdateMenusReq, menuID uint64)
+	Delete(ctx context.Context, menuID uint64)
+	Get(ctx context.Context, menuID uint64) *sys.Menu
+	List(ctx context.Context, page, limit int, menuType []int8, isTree bool, condition *sys.Menu) *form.PageMenu
 
-	GetByIds(menuIDs []uint64) *[]sys.Menu
-	GetMenuByMenuNameUrl(string, string) *sys.Menu
-	CheckMenusIsExist(menuID uint64) bool
-	UpdateStatus(menuID, status uint64)
+	GetByIds(ctx context.Context, menuIDs []uint64) *[]sys.Menu
+	GetMenuByMenuNameUrl(context.Context, string, string) *sys.Menu
+	CheckMenusIsExist(ctx context.Context, menuID uint64) bool
+	UpdateStatus(ctx context.Context, menuID, status uint64)
 }
 
-type menu struct {
-	factory services.Interface
+type Menu struct {
+	//factory services.Interface
+	db     *gorm.DB
+	policy policy.IPolicy
 }
 
-func NewMenu(f services.Interface) IMenu {
-	return &menu{
-		factory: f,
+func NewMenu(db *gorm.DB, policy policy.IPolicy) IMenu {
+	return &Menu{
+		db:     db,
+		policy: policy,
 	}
 }
 
-func (m *menu) Create(obj *form.MenusReq) *sys.Menu {
-	_, err := m.factory.Menu().GetMenuByMenuNameUrl(obj.Path, obj.Method)
-	if err.Error() != "record not found" {
-		restfulx.ErrNotNilDebug(err, restfulx.ResourceExist)
-	}
-	res, err := m.factory.Menu().Create(&sys.Menu{
+func (m *Menu) Create(ctx context.Context, obj *form.MenusReq) *sys.Menu {
+	isUnique := m.CheckUniqueMenuNameUrl(ctx, obj.Path, obj.Method)
+	restfulx.ErrNotTrue(isUnique, restfulx.ResourceExist)
+
+	newMenu := &sys.Menu{
 		Name:     obj.Name,
 		Memo:     obj.Memo,
 		ParentID: obj.ParentID,
@@ -64,73 +68,214 @@ func (m *menu) Create(obj *form.MenusReq) *sys.Menu {
 		MenuType:  obj.MenuType,
 		Method:    obj.Method,
 		Code:      obj.Code,
-	})
+	}
+	err := m.db.Create(obj).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	return res
+	return newMenu
 }
 
-func (m *menu) Update(menu *form.UpdateMenusReq, menuID uint64) {
-	restfulx.ErrNotTrue(m.CheckMenusIsExist(menuID), restfulx.ResourceExist)
+func (m *Menu) Update(ctx context.Context, newMenu *form.UpdateMenusReq, menuID uint64) {
+	restfulx.ErrNotTrue(m.CheckMenusIsExist(ctx, menuID), restfulx.ResourceExist)
 
-	res, err := m.factory.Menu().Get(menuID)
-	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	err = m.factory.Menu().Update(menu, menuID)
+	oldMenu := m.Get(ctx, menuID)
+
+	objMap := structs.Map(newMenu)
+	delete(objMap, "Meta")
+	metaMap := structs.Map(newMenu.Meta)
+	for k, v := range metaMap {
+		objMap[k] = v
+	}
+
+	err := m.db.Model(&sys.Menu{}).Where("id = ?  ", menuID).Updates(objMap).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 
-	if res.Path != menu.Path || res.Method != menu.Method {
-		err = m.factory.Authentication().UpdatePermissions(res.Path, res.Method, menu.Path, menu.Method)
+	if oldMenu.Path != newMenu.Path || oldMenu.Method != newMenu.Method {
+		err = m.policy.UpdatePermissions(ctx, oldMenu.Path, oldMenu.Method, newMenu.Path, newMenu.Method)
 		if err != nil {
 			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 		}
 	}
 }
 
-func (m *menu) Delete(menuID uint64) {
-	restfulx.ErrNotTrue(m.CheckMenusIsExist(menuID), restfulx.ResourceExist)
-	menuInfo, err := m.factory.Menu().Get(menuID)
-	// 如果报错或者未获取到menu信息则返回
-	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+func (m *Menu) Delete(ctx context.Context, menuID uint64) {
+	restfulx.ErrNotTrue(m.CheckMenusIsExist(ctx, menuID), restfulx.ResourceExist)
+	menuInfo := m.Get(ctx, menuID)
+
 	// 清除rules
-	err = m.factory.Authentication().DeleteRolePermission(menuInfo.Path, menuInfo.Method)
+	err := m.policy.DeleteRolePermission(ctx, menuInfo.Path, menuInfo.Method)
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
 	// 清除menus
-	err = m.factory.Menu().Delete(menuID)
+	tx := m.db.Begin()
+	defer func() {
+		if err := recover(); err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		tx.Rollback()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+
+	// 清除role_menus
+	if err := tx.Where("menuID= ?", menuID).Delete(&sys.RoleMenu{}).Error; err != nil {
+		tx.Rollback()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+
+	// 清除menus
+	if err := tx.Where("id =  ?", menuID).
+		Or("parentID = ?", menuID).
+		Delete(&sys.Menu{}).Error; err != nil {
+		tx.Rollback()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func (m *menu) Get(menuID uint64) *sys.Menu {
-	res, err := m.factory.Menu().Get(menuID)
+func (m *Menu) Get(ctx context.Context, menuID uint64) *sys.Menu {
+	menuResult := &sys.Menu{}
+	err := m.db.Model(&sys.Menu{}).Where("id = ?", menuID).First(&menuResult).Error
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
+	return menuResult
+}
+
+func (m *Menu) List(ctx context.Context, page, limit int, menuType []int8, isTree bool, condition *sys.Menu) *form.PageMenu {
+	db := m.db
+	res := &form.PageMenu{}
+	var (
+		menuList []sys.Menu
+		total    int64
+		err      error
+	)
+	if condition.Memo != "" {
+		db = db.Where("memo like ?", "%"+condition.Memo+"%")
+	}
+	if condition.Group != "" {
+		db = db.Where("`group` like ?", "%"+condition.Group+"%")
+	}
+	if condition.Status != 0 {
+		db = db.Where("status = ?", condition.Status)
+	}
+
+	// 全量查询
+	if page == 0 && limit == 0 {
+		err = db.Order("sequence DESC").Where("menuType in (?)", menuType).Find(&menuList).Error
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
+		err = db.Model(&sys.Menu{}).Count(&total).Error
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		if isTree {
+			treeMenu := GetTreeMenus(menuList, 0)
+			res = &form.PageMenu{
+				Menus: treeMenu,
+				Total: total,
+			}
+			return res
+		}
+		res = &form.PageMenu{
+			Menus: menuList,
+			Total: total,
+		}
+		return res
+	}
+
+	//分页数据
+	err = db.Order("sequence DESC").Where("menuType in (?)", menuType).Limit(limit).Offset((page - 1) * limit).
+		Find(&menuList).Error
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
+	//查询 total 数量
+	err = db.Model(&sys.Menu{}).Where("menuType in (?)", menuType).Count(&total).Error
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	var menuIds []uint64
+	for _, menuInfo := range menuList {
+		menuIds = append(menuIds, menuInfo.ID)
+	}
+
+	// 查询子角色
+	if len(menuIds) != 0 {
+		var menus []sys.Menu
+		err = db.Where("parentID in ?", menuIds).Where("menuType in (?)", menuType).Find(&menus).Error
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		if len(menus) != 0 {
+			menuList = append(menuList, menus...)
+			// 查询子角色的按钮及API
+			var ids []uint64
+			for _, menuInfo := range menus {
+				ids = append(ids, menuInfo.ID)
+			}
+			var ms []sys.Menu
+			err = db.Where("parentID in ?", ids).Where("menuType in (?)", menuType).Find(&ms).Error
+			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+			menuList = append(menuList, ms...)
+		}
+
+	}
+
+	if isTree {
+		treeMenus := GetTreeMenus(menuList, 0)
+		res = &form.PageMenu{
+			Menus: treeMenus,
+			Total: total,
+		}
+		return res
+	}
+
+	res = &form.PageMenu{
+		Menus: menuList,
+		Total: total,
+	}
+
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return res
 }
 
-func (m *menu) List(page, limit int, menuType []int8, isTree bool, condition *sys.Menu) *form.PageMenu {
-	res, err := m.factory.Menu().List(page, limit, menuType, isTree, condition)
+func (m *Menu) GetByIds(ctx context.Context, menuIDs []uint64) *[]sys.Menu {
+	var menus *[]sys.Menu
+	err := m.db.Where("id in ?", menuIDs).Find(&menus).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	return res
+	return menus
 }
 
-func (m *menu) GetByIds(menuIDs []uint64) *[]sys.Menu {
-	res, err := m.factory.Menu().GetByIds(menuIDs)
-	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	return res
-}
+func (m *Menu) GetMenuByMenuNameUrl(ctx context.Context, url, method string) *sys.Menu {
+	men := &sys.Menu{}
+	err := m.db.Where("path = ? and method = ?", url, method).First(men).Error
 
-func (m *menu) GetMenuByMenuNameUrl(url, method string) *sys.Menu {
-	res, err := m.factory.Menu().GetMenuByMenuNameUrl(url, method)
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	return res
+	return men
 }
-
-func (m *menu) CheckMenusIsExist(menuID uint64) bool {
-	_, err := m.factory.Menu().Get(menuID)
+func (m *Menu) CheckUniqueMenuNameUrl(ctx context.Context, url, method string) bool {
+	men := &sys.Menu{}
+	err := m.db.Where("path = ? and method = ?", url, method).First(men).Error
 	if err != nil {
-		log.Logger.Error(err)
 		return false
 	}
 	return true
 }
 
-func (m *menu) UpdateStatus(menuID, status uint64) {
-	restfulx.ErrNotNilDebug(m.factory.Menu().UpdateStatus(menuID, status), restfulx.OperatorErr)
+func (m *Menu) CheckMenusIsExist(ctx context.Context, menuID uint64) bool {
+	var menu *sys.Menu
+	if err := m.db.Model(&sys.Menu{}).Where("id = ?", menuID).First(&menu).Error; err != nil {
+		return false
+	}
+	return true
+}
+
+func (m *Menu) UpdateStatus(ctx context.Context, menuID, status uint64) {
+	restfulx.ErrNotNilDebug(m.db.Model(&sys.Menu{}).Where("id = ?", menuID).Update("status", status).Error, restfulx.OperatorErr)
+}
+
+func GetTreeMenus(menusList []sys.Menu, pid uint64) (treeMenusList []sys.Menu) {
+	for _, node := range menusList {
+		if node.ParentID == pid {
+			child := GetTreeMenus(menusList, node.ID)
+			node.Children = child
+			treeMenusList = append(treeMenusList, node)
+		}
+	}
+	return treeMenusList
 }

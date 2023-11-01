@@ -2,12 +2,14 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sort"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
-
 	v1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -25,15 +27,17 @@ type ICronJob interface {
 }
 
 type cronJob struct {
-	k8s *k8s.Factory
+	cli *store.ClientConfig
+	ns  string
 }
 
-func NewCronJob(k8s *k8s.Factory) *cronJob {
-	return &cronJob{k8s: k8s}
+func NewCronJob(client *store.ClientConfig, namespace string) *cronJob {
+	return &cronJob{cli: client, ns: namespace}
 }
 
 func (d *cronJob) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
-	data := d.k8s.CronJob().List(ctx)
+	data, err := d.cli.SharedInformerFactory.Batch().V1().CronJobs().Lister().CronJobs(d.ns).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageResult{}
 	var cronJobMapList = make([]*v1.CronJob, 0)
 	if name != "" {
@@ -44,6 +48,10 @@ func (d *cronJob) List(ctx context.Context, query *model.PageParam, name string,
 		}
 		data = cronJobMapList
 	}
+	//按时间排序
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
 
 	if label != "" {
 		for _, item := range data {
@@ -73,17 +81,24 @@ func (d *cronJob) List(ctx context.Context, query *model.PageParam, name string,
 }
 
 func (d *cronJob) Get(ctx context.Context, name string) *v1.CronJob {
-	return d.k8s.CronJob().Get(ctx, name)
+	dep, err := d.cli.SharedInformerFactory.Batch().V1().CronJobs().Lister().CronJobs(d.ns).Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return dep
 }
 
 func (d *cronJob) Create(ctx context.Context, obj *v1.CronJob) *v1.CronJob {
-	return d.k8s.CronJob().Create(ctx, obj)
+	newCronJob, err := d.cli.ClientSet.BatchV1().CronJobs(d.ns).Create(ctx, obj, metav1.CreateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return newCronJob
 }
 
 func (d *cronJob) Update(ctx context.Context, obj *v1.CronJob) *v1.CronJob {
-	return d.k8s.CronJob().Update(ctx, obj)
+	updateCronJob, err := d.cli.ClientSet.BatchV1().CronJobs(d.ns).Update(ctx, obj, metav1.UpdateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return updateCronJob
 }
 
 func (d *cronJob) Delete(ctx context.Context, name string) {
-	d.k8s.CronJob().Delete(ctx, name)
+	restfulx.ErrNotNilDebug(d.cli.ClientSet.BatchV1().CronJobs(d.ns).
+		Delete(ctx, name, metav1.DeleteOptions{}), restfulx.OperatorErr)
 }

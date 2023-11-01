@@ -2,12 +2,14 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sort"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
-
 	v1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -25,15 +27,17 @@ type IJob interface {
 }
 
 type job struct {
-	k8s *k8s.Factory
+	client    *store.ClientConfig
+	namespace string
 }
 
-func NewJob(k8s *k8s.Factory) *job {
-	return &job{k8s: k8s}
+func NewJob(cli *store.ClientConfig, namespace string) *job {
+	return &job{client: cli, namespace: namespace}
 }
 
 func (d *job) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
-	data := d.k8s.Job().List(ctx)
+	data, err := d.client.SharedInformerFactory.Batch().V1().Jobs().Lister().Jobs(d.namespace).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageResult{}
 	var jobList = make([]*v1.Job, 0)
 	if name != "" {
@@ -53,7 +57,10 @@ func (d *job) List(ctx context.Context, query *model.PageParam, name string, lab
 		}
 		data = jobList
 	}
-
+	//按时间排序
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
 	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {
@@ -72,17 +79,24 @@ func (d *job) List(ctx context.Context, query *model.PageParam, name string, lab
 }
 
 func (d *job) Get(ctx context.Context, name string) *v1.Job {
-	return d.k8s.Job().Get(ctx, name)
+	res, err := d.client.SharedInformerFactory.Batch().V1().Jobs().Lister().Jobs(d.namespace).Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return res
 }
 
 func (d *job) Create(ctx context.Context, obj *v1.Job) *v1.Job {
-	return d.k8s.Job().Create(ctx, obj)
+	newJob, err := d.client.ClientSet.BatchV1().Jobs(d.namespace).Create(ctx, obj, metav1.CreateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return newJob
 }
 
 func (d *job) Update(ctx context.Context, obj *v1.Job) *v1.Job {
-	return d.k8s.Job().Update(ctx, obj)
+	updateJob, err := d.client.ClientSet.BatchV1().Jobs(d.namespace).Update(ctx, obj, metav1.UpdateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return updateJob
 }
 
 func (d *job) Delete(ctx context.Context, name string) {
-	d.k8s.Job().Delete(ctx, name)
+	err := d.client.ClientSet.BatchV1().Jobs(d.namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }

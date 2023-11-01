@@ -7,7 +7,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/services"
 	"github.com/lbemi/lbemi/pkg/services/istio"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
 )
 
 type ClusterGetter interface {
@@ -47,8 +46,8 @@ type ICluster interface {
 }
 
 type cluster struct {
-	factory     services.Interface
-	k8s         k8s.Interface
+	factory services.Interface
+	//k8s         k8s.Interface
 	istio       istio.Interface
 	clusterName string
 }
@@ -57,13 +56,14 @@ func (c *cluster) Events(namespace string) kubernetes.IEvent {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewEvent(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewEvent(c.getClient(c.clusterName), namespace)
 }
+
 func (c *cluster) Ingresses(namespace string) kubernetes.IIngresses {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewIngresses(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewIngresses(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) ConfigMaps(namespace string) kubernetes.IConfigMap {
@@ -77,35 +77,35 @@ func (c *cluster) CronJobs(namespace string) kubernetes.ICronJob {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewCronJob(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewCronJob(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) Jobs(namespace string) kubernetes.IJob {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewJob(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewJob(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) DaemonSets(namespace string) kubernetes.IDaemonSet {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewDaemonSet(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewDaemonSet(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) StatefulSets(namespace string) kubernetes.IStatefulSet {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewStatefulSet(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewStatefulSet(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) Pods(namespace string) kubernetes.IPod {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewPod(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewPod(c.getClient(c.clusterName), namespace, c.Events(namespace))
 }
 
 // k8s 资源接口
@@ -114,22 +114,22 @@ func (c *cluster) Secrets(namespace string) kubernetes.ISecret {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewSecret(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewSecret(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) Namespaces() kubernetes.INamespace {
-	return kubernetes.NewNamespace(k8s.NewK8sFactory(c.getClient(c.clusterName), ""))
+	return kubernetes.NewNamespace(c.getClient(c.clusterName))
 }
 
 func (c *cluster) Service(namespace string) kubernetes.IService {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewService(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewService(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) Nodes() kubernetes.INode {
-	return kubernetes.NewNode(k8s.NewK8sFactory(c.getClient(c.clusterName), ""))
+	return kubernetes.NewNode(c.getClient(c.clusterName), c.Events(c.clusterName), c.Pods(c.clusterName))
 }
 
 func (c *cluster) Deployments(namespace string) kubernetes.IDeployment {
@@ -142,14 +142,14 @@ func (c *cluster) Replicaset(namespace string) kubernetes.ReplicasetImp {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewReplicaset(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewReplicaset(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) PersistentVolumeClaim(namespace string) kubernetes.PersistentVolumeClaimImp {
 	if namespace == "all" {
 		namespace = ""
 	}
-	return kubernetes.NewPersistentVolumeClaim(k8s.NewK8sFactory(c.getClient(c.clusterName), namespace))
+	return kubernetes.NewPersistentVolumeClaim(c.getClient(c.clusterName), namespace)
 }
 
 func (c *cluster) VirtualServices(namespace string) istioHandler.IVirtualService {

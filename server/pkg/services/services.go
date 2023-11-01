@@ -4,7 +4,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/common/store"
 	client "github.com/lbemi/lbemi/pkg/model/cloud"
 	"github.com/lbemi/lbemi/pkg/services/asset"
-	"github.com/lbemi/lbemi/pkg/services/auth"
 	"github.com/lbemi/lbemi/pkg/services/cloud"
 	"github.com/lbemi/lbemi/pkg/services/logsys"
 	"github.com/lbemi/lbemi/pkg/services/sys"
@@ -14,10 +13,10 @@ import (
 )
 
 type Interface interface {
-	Authentication() auth.IAuthentication
+	//Authentication() auth.IAuthentication
 	User() sys.IUSer
 	Role() sys.IRole
-	Menu() sys.IMenu
+	//Menu() sys.IMenu
 	Host() asset.IHost
 	Account() asset.IAccount
 	Group() asset.IGroup
@@ -34,9 +33,9 @@ type DbFactory struct {
 	store   *store.ClientMap
 }
 
-func (f *DbFactory) Authentication() auth.IAuthentication {
-	return auth.NewAuthentication(f.db, f.enforce)
-}
+//func (f *DbFactory) Authentication() auth.IAuthentication {
+//	return auth.NewAuthentication(f.db, f.enforce)
+//}
 
 func (f *DbFactory) User() sys.IUSer {
 	return sys.NewUser(f.db)
@@ -46,9 +45,9 @@ func (f *DbFactory) Role() sys.IRole {
 	return sys.NewRole(f.db)
 }
 
-func (f *DbFactory) Menu() sys.IMenu {
-	return sys.NewMenu(f.db)
-}
+//func (f *DbFactory) Menu() sys.IMenu {
+//	return sys.NewMenu(f.db)
+//}
 
 func (f *DbFactory) Host() asset.IHost {
 	return asset.NewHost(f.db)

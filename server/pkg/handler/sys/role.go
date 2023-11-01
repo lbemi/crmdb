@@ -1,11 +1,14 @@
 package sys
 
 import (
+	"context"
+	"github.com/fatih/structs"
+	"github.com/lbemi/lbemi/pkg/handler/policy"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
 	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/restfulx"
-	"github.com/lbemi/lbemi/pkg/services"
+	"gorm.io/gorm"
 )
 
 type RoleGetter interface {
@@ -14,111 +17,240 @@ type RoleGetter interface {
 
 // IRole 角色操作接口
 type IRole interface {
-	Create(obj *form.RoleReq)
-	Update(role *form.UpdateRoleReq, roleID uint64)
-	Delete(roleID uint64)
-	Get(roleID uint64) (roles *[]sys.Role)
-	List(*model.PageParam, *sys.Role) *form.PageResult
-	GetMenusByRoleID(roleID uint64, menuType []int8) *[]sys.Menu
-	SetRole(roleID uint64, menuIDs []uint64)
-	GetRolesByMenuID(menuID uint64) (roleIDs *[]uint64)
-	GetRoleByRoleName(roleName string) *sys.Role
-	CheckRoleIsExist(name string) bool
-	UpdateStatus(roleID, status uint64)
+	Create(ctx context.Context, obj *form.RoleReq)
+	Update(ctx context.Context, role *form.UpdateRoleReq, roleID uint64)
+	Delete(ctx context.Context, roleID uint64)
+	Get(ctx context.Context, roleID uint64) (roles []*sys.Role)
+	List(context.Context, *model.PageParam, *sys.Role) *form.PageResult
+	GetMenusByRoleID(ctx context.Context, roleID uint64, menuType []int8) *[]sys.Menu
+	SetRole(ctx context.Context, roleID uint64, menuIDs []uint64)
+	GetRolesByMenuID(ctx context.Context, menuID uint64) (roleIDs *[]uint64)
+	GetRoleByRoleName(ctx context.Context, roleName string) *sys.Role
+	CheckRoleIsExist(ctx context.Context, name string) bool
+	UpdateStatus(ctx context.Context, roleID, status uint64)
 }
 
-type role struct {
-	factory services.Interface
+type Role struct {
+	db     *gorm.DB
+	policy policy.IPolicy
+	menu   IMenu
 }
 
-func NewRole(f services.Interface) *role {
-	return &role{
-		factory: f,
+func NewRole(db *gorm.DB, policy policy.IPolicy, menu IMenu) IRole {
+	return &Role{
+		db:     db,
+		policy: policy,
+		menu:   menu,
 	}
 }
 
-func (r *role) Create(obj *form.RoleReq) {
-	r.CheckRoleIsExist(obj.Name)
-	r.factory.Role().Create(&sys.Role{
+func (r *Role) Create(ctx context.Context, obj *form.RoleReq) {
+	r.CheckRoleIsExist(ctx, obj.Name)
+	role := &sys.Role{
 		Name:     obj.Name,
 		Memo:     obj.Memo,
 		ParentID: obj.ParentID,
 		Sequence: obj.Sequence,
-		Status:   obj.Status})
+		Status:   obj.Status}
+	restfulx.ErrNotNilDebug(r.db.Create(role).Error, restfulx.OperatorErr)
 }
 
-func (r *role) Update(role *form.UpdateRoleReq, roleID uint64) {
-	r.factory.Role().Update(role, roleID)
-}
-
-func (r *role) Delete(roleID uint64) {
-	// 1.删除user_role
-	tx, err := r.factory.Role().Delete(roleID)
+func (r *Role) Update(ctx context.Context, role *form.UpdateRoleReq, roleID uint64) {
+	roleMap := structs.Map(role)
+	err := r.db.Model(&sys.Role{}).Where("id = ? ", roleID).Updates(roleMap).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+}
+
+func (r *Role) Delete(ctx context.Context, roleID uint64) {
+	// 1.删除user_role
+	tx := r.db.Begin()
+	defer func() {
+		if err := recover(); err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		tx.Rollback()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+
+	//删除角色相关的菜单
+	if err := tx.Where("roleID = ?", roleID).Delete(&sys.RoleMenu{}).Error; err != nil {
+		tx.Rollback()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+
+	// 删除角色及其子角色
+	if err := tx.Where("id  = ?", roleID).
+		Or("parent_id  = ?", roleID).
+		Delete(&sys.Role{}).Error; err != nil {
+		tx.Rollback()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+
+	// 删除用户绑定的角色信息(用户需要重新绑定角色)
+	if err := tx.Where("role_id = ?", roleID).
+		Delete(&sys.UserRole{}).Error; err != nil {
+		tx.Rollback()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+	restfulx.ErrNotNilDebug(tx.Commit().Error, restfulx.OperatorErr)
 
 	// 2.先清除rule
-	err = r.factory.Authentication().DeleteRole(roleID)
+	err := r.policy.DeleteRole(ctx, roleID)
 	if err != nil {
 		tx.Rollback()
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
 }
 
-func (r *role) Get(roleID uint64) *[]sys.Role {
-	res, err := r.factory.Role().Get(roleID)
+func (r *Role) Get(ctx context.Context, roleID uint64) []*sys.Role {
+	var roles []*sys.Role
+	err := r.db.Where("id = ?", roleID).
+		Or("parent_id = ?", roleID).
+		Order("sequence DESC").
+		First(&roles).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
+	return GetTreeRoles(roles, 0)
+}
+
+func (r *Role) List(ctx context.Context, query *model.PageParam, condition *sys.Role) *form.PageResult {
+	var (
+		roleList []*sys.Role
+		total    int64
+	)
+	db := r.db
+	offset := (query.Page - 1) * query.Limit
+	if condition.Name != "" {
+		db = db.Where("name like ?", "%"+condition.Name+"%")
+	}
+	if condition.Status != 0 {
+		db = db.Where("status  = ?", condition.Status)
+	}
+	res := &form.PageResult{}
+	// 全量查询
+	if query.Page == 0 && query.Limit == 0 {
+		err := db.Order("sequence DESC").Find(&roleList).Error
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		treeRole := GetTreeRoles(roleList, 0)
+		err = db.Model(&sys.Role{}).Count(&total).Error
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		res.Total = total
+		res.Data = treeRole
+		return res
+	}
+
+	//分页数据
+	err := db.Order("sequence DESC").Where("parent_id = 0").Limit(query.Limit).Offset(offset).
+		Find(&roleList).Error
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
+	var roleIds []uint64
+	for _, role := range roleList {
+		roleIds = append(roleIds, role.ID)
+	}
+
+	// 查询子角色
+	if len(roleIds) != 0 {
+		var roles []*sys.Role
+		err = db.Where("parent_id in ?", roleIds).Find(&roles).Error
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		roleList = append(roleList, roles...)
+	}
+	err = db.Model(&sys.Role{}).Where("parent_id = 0").Count(&total).Error
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	treeRoles := GetTreeRoles(roleList, 0)
+	res.Total = total
+	res.Data = treeRoles
 	return res
 }
 
-func (r *role) List(query *model.PageParam, condition *sys.Role) *form.PageResult {
-	res, err := r.factory.Role().List(query, condition)
-	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	return res
-}
+func (r *Role) GetMenusByRoleID(ctx context.Context, roleID uint64, menuType []int8) *[]sys.Menu {
+	var menus []sys.Menu
+	err := r.db.Table("menus").Select("menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,+"+
+		"menus.method, menus.menuType, menus.status, menus.component, menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
+		Joins("left join role_menus on menus.id = role_menus.menuID", roleID).
+		Where("role_menus.roleID = ?", roleID).
+		Where("menus.menuType in ?", menuType).
+		Order("parentId ASC").
+		Order("sequence ASC").
+		Scan(&menus).Error
 
-func (r *role) GetMenusByRoleID(roleID uint64, menuType []int8) *[]sys.Menu {
-	res, err := r.factory.Role().GetMenusByRoleID(roleID, menuType)
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	return res
+	return &menus
 }
 
 // SetRole 设置角色菜单权限
-func (r *role) SetRole(roleID uint64, menuIDs []uint64) {
+func (r *Role) SetRole(ctx context.Context, roleID uint64, menuIDs []uint64) {
 	// 查询menus信息
-	menus, err := r.factory.Menu().GetByIds(menuIDs)
-	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	menus := r.menu.GetByIds(ctx, menuIDs)
+
+	tx := r.db.Begin()
+	if err := tx.Where(&sys.RoleMenu{RoleID: roleID}).Delete(&sys.RoleMenu{}).Error; err != nil {
+		tx.Rollback()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+
+	if len(menuIDs) > 0 {
+		roleMens := make([]sys.RoleMenu, len(menuIDs))
+		for _, mid := range menuIDs {
+			rm := sys.RoleMenu{}
+			rm.RoleID = roleID
+			rm.MenuID = mid
+			roleMens = append(roleMens, rm)
+		}
+		if err := tx.Create(&roleMens).Error; err != nil {
+			tx.Rollback()
+			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		}
+	}
 
 	// 添加rule规则
-	ok, err := r.factory.Authentication().SetRolePermission(roleID, menus)
-	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	restfulx.ErrNotTrue(ok, restfulx.OperatorErr)
+	ok, err := r.policy.SetRolePermission(ctx, roleID, menus)
+	if err != nil || !ok {
+		tx.Rollback()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
 
-	err = r.factory.Role().SetRole(roleID, menuIDs)
-	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-
+	restfulx.ErrNotNilDebug(tx.Commit().Error, restfulx.OperatorErr)
 }
 
-func (r *role) GetRolesByMenuID(menuID uint64) *[]uint64 {
-	res, err := r.factory.Role().GetRolesByMenuID(menuID)
+func (r *Role) GetRolesByMenuID(ctx context.Context, menuID uint64) *[]uint64 {
+	var roleIds *[]uint64
+	err := r.db.Where("menuID = ?", menuID).Table("role_menus").Pluck("roleID", &roleIds).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	return res
+	return roleIds
 }
 
-func (r *role) GetRoleByRoleName(roleName string) *sys.Role {
-	res, err := r.factory.Role().GetRoleByRoleName(roleName)
+func (r *Role) GetRoleByRoleName(ctx context.Context, roleName string) *sys.Role {
+	var role *sys.Role
+	err := r.db.Where("name = ?", roleName).First(&role).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	return res
+	return role
 }
 
-func (r *role) UpdateStatus(roleID, status uint64) {
-	restfulx.ErrNotNilDebug(r.factory.Role().UpdateStatus(roleID, status), restfulx.OperatorErr)
+func (r *Role) UpdateStatus(ctx context.Context, roleID, status uint64) {
+	restfulx.ErrNotNilDebug(r.db.Model(&sys.Role{}).Where("id = ?", roleID).Update("status", status).Error, restfulx.OperatorErr)
 }
 
 // CheckRoleIsExist 判断角色是否存在
-func (r *role) CheckRoleIsExist(name string) bool {
-	_, err := r.factory.Role().GetRoleByRoleName(name)
+func (r *Role) CheckRoleIsExist(ctx context.Context, name string) bool {
+	err := r.db.Where("name = ?", name).First(&sys.Role{}).Error
 	if err != nil {
 		return false
 	}
 	return true
+}
+
+func GetTreeRoles(rolesList []*sys.Role, parentID uint64) (treeRolesList []*sys.Role) {
+	for _, node := range rolesList {
+		if node.ParentID == parentID {
+			child := GetTreeRoles(rolesList, node.ID)
+			node.Children = child
+			treeRolesList = append(treeRolesList, node)
+		}
+	}
+	return treeRolesList
 }

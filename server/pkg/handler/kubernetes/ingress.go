@@ -2,12 +2,14 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sort"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
-
 	v1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -25,15 +27,17 @@ type IIngresses interface {
 }
 
 type ingresses struct {
-	k8s *k8s.Factory
+	client    *store.ClientConfig
+	namespace string
 }
 
-func NewIngresses(k8s *k8s.Factory) *ingresses {
-	return &ingresses{k8s: k8s}
+func NewIngresses(client *store.ClientConfig, namespace string) *ingresses {
+	return &ingresses{client: client, namespace: namespace}
 }
 
-func (s *ingresses) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
-	data := s.k8s.Ingress().List(ctx)
+func (i *ingresses) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
+	data, err := i.client.SharedInformerFactory.Networking().V1().Ingresses().Lister().Ingresses(i.namespace).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageResult{}
 	var ingressList = make([]*v1.Ingress, 0)
 
@@ -42,6 +46,9 @@ func (s *ingresses) List(ctx context.Context, query *model.PageParam, name strin
 			ingressList = append(ingressList, item)
 		}
 	}
+	sort.Slice(ingressList, func(i, j int) bool {
+		return ingressList[j].ObjectMeta.CreationTimestamp.Time.Before(ingressList[i].ObjectMeta.CreationTimestamp.Time)
+	})
 
 	total := len(ingressList)
 	if query.Limit == 0 && query.Page == 0 {
@@ -60,18 +67,43 @@ func (s *ingresses) List(ctx context.Context, query *model.PageParam, name strin
 	return res
 }
 
-func (s *ingresses) Get(ctx context.Context, name string) *v1.Ingress {
-	return s.k8s.Ingress().Get(ctx, name)
+func (i *ingresses) Get(ctx context.Context, name string) *v1.Ingress {
+	res, err := i.client.SharedInformerFactory.Networking().V1().Ingresses().Lister().Ingresses(i.namespace).Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return res
 }
 
-func (s *ingresses) Delete(ctx context.Context, name string) {
-	s.k8s.Ingress().Delete(ctx, name)
+func (i *ingresses) Delete(ctx context.Context, name string) {
+	err := i.client.ClientSet.NetworkingV1().Ingresses(i.namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
-func (s *ingresses) Create(ctx context.Context, ingresses *v1.Ingress) *v1.Ingress {
-	return s.k8s.Ingress().Create(ctx, ingresses)
+func (i *ingresses) Create(ctx context.Context, ingresses *v1.Ingress) *v1.Ingress {
+	res, err := i.client.ClientSet.NetworkingV1().Ingresses(i.namespace).Create(ctx, ingresses, metav1.CreateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
 }
 
-func (s *ingresses) Update(ctx context.Context, ingresses *v1.Ingress) *v1.Ingress {
-	return s.k8s.Ingress().Update(ctx, ingresses)
+func (i *ingresses) Update(ctx context.Context, ingresses *v1.Ingress) *v1.Ingress {
+	res, err := i.client.ClientSet.NetworkingV1().Ingresses(i.namespace).Update(ctx, ingresses, metav1.UpdateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return res
+}
+
+type IngressHandle struct{}
+
+func NewIngressHandle() *IngressHandle {
+	return &IngressHandle{}
+}
+
+func (i *IngressHandle) OnAdd(obj interface{}) {
+	//TODO implement me
+}
+
+func (i *IngressHandle) OnUpdate(oldObj, newObj interface{}) {
+	//TODO implement me
+}
+
+func (i *IngressHandle) OnDelete(obj interface{}) {
+	//TODO implement me
 }

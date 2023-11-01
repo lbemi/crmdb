@@ -2,12 +2,14 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sort"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
-
 	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -25,15 +27,17 @@ type IDaemonSet interface {
 }
 
 type daemonSet struct {
-	k8s *k8s.Factory
+	client    *store.ClientConfig
+	namespace string
 }
 
-func NewDaemonSet(k8s *k8s.Factory) *daemonSet {
-	return &daemonSet{k8s: k8s}
+func NewDaemonSet(client *store.ClientConfig, namespace string) *daemonSet {
+	return &daemonSet{client: client, namespace: namespace}
 }
 
 func (d *daemonSet) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
-	data := d.k8s.DaemonSet().List(ctx)
+	data, err := d.client.SharedInformerFactory.Apps().V1().DaemonSets().Lister().DaemonSets(d.namespace).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageResult{}
 	var daemonSetList = make([]*v1.DaemonSet, 0)
 
@@ -54,7 +58,10 @@ func (d *daemonSet) List(ctx context.Context, query *model.PageParam, name strin
 		}
 		data = daemonSetList
 	}
-
+	//按时间排序
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
 	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {
@@ -74,17 +81,24 @@ func (d *daemonSet) List(ctx context.Context, query *model.PageParam, name strin
 }
 
 func (d *daemonSet) Get(ctx context.Context, name string) *v1.DaemonSet {
-	return d.k8s.DaemonSet().Get(ctx, name)
+	dep, err := d.client.SharedInformerFactory.Apps().V1().DaemonSets().Lister().DaemonSets(d.namespace).Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return dep
 }
 
 func (d *daemonSet) Create(ctx context.Context, obj *v1.DaemonSet) *v1.DaemonSet {
-	return d.k8s.DaemonSet().Create(ctx, obj)
+	newDaemonSet, err := d.client.ClientSet.AppsV1().DaemonSets(d.namespace).Create(ctx, obj, metav1.CreateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return newDaemonSet
 }
 
 func (d *daemonSet) Update(ctx context.Context, obj *v1.DaemonSet) *v1.DaemonSet {
-	return d.k8s.DaemonSet().Update(ctx, obj)
+	updateDaemonSet, err := d.client.ClientSet.AppsV1().DaemonSets(d.namespace).Update(ctx, obj, metav1.UpdateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return updateDaemonSet
 }
 
 func (d *daemonSet) Delete(ctx context.Context, name string) {
-	d.k8s.DaemonSet().Delete(ctx, name)
+	err := d.client.ClientSet.AppsV1().DaemonSets(d.namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }

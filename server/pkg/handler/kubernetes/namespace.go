@@ -2,12 +2,14 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sort"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
-
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -25,15 +27,16 @@ type INamespace interface {
 }
 
 type namespace struct {
-	k8s *k8s.Factory
+	cli *store.ClientConfig
 }
 
-func NewNamespace(k8s *k8s.Factory) *namespace {
-	return &namespace{k8s: k8s}
+func NewNamespace(cli *store.ClientConfig) *namespace {
+	return &namespace{cli: cli}
 }
 
 func (n *namespace) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
-	data := n.k8s.Namespace().List(ctx)
+	data, err := n.cli.SharedInformerFactory.Core().V1().Namespaces().Lister().List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageResult{}
 	namespaceList := make([]*v1.Namespace, 0)
 	if name != "" {
@@ -53,6 +56,10 @@ func (n *namespace) List(ctx context.Context, query *model.PageParam, name strin
 		}
 		data = namespaceList
 	}
+	//按时间排序
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
 	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {
@@ -71,22 +78,34 @@ func (n *namespace) List(ctx context.Context, query *model.PageParam, name strin
 }
 
 func (n *namespace) Get(ctx context.Context, name string) *v1.Namespace {
-	return n.k8s.Namespace().Get(ctx, name)
+	dep, err := n.cli.SharedInformerFactory.Core().V1().Namespaces().Lister().Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return dep
 }
 
 func (n *namespace) Create(ctx context.Context, obj *v1.Namespace) *v1.Namespace {
-	return n.k8s.Namespace().Create(ctx, obj)
+	newNamespace, err := n.cli.ClientSet.CoreV1().Namespaces().Create(ctx, obj, metav1.CreateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return newNamespace
 }
 
 func (n *namespace) Update(ctx context.Context, obj *v1.Namespace) *v1.Namespace {
-	return n.k8s.Namespace().Update(ctx, obj)
+	newNamespace, err := n.cli.ClientSet.CoreV1().Namespaces().Update(ctx, obj, metav1.UpdateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return newNamespace
 }
 
 func (n *namespace) Delete(ctx context.Context, name string) {
-	n.k8s.Namespace().Delete(ctx, name)
+	restfulx.ErrNotNilDebug(n.cli.ClientSet.CoreV1().Namespaces().Delete(ctx, name, metav1.DeleteOptions{}), restfulx.OperatorErr)
 }
 
 type NameSpaceHandler struct {
+	cli *store.ClientConfig
+	ns  string
+}
+
+func NewNameSpaceHandler(cli *store.ClientConfig, ns string) *NameSpaceHandler {
+	return &NameSpaceHandler{cli: cli, ns: ns}
 }
 
 func (n *NameSpaceHandler) OnAdd(obj interface{}) {
@@ -99,8 +118,4 @@ func (n *NameSpaceHandler) OnUpdate(oldObj, newObj interface{}) {
 
 func (n *NameSpaceHandler) OnDelete(obj interface{}) {
 	//TODO implement me
-}
-
-func NewNameSpaceHandler() *NameSpaceHandler {
-	return &NameSpaceHandler{}
 }

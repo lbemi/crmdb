@@ -2,13 +2,13 @@ package kubernetes
 
 import (
 	"context"
-
+	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services/k8s"
-
+	"github.com/lbemi/lbemi/pkg/restfulx"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 )
 
 type EventGetter interface {
@@ -21,16 +21,22 @@ type IEvent interface {
 	ListByLabels(ctx context.Context, labelsData labels.Set) []*v1.Event
 }
 
-type event struct {
-	k8s *k8s.Factory
+type Event struct {
+	client    *store.ClientConfig
+	namespace string
 }
 
-func NewEvent(k8s *k8s.Factory) *event {
-	return &event{k8s: k8s}
+func NewEvent(client *store.ClientConfig, namespace string) *Event {
+	return &Event{client: client, namespace: namespace}
 }
 
-func (e *event) List(ctx context.Context, query *model.PageParam) *form.PageResult {
-	data := e.k8s.Event().List(ctx)
+func (e *Event) List(ctx context.Context, query *model.PageParam) *form.PageResult {
+	data, err := e.client.SharedInformerFactory.Core().V1().Events().Lister().Events(e.namespace).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	//按时间排序
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
 	res := &form.PageResult{}
 	total := len(data)
 	// 未传递分页查询参数
@@ -49,12 +55,17 @@ func (e *event) List(ctx context.Context, query *model.PageParam) *form.PageResu
 	return res
 }
 
-func (e *event) ListByLabels(ctx context.Context, labelsData labels.Set) []*v1.Event {
-	return e.k8s.Event().ListByLabels(ctx, labelsData)
+func (e *Event) ListByLabels(ctx context.Context, labelsData labels.Set) []*v1.Event {
+	selector := labels.SelectorFromSet(labelsData)
+	eventList, err := e.client.SharedInformerFactory.Core().V1().Events().Lister().Events(e.namespace).List(selector)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return eventList
 }
 
-func (e *event) Get(ctx context.Context, name string) *v1.Event {
-	return e.k8s.Event().Get(ctx, name)
+func (e *Event) Get(ctx context.Context, name string) *v1.Event {
+	res, err := e.client.SharedInformerFactory.Core().V1().Events().Lister().Events(e.namespace).Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return res
 }
 
 type EventHandler struct {

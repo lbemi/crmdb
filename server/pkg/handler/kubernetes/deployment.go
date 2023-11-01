@@ -42,17 +42,17 @@ type IDeployment interface {
 }
 
 type Deployment struct {
-	cli       *store.ClientConfig
+	client    *store.ClientConfig
 	namespace string
 }
 
 func NewDeployment(client *store.ClientConfig, namespace string) *Deployment {
-	return &Deployment{cli: client, namespace: namespace}
+	return &Deployment{client: client, namespace: namespace}
 
 }
 
 func (d *Deployment) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageResult {
-	data, err := d.cli.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).List(labels.Everything())
+	data, err := d.client.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageResult{}
 
@@ -99,19 +99,19 @@ func (d *Deployment) List(ctx context.Context, query *model.PageParam, name stri
 }
 
 func (d *Deployment) Get(ctx context.Context, name string) *appsv1.Deployment {
-	dep, err := d.cli.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).Get(name)
+	dep, err := d.client.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).Get(name)
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	return dep
 }
 
 func (d *Deployment) Create(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment {
-	newDeployment, err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).Create(ctx, obj, metav1.CreateOptions{})
+	newDeployment, err := d.client.ClientSet.AppsV1().Deployments(d.namespace).Create(ctx, obj, metav1.CreateOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return newDeployment
 }
 
 func (d *Deployment) Update(ctx context.Context, obj *appsv1.Deployment) *appsv1.Deployment {
-	result, err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).Update(ctx, obj, metav1.UpdateOptions{})
+	result, err := d.client.ClientSet.AppsV1().Deployments(d.namespace).Update(ctx, obj, metav1.UpdateOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return result
 }
@@ -122,7 +122,7 @@ func (d *Deployment) RollBack(ctx context.Context, depName string, reversion int
 	}
 
 	dep := d.Get(ctx, depName)
-	replicaSets, err := d.cli.SharedInformerFactory.Apps().V1().ReplicaSets().Lister().ReplicaSets(d.namespace).List(labels.Everything())
+	replicaSets, err := d.client.SharedInformerFactory.Apps().V1().ReplicaSets().Lister().ReplicaSets(d.namespace).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 
 	var replicaSet *appsv1.ReplicaSet
@@ -144,21 +144,21 @@ func (d *Deployment) RollBack(ctx context.Context, depName string, reversion int
 }
 
 func (d *Deployment) Delete(ctx context.Context, name string) {
-	err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	err := d.client.ClientSet.AppsV1().Deployments(d.namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
 func (d *Deployment) Scale(ctx context.Context, name string, replicaNum int32) {
-	oldScale, err := d.cli.ClientSet.AppsV1().Deployments(d.namespace).GetScale(ctx, name, metav1.GetOptions{})
+	oldScale, err := d.client.ClientSet.AppsV1().Deployments(d.namespace).GetScale(ctx, name, metav1.GetOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	oldScale.Spec.Replicas = replicaNum
-	_, err = d.cli.ClientSet.AppsV1().Deployments(d.namespace).UpdateScale(ctx, name, oldScale, metav1.UpdateOptions{})
+	_, err = d.client.ClientSet.AppsV1().Deployments(d.namespace).UpdateScale(ctx, name, oldScale, metav1.UpdateOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
 func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*corev1.Pod, []*appsv1.ReplicaSet) {
 	dep := d.Get(ctx, name)
-	replicaSets, err := d.cli.SharedInformerFactory.Apps().V1().ReplicaSets().Lister().ReplicaSets(d.namespace).List(labels.Everything())
+	replicaSets, err := d.client.SharedInformerFactory.Apps().V1().ReplicaSets().Lister().ReplicaSets(d.namespace).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 
 	rsLabels := make([]map[string]string, 0)
@@ -175,7 +175,7 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 	}
 
 	res := make([]*corev1.Pod, 0)
-	pods, err := d.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(d.namespace).List(labels.Everything())
+	pods, err := d.client.SharedInformerFactory.Core().V1().Pods().Lister().Pods(d.namespace).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	for _, item := range pods {
 		for _, l := range rsLabels {
@@ -222,7 +222,7 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 }
 
 func (d *Deployment) GetDeploymentEvent(ctx context.Context, name string) []*corev1.Event {
-	eventList, err := d.cli.SharedInformerFactory.Core().V1().Events().Lister().Events(d.namespace).List(labels.Everything())
+	eventList, err := d.client.SharedInformerFactory.Core().V1().Events().Lister().Events(d.namespace).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	events := make([]*corev1.Event, 0)
 	for _, item := range eventList {
@@ -236,7 +236,7 @@ func (d *Deployment) GetDeploymentEvent(ctx context.Context, name string) []*cor
 
 func (d *Deployment) Search(ctx context.Context, key string, searchType int) []*appsv1.Deployment {
 	var deploymentList []*appsv1.Deployment
-	deployments, err := d.cli.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).List(labels.Everything())
+	deployments, err := d.client.SharedInformerFactory.Apps().V1().Deployments().Lister().Deployments(d.namespace).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	switch searchType {
 	case types.SearchByName:

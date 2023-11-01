@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sort"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/model"
@@ -26,17 +27,17 @@ type IConfigMap interface {
 	Update(ctx context.Context, configMap *v1.ConfigMap) *v1.ConfigMap
 }
 
-type configMap struct {
-	client *store.ClientConfig
-	ns     string
+type ConfigMap struct {
+	client    *store.ClientConfig
+	namespace string
 }
 
-func NewConfigMap(client *store.ClientConfig, namespace string) *configMap {
-	return &configMap{client: client, ns: namespace}
+func NewConfigMap(client *store.ClientConfig, namespace string) *ConfigMap {
+	return &ConfigMap{client: client, namespace: namespace}
 }
 
-func (c *configMap) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageConfigMap {
-	data, err := c.client.SharedInformerFactory.Core().V1().ConfigMaps().Lister().ConfigMaps(c.ns).List(labels.Everything())
+func (c *ConfigMap) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageConfigMap {
+	data, err := c.client.SharedInformerFactory.Core().V1().ConfigMaps().Lister().ConfigMaps(c.namespace).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageConfigMap{}
 	var configMapList = make([]*v1.ConfigMap, 0)
@@ -59,6 +60,10 @@ func (c *configMap) List(ctx context.Context, query *model.PageParam, name strin
 		data = configMapList
 	}
 
+	//按时间排序
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
 	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {
@@ -77,26 +82,26 @@ func (c *configMap) List(ctx context.Context, query *model.PageParam, name strin
 	return res
 }
 
-func (c *configMap) Get(ctx context.Context, name string) *v1.ConfigMap {
-	res, err := c.client.SharedInformerFactory.Core().V1().ConfigMaps().Lister().ConfigMaps(c.ns).Get(name)
+func (c *ConfigMap) Get(ctx context.Context, name string) *v1.ConfigMap {
+	res, err := c.client.SharedInformerFactory.Core().V1().ConfigMaps().Lister().ConfigMaps(c.namespace).Get(name)
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	return res
 }
 
-func (c *configMap) Delete(ctx context.Context, name string) {
+func (c *ConfigMap) Delete(ctx context.Context, name string) {
 	restfulx.ErrNotNilDebug(
-		c.client.ClientSet.CoreV1().ConfigMaps(c.ns).Delete(ctx, name, metav1.DeleteOptions{}), restfulx.OperatorErr)
+		c.client.ClientSet.CoreV1().ConfigMaps(c.namespace).Delete(ctx, name, metav1.DeleteOptions{}), restfulx.OperatorErr)
 }
 
-func (c *configMap) Create(ctx context.Context, configMap *v1.ConfigMap) *v1.ConfigMap {
-	log.Logger.Error(c.ns)
-	res, err := c.client.ClientSet.CoreV1().ConfigMaps(c.ns).Create(ctx, configMap, metav1.CreateOptions{})
+func (c *ConfigMap) Create(ctx context.Context, configMap *v1.ConfigMap) *v1.ConfigMap {
+	log.Logger.Error(c.namespace)
+	res, err := c.client.ClientSet.CoreV1().ConfigMaps(c.namespace).Create(ctx, configMap, metav1.CreateOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	return res
 }
 
-func (c *configMap) Update(ctx context.Context, configMap *v1.ConfigMap) *v1.ConfigMap {
-	res, err := c.client.ClientSet.CoreV1().ConfigMaps(c.ns).Update(ctx, configMap, metav1.UpdateOptions{})
+func (c *ConfigMap) Update(ctx context.Context, configMap *v1.ConfigMap) *v1.ConfigMap {
+	res, err := c.client.ClientSet.CoreV1().ConfigMaps(c.namespace).Update(ctx, configMap, metav1.UpdateOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	return res
 }
