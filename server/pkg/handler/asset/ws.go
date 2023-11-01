@@ -19,8 +19,7 @@ type WsGetter interface {
 	Ws() IWs
 }
 
-type ws struct {
-}
+type ws struct{}
 
 func NewWs() *ws {
 	return &ws{}

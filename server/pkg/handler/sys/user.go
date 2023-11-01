@@ -1,6 +1,7 @@
 package sys
 
 import (
+	"context"
 	operatorLog "github.com/lbemi/lbemi/pkg/handler/logsys"
 	"github.com/lbemi/lbemi/pkg/handler/policy"
 	"gorm.io/gorm"
@@ -23,18 +24,18 @@ type UserGetter interface {
 
 type IUSer interface {
 	Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *sys.User)
-	Register(params *form.RegisterUserForm)
-	Update(userID uint64, params *form.UpdateUserFrom)
-	GetUserInfoById(id uint64) (user *sys.User)
-	GetUserList(param *model.PageParam, condition *sys.User) *form.PageUser
-	DeleteUserByUserId(id uint64)
-	CheckUserExist(userName string) bool
-	GetByName(name string) *sys.User
-	GetRoleIDByUser(userID uint64) *[]sys.Role
-	SetUserRoles(userID uint64, roleIDs []uint64)
-	GetButtonsByUserID(userID uint64) *[]string
-	GetLeftMenusByUserID(userID uint64) *[]sys.Menu
-	UpdateStatus(userID, status uint64)
+	Register(c context.Context, params *form.RegisterUserForm)
+	Update(c context.Context, userID uint64, params *form.UpdateUserFrom)
+	GetUserInfoById(c context.Context, id uint64) (user *sys.User)
+	GetUserList(c context.Context, param *model.PageParam, condition *sys.User) *form.PageUser
+	DeleteUserByUserId(c context.Context, id uint64)
+	CheckUserExist(c context.Context, userName string) bool
+	GetByName(c context.Context, name string) *sys.User
+	GetRoleIDByUser(c context.Context, userID uint64) []*sys.Role
+	SetUserRoles(c context.Context, userID uint64, roleIDs []uint64)
+	GetButtonsByUserID(c context.Context, userID uint64) *[]string
+	GetLeftMenusByUserID(c context.Context, userID uint64) *[]sys.Menu
+	UpdateStatus(c context.Context, userID, status uint64)
 }
 
 type User struct {
@@ -99,7 +100,7 @@ func (u *User) Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *sys.Use
 	return user
 }
 
-func (u *User) Register(params *form.RegisterUserForm) {
+func (u *User) Register(ctx context.Context, params *form.RegisterUserForm) {
 	userInfo := &sys.User{
 		UserName: params.UserName,
 		Password: util.BcryptMake([]byte(params.Password)),
@@ -109,11 +110,11 @@ func (u *User) Register(params *form.RegisterUserForm) {
 		Status:      params.Status,
 	}
 
-	restfulx.ErrNotTrue(!u.CheckUserExist(params.UserName), restfulx.UserExist)
+	restfulx.ErrNotTrue(!u.CheckUserExist(ctx, params.UserName), restfulx.UserExist)
 	restfulx.ErrNotNilDebug(u.db.Create(&userInfo).Error, restfulx.OperatorErr)
 }
 
-func (u *User) Update(userID uint64, params *form.UpdateUserFrom) {
+func (u *User) Update(ctx context.Context, userID uint64, params *form.UpdateUserFrom) {
 	userInfo := &sys.User{
 		UserName:    params.UserName,
 		Email:       params.Email,
@@ -123,14 +124,14 @@ func (u *User) Update(userID uint64, params *form.UpdateUserFrom) {
 	restfulx.ErrNotNilDebug(u.db.Model(&sys.User{}).Where("id = ?", userID).Updates(userInfo).Error, restfulx.OperatorErr)
 }
 
-func (u *User) GetUserInfoById(id uint64) *sys.User {
+func (u *User) GetUserInfoById(ctx context.Context, id uint64) *sys.User {
 	var user *sys.User
 	err := u.db.First(&user, id).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return user
 }
 
-func (u *User) GetUserList(pageParam *model.PageParam, condition *sys.User) *form.PageUser {
+func (u *User) GetUserList(ctx context.Context, pageParam *model.PageParam, condition *sys.User) *form.PageUser {
 	db := u.db
 	if condition.Status != 0 {
 		db = db.Where("status = ?", condition.Status)
@@ -170,14 +171,14 @@ func (u *User) GetUserList(pageParam *model.PageParam, condition *sys.User) *for
 	return res
 }
 
-func (u *User) DeleteUserByUserId(id uint64) {
+func (u *User) DeleteUserByUserId(ctx context.Context, id uint64) {
 	//TODO 修复一下逻辑
 	tx := u.db.Where("id = ?", id).Delete(&sys.User{})
 	restfulx.ErrNotNilDebug(tx.Error, restfulx.OperatorErr)
 	u.policy.DeleteUser(id)
 }
 
-func (u *User) CheckUserExist(userName string) bool {
+func (u *User) CheckUserExist(ctx context.Context, userName string) bool {
 	err := u.db.Where("user_name = ?", userName).First(&sys.User{}).Error
 	if err != nil {
 		return false
@@ -185,7 +186,7 @@ func (u *User) CheckUserExist(userName string) bool {
 	return true
 }
 
-func (u *User) GetByName(name string) *sys.User {
+func (u *User) GetByName(ctx context.Context, name string) *sys.User {
 	var obj *sys.User
 	err := u.db.Where("name = ?", name).First(&obj).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
@@ -193,8 +194,8 @@ func (u *User) GetByName(name string) *sys.User {
 }
 
 // GetRoleIDByUser 查询用户角色
-func (u *User) GetRoleIDByUser(userID uint64) *[]sys.Role {
-	var roles *[]sys.Role
+func (u *User) GetRoleIDByUser(ctx context.Context, userID uint64) []*sys.Role {
+	var roles []*sys.Role
 	subRoleIdSql := u.db.Select("role_id").Where("user_id = ?", userID).Table("user_roles")
 	err := u.db.Table("roles").
 		Select("roles.*").
@@ -208,57 +209,100 @@ func (u *User) GetRoleIDByUser(userID uint64) *[]sys.Role {
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 
 	if roles != nil {
-		res := GetTreeRoles(*roles, 0)
-		return &res
+		res := GetTreeRoles(roles, 0)
+		return res
 	}
 
 	return roles
 }
 
 // SetUserRoles 分配用户角色
-func (u *User) SetUserRoles(userID uint64, roleIDS []uint64) {
+func (u *User) SetUserRoles(ctx context.Context, userID uint64, roleIDS []uint64) {
 
 	// 配置role_users表
-	tx, err := u.factory.User().SetUserRoles(userID, roleIDS)
-	if err != nil {
+	tx := u.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		tx.Rollback()
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
 
-	// 添加规则到rules表
-	err = u.factory.Authentication().AddRoleForUser(userID, roleIDS)
-	if err != nil {
-		// 报错则回退数据
+	if err := tx.Where(&sys.UserRole{UserID: userID}).Delete(&sys.UserRole{}).Error; err != nil {
 		tx.Rollback()
-		for _, roleId := range roleIDS {
-			u.factory.Authentication().DeleteRoleWithUser(userID, roleId)
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+	if len(roleIDS) > 0 {
+		for _, rid := range roleIDS {
+			rm := new(sys.UserRole)
+			rm.RoleID = rid
+			rm.UserID = userID
+			if err := tx.Create(rm).Error; err != nil {
+				tx.Rollback()
+				restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+			}
 		}
+	}
+	err := tx.Commit().Error
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
+	// 添加规则到rules表
+	err = u.policy.AddRoleForUser(ctx, userID, roleIDS)
+	if err != nil {
+		tx.Rollback()
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
 
 }
 
 // GetButtonsByUserID 获取菜单按钮
-func (u *User) GetButtonsByUserID(userID uint64) *[]string {
-	menus, err := u.factory.User().GetButtonsByUserID(userID)
+func (u *User) GetButtonsByUserID(ctx context.Context, userID uint64) *[]string {
+	var menus []*sys.Menu
+	err := u.db.Table("menus").Select(" menus.id, menus.code,menus.menuType,menus.status").
+		Joins("left join role_menus on menus.id = role_menus.menuID ").
+		Joins("left join user_roles on user_roles.role_id = role_menus.roleID where role_menus.roleID in (?) and menus.menuType in (2,3) and menus.status = 1",
+			u.db.Table("roles").Select("roles.id").
+				Joins("left join user_roles on user_roles.role_id = roles.id where  user_roles.user_id = ? and roles.status = 1", userID)).
+		Group("id").
+		Scan(&menus).Error
+
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 
 	var res []string
-	for _, v := range *menus {
+	for _, v := range menus {
 		if v.Code != "" {
 			res = append(res, v.Code)
 		}
 	}
-
 	return &res
 }
 
 // GetLeftMenusByUserID 根据用户ID获取左侧菜单
-func (u *User) GetLeftMenusByUserID(userID uint64) *[]sys.Menu {
-	res, err := u.factory.User().GetLeftMenusByUserID(userID)
+func (u *User) GetLeftMenusByUserID(ctx context.Context, userID uint64) *[]sys.Menu {
+	var menus []sys.Menu
+	err := u.db.Table("menus").Select(" menus.id, menus.parentID,menus.name,menus.memo, menus.path, menus.icon,menus.sequence,"+
+		"menus.method, menus.menuType, menus.status,menus.redirect, menus.component, menus.isK8s,menus.title, menus.isLink,menus.isHide,menus.isAffix,menus.isKeepAlive,menus.isIframe").
+		Joins("left join role_menus on menus.id = role_menus.menuID where role_menus.roleID in (?) and menus.menuType = 1 and menus.status = 1",
+			u.db.Table("roles").Select("roles.id").
+				Joins("left join user_roles on user_roles.role_id = roles.id where  user_roles.user_id = ? and roles.status = 1", userID)).
+		Group("id").
+		Order("parentID ASC").
+		Order("sequence DESC").
+		Scan(&menus).Error
+
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	return res
+
+	if len(menus) == 0 {
+		return &menus
+	}
+	treeMenusList := GetTreeMenus(menus, 0)
+	return &treeMenusList
 }
 
-func (u *User) UpdateStatus(userId, status uint64) {
-	restfulx.ErrNotNilDebug(u.factory.User().UpdateStatus(userId, status), restfulx.OperatorErr)
+func (u *User) UpdateStatus(ctx context.Context, userId, status uint64) {
+	restfulx.ErrNotNilDebug(u.db.Model(&sys.User{}).Where("id = ?", userId).Update("status", status).Error, restfulx.OperatorErr)
 }

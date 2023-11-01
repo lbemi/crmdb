@@ -8,5 +8,12 @@ import (
 var V1 handler.Getter
 
 func Register(options *option.Options) {
-	V1 = handler.NewHandler(options.Factory, options.Redis, options.DB, options.Enforcer)
+	V1 = handler.NewHandler(
+		options.Redis,
+		options.DB,
+		options.Enforcer,
+		options.ClientStore)
+}
+func loadKubernetes() {
+
 }

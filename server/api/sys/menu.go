@@ -12,29 +12,34 @@ import (
 )
 
 func AddMenu(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	var menu form.MenusReq
 	rc.ShouldBind(&menu)
-	core.V1.Menu().Create(&menu)
+	core.V1.Menu().Create(c, &menu)
 }
 
 func UpdateMenu(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	var menu form.UpdateMenusReq
 	rc.ShouldBind(&menu)
 	menuID := rc.PathParamUint64("id")
-	core.V1.Menu().Update(&menu, menuID)
+	core.V1.Menu().Update(c, &menu, menuID)
 }
 
 func DeleteMenu(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	menuID := rc.PathParamUint64("id")
-	core.V1.Menu().Delete(menuID)
+	core.V1.Menu().Delete(c, menuID)
 }
 
 func GetMenu(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	menuID := rc.PathParamUint64("id")
-	rc.ResData = core.V1.Menu().Get(menuID)
+	rc.ResData = core.V1.Menu().Get(c, menuID)
 }
 
 func ListMenus(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	var menuType []int8
 	condition := &sys.Menu{}
 	isTree := true
@@ -57,11 +62,12 @@ func ListMenus(rc *rctx.ReqCtx) {
 	limit := rc.QueryDefaultInt("limit", 0)
 	condition.Memo = rc.Query("memo")
 	condition.Status = rc.QueryParamInt8("status")
-	rc.ResData = core.V1.Menu().List(page, limit, menuType, isTree, condition)
+	rc.ResData = core.V1.Menu().List(c, page, limit, menuType, isTree, condition)
 }
 
 func UpdateMenuStatus(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	menuID := rc.PathParamUint64("id")
 	status := rc.PathParamUint64("status")
-	core.V1.Menu().UpdateStatus(menuID, status)
+	core.V1.Menu().UpdateStatus(c, menuID, status)
 }

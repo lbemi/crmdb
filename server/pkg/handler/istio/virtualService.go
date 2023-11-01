@@ -2,13 +2,17 @@ package istio
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/common/store"
+	"github.com/lbemi/lbemi/pkg/common/store/wsstore"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"sort"
 	"strings"
 
 	"github.com/lbemi/lbemi/pkg/model"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services/istio"
-
 	"istio.io/client-go/pkg/apis/networking/v1beta1"
 )
 
@@ -25,15 +29,17 @@ type IVirtualService interface {
 }
 
 type VirtualService struct {
-	istio *istio.Factory
+	cli *store.ClientConfig
+	ns  string
 }
 
-func NewVirtualService(istio *istio.Factory) *VirtualService {
-	return &VirtualService{istio: istio}
+func NewVirtualService(cli *store.ClientConfig, ns string) IVirtualService {
+	return &VirtualService{cli: cli, ns: ns}
 }
 
-func (s *VirtualService) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageVirtualService {
-	data := s.istio.VirtualService().List(ctx)
+func (v *VirtualService) List(ctx context.Context, query *model.PageParam, name string, label string) *form.PageVirtualService {
+	data, err := v.cli.IstioSharedInformerFactory.Networking().V1beta1().VirtualServices().Lister().VirtualServices(v.ns).List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &form.PageVirtualService{}
 	var VirtualServiceList = make([]*v1beta1.VirtualService, 0)
 
@@ -72,18 +78,67 @@ func (s *VirtualService) List(ctx context.Context, query *model.PageParam, name 
 	return res
 }
 
-func (s *VirtualService) Get(ctx context.Context, name string) *v1beta1.VirtualService {
-	return s.istio.VirtualService().Get(ctx, name)
+func (v *VirtualService) Get(ctx context.Context, name string) *v1beta1.VirtualService {
+	vs, err := v.cli.IstioSharedInformerFactory.Networking().V1beta1().VirtualServices().Lister().VirtualServices(v.ns).Get(name)
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	return vs
 }
 
-func (s *VirtualService) Delete(ctx context.Context, name string) {
-	s.istio.VirtualService().Delete(ctx, name)
+func (v *VirtualService) Delete(ctx context.Context, name string) {
+	restfulx.ErrNotNilDebug(v.cli.IstioClient.NetworkingV1beta1().VirtualServices(v.ns).Delete(ctx, name, metav1.DeleteOptions{}), restfulx.OperatorErr)
 }
 
-func (s *VirtualService) Create(ctx context.Context, VirtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
-	return s.istio.VirtualService().Create(ctx, VirtualService)
+func (v *VirtualService) Create(ctx context.Context, virtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
+	newVirtualService, err := v.cli.IstioClient.NetworkingV1beta1().VirtualServices(v.ns).Create(ctx, virtualService, metav1.CreateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return newVirtualService
 }
 
-func (s *VirtualService) Update(ctx context.Context, VirtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
-	return s.istio.VirtualService().Update(ctx, VirtualService)
+func (v *VirtualService) Update(ctx context.Context, virtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
+	updateVirtualService, err := v.cli.IstioClient.NetworkingV1beta1().VirtualServices(v.ns).Update(ctx, virtualService, metav1.UpdateOptions{})
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return updateVirtualService
+}
+
+type VirtualServiceHandler struct {
+	clusterName string
+	client      *store.ClientConfig
+}
+
+func NewVirtualServiceHandler(client *store.ClientConfig, clusterName string) *VirtualServiceHandler {
+	return &VirtualServiceHandler{client: client, clusterName: clusterName}
+}
+
+func (v *VirtualServiceHandler) OnAdd(obj interface{}, isInInitialList bool) {
+	v.notifyVirtualServices(obj)
+}
+
+func (v *VirtualServiceHandler) OnUpdate(oldObj, newObj interface{}) {
+	v.notifyVirtualServices(newObj)
+}
+
+func (v *VirtualServiceHandler) OnDelete(obj interface{}) {
+	v.notifyVirtualServices(obj)
+}
+
+func (v *VirtualServiceHandler) notifyVirtualServices(obj interface{}) {
+	namespace := obj.(*v1beta1.VirtualService).Namespace
+	VirtualServices, err := v.client.IstioSharedInformerFactory.Networking().V1beta1().VirtualServices().Lister().VirtualServices(namespace).List(labels.Everything())
+	if err != nil {
+		log.Logger.Error(err)
+	}
+
+	//按时间排序
+	sort.SliceStable(VirtualServices, func(i, j int) bool {
+		return VirtualServices[j].ObjectMeta.GetCreationTimestamp().Time.Before(VirtualServices[i].ObjectMeta.GetCreationTimestamp().Time)
+	})
+
+	go wsstore.WsClientMap.SendClusterResource(v.clusterName, "virtualService", map[string]interface{}{
+		"cluster": v.clusterName,
+		"type":    "virtualService",
+		"result": map[string]interface{}{
+			"namespace": namespace,
+			"data":      VirtualServices,
+		},
+	})
 }

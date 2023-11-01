@@ -3,13 +3,13 @@ package asset
 import (
 	"context"
 	"fmt"
+	"gorm.io/gorm"
 
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
 
 	"github.com/lbemi/lbemi/pkg/model/asset"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services"
 )
 
 type AccountGetter interface {
@@ -17,12 +17,12 @@ type AccountGetter interface {
 }
 
 type account struct {
-	factory services.Interface
+	db *gorm.DB
 }
 
-func NewAccount(f services.Interface) IAccount {
+func NewAccount(db *gorm.DB) IAccount {
 	return &account{
-		factory: f,
+		db: db,
 	}
 }
 
@@ -35,55 +35,87 @@ type IAccount interface {
 	GetByAccountId(ctx context.Context, accountId uint64) (account *asset.Account)
 	UpdateFiledStatus(ctx context.Context, accountId uint64, updateFiled string, status int8)
 	CheckAccountExist(ctx context.Context, accountId uint64) bool
+	GetByIds(ctx context.Context, accountIds []uint64) []*asset.Account
 }
 
-func (m *account) Create(ctx context.Context, a *asset.Account) {
-	if a.Password != "" {
-		a.Password = util.Encrypt(a.Password)
+func (a *account) Create(ctx context.Context, account *asset.Account) {
+	if account.Password != "" {
+		account.Password = util.Encrypt(account.Password)
+	}
+	if account.Secret != "" {
+		account.Password = util.Encrypt(account.Secret)
 	}
 
-	if a.Secret != "" {
-		a.Password = util.Encrypt(a.Secret)
-	}
-
-	m.factory.Account().Create(ctx, a)
+	restfulx.ErrNotNilDebug(a.db.Create(account).Error, restfulx.OperatorErr)
 }
 
-func (m *account) Delete(ctx context.Context, accountId uint64) {
-	m.factory.Account().Delete(ctx, accountId)
+func (a *account) Delete(ctx context.Context, accountId uint64) {
+	restfulx.ErrNotNilDebug(a.db.Where("id = ?", accountId).Delete(&asset.Account{}).Error, restfulx.OperatorErr)
 }
 
-func (m *account) Update(ctx context.Context, accountId uint64, a *asset.Account) {
-	exist := m.CheckAccountExist(ctx, accountId)
+func (a *account) Update(ctx context.Context, accountId uint64, account *asset.Account) {
+	exist := a.CheckAccountExist(ctx, accountId)
 	if !exist {
 		restfulx.ErrNotNil(fmt.Errorf("账户不存在"), restfulx.OperatorErr)
 	}
-	if a.Password != "" {
-		a.Password = util.Encrypt(a.Password)
+	if account.Password != "" {
+		account.Password = util.Encrypt(account.Password)
+	}
+	if account.Secret != "" {
+		account.Password = util.Encrypt(account.Secret)
+	}
+	restfulx.ErrNotNilDebug(a.db.Where("id = ?", accountId).Updates(account).Error, restfulx.OperatorErr)
+}
+
+func (a *account) List(ctx context.Context, page, limit int, name, userName string) *form.PageResult {
+	var (
+		accountList []asset.Account
+		total       int64
+	)
+	db := a.db
+	if name != "" {
+		db = db.Where("name LIKE ?", "%"+name+"%")
+	}
+	if userName != "" {
+		db = db.Where("user_name LIKE ?", "%"+userName+"%")
 	}
 
-	if a.Secret != "" {
-		a.Password = util.Encrypt(a.Secret)
+	restfulx.ErrNotNilDebug(db.Model(&asset.Account{}).Count(&total).Error, restfulx.OperatorErr)
+
+	if page == 0 && limit == 0 {
+		restfulx.ErrNotNilDebug(db.Find(&accountList).Error, restfulx.OperatorErr)
+	} else {
+		restfulx.ErrNotNilDebug(db.Limit(limit).Offset((page-1)*limit).Find(&accountList).Error, restfulx.OperatorErr)
 	}
-	m.factory.Account().Update(ctx, accountId, a)
+
+	res := &form.PageResult{
+		Data:  accountList,
+		Total: total,
+	}
+	return res
 }
 
-func (m *account) List(ctx context.Context, page, limit int, name, userName string) *form.PageResult {
-	return m.factory.Account().List(ctx, page, limit, name, userName)
+func (a *account) GetByAccountId(ctx context.Context, accountId uint64) (account *asset.Account) {
+	account = &asset.Account{}
+	restfulx.ErrNotNilDebug(a.db.Where("id = ?", accountId).Find(&account).Error, restfulx.OperatorErr)
+	return account
 }
 
-func (m *account) GetByAccountId(ctx context.Context, accountId uint64) (account *asset.Account) {
-	return m.factory.Account().GetByAccountId(ctx, accountId)
+func (a *account) UpdateFiledStatus(ctx context.Context, accountId uint64, updateFiled string, status int8) {
+	restfulx.ErrNotNilDebug(a.db.Where("id = ?", accountId).Update(updateFiled, status).Error, restfulx.OperatorErr)
 }
 
-func (m *account) UpdateFiledStatus(ctx context.Context, accountId uint64, updateFiled string, status int8) {
-	m.factory.Account().UpdateFiledStatus(ctx, accountId, updateFiled, status)
-}
-
-func (m *account) CheckAccountExist(ctx context.Context, accountId uint64) bool {
-	h := m.factory.Account().GetByAccountId(ctx, accountId)
-	if h == nil {
+func (a *account) CheckAccountExist(ctx context.Context, accountId uint64) bool {
+	account := &asset.Account{}
+	err := a.db.Where("id = ?", accountId).Find(&account).Error
+	if err == nil {
 		return false
 	}
 	return true
+}
+
+func (a *account) GetByIds(ctx context.Context, accountIds []uint64) []*asset.Account {
+	account := make([]*asset.Account, 0)
+	restfulx.ErrNotNilDebug(a.db.Where("id in (?)", accountIds).Find(&account).Error, restfulx.OperatorErr)
+	return account
 }

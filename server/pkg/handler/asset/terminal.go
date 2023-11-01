@@ -10,8 +10,6 @@ import (
 
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/model/asset"
-	"github.com/lbemi/lbemi/pkg/services"
-
 	"golang.org/x/crypto/ssh"
 )
 
@@ -20,11 +18,12 @@ type TerminalGetter interface {
 }
 
 type terminal struct {
-	factory services.Interface
+	host    IHost
+	account IAccount
 }
 
-func NewTerminal(f services.Interface) ITerminal {
-	return &terminal{factory: f}
+func NewTerminal(host IHost, account IAccount) ITerminal {
+	return &terminal{host: host, account: account}
 }
 
 type ITerminal interface {
@@ -39,8 +38,8 @@ func (t *terminal) GenerateClient(ctx context.Context, hostID uint64, accountId 
 		clientConfig *ssh.ClientConfig
 		config       ssh.Config
 	)
-	host := t.factory.Host().GetByHostId(ctx, hostID)
-	account := t.factory.Account().GetByAccountId(ctx, accountId)
+	host := t.host.GetByHostId(ctx, hostID)
+	account := t.account.GetByAccountId(ctx, accountId)
 
 	auth = make([]ssh.AuthMethod, 0)
 	auth = append(auth, ssh.Password(util.Decrypt(account.Password)))

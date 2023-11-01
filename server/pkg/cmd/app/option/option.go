@@ -10,16 +10,15 @@ import (
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/common/store"
 	"github.com/lbemi/lbemi/pkg/model/config"
-	"github.com/lbemi/lbemi/pkg/services"
 )
 
 type Options struct {
-	Factory   services.Interface
-	Config    *config.Config
-	DB        *gorm.DB
-	Redis     *redis.Client
-	Enforcer  *casbin.SyncedEnforcer
-	GinEngine *gin.Engine
+	Config      *config.Config
+	DB          *gorm.DB
+	Redis       *redis.Client
+	Enforcer    *casbin.SyncedEnforcer
+	GinEngine   *gin.Engine
+	ClientStore *store.ClientMap
 }
 
 func NewOptions() *Options {
@@ -53,12 +52,6 @@ func (o *Options) Complete() *Options {
 	o.Enforcer = bootstrap.InitPolicyEnforcer(o.DB)
 	// 初始化client store
 	clientStore := store.NewClientStore()
-
-	// 初始化dbFactory
-	o.Factory = services.NewDbFactory(o.DB, o.Enforcer, clientStore)
-
-	// 初始化已存在的kubernetes集群client
-	go bootstrap.LoadKubernetes(o.Factory)
-
+	o.ClientStore = clientStore
 	return o
 }

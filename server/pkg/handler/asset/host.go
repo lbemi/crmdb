@@ -2,10 +2,11 @@ package asset
 
 import (
 	"context"
+	"github.com/lbemi/lbemi/pkg/restfulx"
+	"gorm.io/gorm"
 
 	"github.com/lbemi/lbemi/pkg/model/asset"
 	"github.com/lbemi/lbemi/pkg/model/form"
-	"github.com/lbemi/lbemi/pkg/services"
 )
 
 type HostGetter interface {
@@ -13,12 +14,16 @@ type HostGetter interface {
 }
 
 type host struct {
-	factory services.Interface
+	db      *gorm.DB
+	rbac    IResourceBindAccount
+	account IAccount
 }
 
-func NewHost(f services.Interface) IHost {
+func NewHost(db *gorm.DB, rbac IResourceBindAccount, account IAccount) IHost {
 	return &host{
-		factory: f,
+		db:      db,
+		rbac:    rbac,
+		account: account,
 	}
 }
 
@@ -35,41 +40,107 @@ type IHost interface {
 	CheckHostExist(ctx context.Context, hostId uint64) bool
 }
 
-func (m *host) Create(ctx context.Context, host *asset.Host) {
-	m.factory.Host().Create(ctx, host)
+func (h *host) Create(ctx context.Context, host *asset.Host) {
+	restfulx.ErrNotNilDebug(h.db.Create(host).Error, restfulx.OperatorErr)
 }
 
-func (m *host) Delete(ctx context.Context, hostId uint64) {
-	m.factory.Host().Delete(ctx, hostId)
-
+func (h *host) Delete(ctx context.Context, hostId uint64) {
+	restfulx.ErrNotNilDebug(h.db.Where("id = ?", hostId).Delete(&asset.Host{}).Error, restfulx.OperatorErr)
 }
 
-func (m *host) Update(ctx context.Context, hostId uint64, host *asset.Host) {
-	m.factory.Host().Update(ctx, hostId, host)
-
+func (h *host) Update(ctx context.Context, hostId uint64, host *asset.Host) {
+	restfulx.ErrNotNilDebug(h.db.Where("id = ?", hostId).Updates(host).Error, restfulx.OperatorErr)
 }
 
-func (m *host) List(ctx context.Context, page, limit int, groups []uint64, ip, label, description string) *form.PageHost {
-	return m.factory.Host().List(ctx, page, limit, groups, ip, label, description)
+func (h *host) List(ctx context.Context, page, limit int, groups []uint64, ip, label, description string) *form.PageHost {
+	var (
+		hostList []asset.Host
+		total    int64
+	)
+	db := h.db
 
+	if len(groups) > 0 {
+		db = db.Where("group_id in (?)", groups)
+	}
+	if ip != "" {
+		db = db.Where("ip LIKE ?", "%"+ip+"%")
+	}
+	if label != "" {
+		db = db.Where("labels LIKE ?", "%"+label+"%")
+	}
+	if description != "" {
+		db = db.Where("remark LIKE ?", "%"+description+"%")
+	}
+
+	// 全量查询
+	if page == 0 && limit == 0 {
+		restfulx.ErrNotNilDebug(db.Find(&hostList).Error, restfulx.OperatorErr)
+		restfulx.ErrNotNilDebug(db.Model(&asset.Host{}).Count(&total).Error, restfulx.OperatorErr)
+
+		res := &form.PageHost{
+			Hosts: hostList,
+			Total: total,
+		}
+		return res
+	}
+
+	//分页数据
+	restfulx.ErrNotNilDebug(db.Limit(limit).Offset((page-1)*limit).
+		Find(&hostList).Error, restfulx.OperatorErr)
+
+	restfulx.ErrNotNilDebug(db.Model(&asset.Host{}).Count(&total).Error, restfulx.OperatorErr)
+
+	res := &form.PageHost{
+		Hosts: hostList,
+		Total: total,
+	}
+	return res
 }
 
-func (m *host) GetByHostId(ctx context.Context, hostId uint64) (host *asset.Host) {
-	return m.factory.Host().GetByHostId(ctx, hostId)
+func (h *host) GetByHostId(ctx context.Context, hostId uint64) (host *asset.Host) {
+	host = &asset.Host{}
+	restfulx.ErrNotNilDebug(h.db.Where("id = ?", hostId).Find(&host).Error, restfulx.OperatorErr)
+	return host
 }
 
-func (m *host) GetByGroup(ctx context.Context, groups []uint64, page, limit int) *form.PageResult {
-	return m.factory.Host().GetByGroup(ctx, groups, page, limit)
+func (h *host) GetByGroup(ctx context.Context, groups []uint64, page, limit int) *form.PageResult {
+	var (
+		hostList []*asset.Host
+		total    int64
+	)
+
+	// 全量查询
+	if page == 0 && limit == 0 {
+		restfulx.ErrNotNilDebug(h.db.Where("group_id in (?)", groups).Find(&hostList).Error, restfulx.OperatorErr)
+		restfulx.ErrNotNilDebug(h.db.Where("group_id in (?)", groups).Model(&asset.Host{}).Count(&total).Error, restfulx.OperatorErr)
+
+		res := &form.PageResult{
+			Data:  hostList,
+			Total: total,
+		}
+		return res
+	}
+
+	//分页数据
+	restfulx.ErrNotNilDebug(h.db.Where("group_id in (?)", groups).Limit(limit).Offset((page-1)*limit).
+		Find(&hostList).Error, restfulx.OperatorErr)
+
+	restfulx.ErrNotNilDebug(h.db.Model(&asset.Host{}).Where("group_id in (?)", groups).Count(&total).Error, restfulx.OperatorErr)
+
+	res := &form.PageResult{
+		Data:  hostList,
+		Total: total,
+	}
+	return res
 }
 
-func (m *host) UpdateFiledStatus(ctx context.Context, hostId uint64, updateFiled string, status int8) {
-	m.factory.Host().UpdateFiledStatus(ctx, hostId, updateFiled, status)
-
+func (h *host) UpdateFiledStatus(ctx context.Context, hostId uint64, updateFiled string, status int8) {
+	restfulx.ErrNotNilDebug(h.db.Where("id = ?", hostId).Update(updateFiled, status).Error, restfulx.OperatorErr)
 }
 
-func (m *host) GetHostAccounts(ctx context.Context, hostId uint64) []*asset.Account {
+func (h *host) GetHostAccounts(ctx context.Context, hostId uint64) []*asset.Account {
 	accountIds := make([]uint64, 0)
-	list := m.factory.ResourceBindAccount().List(ctx, 0, 0)
+	list := h.rbac.List(ctx, 0, 0)
 	for _, ha := range list.Data.([]*asset.HostAccount) {
 		for _, ra := range ha.ResourceId {
 			if ra == hostId {
@@ -78,12 +149,13 @@ func (m *host) GetHostAccounts(ctx context.Context, hostId uint64) []*asset.Acco
 		}
 	}
 	accountIds = RemoveRepByMap(accountIds)
-	return m.factory.Account().GetByIds(ctx, accountIds)
+	return h.account.GetByIds(ctx, accountIds)
 }
 
-func (m *host) CheckHostExist(ctx context.Context, hostId uint64) bool {
-	h := m.factory.Host().GetByHostId(ctx, hostId)
-	if h == nil {
+func (h *host) CheckHostExist(ctx context.Context, hostId uint64) bool {
+	host := &asset.Host{}
+	err := h.db.Where("id = ?", hostId).Find(&host).Error
+	if err == nil {
 		return false
 	}
 	return true

@@ -33,9 +33,10 @@ func Login(rc *rctx.ReqCtx) {
 }
 
 func Register(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	var registerForm form.RegisterUserForm
 	rc.ShouldBind(&registerForm)
-	core.V1.User().Register(&registerForm)
+	core.V1.User().Register(c, &registerForm)
 }
 
 func Logout(rc *rctx.ReqCtx) {
@@ -75,53 +76,61 @@ func Logout(rc *rctx.ReqCtx) {
 }
 
 func GetUserInfoById(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	id := rc.PathParamUint64("id")
-	rc.ResData = core.V1.User().GetUserInfoById(id)
+	rc.ResData = core.V1.User().GetUserInfoById(c, id)
 }
 
 func GetUserList(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	condition := &sys.User{}
 	pageParam := rc.GetPageQueryParam()
 	condition.Status = rc.QueryParamUint8("status")
 	condition.UserName = rc.Query("name")
-	rc.ResData = core.V1.User().GetUserList(pageParam, condition)
+	rc.ResData = core.V1.User().GetUserList(c, pageParam, condition)
 }
 
 func DeleteUserByUserId(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	id := rc.PathParamUint64("id")
-	core.V1.User().DeleteUserByUserId(id)
+	core.V1.User().DeleteUserByUserId(c, id)
 }
 
 func UpdateUser(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	var user form.UpdateUserFrom
 	rc.ShouldBind(&user)
 	userID := rc.PathParamUint64("id")
-	core.V1.User().Update(userID, &user)
+	core.V1.User().Update(c, userID, &user)
 }
 
 func GetUserRoles(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	uid := rc.PathParamUint64("id")
-	rc.ResData = core.V1.User().GetRoleIDByUser(uid)
+	rc.ResData = core.V1.User().GetRoleIDByUser(c, uid)
 }
 
 func SetUserRoles(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	var roles form.Roles
 	rc.ShouldBind(&roles)
 	uid := rc.PathParamUint64("id")
-	core.V1.User().SetUserRoles(uid, roles.RoleIds)
+	core.V1.User().SetUserRoles(c, uid, roles.RoleIds)
 }
 
 func GetButtonsByCurrentUser(rc *rctx.ReqCtx) {
-	rc.ResData = core.V1.User().GetButtonsByUserID(rc.LoginAccount.ID)
+	c := rc.Request.Request.Context()
+	rc.ResData = core.V1.User().GetButtonsByUserID(c, rc.LoginAccount.ID)
 }
 
 func GetLeftMenusByCurrentUser(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	uidStr, exist := rc.Get("id")
 	restfulx.ErrNotTrue(exist, restfulx.NotLogin)
 	u := uidStr.(string)
 	uid := util.ParseInt64(u)
-	res := core.V1.User().GetLeftMenusByUserID(uid)
-	permissions := core.V1.User().GetButtonsByUserID(uid)
+	res := core.V1.User().GetLeftMenusByUserID(c, uid)
+	permissions := core.V1.User().GetButtonsByUserID(c, uid)
 
 	rc.ResData = &form.UserPermissionResp{
 		Menus:      res,
@@ -130,7 +139,8 @@ func GetLeftMenusByCurrentUser(rc *rctx.ReqCtx) {
 }
 
 func UpdateUserStatus(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
 	userId := rc.PathParamUint64("id")
 	status := rc.PathParamUint64("status")
-	core.V1.User().UpdateStatus(userId, status)
+	core.V1.User().UpdateStatus(c, userId, status)
 }
