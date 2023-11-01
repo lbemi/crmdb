@@ -2,10 +2,9 @@ package bootstrap
 
 import (
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/config"
 
 	redis "github.com/go-redis/redis"
-
-	"github.com/lbemi/lbemi/pkg/model/config"
 )
 
 func InitializeRedis(config config.Redis) *redis.Client {

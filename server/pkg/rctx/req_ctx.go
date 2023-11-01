@@ -2,6 +2,8 @@ package rctx
 
 import (
 	"fmt"
+	"github.com/lbemi/lbemi/apps/system/entity"
+	entity2 "github.com/lbemi/lbemi/pkg/common/entity"
 	"io"
 	"strconv"
 	"strings"
@@ -10,8 +12,6 @@ import (
 
 	"github.com/emicklei/go-restful/v3"
 
-	"github.com/lbemi/lbemi/pkg/model"
-	"github.com/lbemi/lbemi/pkg/model/sys"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 )
 
@@ -25,7 +25,7 @@ type ReqCtx struct {
 
 	RequirePermission *Permission
 
-	LoginAccount *sys.User
+	LoginAccount *entity.User
 	LogInfo      *LogInfo
 
 	ReqParam any
@@ -143,8 +143,8 @@ func (rc *ReqCtx) ShouldBind(data interface{}) {
 }
 
 // GetPageQueryParam 获取分页参数
-func (rc *ReqCtx) GetPageQueryParam() *model.PageParam {
-	return &model.PageParam{Page: rc.QueryDefaultInt("page", 0), Limit: rc.QueryDefaultInt("limit", 0)}
+func (rc *ReqCtx) GetPageQueryParam() *entity2.PageParam {
+	return &entity2.PageParam{Page: rc.QueryDefaultInt("page", 0), Limit: rc.QueryDefaultInt("limit", 0)}
 }
 
 // QueryDefaultInt 获取查询参数中指定参数值，并转为int

@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	router5 "github.com/lbemi/lbemi/apps/asset/router"
+	router4 "github.com/lbemi/lbemi/apps/cloud/router"
+	router3 "github.com/lbemi/lbemi/apps/istio/router"
+	router2 "github.com/lbemi/lbemi/apps/log/router"
+	"github.com/lbemi/lbemi/apps/system/router"
 	"github.com/lbemi/lbemi/pkg/util"
-	"github.com/lbemi/lbemi/routes/istio"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,10 +21,6 @@ import (
 	"github.com/lbemi/lbemi/pkg/core/server"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/rctx"
-	"github.com/lbemi/lbemi/routes/asset"
-	"github.com/lbemi/lbemi/routes/cloud"
-	"github.com/lbemi/lbemi/routes/logsys"
-	"github.com/lbemi/lbemi/routes/sys"
 )
 
 var completedOptions *option.Options
@@ -92,36 +92,36 @@ func run(cmd *cobra.Command, args []string) {
 func registerRoute(httpSever *server.HttpSever) {
 	//注册路由
 	httpSever.RegisterRoutes(
-		sys.UserRoutes(),
-		sys.RoleRoutes(),
-		sys.MenuRoutes(),
-		asset.GroupRoutes(),
-		logsys.LoginLogRoutes(),
-		logsys.OperatorLogRoutes(),
-		cloud.WebSocketRoutes(),
-		asset.HostRotes(),
-		asset.ResourceAccountRoutes(),
-		asset.AccountRoutes(),
+		router.UserRoutes(),
+		router.RoleRoutes(),
+		router.MenuRoutes(),
+		router5.GroupRoutes(),
+		router2.LoginLogRoutes(),
+		router2.OperatorLogRoutes(),
+		router4.WebSocketRoutes(),
+		router5.HostRotes(),
+		router5.ResourceAccountRoutes(),
+		router5.AccountRoutes(),
 		//k8s集群
-		cloud.ClusterRoutes(),
-		cloud.KubernetesConfigMapRoutes(),
-		cloud.KubernetesCronJobRoutes(),
-		cloud.KubernetesDaemonSetRoutes(),
-		cloud.KubernetesDeploymentRoutes(),
-		cloud.KubernetesEventRoutes(),
-		cloud.KubernetesIngressRoutes(),
-		cloud.KubernetesJobRoutes(),
-		cloud.KubernetesNamespaceRoutes(),
-		cloud.KubernetesNodeRoutes(),
-		cloud.KubernetesPersistentVolumeClaimRoutes(),
-		cloud.KubernetesPodRoutes(),
-		cloud.KubernetesReplicaSetRoutes(),
-		cloud.KubernetesSecretRoutes(),
-		cloud.KubernetesServiceRoutes(),
-		cloud.KubernetesStatefulSetRoutes(),
+		router4.ClusterRoutes(),
+		router4.KubernetesConfigMapRoutes(),
+		router4.KubernetesCronJobRoutes(),
+		router4.KubernetesDaemonSetRoutes(),
+		router4.KubernetesDeploymentRoutes(),
+		router4.KubernetesEventRoutes(),
+		router4.KubernetesIngressRoutes(),
+		router4.KubernetesJobRoutes(),
+		router4.KubernetesNamespaceRoutes(),
+		router4.KubernetesNodeRoutes(),
+		router4.KubernetesPersistentVolumeClaimRoutes(),
+		router4.KubernetesPodRoutes(),
+		router4.KubernetesReplicaSetRoutes(),
+		router4.KubernetesSecretRoutes(),
+		router4.KubernetesServiceRoutes(),
+		router4.KubernetesStatefulSetRoutes(),
 
 		//istio路由
-		istio.IstioVirtualServiceRoutes(),
+		router3.IstioVirtualServiceRoutes(),
 	)
 
 	// 注册swagger路由，必须放到最后,否则swagger无法获取所有的路由信息

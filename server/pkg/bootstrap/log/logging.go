@@ -2,10 +2,9 @@ package log
 
 import (
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/config"
 	"os"
 	"path/filepath"
-
-	"github.com/lbemi/lbemi/pkg/model/config"
 )
 
 type Configuration struct {

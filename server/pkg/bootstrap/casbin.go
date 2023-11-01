@@ -2,13 +2,12 @@ package bootstrap
 
 import (
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/config"
 
 	"github.com/casbin/casbin/v2"
 	csmodel "github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"gorm.io/gorm"
-
-	"github.com/lbemi/lbemi/pkg/model/rules"
 )
 
 // InitPolicyEnforcer TODO: 整体优化
@@ -37,7 +36,7 @@ func InitPolicyEnforcer(db *gorm.DB) (enforcer *casbin.SyncedEnforcer) {
 		return
 	}
 	// 调用gorm创建casbin_rule表
-	adapter, err := gormadapter.NewAdapterByDBWithCustomTable(db, &rules.Rule{}, "rules")
+	adapter, err := gormadapter.NewAdapterByDBWithCustomTable(db, &config.Rule{}, "rules")
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -2,6 +2,11 @@ package bootstrap
 
 import (
 	"fmt"
+	entity2 "github.com/lbemi/lbemi/apps/asset/entity"
+	entity3 "github.com/lbemi/lbemi/apps/cloud/entity"
+	entity4 "github.com/lbemi/lbemi/apps/log/entity"
+	"github.com/lbemi/lbemi/apps/system/entity"
+	"github.com/lbemi/lbemi/pkg/config"
 	"io"
 	"log"
 	"os"
@@ -14,12 +19,6 @@ import (
 	"gorm.io/gorm/logger"
 
 	opsLog "github.com/lbemi/lbemi/pkg/bootstrap/log"
-	"github.com/lbemi/lbemi/pkg/model/asset"
-	"github.com/lbemi/lbemi/pkg/model/cloud"
-	"github.com/lbemi/lbemi/pkg/model/config"
-	"github.com/lbemi/lbemi/pkg/model/logsys"
-	"github.com/lbemi/lbemi/pkg/model/rules"
-	"github.com/lbemi/lbemi/pkg/model/sys"
 )
 
 func InitializeDB(c *config.Config) *gorm.DB {
@@ -79,21 +78,21 @@ func initMysqlGorm(c *config.Config) *gorm.DB {
 
 func migration(db *gorm.DB) {
 	entities := []interface{}{
-		&sys.Menu{},
-		&sys.User{},
-		&sys.Role{},
-		&sys.RoleMenu{},
-		&sys.UserRole{},
-		&rules.Rule{},
-		&asset.Host{},
-		&asset.Group{},
-		&asset.HostGroup{},
-		&asset.HostAccount{},
-		&asset.Account{},
-		&cloud.Cluster{},
-		&sys.UserResource{},
-		&logsys.LogLogin{},
-		&logsys.LogOperator{},
+		&entity.Menu{},
+		&entity.User{},
+		&entity.Role{},
+		&entity.RoleMenu{},
+		&entity.UserRole{},
+		&config.Rule{},
+		&entity2.Host{},
+		&entity2.Group{},
+		&entity2.HostGroup{},
+		&entity2.HostAccount{},
+		&entity2.Account{},
+		&entity3.Cluster{},
+		&entity.UserResource{},
+		&entity4.LogLogin{},
+		&entity4.LogOperator{},
 	}
 	opsLog.Logger.Info("Initializing database ...")
 	if err := db.AutoMigrate(entities...); err != nil {

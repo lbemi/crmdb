@@ -2,9 +2,9 @@ package bootstrap
 
 import (
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/config"
 	"os"
 
-	"github.com/lbemi/lbemi/pkg/model/config"
 	"github.com/spf13/viper"
 )
 

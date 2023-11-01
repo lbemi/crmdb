@@ -3,12 +3,12 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/lbemi/lbemi/apps/log/entity"
 	"net/http"
 	"reflect"
 
 	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
-	"github.com/lbemi/lbemi/pkg/model/logsys"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
@@ -43,7 +43,7 @@ func LogHandler(rc *rctx.ReqCtx) error {
 			return
 		}
 
-		log := &logsys.LogOperator{
+		log := &entity.LogOperator{
 			Title:        rc.LogInfo.LogModule,
 			BusinessType: "01",
 			Method:       c.Request.Method,
