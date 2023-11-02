@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	ws "github.com/lbemi/lbemi/apps/websocket/router"
 	"github.com/lbemi/lbemi/pkg/global"
 	"os"
 	"os/signal"
@@ -16,7 +17,6 @@ import (
 	k8s "github.com/lbemi/lbemi/apps/kubernetes/router"
 	logsys "github.com/lbemi/lbemi/apps/log/router"
 	"github.com/lbemi/lbemi/apps/system/router"
-	ws "github.com/lbemi/lbemi/apps/websocket/router"
 	"github.com/lbemi/lbemi/pkg/cmd/app/option"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/core/server"
@@ -100,7 +100,7 @@ func registerRoute(httpSever *server.HttpSever) {
 		asset.GroupRoutes(),
 		logsys.LoginLogRoutes(),
 		logsys.OperatorLogRoutes(),
-		ws.WebSocketRoutes(),
+
 		asset.HostRotes(),
 		asset.ResourceAccountRoutes(),
 		asset.AccountRoutes(),
@@ -125,6 +125,9 @@ func registerRoute(httpSever *server.HttpSever) {
 		//istio路由
 		istio.IstioVirtualServiceRoutes(),
 	)
+	// websocket取消压缩
+	//httpSever.Container.EnableContentEncoding(false)
+	httpSever.Container.Add(ws.WebSocketRoutes())
 
 	// 注册swagger路由，必须放到最后,否则swagger无法获取所有的路由信息
 	config := restfulspec.Config{

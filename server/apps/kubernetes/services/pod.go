@@ -258,9 +258,9 @@ func (p *PodHandler) notifyPods(obj interface{}) {
 		return pods[j].ObjectMeta.GetCreationTimestamp().Time.Before(pods[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 
-	go cache.WebsocketStore.SendClusterResource(p.clusterName, "Pod", map[string]interface{}{
+	go cache.WebsocketStore.SendClusterResource(p.clusterName, "pod", map[string]interface{}{
 		"cluster": p.clusterName,
-		"type":    "Pod",
+		"type":    "pod",
 		"result": map[string]interface{}{
 			"namespace": namespace,
 			"data":      pods,

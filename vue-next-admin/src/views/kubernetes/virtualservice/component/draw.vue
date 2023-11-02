@@ -1,5 +1,5 @@
 <template>
-	<el-drawer v-model="data.visible" @close="handleClose" size="45%">
+	<el-drawer v-model="data.visible" @close="handleClose" size="50%">
 		<template #header="{ titleId, titleClass }">
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
@@ -43,7 +43,7 @@
 						</el-collapse-item>
 						<el-collapse-item title="HTTP设置" name="3">
 							<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-								<VSHTTP></VSHTTP>
+								<VSHTTP ref="httpRef"></VSHTTP>
 							</el-col>
 						</el-collapse-item>
 						<el-collapse-item title="Controllability" name="4">
@@ -77,11 +77,14 @@ import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
 import { InfoFilled } from '@element-plus/icons-vue';
+import { yaml } from '@codemirror/legacy-modes/mode/yaml';
+import yamlJs from 'js-yaml';
 const formRulesOneRef = ref<FormInstance>();
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 const Hosts = defineAsyncComponent(() => import('@/components/istio/hosts.vue'));
 const VSHTTP = defineAsyncComponent(() => import('@/components/istio/vshttp.vue'));
 
+const httpRef = ref();
 const k8sStore = kubernetesInfo();
 const virtualServiceApi = useVirtualServiceApi();
 
@@ -96,6 +99,7 @@ const data = reactive({
 	virtualService: {
 		metadata: {
 			name: '',
+			namespace: k8sStore.state.activeNamespace,
 			labels: {},
 		},
 		spec: {
@@ -198,7 +202,8 @@ const getLabels = (labels: any) => {
 const confirm = async () => {
 	convertConfigMap();
 	if (!data.isUpdate) {
-		console.log(data.virtualService);
+		data.virtualService.spec.http = httpRef.value.returnHttps();
+		console.log(yamlJs.dump(data.virtualService));
 		// await virtualServiceApi
 		// 	.createVirtualService({ cloud: k8sStore.state.activeCluster }, data.virtualService)
 		// 	.then(() => {

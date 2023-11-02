@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"sync"
@@ -50,26 +49,23 @@ func (w *WsClientStore) SendAll(msg interface{}) {
 func (w *WsClientStore) SendClusterResource(clusterName, resource string, msg interface{}) {
 	closeCh := make(chan struct{})
 	defer close(closeCh)
+
 	w.data.Range(func(key, value any) bool {
 		c := value.(*WsClient)
 		resourceName := strings.Split(c.Resource, ",")
+		WsLock.Lock()
+		defer WsLock.Unlock()
 		for _, name := range resourceName {
 			if c.Cluster == clusterName && name == resource {
-				WsLock.Lock()
-				defer WsLock.Unlock()
-				fmt.Println("发送消息啦。。。。。。。", msg)
 				err := c.Conn.WriteJSON(msg)
 				if err != nil {
 					log.Println(err)
 					w.Remove(c.Conn)
 				}
-
 			}
 		}
-
 		return true
 	})
-
 }
 
 type WsClient struct {
@@ -100,9 +96,9 @@ func (w *WsClient) Write(p []byte) (n int, err error) {
 	if err != nil {
 		return 0, err
 	}
-
 	return len(p), nil
 }
+
 func (w *WsClient) Read(p []byte) (n int, err error) {
 	_, bytes, err := w.Conn.ReadMessage()
 	if err != nil {

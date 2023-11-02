@@ -20,9 +20,9 @@ type HttpSever struct {
 
 func NewHttpSever(addr string) *HttpSever {
 	container := restful.NewContainer()
-	container.EnableContentEncoding(true)
+	//container.EnableContentEncoding(true)
 	//restful.TraceLogger(&httpLog{})
-	//restful.SetLogger(&httpLog{})
+	restful.SetLogger(&httpLog{})
 	container.Router(restful.CurlyRouter{}) //设置路由为快速路由
 	return &HttpSever{Addr: addr, Container: container, srv: &http.Server{
 		Addr:           addr,
@@ -52,9 +52,19 @@ func (h *HttpSever) Stop() error {
 	return h.srv.Shutdown(ctx)
 }
 
+// 开启压缩
+func encodingFilter(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+	compress, _ := restful.NewCompressingResponseWriter(resp.ResponseWriter, restful.ENCODING_GZIP)
+	resp.ResponseWriter = compress
+	defer func() {
+		_ = compress.Close()
+	}()
+	chain.ProcessFilter(req, resp)
+}
+
 func (h *HttpSever) RegisterRoutes(routes ...*restful.WebService) {
 	for _, route := range routes {
-		h.Container.Add(route)
+		h.Container.Add(route.Filter(encodingFilter))
 	}
 }
 
