@@ -1,17 +1,16 @@
 package util
 
 import (
+	"github.com/lbemi/lbemi/pkg/global"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
-
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 )
 
 // BcryptMake 加密
 func BcryptMake(pwd []byte) string {
 	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.DefaultCost)
 	if err != nil {
-		log.Logger.Error("err", zap.Error(err))
+		global.Logger.Error("err", zap.Error(err))
 	}
 	return string(hash)
 }

@@ -46,6 +46,7 @@ func JWTAuth(rc *rctx.ReqCtx) error {
 
 	p := request.URL.Path
 	m := request.Method
+
 	ok, err := enforcer.Enforce(uid, p, m)
 	//log.Logger.Infof("permission: %v -- %v --%v", uid, p, m)
 	restfulx.ErrNotNilDebug(err, restfulx.ServerErr)

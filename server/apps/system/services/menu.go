@@ -5,7 +5,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/lbemi/lbemi/apps/system/api/form"
 	"github.com/lbemi/lbemi/apps/system/entity"
-	"github.com/lbemi/lbemi/pkg/bootstrap/policy"
+	"github.com/lbemi/lbemi/pkg/common/commService"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"gorm.io/gorm"
 )
@@ -29,12 +29,12 @@ type IMenu interface {
 }
 
 type Menu struct {
-	//factory services.Interface
+	//factory commService.Interface
 	db     *gorm.DB
-	policy policy.IPolicy
+	policy commService.IPolicy
 }
 
-func NewMenu(db *gorm.DB, policy policy.IPolicy) IMenu {
+func NewMenu(db *gorm.DB, policy commService.IPolicy) IMenu {
 	return &Menu{
 		db:     db,
 		policy: policy,

@@ -7,8 +7,9 @@ import (
 	"github.com/lbemi/lbemi/apps/cloud/api/form"
 	"github.com/lbemi/lbemi/apps/cloud/entity"
 	istio2 "github.com/lbemi/lbemi/apps/istio/services"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/apps/kubernetes/services"
 	store "github.com/lbemi/lbemi/pkg/cache"
+	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
 	"gorm.io/gorm"
@@ -29,7 +30,7 @@ import (
 	"time"
 )
 
-func NewCluster(db *gorm.DB, store *store.ClientMap, clusterName string) ICluster {
+func NewCluster(db *gorm.DB, store *store.ClientStore, clusterName string) ICluster {
 	return &Cluster{
 		db:          db,
 		store:       store,
@@ -223,7 +224,7 @@ func (c *Cluster) CheckCusterHealth(name string) bool {
 func generateIstioClient(rc *rest.Config) *istio.Clientset {
 	client, err := istio.NewForConfig(rc)
 	if err != nil {
-		log.Logger.Errorf("generate istio clientSet failed. err : %v", err)
+		global.Logger.Errorf("generate istio clientSet failed. err : %v", err)
 	}
 	return client
 }
@@ -256,18 +257,18 @@ func (c *Cluster) StartInformer(clusterName string) {
 			gvr.Resource = v.Name
 
 			if strings.Contains(gvr.Group, "istio.io") {
-				fmt.Println("初始化istio资源-----:  ", gvr)
-				_, err := client.IstioSharedInformerFactory.ForResource(gvr)
-				if err != nil {
-					log.Logger.Error("istio_err:", err)
-				}
-				continue
+				//fmt.Println("初始化istio资源-----:  ", gvr)
+				_, _ = client.IstioSharedInformerFactory.ForResource(gvr)
+				//if err != nil {
+				//	log.Logger.Error("istio_err:", err)
+				//}
+				//continue
 			}
 
-			_, err := client.SharedInformerFactory.ForResource(gvr)
-			if err != nil {
-				log.Logger.Error(err)
-			}
+			_, _ = client.SharedInformerFactory.ForResource(gvr)
+			//if err != nil {
+			//log.Logger.Error(err)
+			//}
 
 			//
 			//informer := client.DynamicSharedInformerFactory.ForResource(gvr)
@@ -276,9 +277,9 @@ func (c *Cluster) StartInformer(clusterName string) {
 
 	}
 
-	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(NewDeploymentHandler(client, clusterName))
+	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(services.NewDeploymentHandler(client, clusterName))
 	//client.SharedInformerFactory.Apps().V1().ReplicaSets().Informer().AddEventHandler(k8s.NewReplicasetHandler(client, clusterName))
-	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(NewPodHandler(client, clusterName))
+	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(services.NewPodHandler(client, clusterName))
 	//client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(k8s.NewNameSpaceHandler(client, clusterName))
 	//client.SharedInformerFactory.Core().V1().Events().Informer().AddEventHandler(k8s.NewEventHandler())
 	//client.SharedInformerFactory.Core().V1().Nodes().Informer().AddEventHandler(k8s.NewNodeHandler())
@@ -300,7 +301,7 @@ func (c *Cluster) StartInformer(clusterName string) {
 
 	_, err = client.IstioSharedInformerFactory.Networking().V1beta1().VirtualServices().Informer().AddEventHandler(istio2.NewVirtualServiceHandler(client, clusterName))
 	if err != nil {
-		log.Logger.Error("add informer handler failed. err:", err)
+		global.Logger.Error("add informer handler failed. err:", err)
 	}
 
 	// start istio informer

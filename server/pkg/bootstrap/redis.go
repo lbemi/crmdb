@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"fmt"
 	"github.com/lbemi/lbemi/pkg/config"
+	"github.com/lbemi/lbemi/pkg/global"
 
 	redis "github.com/go-redis/redis"
 )
@@ -16,7 +17,7 @@ func InitializeRedis(config config.Redis) *redis.Client {
 	})
 	_, err := redisCli.Ping().Result()
 	if err != nil {
-		fmt.Println("连接Redis失败", err)
+		global.Logger.Error("连接Redis失败", err)
 		//log.Logger.Error("连接Redis失败", err)
 	}
 	return redisCli

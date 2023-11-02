@@ -2,9 +2,9 @@ package services
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/common/entity"
+	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -123,7 +123,7 @@ func (v *VirtualServiceHandler) notifyVirtualServices(obj interface{}) {
 	namespace := obj.(*v1beta1.VirtualService).Namespace
 	VirtualServices, err := v.client.IstioSharedInformerFactory.Networking().V1beta1().VirtualServices().Lister().VirtualServices(namespace).List(labels.Everything())
 	if err != nil {
-		log.Logger.Error(err)
+		global.Logger.Error(err)
 	}
 
 	//按时间排序
@@ -131,7 +131,7 @@ func (v *VirtualServiceHandler) notifyVirtualServices(obj interface{}) {
 		return VirtualServices[j].ObjectMeta.GetCreationTimestamp().Time.Before(VirtualServices[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 
-	go cache.WsClientMap.SendClusterResource(v.clusterName, "virtualService", map[string]interface{}{
+	go cache.WebsocketStore.SendClusterResource(v.clusterName, "virtualService", map[string]interface{}{
 		"cluster": v.clusterName,
 		"type":    "virtualService",
 		"result": map[string]interface{}{

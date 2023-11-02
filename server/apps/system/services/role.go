@@ -5,7 +5,7 @@ import (
 	"github.com/fatih/structs"
 	form2 "github.com/lbemi/lbemi/apps/system/api/form"
 	"github.com/lbemi/lbemi/apps/system/entity"
-	"github.com/lbemi/lbemi/pkg/bootstrap/policy"
+	"github.com/lbemi/lbemi/pkg/common/commService"
 	entity2 "github.com/lbemi/lbemi/pkg/common/entity"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"gorm.io/gorm"
@@ -32,11 +32,11 @@ type IRole interface {
 
 type Role struct {
 	db     *gorm.DB
-	policy policy.IPolicy
+	policy commService.IPolicy
 	menu   IMenu
 }
 
-func NewRole(db *gorm.DB, policy policy.IPolicy, menu IMenu) IRole {
+func NewRole(db *gorm.DB, policy commService.IPolicy, menu IMenu) IRole {
 	return &Role{
 		db:     db,
 		policy: policy,

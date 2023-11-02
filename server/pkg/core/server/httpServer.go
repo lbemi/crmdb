@@ -3,11 +3,10 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/global"
 	"net"
 	"net/http"
 	"time"
-
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 
 	"github.com/emicklei/go-restful/v3"
 )
@@ -40,14 +39,10 @@ func (h *HttpSever) Type() Type {
 }
 
 func (h *HttpSever) Start() {
-	go func() {
-		h.welcomeMsg()
-		if err := h.srv.ListenAndServe(); err != nil {
-			log.Logger.Infof("error http serve: %s", err)
-		}
-		h.welcomeMsg()
-	}()
-
+	h.welcomeMsg()
+	if err := h.srv.ListenAndServe(); err != nil {
+		global.Logger.Infof("error http serve: %s", err)
+	}
 }
 
 func (h *HttpSever) Stop() error {
@@ -66,11 +61,11 @@ func (h *HttpSever) RegisterRoutes(routes ...*restful.WebService) {
 type httpLog struct{}
 
 func (t *httpLog) Print(v ...any) {
-	log.Logger.Info(v...)
+	global.Logger.Info(v...)
 }
 
 func (t *httpLog) Printf(format string, v ...any) {
-	log.Logger.Infof(format, v...)
+	global.Logger.Infof(format, v...)
 }
 
 func getIP() *[]string {
@@ -119,6 +114,6 @@ swagger:
 `
 	fmt.Println(msg)
 	for _, ws := range h.Container.RegisteredWebServices() {
-		log.Logger.Infof("%s", ws.RootPath())
+		global.Logger.Infof("%s", ws.RootPath())
 	}
 }

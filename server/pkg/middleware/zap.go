@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/lbemi/lbemi/pkg/global"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -9,8 +10,6 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
-
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -21,7 +20,7 @@ func Test() gin.HandlerFunc {
 		//start := time.Now()
 		//path := c.Request.URL.Path
 		//query := c.Request.URL.RawQuery
-		log.Logger.Info("test---middleware")
+		global.Logger.Info("test---middleware")
 		c.Next()
 
 	}
@@ -38,7 +37,7 @@ func GinLogger() gin.HandlerFunc {
 			path, c.Writer.Status(), c.Request.Method, query,
 			c.ClientIP(), c.RemoteIP(), c.Request.UserAgent(), c.Errors.ByType(gin.ErrorTypePrivate).String(),
 			cost)
-		log.Logger.Info(str)
+		global.Logger.Info(str)
 	}
 }
 
@@ -56,7 +55,7 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
-					log.Logger.Error(c.Request.URL.Path,
+					global.Logger.Error(c.Request.URL.Path,
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)
@@ -68,10 +67,10 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 
 				if stack {
 					errStr := fmt.Sprintf("[Recovery from panic]  error: %v \n %v ", err, string(debug.Stack()))
-					log.Logger.Error(errStr)
+					global.Logger.Error(errStr)
 				} else {
 					errStr := fmt.Sprintf("[Recovery from panic]  error: %v ", err)
-					log.Logger.Error(errStr)
+					global.Logger.Error(errStr)
 				}
 				c.AbortWithStatus(http.StatusInternalServerError)
 			}

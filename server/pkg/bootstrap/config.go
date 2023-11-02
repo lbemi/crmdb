@@ -13,26 +13,26 @@ const (
 )
 
 func InitializeConfig(configFile string) (appConfig *config.Config) {
-	var config string
+	var configName string
 	if configFile == "" {
-		config = defaultConfigFile
+		configName = defaultConfigFile
 	} else {
-		config = configFile
+		configName = configFile
 	}
 
-	// ENV优先级大于指定--config
+	// ENV优先级大于指定--configName
 	if configEnv := os.Getenv("CONFIG"); configEnv != "" {
-		config = configEnv
+		configName = configEnv
 	}
 
 	v := viper.New()
 	v.SetConfigType("yaml")
-	v.SetConfigFile(config)
+	v.SetConfigFile(configName)
 	if err := v.ReadInConfig(); err != nil {
-		panic(fmt.Sprintf("read config failed. %v %s\n", err, config))
+		panic(fmt.Sprintf("read configName failed. %v %s\n", err, configName))
 	}
 	if err := v.Unmarshal(&appConfig); err != nil {
-		panic(fmt.Sprintf("Unmarshal config failed. %v\n", err))
+		panic(fmt.Sprintf("Unmarshal configName failed. %v\n", err))
 		return
 	}
 	return

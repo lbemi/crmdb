@@ -11,11 +11,11 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func TimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+func timeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(t.Format("2006-01-02 15:04:05"))
 }
 
-func NewZapLogger(c Configuration) (LoggerInterface, error) {
+func newZapLogger(c configuration) (LoggerInterface, error) {
 	var w io.Writer
 	// 支持 标准输出，标准错误输出，和指定日志文件
 	//switch strings.ToLower(c.LogType) {
@@ -53,7 +53,7 @@ func NewZapLogger(c Configuration) (LoggerInterface, error) {
 		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
 		EncodeLevel:    zapcore.CapitalColorLevelEncoder,
-		EncodeTime:     TimeEncoder,
+		EncodeTime:     timeEncoder,
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 		EncodeName:     zapcore.FullNameEncoder,

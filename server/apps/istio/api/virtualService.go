@@ -13,7 +13,7 @@ func ListVirtualServices(rc *rctx.ReqCtx) {
 	pageParam := rc.GetPageQueryParam()
 	name := rc.Query("name")
 	label := rc.Query("label")
-	rc.ResData = core.V1.Cluster(clusterName).VirtualServices(namespace).List(c, pageParam, name, label)
+	rc.ResData = core.V1.Cluster(clusterName).Istio().VirtualServices(namespace).List(c, pageParam, name, label)
 }
 
 func GetVirtualService(rc *rctx.ReqCtx) {
@@ -21,7 +21,7 @@ func GetVirtualService(rc *rctx.ReqCtx) {
 	clusterName := rc.Query("cloud")
 	namespace := rc.PathParam("namespace")
 	VirtualServiceName := rc.PathParam("VirtualServiceName")
-	rc.ResData = core.V1.Cluster(clusterName).VirtualServices(namespace).Get(c, VirtualServiceName)
+	rc.ResData = core.V1.Cluster(clusterName).Istio().VirtualServices(namespace).Get(c, VirtualServiceName)
 }
 
 func CreateVirtualService(rc *rctx.ReqCtx) {
@@ -29,7 +29,7 @@ func CreateVirtualService(rc *rctx.ReqCtx) {
 	clusterName := rc.Query("cloud")
 	var VirtualService *v1beta1.VirtualService
 	rc.ShouldBind(&VirtualService)
-	rc.ResData = core.V1.Cluster(clusterName).VirtualServices(VirtualService.Namespace).Create(c, VirtualService)
+	rc.ResData = core.V1.Cluster(clusterName).Istio().VirtualServices(VirtualService.Namespace).Create(c, VirtualService)
 }
 
 func UpdateVirtualService(rc *rctx.ReqCtx) {
@@ -37,7 +37,7 @@ func UpdateVirtualService(rc *rctx.ReqCtx) {
 	clusterName := rc.Query("cloud")
 	var VirtualService *v1beta1.VirtualService
 	rc.ShouldBind(&VirtualService)
-	rc.ResData = core.V1.Cluster(clusterName).VirtualServices(VirtualService.Namespace).Update(c, VirtualService)
+	rc.ResData = core.V1.Cluster(clusterName).Istio().VirtualServices(VirtualService.Namespace).Update(c, VirtualService)
 }
 
 func DeleteVirtualService(rc *rctx.ReqCtx) {
@@ -45,5 +45,5 @@ func DeleteVirtualService(rc *rctx.ReqCtx) {
 	clusterName := rc.Query("cloud")
 	namespace := rc.PathParam("namespace")
 	VirtualServiceName := rc.PathParam("name")
-	core.V1.Cluster(clusterName).VirtualServices(namespace).Delete(c, VirtualServiceName)
+	core.V1.Cluster(clusterName).Istio().VirtualServices(namespace).Delete(c, VirtualServiceName)
 }

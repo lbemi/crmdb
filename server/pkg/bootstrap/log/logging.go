@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-type Configuration struct {
+type configuration struct {
 	LogType  string
 	LogFile  string
 	LogLevel string
@@ -28,18 +28,14 @@ type LoggerInterface interface {
 	Warnf(f string, args ...interface{})
 }
 
-var (
-	Logger LoggerInterface
-)
-
-func Register(config *config.Log) {
+func Register(config *config.Log) LoggerInterface {
 	//logType, logDir, logLevel string
 	// 支持 INFO, WARN 和 ERROR，默认为 INFO
 	if config.IsFile {
 		createRootDir(config)
 	}
 
-	Logger, _ = NewZapLogger(Configuration{
+	Logger, _ := newZapLogger(configuration{
 		IsFile:           config.IsFile,
 		LogType:          config.Format,
 		LogFile:          filepath.Join(config.RootDir, config.FileName), // 使用文件类型时生效
@@ -48,6 +44,7 @@ func Register(config *config.Log) {
 		RotateMaxAge:     config.MaxAge,
 		RotateMaxBackups: config.MaxBackup,
 	})
+	return Logger
 }
 
 func createRootDir(config *config.Log) {

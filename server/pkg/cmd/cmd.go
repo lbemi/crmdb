@@ -1,12 +1,7 @@
 package cmd
 
 import (
-	router5 "github.com/lbemi/lbemi/apps/asset/router"
-	router4 "github.com/lbemi/lbemi/apps/cloud/router"
-	router3 "github.com/lbemi/lbemi/apps/istio/router"
-	router2 "github.com/lbemi/lbemi/apps/log/router"
-	"github.com/lbemi/lbemi/apps/system/router"
-	"github.com/lbemi/lbemi/pkg/util"
+	"github.com/lbemi/lbemi/pkg/global"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,12 +10,19 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/spf13/cobra"
 
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	asset "github.com/lbemi/lbemi/apps/asset/router"
+	cloud "github.com/lbemi/lbemi/apps/cloud/router"
+	istio "github.com/lbemi/lbemi/apps/istio/router"
+	k8s "github.com/lbemi/lbemi/apps/kubernetes/router"
+	logsys "github.com/lbemi/lbemi/apps/log/router"
+	"github.com/lbemi/lbemi/apps/system/router"
+	ws "github.com/lbemi/lbemi/apps/websocket/router"
 	"github.com/lbemi/lbemi/pkg/cmd/app/option"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/core/server"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/rctx"
+	"github.com/lbemi/lbemi/pkg/util"
 )
 
 var completedOptions *option.Options
@@ -36,14 +38,12 @@ func NewDefaultAppCommand() *cobra.Command {
 		PreRun: func(cmd *cobra.Command, args []string) {
 			//初始化
 			completedOptions = option.NewOptions().WithConfig(configFile).WithLog().Complete()
-
-			// 注册handler
+			// 注册聚合服务
 			core.Register(completedOptions)
-
 			// 初始化已存在的kubernetes集群client
 			go loadKubernetes()
-			rctx.UserAfterHandlerInterceptor(middleware.LogHandler)
 			rctx.UseBeforeHandlerInterceptor(middleware.JWTAuth)
+			rctx.UserAfterHandlerInterceptor(middleware.LogHandler)
 		},
 		Run: run,
 	}
@@ -54,16 +54,18 @@ func NewDefaultAppCommand() *cobra.Command {
 func run(cmd *cobra.Command, args []string) {
 	httpSever := server.NewHttpSever(":" + completedOptions.Config.App.Port)
 	container := httpSever.Container
+	// 加载中间件
 	container.Filter(middleware.Cors(container).Filter)
 	//注册路由
 	registerRoute(httpSever)
-
+	// 启动服务
 	httpSever.Start()
+	//监听停止信号
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	<-quit
 	if err := httpSever.Stop(); err != nil {
-		log.Logger.Errorf("fault stop server. %s", err)
+		global.Logger.Errorf("fault stop server. %s", err)
 		os.Exit(-3)
 	}
 
@@ -78,7 +80,7 @@ func run(cmd *cobra.Command, args []string) {
 
 	// 	}
 	// }(f)
-	// err = trace.Start(f)
+	//err = trace.Start(f)
 	// if err != nil {
 	// 	return
 	// }
@@ -95,38 +97,38 @@ func registerRoute(httpSever *server.HttpSever) {
 		router.UserRoutes(),
 		router.RoleRoutes(),
 		router.MenuRoutes(),
-		router5.GroupRoutes(),
-		router2.LoginLogRoutes(),
-		router2.OperatorLogRoutes(),
-		router4.WebSocketRoutes(),
-		router5.HostRotes(),
-		router5.ResourceAccountRoutes(),
-		router5.AccountRoutes(),
+		asset.GroupRoutes(),
+		logsys.LoginLogRoutes(),
+		logsys.OperatorLogRoutes(),
+		ws.WebSocketRoutes(),
+		asset.HostRotes(),
+		asset.ResourceAccountRoutes(),
+		asset.AccountRoutes(),
 		//k8s集群
-		router4.ClusterRoutes(),
-		router4.KubernetesConfigMapRoutes(),
-		router4.KubernetesCronJobRoutes(),
-		router4.KubernetesDaemonSetRoutes(),
-		router4.KubernetesDeploymentRoutes(),
-		router4.KubernetesEventRoutes(),
-		router4.KubernetesIngressRoutes(),
-		router4.KubernetesJobRoutes(),
-		router4.KubernetesNamespaceRoutes(),
-		router4.KubernetesNodeRoutes(),
-		router4.KubernetesPersistentVolumeClaimRoutes(),
-		router4.KubernetesPodRoutes(),
-		router4.KubernetesReplicaSetRoutes(),
-		router4.KubernetesSecretRoutes(),
-		router4.KubernetesServiceRoutes(),
-		router4.KubernetesStatefulSetRoutes(),
+		cloud.ClusterRoutes(),
+		k8s.KubernetesConfigMapRoutes(),
+		k8s.KubernetesCronJobRoutes(),
+		k8s.KubernetesDaemonSetRoutes(),
+		k8s.KubernetesDeploymentRoutes(),
+		k8s.KubernetesEventRoutes(),
+		k8s.KubernetesIngressRoutes(),
+		k8s.KubernetesJobRoutes(),
+		k8s.KubernetesNamespaceRoutes(),
+		k8s.KubernetesNodeRoutes(),
+		k8s.KubernetesPersistentVolumeClaimRoutes(),
+		k8s.KubernetesPodRoutes(),
+		k8s.KubernetesReplicaSetRoutes(),
+		k8s.KubernetesSecretRoutes(),
+		k8s.KubernetesServiceRoutes(),
+		k8s.KubernetesStatefulSetRoutes(),
 
 		//istio路由
-		router3.IstioVirtualServiceRoutes(),
+		istio.IstioVirtualServiceRoutes(),
 	)
 
 	// 注册swagger路由，必须放到最后,否则swagger无法获取所有的路由信息
 	config := restfulspec.Config{
-		WebServices:                   httpSever.Container.RegisteredWebServices(), // you control what services are visible
+		WebServices:                   httpSever.Container.RegisteredWebServices(), // you control what commService are visible
 		APIPath:                       "/apidocs.json",
 		PostBuildSwaggerObjectHandler: enrichSwaggerObject}
 
@@ -170,7 +172,7 @@ func loadKubernetes() {
 			if cluster.Status {
 				core.V1.Cluster("").ChangeStatus(cluster.ID, false)
 			}
-			log.Logger.Errorf("%s 集群异常，请检查集群. %v", cluster.Name, err)
+			global.Logger.Errorf("%s 集群异常，请检查集群. %v", cluster.Name, err)
 			// TODO 是否手设置手动启动监听  启动informer监听
 			//go f.Cluster().StartInformer(cluster.Name)
 		} else {

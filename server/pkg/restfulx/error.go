@@ -1,10 +1,9 @@
 package restfulx
 
 import (
+	"github.com/lbemi/lbemi/pkg/global"
 	"gorm.io/gorm"
 	"runtime/debug"
-
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 )
 
 var (
@@ -64,7 +63,7 @@ func ServerError() *Response {
 
 func ErrNotNil(err error, oe *OpsError) {
 	if err != nil {
-		log.Logger.Errorf(err.Error(), oe.message)
+		global.Logger.Errorf(err.Error(), oe.message)
 	}
 }
 
@@ -79,7 +78,7 @@ func ErrNotNilDebug(err error, oe *OpsError) {
 		if err == gorm.ErrRecordNotFound {
 			return
 		}
-		log.Logger.Error(err)
+		global.Logger.Error(err)
 		debug.PrintStack()
 		panic(oe)
 	}

@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"github.com/lbemi/lbemi/apps/asset/entity"
 	"github.com/lbemi/lbemi/pkg/cache"
+	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"time"
 	"unicode/utf8"
 
 	"github.com/gorilla/websocket"
 	"golang.org/x/crypto/ssh"
-
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 )
 
 type WsGetter interface {
@@ -37,20 +36,20 @@ type IWs interface {
 }
 
 func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.Session, channel ssh.Channel) {
-	cache.WsClientMap.Store("", "ssh", ws)
+	cache.WebsocketStore.Store("", "ssh", ws)
 	go func() {
 		for {
 			// 从websocket中读取数据
 			_, p, err := ws.ReadMessage()
 			if err != nil {
-				cache.WsClientMap.Remove(ws)
+				cache.WebsocketStore.Remove(ws)
 				return
 			}
 			var wsmsg WsMsg
 			err = json.Unmarshal(p, &wsmsg)
 			if err != nil {
-				cache.WsClientMap.Remove(ws)
-				log.Logger.Error(err)
+				cache.WebsocketStore.Remove(ws)
+				global.Logger.Error(err)
 				return
 			}
 			// 将接收到的数据通过ssh channel通道写入
@@ -60,7 +59,7 @@ func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.S
 			case 2:
 				_, err := channel.Write([]byte(wsmsg.Msg))
 				if err != nil {
-					cache.WsClientMap.Remove(ws)
+					cache.WebsocketStore.Remove(ws)
 					return
 				}
 			case 3:
@@ -101,8 +100,8 @@ func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.S
 			for {
 				x, size, err := reader.ReadRune()
 				if err != nil {
-					cache.WsClientMap.Remove(ws)
-					log.Logger.Error(err) //TODO control + D 会一直刷新
+					cache.WebsocketStore.Remove(ws)
+					global.Logger.Error(err) //TODO control + D 会一直刷新
 					ws.WriteMessage(1, []byte("\033[31m已经关闭连接!\033[0m"))
 					return
 				}
@@ -119,7 +118,7 @@ func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.S
 					err := ws.WriteMessage(websocket.TextMessage, buf)
 					buf = []byte{}
 					if err != nil {
-						log.Logger.Error(err)
+						global.Logger.Error(err)
 						return
 					}
 				}
@@ -140,7 +139,7 @@ func (w *ws) GenerateConn(ws *websocket.Conn, client *ssh.Client, session *ssh.S
 
 	defer func() {
 		if err := recover(); err != nil {
-			cache.WsClientMap.Remove(ws)
+			cache.WebsocketStore.Remove(ws)
 			restfulx.ErrNotNilDebug(err.(error), restfulx.OperatorErr)
 		}
 	}()

@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/lbemi/lbemi/apps/log/entity"
+	"github.com/lbemi/lbemi/pkg/global"
 	"net/http"
 	"reflect"
 
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
@@ -16,8 +16,6 @@ import (
 	"github.com/mssola/useragent"
 )
 
-type Fields map[string]interface{}
-
 func LogHandler(rc *rctx.ReqCtx) error {
 	// 记录日志
 	go func() {
@@ -25,11 +23,11 @@ func LogHandler(rc *rctx.ReqCtx) error {
 			if r := recover(); r != nil {
 				switch t := r.(type) {
 				case *restfulx.OpsError:
-					log.Logger.Error(t.Error())
+					global.Logger.Error(t.Error())
 				case error:
-					log.Logger.Error(t)
+					global.Logger.Error(t)
 				case string:
-					log.Logger.Error(t)
+					global.Logger.Error(t)
 				}
 			}
 		}()
@@ -83,16 +81,16 @@ func LogHandler(rc *rctx.ReqCtx) error {
 		// 如果是非自定义错误日志，则打印堆栈信息
 		switch t := rc.Err.(type) {
 		case *restfulx.OpsError:
-			log.Logger.Error(msg, "|", t.Code(), " - "+t.Error())
+			global.Logger.Error(msg, "|", t.Code(), " - "+t.Error())
 		case error:
-			log.Logger.Error(msg, t)
+			global.Logger.Error(msg, t)
 		case string:
-			log.Logger.Error(msg, t)
+			global.Logger.Error(msg, t)
 		}
 		return nil
 	}
 
-	log.Logger.Info(msg)
+	global.Logger.Info(msg)
 	return nil
 }
 

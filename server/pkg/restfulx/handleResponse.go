@@ -2,7 +2,7 @@ package restfulx
 
 import (
 	"github.com/emicklei/go-restful/v3"
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	"github.com/lbemi/lbemi/pkg/global"
 	"runtime/debug"
 )
 
@@ -34,6 +34,6 @@ func ErrorRes(r *restful.Response, err interface{}) {
 	//	r.WriteEntity(ServerError())
 	//	//log.Logger.Error(message)
 	default:
-		log.Logger.Error(err)
+		global.Logger.Error(err)
 	}
 }

@@ -55,5 +55,4 @@ func InitPolicyEnforcer(db *gorm.DB) (enforcer *casbin.SyncedEnforcer) {
 	}
 
 	return enforcer
-
 }

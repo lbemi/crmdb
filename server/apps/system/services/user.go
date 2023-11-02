@@ -6,12 +6,12 @@ import (
 	operatorLog "github.com/lbemi/lbemi/apps/log/services"
 	"github.com/lbemi/lbemi/apps/system/api/form"
 	"github.com/lbemi/lbemi/apps/system/entity"
-	"github.com/lbemi/lbemi/pkg/bootstrap/policy"
+	"github.com/lbemi/lbemi/pkg/common/commService"
 	entity3 "github.com/lbemi/lbemi/pkg/common/entity"
+	"github.com/lbemi/lbemi/pkg/global"
 	"gorm.io/gorm"
 	"time"
 
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"github.com/lbemi/lbemi/pkg/rctx"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
@@ -40,12 +40,12 @@ type IUSer interface {
 
 type User struct {
 	db     *gorm.DB
-	policy policy.IPolicy
+	policy commService.IPolicy
 	menu   IMenu
 	log    operatorLog.ILoginLog
 }
 
-func NewUser(db *gorm.DB, policy policy.IPolicy, menu IMenu, log operatorLog.ILoginLog) IUSer {
+func NewUser(db *gorm.DB, policy commService.IPolicy, menu IMenu, log operatorLog.ILoginLog) IUSer {
 	return &User{
 		db:     db,
 		policy: policy,
@@ -64,18 +64,18 @@ func (u *User) Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *entity.
 			if r := recover(); r != nil {
 				switch t := r.(type) {
 				case *restfulx.OpsError:
-					log.Logger.Error(t.Error())
+					global.Logger.Error(t.Error())
 				case error:
-					log.Logger.Error(t)
+					global.Logger.Error(t)
 				case string:
-					log.Logger.Error(t)
+					global.Logger.Error(t)
 				}
 			}
 		}()
 		req := rc.Request.Request
 		ua := useragent.New(req.UserAgent())
 		bName, bVersion := ua.Browser()
-		log := &entity2.LogLogin{
+		logInfo := &entity2.LogLogin{
 			Username:      params.UserName,
 			Ipaddr:        rc.ClientIP(),
 			LoginLocation: "",
@@ -85,15 +85,15 @@ func (u *User) Login(rc *rctx.ReqCtx, params *form.UserLoginForm) (user *entity.
 			LoginTime:     time.Now(),
 			Remark:        req.UserAgent(),
 		}
-		log.LoginLocation = util.GetRealAddressByIP(log.Ipaddr)
+		logInfo.LoginLocation = util.GetRealAddressByIP(logInfo.Ipaddr)
 		if pass && err == nil {
-			log.Status = "1"
-			log.Msg = "登录成功"
+			logInfo.Status = "1"
+			logInfo.Msg = "登录成功"
 		} else {
-			log.Status = "-1"
-			log.Msg = "登录失败"
+			logInfo.Status = "-1"
+			logInfo.Msg = "登录失败"
 		}
-		u.log.Add(log)
+		u.log.Add(logInfo)
 	}()
 	restfulx.ErrNotTrue(user.Status == 1, restfulx.UserDeny)
 	restfulx.ErrNotTrue(pass, restfulx.PasswdWrong)

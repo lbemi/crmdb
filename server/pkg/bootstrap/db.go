@@ -2,11 +2,6 @@ package bootstrap
 
 import (
 	"fmt"
-	entity2 "github.com/lbemi/lbemi/apps/asset/entity"
-	entity3 "github.com/lbemi/lbemi/apps/cloud/entity"
-	entity4 "github.com/lbemi/lbemi/apps/log/entity"
-	"github.com/lbemi/lbemi/apps/system/entity"
-	"github.com/lbemi/lbemi/pkg/config"
 	"io"
 	"log"
 	"os"
@@ -18,7 +13,12 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	opsLog "github.com/lbemi/lbemi/pkg/bootstrap/log"
+	asset "github.com/lbemi/lbemi/apps/asset/entity"
+	cloud "github.com/lbemi/lbemi/apps/cloud/entity"
+	logsys "github.com/lbemi/lbemi/apps/log/entity"
+	"github.com/lbemi/lbemi/apps/system/entity"
+	"github.com/lbemi/lbemi/pkg/config"
+	"github.com/lbemi/lbemi/pkg/global"
 )
 
 func InitializeDB(c *config.Config) *gorm.DB {
@@ -27,9 +27,7 @@ func InitializeDB(c *config.Config) *gorm.DB {
 		return initMysqlGorm(c)
 	default:
 		return initMysqlGorm(c)
-
 	}
-
 }
 
 func initMysqlGorm(c *config.Config) *gorm.DB {
@@ -62,7 +60,7 @@ func initMysqlGorm(c *config.Config) *gorm.DB {
 	})
 
 	if err != nil {
-		opsLog.Logger.Errorf("mysql connect failed. err: %v", err)
+		global.Logger.Errorf("mysql connect failed. err: %v", err)
 		os.Exit(-13)
 		return nil
 	}
@@ -84,32 +82,32 @@ func migration(db *gorm.DB) {
 		&entity.RoleMenu{},
 		&entity.UserRole{},
 		&config.Rule{},
-		&entity2.Host{},
-		&entity2.Group{},
-		&entity2.HostGroup{},
-		&entity2.HostAccount{},
-		&entity2.Account{},
-		&entity3.Cluster{},
+		&asset.Host{},
+		&asset.Group{},
+		&asset.HostGroup{},
+		&asset.HostAccount{},
+		&asset.Account{},
+		&cloud.Cluster{},
 		&entity.UserResource{},
-		&entity4.LogLogin{},
-		&entity4.LogOperator{},
+		&logsys.LogLogin{},
+		&logsys.LogOperator{},
 	}
-	opsLog.Logger.Info("Initializing database ...")
+	global.Logger.Info("Initializing database ...")
 	if err := db.AutoMigrate(entities...); err != nil {
-		opsLog.Logger.Errorf("Failed to initialize database. err: %v", err)
+		global.Logger.Errorf("Failed to initialize database. err: %v", err)
 		return
 	}
 }
 
 func getGormLogger(c *config.Config) logger.Interface {
 	logMode := getLoggerMode(c.LogMode)
-	config := logger.Config{
+	cnf := logger.Config{
 		SlowThreshold:             time.Second,
 		LogLevel:                  logMode,
 		IgnoreRecordNotFoundError: true,
 		Colorful:                  !c.EnableFileLogWrite,
 	}
-	return logger.New(getGormLogWriter(c), config)
+	return logger.New(getGormLogWriter(c), cnf)
 }
 
 func getLoggerMode(logMode string) logger.LogLevel {

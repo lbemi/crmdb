@@ -10,10 +10,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var WsClientMap *WsClientStore
+var WebsocketStore *WsClientStore
 
 func init() {
-	WsClientMap = &WsClientStore{}
+	WebsocketStore = &WsClientStore{}
 }
 
 var WsLock sync.Mutex
@@ -50,7 +50,6 @@ func (w *WsClientStore) SendAll(msg interface{}) {
 func (w *WsClientStore) SendClusterResource(clusterName, resource string, msg interface{}) {
 	closeCh := make(chan struct{})
 	defer close(closeCh)
-	fmt.Println("发送消息啦。。。。。。。")
 	w.data.Range(func(key, value any) bool {
 		c := value.(*WsClient)
 		resourceName := strings.Split(c.Resource, ",")
@@ -58,8 +57,8 @@ func (w *WsClientStore) SendClusterResource(clusterName, resource string, msg in
 			if c.Cluster == clusterName && name == resource {
 				WsLock.Lock()
 				defer WsLock.Unlock()
+				fmt.Println("发送消息啦。。。。。。。", msg)
 				err := c.Conn.WriteJSON(msg)
-
 				if err != nil {
 					log.Println(err)
 					w.Remove(c.Conn)
@@ -90,7 +89,7 @@ func (w *WsClient) Ping(t time.Duration) {
 		err := w.Conn.WriteMessage(websocket.PingMessage, []byte("ping"))
 		WsLock.Unlock()
 		if err != nil {
-			WsClientMap.Remove(w.Conn)
+			WebsocketStore.Remove(w.Conn)
 			return
 		}
 	}

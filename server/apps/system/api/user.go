@@ -1,15 +1,15 @@
 package api
 
 import (
-	entity2 "github.com/lbemi/lbemi/apps/log/entity"
-	form2 "github.com/lbemi/lbemi/apps/system/api/form"
-	"github.com/lbemi/lbemi/apps/system/entity"
+	"github.com/lbemi/lbemi/pkg/global"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/mssola/useragent"
 
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
+	logModel "github.com/lbemi/lbemi/apps/log/entity"
+	"github.com/lbemi/lbemi/apps/system/api/form"
+	"github.com/lbemi/lbemi/apps/system/entity"
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/middleware"
 	"github.com/lbemi/lbemi/pkg/rctx"
@@ -18,7 +18,7 @@ import (
 )
 
 func Login(rc *rctx.ReqCtx) {
-	userForm := form2.UserLoginForm{}
+	userForm := form.UserLoginForm{}
 	rc.ShouldBind(&userForm)
 	//校验验证码
 	restfulx.ErrNotTrue(store.Verify(userForm.CaptchaId, userForm.Captcha, true), restfulx.CaptchaErr)
@@ -26,7 +26,7 @@ func Login(rc *rctx.ReqCtx) {
 	tokenStr := util.CreateToken(util.AppGuardName, user)
 	core.V1.Redis().Set("key", tokenStr.Token, time.Duration(time.Hour*30))
 	rc.LoginAccount = user
-	rc.ResData = &form2.LoginResp{
+	rc.ResData = &form.LoginResp{
 		Token: tokenStr.Token,
 		User:  user,
 	}
@@ -34,7 +34,7 @@ func Login(rc *rctx.ReqCtx) {
 
 func Register(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
-	var registerForm form2.RegisterUserForm
+	var registerForm form.RegisterUserForm
 	rc.ShouldBind(&registerForm)
 	core.V1.User().Register(c, &registerForm)
 }
@@ -46,18 +46,18 @@ func Logout(rc *rctx.ReqCtx) {
 			if r := recover(); r != nil {
 				switch t := r.(type) {
 				case *restfulx.OpsError:
-					log.Logger.Error(t.Error())
+					global.Logger.Error(t.Error())
 				case error:
-					log.Logger.Error(t)
+					global.Logger.Error(t)
 				case string:
-					log.Logger.Error(t)
+					global.Logger.Error(t)
 				}
 			}
 		}()
 		req := rc.Request.Request
 		ua := useragent.New(req.UserAgent())
 		bName, bVersion := ua.Browser()
-		log := &entity2.LogLogin{
+		log := &logModel.LogLogin{
 			Username:      rc.LoginAccount.UserName,
 			Ipaddr:        rc.ClientIP(),
 			LoginLocation: "",
@@ -98,7 +98,7 @@ func DeleteUserByUserId(rc *rctx.ReqCtx) {
 
 func UpdateUser(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
-	var user form2.UpdateUserFrom
+	var user form.UpdateUserFrom
 	rc.ShouldBind(&user)
 	userID := rc.PathParamUint64("id")
 	core.V1.User().Update(c, userID, &user)
@@ -112,7 +112,7 @@ func GetUserRoles(rc *rctx.ReqCtx) {
 
 func SetUserRoles(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
-	var roles form2.Roles
+	var roles form.Roles
 	rc.ShouldBind(&roles)
 	uid := rc.PathParamUint64("id")
 	core.V1.User().SetUserRoles(c, uid, roles.RoleIds)
@@ -132,7 +132,7 @@ func GetLeftMenusByCurrentUser(rc *rctx.ReqCtx) {
 	res := core.V1.User().GetLeftMenusByUserID(c, uid)
 	permissions := core.V1.User().GetButtonsByUserID(c, uid)
 
-	rc.ResData = &form2.UserPermissionResp{
+	rc.ResData = &form.UserPermissionResp{
 		Menus:      res,
 		Permission: permissions,
 	}

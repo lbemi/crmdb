@@ -31,7 +31,7 @@ type ClientConfig struct {
 	IstioSharedInformerFactory   externalversions.SharedInformerFactory
 }
 
-type ClientMap struct {
+type ClientStore struct {
 	data map[string]*ClientConfig
 	lock sync.Mutex
 }
@@ -42,7 +42,7 @@ type ClientStoreImp interface {
 	Delete(key string)
 }
 
-func (c *ClientMap) Add(key string, resource *ClientConfig) {
+func (c *ClientStore) Add(key string, resource *ClientConfig) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -53,13 +53,13 @@ func (c *ClientMap) Add(key string, resource *ClientConfig) {
 	c.data[key] = resource
 }
 
-func (c *ClientMap) Get(key string) *ClientConfig {
+func (c *ClientStore) Get(key string) *ClientConfig {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	return c.data[key]
 }
 
-func (c *ClientMap) Delete(key string) {
+func (c *ClientStore) Delete(key string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	// 关闭informer
@@ -67,8 +67,8 @@ func (c *ClientMap) Delete(key string) {
 	delete(c.data, key)
 }
 
-func NewClientStore() *ClientMap {
-	return &ClientMap{
+func NewClientStore() *ClientStore {
+	return &ClientStore{
 		data: map[string]*ClientConfig{},
 	}
 }

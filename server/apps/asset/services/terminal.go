@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/lbemi/lbemi/apps/asset/entity"
+	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
 	"net"
 	"time"
 
-	"github.com/lbemi/lbemi/pkg/bootstrap/log"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -107,7 +107,7 @@ func (t *terminal) generateRequestTerminal(ctx context.Context, client *ssh.Clie
 
 	ok, err := channel.SendRequest("pty-req", true, ssh.Marshal(&req))
 	if !ok || err != nil {
-		log.Logger.Error(err)
+		global.Logger.Error(err)
 		return nil, nil
 	}
 
