@@ -41,7 +41,11 @@
 						<el-collapse-item title="主机设置" name="2">
 							<Hosts :hosts="data.virtualService.spec?.hosts" :name="'Hosts'" />
 						</el-collapse-item>
-						<el-collapse-item title="HTTP设置" name="3">
+						<el-collapse-item name="3">
+							<template #title>
+								HTTP设置
+								<el-button :type="data.httpStepStatus ? 'success' : 'danger'" :icon="Check" circle />
+							</template>
 							<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
 								<VSHTTP ref="httpRef"></VSHTTP>
 							</el-col>
@@ -76,8 +80,7 @@ import { kubernetesInfo } from '@/stores/kubernetes';
 import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
-import { InfoFilled } from '@element-plus/icons-vue';
-import { yaml } from '@codemirror/legacy-modes/mode/yaml';
+import { Check, Delete, InfoFilled } from '@element-plus/icons-vue';
 import yamlJs from 'js-yaml';
 const formRulesOneRef = ref<FormInstance>();
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
@@ -89,6 +92,7 @@ const k8sStore = kubernetesInfo();
 const virtualServiceApi = useVirtualServiceApi();
 
 const data = reactive({
+	httpStepStatus: false,
 	activeCollapse: '1',
 	isBinaryData: false,
 	isUpdate: false,
@@ -202,7 +206,10 @@ const getLabels = (labels: any) => {
 const confirm = async () => {
 	convertConfigMap();
 	if (!data.isUpdate) {
-		data.virtualService.spec.http = httpRef.value.returnHttps();
+		const { res, valid } = httpRef.value.returnHttps();
+		data.virtualService.spec!.http = res;
+		data.httpStepStatus = valid;
+
 		console.log(yamlJs.dump(data.virtualService));
 		// await virtualServiceApi
 		// 	.createVirtualService({ cloud: k8sStore.state.activeCluster }, data.virtualService)
