@@ -1,5 +1,5 @@
 <template>
-	<el-drawer v-model="data.visible" @close="handleClose" size="50%">
+	<el-drawer v-model="data.visible" @close="handleClose" size="60%">
 		<template #header="{ titleId, titleClass }">
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
@@ -15,7 +15,7 @@
 									<info-filled />
 								</el-icon>
 							</template>
-							<el-form-item label="命名空间：" prop="data.virtualService.metadata.namespace">
+							<el-form-item label="命名空间：" prop="namespace">
 								<el-select
 									v-model="data.virtualService.metadata.namespace"
 									style="max-width: 200px"
@@ -44,7 +44,12 @@
 						<el-collapse-item name="3">
 							<template #title>
 								HTTP设置
-								<el-button :type="data.httpStepStatus ? 'success' : 'danger'" :icon="Check" circle />
+								<el-icon size="medium" color="#529b2e" class="no-inherit" v-if="data.httpStepStatus">
+									<CircleCheck />
+								</el-icon>
+								<el-icon size="medium" color="#c45656" class="no-inherit" v-else>
+									<CircleClose />
+								</el-icon>
 							</template>
 							<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
 								<VSHTTP ref="httpRef"></VSHTTP>
@@ -80,7 +85,7 @@ import { kubernetesInfo } from '@/stores/kubernetes';
 import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
-import { Check, Delete, InfoFilled } from '@element-plus/icons-vue';
+import { CircleCheck, CircleClose, InfoFilled } from '@element-plus/icons-vue';
 import yamlJs from 'js-yaml';
 const formRulesOneRef = ref<FormInstance>();
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
@@ -206,10 +211,10 @@ const getLabels = (labels: any) => {
 const confirm = async () => {
 	convertConfigMap();
 	if (!data.isUpdate) {
-		const { res, valid } = httpRef.value.returnHttps();
+		const res = httpRef.value.returnHttps();
 		data.virtualService.spec!.http = res;
-		data.httpStepStatus = valid;
-
+		let httpCheck = await httpRef.value.validateHandler();
+		data.httpStepStatus = httpCheck;
 		console.log(yamlJs.dump(data.virtualService));
 		// await virtualServiceApi
 		// 	.createVirtualService({ cloud: k8sStore.state.activeCluster }, data.virtualService)
