@@ -2,16 +2,16 @@ package services
 
 import (
 	"context"
+	"sort"
+	"strings"
+
 	"github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/common/entity"
 	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/restfulx"
+	"istio.io/client-go/pkg/apis/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"sort"
-	"strings"
-
-	"istio.io/client-go/pkg/apis/networking/v1beta1"
 )
 
 type VirtualServiceGetter interface {
@@ -87,6 +87,7 @@ func (v *VirtualService) Delete(ctx context.Context, name string) {
 }
 
 func (v *VirtualService) Create(ctx context.Context, virtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
+	global.Logger.Infof("create virtual service: %v", virtualService)
 	newVirtualService, err := v.cli.IstioClient.NetworkingV1beta1().VirtualServices(v.ns).Create(ctx, virtualService, metav1.CreateOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return newVirtualService

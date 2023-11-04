@@ -251,7 +251,7 @@ const deleteVirtualService = (virtualService: VirtualService) => {
 		message: h('p', null, [
 			h('span', null, '此操作将删除 '),
 			h('i', { style: 'color: teal' }, `${virtualService.metadata!.name}`),
-			h('span', null, ' 配置. 是否继续? '),
+			h('span', null, ' 虚拟服务. 是否继续? '),
 		]),
 		buttonSize: 'small',
 		showCancelButton: true,

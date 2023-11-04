@@ -7,8 +7,6 @@ require (
 	github.com/casbin/gorm-adapter/v3 v3.12.1
 	github.com/emicklei/go-restful-openapi/v2 v2.9.1
 	github.com/fatih/structs v1.1.0
-	github.com/fsnotify/fsnotify v1.6.0
-	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/go-redis/redis v6.15.9+incompatible
@@ -20,18 +18,19 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
 	go.uber.org/zap v1.23.0
-	golang.org/x/crypto v0.12.0
+	golang.org/x/crypto v0.14.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.4.1
 	gorm.io/gorm v1.24.0
-	istio.io/client-go v1.18.5
-	k8s.io/api v0.28.0
-	k8s.io/apimachinery v0.28.0
-	k8s.io/metrics v0.26.2
+	istio.io/client-go v1.16.6
+	k8s.io/api v0.28.3
+	k8s.io/apimachinery v0.28.3
+	k8s.io/metrics v0.24.0
 )
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/moby/spdystream v0.2.0 // indirect
@@ -100,11 +99,11 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/image v0.1.0 // indirect
-	golang.org/x/net v0.14.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
-	golang.org/x/term v0.11.0 // indirect
-	golang.org/x/text v0.12.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
@@ -115,7 +114,7 @@ require (
 	gorm.io/driver/postgres v1.4.4 // indirect
 	gorm.io/driver/sqlserver v1.4.1 // indirect
 	gorm.io/plugin/dbresolver v1.3.0 // indirect
-	k8s.io/client-go v0.28.0
+	k8s.io/client-go v0.28.3
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2 // indirect
 	modernc.org/libc v1.19.0 // indirect

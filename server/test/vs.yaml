@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: test
+  namespace: myistio
+  labels: {}
+spec:
+  hosts:
+    - test.com
+  http:
+    - name: tet
+      match:
+        - name: ''
+          uri:
+            exact: /
+      route:
+        - destination:
+            host: nginx.default.svc.cluster
+            subset: v1
+            port:
+              number: 80
+          weight: 100

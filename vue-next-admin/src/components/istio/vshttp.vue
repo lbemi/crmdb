@@ -63,42 +63,113 @@
 									</el-form-item>
 									<div>
 										<el-row :gutter="10" v-for="(item, j) in state.https[k].route" :key="j">
-											<el-col :span="24" class="grid-content ep-bg-purple mb20">
-												<el-form-item label="目标">
-													<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="onAddDest(k, j)">新增</el-button>
-													<el-button :icon="RemoveFilled" type="danger" size="small" text @click="onDelroute(k, j)" class="ml-2"
-														>删除此目标</el-button
-													>
-												</el-form-item>
-												<div style="margin-left: 20px">
-													<el-row :gutter="10" v-for="(dest, i) in state.https[k].route[j].destination" :key="i">
-														<el-col :span="8" :offset="1" class="grid-content ep-bg-purple mb20">
-															<el-form-item label="服务名" :prop="`https[${k}].route[${j}].destination[${i}].host`" :rules="formRules.host">
-																<el-input placeholder="服务名" v-model="dest.host" size="small" />
-															</el-form-item>
-														</el-col>
-														<el-col :span="4" class="grid-content ep-bg-purple mb20">
-															<el-form-item label="子集" :prop="`https[${k}].route[${j}].destination[${i}].subset`" :rules="formRules.subset">
-																<el-input placeholder="子集" v-model="dest.subset" size="small" />
-															</el-form-item>
-														</el-col>
-														<el-col :span="3" class="grid-content ep-bg-purple mb20">
-															<el-form-item label="端口">
-																<el-input placeholder="0-100" v-model.number="dest.port.number" size="small" />
-															</el-form-item>
-														</el-col>
-														<el-col :span="7" class="grid-content ep-bg-purple mb20">
-															<el-form-item label="权重">
-																<el-input placeholder="0-100" v-model.number="dest.weight" size="small" style="width: 55px" />
-																<el-button :icon="RemoveFilled" type="primary" size="small" text @click="onDelDest(k, j, i)" class="ml-2"></el-button>
-															</el-form-item>
-														</el-col>
-													</el-row>
-													<el-form-item> </el-form-item>
-												</div>
-											</el-col>
+											<el-card>
+												<el-col :span="24" class="grid-content ep-bg-purple mb20">
+													<el-form-item label="目标">
+														<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="onAddDest(k, j)">新增</el-button>
+														<el-button :icon="RemoveFilled" type="danger" size="small" text @click="onDelroute(k, j)" class="ml-2"
+															>删除此目标</el-button
+														>
+													</el-form-item>
+													<el-card v-for="(dest, i) in state.https[k].route[j].destination" :key="i" class="mb10">
+														<el-row :gutter="10">
+															<el-col :span="8" :offset="1" class="grid-content ep-bg-purple mb20">
+																<el-form-item label="服务名" :prop="`https[${k}].route[${j}].destination[${i}].host`" :rules="formRules.host">
+																	<el-input placeholder="服务名" v-model="dest.host" size="small" />
+																</el-form-item>
+															</el-col>
+															<el-col :span="4" class="grid-content ep-bg-purple mb20">
+																<el-form-item label="子集" :prop="`https[${k}].route[${j}].destination[${i}].subset`" :rules="formRules.subset">
+																	<el-input placeholder="子集" v-model="dest.subset" size="small" />
+																</el-form-item>
+															</el-col>
+															<el-col :span="3" class="grid-content ep-bg-purple mb20">
+																<el-form-item label="端口">
+																	<el-input placeholder="0-100" v-model.number="dest.port.number" size="small" />
+																</el-form-item>
+															</el-col>
+															<el-col :span="7" class="grid-content ep-bg-purple mb20">
+																<el-form-item label="权重">
+																	<el-input placeholder="0-100" v-model.number="dest.weight" size="small" style="width: 55px" />
+																	<el-button
+																		:icon="RemoveFilled"
+																		type="primary"
+																		size="small"
+																		text
+																		@click="onDelDest(k, j, i)"
+																		class="ml-2"
+																	></el-button>
+																</el-form-item>
+															</el-col>
+															<el-col :span="24" class="grid-content ep-bg-purple mb20">
+																<el-form-item label="header操作">
+																	<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="onAddHeaderOperator(k, j, i)"
+																		>新增</el-button
+																	>
+																	<el-button :icon="RemoveFilled" type="danger" size="small" text @click="onDelHeaderOperator(k, j, i)" class="ml-2"
+																		>删除此header</el-button
+																	>
+																</el-form-item>
+																<div v-if="state.https[k].route[j].destination[i].headers.length > 0">
+																	<el-row :gutter="20" v-for="(header, p) in state.https[k].route[j].destination[i].headers" :key="p">
+																		<el-col :span="5" :offset="1" class="grid-content ep-bg-purple mb20">
+																			<el-form-item
+																				label="类型"
+																				:prop="`https[${k}].route[${j}].destination[${i}].headers[${p}].type`"
+																				:rules="formRules.headerType"
+																			>
+																				<el-select v-model="header.type" size="small">
+																					<el-option v-for="item in headerType" :key="item.key" :label="item.key" :value="item.value" />
+																				</el-select>
+																			</el-form-item>
+																		</el-col>
+																		<el-col :span="5" class="grid-content ep-bg-purple mb20">
+																			<el-form-item
+																				label="操作"
+																				:prop="`https[${k}].route[${j}].destination[${i}].headers[${p}].option`"
+																				:rules="formRules.headerOperType"
+																			>
+																				<el-select v-model="header.option" size="small">
+																					<el-option v-for="item in headerOperType" :key="item.key" :label="item.key" :value="item.value" />
+																				</el-select>
+																			</el-form-item>
+																		</el-col>
+																		<el-col :span="5" class="grid-content ep-bg-purple mb20">
+																			<el-form-item
+																				label="key"
+																				:prop="`https[${k}].route[${j}].destination[${i}].headers[${p}].target.key`"
+																				:rules="formRules.headerKey"
+																			>
+																				<el-input placeholder="输入key" v-model="header.target.key" size="small" />
+																			</el-form-item>
+																		</el-col>
+																		<el-col :span="5" class="grid-content ep-bg-purple mb20" v-if="header.option != 'remove'">
+																			<el-form-item
+																				label="value"
+																				:prop="`https[${k}].route[${j}].destination[${i}].headers[${p}].target.value`"
+																				:rules="formRules.headerValue"
+																			>
+																				<el-input placeholder="输入value" v-model="header.target.value" size="small" />
+																			</el-form-item>
+																		</el-col>
+																		<el-col :span="3" class="grid-content ep-bg-purple mb20">
+																			<el-button
+																				:icon="RemoveFilled"
+																				type="primary"
+																				size="small"
+																				text
+																				@click="onDelHeader(k, j, i, p)"
+																				class="ml-2"
+																			></el-button>
+																		</el-col>
+																	</el-row>
+																</div>
+															</el-col>
+														</el-row>
+													</el-card>
+												</el-col>
+											</el-card>
 										</el-row>
-										<el-form-item> </el-form-item>
 									</div>
 								</el-card>
 							</el-col>
@@ -115,9 +186,16 @@ import { reactive, ref } from 'vue';
 import { VirtualServiceHttp } from '@/types/istio/http';
 import { FormInstance, FormRules } from 'element-plus';
 
+interface Header {
+	type: string;
+	option: string;
+	target: {
+		key: string;
+		value: string;
+	};
+}
 const ruleFormRef = ref<FormInstance>();
 const state = reactive({
-	check: false,
 	https: [
 		{
 			name: '',
@@ -138,12 +216,9 @@ const state = reactive({
 							port: {
 								number: 0,
 							},
+							headers: [] as Array<Header>,
 						},
 					],
-					headers: {
-						request: {},
-						response: {},
-					},
 				},
 			],
 		},
@@ -159,7 +234,25 @@ const formRules = reactive<FormRules>({
 		{ required: true, message: 'Please input Activity name', trigger: 'blur' },
 		{ min: 3, max: 5, message: 'Length should be 3 to 5', trigger: 'blur' },
 	],
+
 	httpName: [{ required: true, message: '输入名称', trigger: 'blur' || 'change' }],
+	headerType: [{ required: true, message: '请选择', trigger: 'blur' || 'change' }],
+	headerOperType: [{ required: true, message: '请选择操作类型', trigger: 'blur' || 'change' }],
+	headerKey: [
+		{
+			required: true,
+			message: '请输入key',
+			trigger: 'blur',
+		},
+	],
+	headerValue: [
+		{
+			required: true,
+			message: '请输入value',
+			trigger: 'blur',
+		},
+	],
+
 	key: [
 		{
 			required: true,
@@ -214,12 +307,9 @@ const onAddRoute = (k: number) => {
 				port: {
 					number: 0,
 				},
+				headers: [],
 			},
 		],
-		headers: {
-			request: {},
-			response: {},
-		},
 	});
 };
 const onDelroute = (k: number, j: number) => {
@@ -233,6 +323,7 @@ const onAddDest = (k: number, j: number) => {
 		port: {
 			number: 0,
 		},
+		headers: [],
 	});
 };
 const onDelDest = (k: number, j: number, i: number) => {
@@ -262,21 +353,59 @@ const onAddRow = () => {
 						port: {
 							number: 0,
 						},
+						headers: [],
 					},
 				],
-				headers: {
-					request: {},
-					response: {},
-				},
 			},
 		],
 	});
+};
+
+const onAddHeaderOperator = (k: number, j: number, i: number) => {
+	state.https[k].route[j].destination[i].headers.push({
+		type: '',
+		option: '',
+		target: {
+			key: '',
+			value: '',
+		},
+	});
+};
+const onDelHeaderOperator = (k: number, j: number, i: number) => {
+	state.https[k].route[j].destination[i].headers.splice(j, 1);
+};
+const onDelHeader = (k: number, j: number, i: number, p: number) => {
+	state.https[k].route[j].destination[i].headers.splice(p, 1);
 };
 
 const prefixType = [
 	{ key: '精确匹配', value: 'exact' },
 	{ key: '前缀匹配', value: 'prefix' },
 	{ key: '正则匹配', value: 'regex' },
+];
+const headerType = [
+	{
+		key: '请求',
+		value: 'request',
+	},
+	{
+		key: '响应',
+		value: 'response',
+	},
+];
+const headerOperType = [
+	{
+		key: '设置',
+		value: 'set',
+	},
+	{
+		key: '新增',
+		value: 'add',
+	},
+	{
+		key: '删除',
+		value: 'remove',
+	},
 ];
 const onDelRow = (index: number) => {
 	state.https.splice(index, 1);
@@ -302,7 +431,7 @@ const returnHttps = () => {
 		let http = {} as VirtualServiceHttp;
 		http.name = item.name;
 		let match = [] as Array<Object>;
-		state.https[index].match.forEach((v, i) => {
+		item.match.forEach((v, i) => {
 			match.push({
 				name: state.https[index].match[i].name,
 				uri: {
@@ -310,12 +439,61 @@ const returnHttps = () => {
 				},
 			});
 		});
+
+		let route = {};
+		item.route.forEach((v) => {
+			let dest = [] as Array<Object>;
+			v.destination.forEach((d) => {
+				let headers = [] as Array<Object>;
+				if (d.headers.length > 0) {
+					d.headers.forEach((h) => {
+						if (h.option === 'remove') {
+							headers.push({
+								[`${h.type}`]: {
+									[`${h.option}`]: [h.target.key],
+								},
+							});
+						} else {
+							headers.push({
+								[`${h.type}`]: {
+									[`${h.option}`]: {
+										[`${h.target.key}`]: h.target.value,
+									},
+								},
+							});
+						}
+					});
+					dest.push({
+						destination: {
+							host: d.host,
+							subset: d.subset,
+							port: {
+								number: d.port.number,
+							},
+						},
+						weight: d.weight,
+						headers: headers,
+					});
+				} else {
+					dest.push({
+						destination: {
+							host: d.host,
+							subset: d.subset,
+							port: {
+								number: d.port.number,
+							},
+						},
+						weight: d.weight,
+					});
+				}
+			});
+			route = dest;
+		});
 		http.match = match;
+		http.route = route;
 		res.push(http);
 	});
-	let check = state.check;
-	console.log('-->>>>', state.check);
-	return { res, check };
+	return res;
 };
 
 defineExpose({

@@ -74,19 +74,18 @@
 </template>
 
 <script lang="ts" setup>
-import { ElDrawer, ElMessage, FormInstance, FormRules, UploadFile } from 'element-plus';
+import type { UploadInstance, UploadProps, UploadRawFile } from 'element-plus';
+import { ElDrawer, ElMessage, FormInstance, FormRules, genFileId, UploadFile } from 'element-plus';
 
 import { VirtualService } from '@kubernetes-models/istio/networking.istio.io/v1beta1/VirtualService';
-import { defineAsyncComponent, onMounted, reactive } from 'vue';
-import { ref } from 'vue';
-import { genFileId } from 'element-plus';
-import type { UploadInstance, UploadProps, UploadRawFile } from 'element-plus';
+import { defineAsyncComponent, onMounted, reactive, ref } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
 import { CircleCheck, CircleClose, InfoFilled } from '@element-plus/icons-vue';
 import yamlJs from 'js-yaml';
+
 const formRulesOneRef = ref<FormInstance>();
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 const Hosts = defineAsyncComponent(() => import('@/components/istio/hosts.vue'));
@@ -105,7 +104,7 @@ const data = reactive({
 	labels: [],
 	annotations: [],
 	host: '',
-	virtualService: {
+	virtualService2: {
 		metadata: {
 			name: '',
 			namespace: k8sStore.state.activeNamespace,
@@ -114,7 +113,17 @@ const data = reactive({
 		spec: {
 			hosts: [''],
 		},
-	} as VirtualService,
+	},
+	virtualService: new VirtualService({
+		metadata: {
+			name: '',
+			namespace: k8sStore.state.activeNamespace,
+			labels: {},
+		},
+		spec: {
+			hosts: [''],
+		},
+	}),
 	keyValues: [] as Array<{ key: string; value: string }>,
 });
 
@@ -209,23 +218,26 @@ const getLabels = (labels: any) => {
 };
 
 const confirm = async () => {
-	convertConfigMap();
 	if (!data.isUpdate) {
 		const res = httpRef.value.returnHttps();
 		data.virtualService.spec!.http = res;
-		let httpCheck = await httpRef.value.validateHandler();
-		data.httpStepStatus = httpCheck;
+		data.httpStepStatus = await httpRef.value.validateHandler();
+		delete data.virtualService.metadata?.labels;
 		console.log(yamlJs.dump(data.virtualService));
-		// await virtualServiceApi
-		// 	.createVirtualService({ cloud: k8sStore.state.activeCluster }, data.virtualService)
-		// 	.then(() => {
-		// 		ElMessage.success('创建成功');
-		// 		handleClose();
-		// 		emit('refresh');
-		// 	})
-		// 	.catch((e: any) => {
-		// 		ElMessage.error(e.message);
-		// 	});
+		if (data.httpStepStatus) {
+			await virtualServiceApi
+				.createVirtualService({ cloud: k8sStore.state.activeCluster }, data.virtualService)
+				.then(() => {
+					ElMessage.success('创建成功');
+					handleClose();
+					emit('refresh');
+				})
+				.catch((e: any) => {
+					ElMessage.error(e.message);
+				});
+		} else {
+			ElMessage.error('请检查配置');
+		}
 	} else {
 		await virtualServiceApi
 			.updateVirtualService({ cloud: k8sStore.state.activeCluster }, data.virtualService)
