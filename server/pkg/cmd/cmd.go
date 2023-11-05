@@ -124,6 +124,7 @@ func registerRoute(httpSever *server.HttpSever) {
 
 		//istio路由
 		istio.IstioVirtualServiceRoutes(),
+		istio.IstioGatewayRoutes(),
 	)
 	// websocket取消压缩
 	//httpSever.Container.EnableContentEncoding(false)

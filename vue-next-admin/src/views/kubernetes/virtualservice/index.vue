@@ -130,7 +130,7 @@ import { dateStrFormat } from '@/utils/formatTime';
 import { PageInfo } from '@/types/kubernetes/common';
 import { Edit, Delete, List } from '@element-plus/icons-vue';
 import { useThemeConfig } from '@/stores/themeConfig';
-import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
+import { useVirtualServiceApi } from '@/api/istio/virtualService';
 import { deepClone } from '@/utils/other';
 import { useWebsocketApi } from '@/api/kubernetes/websocket';
 

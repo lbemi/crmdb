@@ -90,7 +90,7 @@ import { ElDrawer, ElMessage, FormInstance, FormRules } from 'element-plus';
 import { VirtualService } from '@kubernetes-models/istio/networking.istio.io/v1beta1/VirtualService';
 import { defineAsyncComponent, onMounted, reactive, ref } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { useVirtualServiceApi } from '@/api/kubernetes/virtualService';
+import { useVirtualServiceApi } from '@/api/istio/virtualService';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
 import { CircleCheck, CircleClose, InfoFilled } from '@element-plus/icons-vue';

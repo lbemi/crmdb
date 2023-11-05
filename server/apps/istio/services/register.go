@@ -10,6 +10,7 @@ type IstioGetter interface {
 
 type IstioInterface interface {
 	VirtualServiceGetter
+	GatewayGetter
 }
 
 type Istio struct {
@@ -26,4 +27,11 @@ func (c *Istio) VirtualServices(namespace string) IVirtualService {
 		namespace = ""
 	}
 	return NewVirtualService(c.store.Get(c.clusterName), namespace)
+}
+
+func (c *Istio) Gateways(namespace string) IGateway {
+	if namespace == "all" {
+		namespace = ""
+	}
+	return NewGateway(c.store.Get(c.clusterName), namespace)
 }
