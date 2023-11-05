@@ -52,8 +52,9 @@ const validateKey = (rule: any, value: any, callback: any) => {
 		});
 		if (count > 1) {
 			callback(new Error('key已存在'));
+		} else {
+			callback();
 		}
-		callback();
 	}
 };
 
@@ -87,14 +88,17 @@ const handleLabels = () => {
 
 const emit = defineEmits(['updateLabels']);
 // FIXME 在父组件校验
-const nextStep = (formEl: Array<FormInstance> | undefined, labels: Object) => {
+const validateHandler = (formEl: Array<FormInstance> | undefined, labels: Object) => {
+	let status = false;
 	formEl?.forEach((item) => {
 		item.validate((valid, fields) => {
+			status = valid;
 			if (valid) {
 				emit('updateLabels', labels);
 			}
 		});
 	});
+	return status;
 };
 // 监听父组件传递来的数据
 watch(
@@ -116,7 +120,7 @@ watch(
 	() => {
 		const labels = handleLabels();
 		if (!isObjectValueEqual(labels, { '': '' })) {
-			nextStep(labelRef.value, labels);
+			validateHandler(labelRef.value, labels);
 			// emit('updateLabels', labels);
 		}
 	},
@@ -125,6 +129,9 @@ watch(
 		deep: true,
 	}
 );
+defineExpose({
+	validateHandler,
+});
 </script>
 
 <style scoped></style>

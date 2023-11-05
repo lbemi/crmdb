@@ -79,7 +79,7 @@
 																</el-form-item>
 															</el-col>
 															<el-col :span="4" class="grid-content ep-bg-purple mb20">
-																<el-form-item label="子集" :prop="`https[${k}].route[${j}].destination[${i}].subset`" :rules="formRules.subset">
+																<el-form-item label="子集">
 																	<el-input placeholder="子集" v-model="dest.subset" size="small" />
 																</el-form-item>
 															</el-col>
@@ -103,7 +103,13 @@
 															</el-col>
 															<el-col :span="24" class="grid-content ep-bg-purple mb20">
 																<el-form-item label="header操作">
-																	<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="onAddHeaderOperator(k, j, i)"
+																	<el-button
+																		:icon="CirclePlusFilled"
+																		type="primary"
+																		size="small"
+																		text
+																		@click="onAddHeaderOperator(k, j, i)"
+																		:disabled="state.https[k].route[j].destination[i].headers.length === 2"
 																		>新增</el-button
 																	>
 																	<el-button :icon="RemoveFilled" type="danger" size="small" text @click="onDelHeaderOperator(k, j, i)" class="ml-2"
@@ -210,7 +216,7 @@ const state = reactive({
 				{
 					destination: [
 						{
-							weight: 0,
+							weight: 100,
 							host: '',
 							subset: '',
 							port: {
@@ -354,6 +360,20 @@ const onAddRow = () => {
 							number: 0,
 						},
 						headers: [],
+						// headers2: {
+						// 	request: {
+						// 		action: '',
+						// 		key: '',
+						// 		value: '',
+						// 		keys: [''],
+						// 	},
+						// 	response: {
+						// 		action: '',
+						// 		key: '',
+						// 		value: '',
+						// 		keys: [''],
+						// 	},
+						// },
 					},
 				],
 			},
@@ -444,25 +464,49 @@ const returnHttps = () => {
 		item.route.forEach((v) => {
 			let dest = [] as Array<Object>;
 			v.destination.forEach((d) => {
-				let headers = [] as Array<Object>;
-				if (d.headers.length > 0) {
+				let headers = {};
+				if (d.headers.length > 0 && d.headers.length < 3) {
+					let request = {};
+					let response = {};
 					d.headers.forEach((h) => {
-						if (h.option === 'remove') {
-							headers.push({
-								[`${h.type}`]: {
-									[`${h.option}`]: [h.target.key],
-								},
-							});
-						} else {
-							headers.push({
-								[`${h.type}`]: {
-									[`${h.option}`]: {
-										[`${h.target.key}`]: h.target.value,
+						if (h.type === 'request') {
+							if (h.option === 'remove') {
+								request = {
+									[`${h.type}`]: {
+										[`${h.option}`]: [h.target.key],
 									},
-								},
-							});
+								};
+							} else {
+								request = {
+									[`${h.type}`]: {
+										[`${h.option}`]: {
+											[`${h.target.key}`]: h.target.value,
+										},
+									},
+								};
+							}
+						} else {
+							if (h.option === 'remove') {
+								response = {
+									[`${h.type}`]: {
+										[`${h.option}`]: [h.target.key],
+									},
+								};
+							} else {
+								response = {
+									[`${h.type}`]: {
+										[`${h.option}`]: {
+											[`${h.target.key}`]: h.target.value,
+										},
+									},
+								};
+							}
 						}
 					});
+					headers = {
+						...request,
+						...response,
+					};
 					dest.push({
 						destination: {
 							host: d.host,

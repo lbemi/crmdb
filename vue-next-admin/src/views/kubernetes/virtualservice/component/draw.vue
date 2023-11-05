@@ -3,16 +3,18 @@
 		<template #header="{ titleId, titleClass }">
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
-
 		<div v-if="data.virtualService.metadata">
-			<el-form v-model="data.virtualService" ref="formRulesOneRef" label-width="100px">
+			<el-form :model="data.virtualService.metadata" ref="formRulesOneRef" label-width="100px" :rules="rules">
 				<div>
-					<el-collapse v-model="data.activeCollapse">
+					<el-collapse v-model="data.activeCollapse" @change="aggregate()">
 						<el-collapse-item name="1">
 							<template #title>
 								基础设置
-								<el-icon>
-									<info-filled />
+								<el-icon size="medium" color="#529b2e" class="no-inherit" v-if="data.baseStepStatus">
+									<CircleCheck />
+								</el-icon>
+								<el-icon size="medium" color="#c45656" class="no-inherit" v-else>
+									<CircleClose />
 								</el-icon>
 							</template>
 							<el-form-item label="命名空间：" prop="namespace">
@@ -32,14 +34,23 @@
 									/>
 								</el-select>
 							</el-form-item>
-							<el-form-item label="名称:"
+							<el-form-item label="名称:" prop="name"
 								><el-input :disabled="data.isUpdate" size="small" v-model="data.virtualService.metadata.name" style="max-width: 160px"></el-input>
 							</el-form-item>
-							<Label class="label" :labelData="data.labels" :name="'标签'" @updateLabels="getLabels" />
-							<Label class="label" :labelData="data.annotations" :name="'注解'" @updateLabels="getAnnotations" />
+							<Label class="label" ref="labelRef" :labelData="data.labels" :name="'标签'" @updateLabels="getLabels" />
+							<Label class="label" ref="annoRef" :labelData="data.annotations" :name="'注解'" @updateLabels="getAnnotations" />
 						</el-collapse-item>
-						<el-collapse-item title="主机设置" name="2">
-							<Hosts :hosts="data.virtualService.spec?.hosts" :name="'Hosts'" />
+						<el-collapse-item name="2">
+							<template #title>
+								主机设置
+								<el-icon size="medium" color="#529b2e" class="no-inherit" v-if="data.hostStepStatus">
+									<CircleCheck />
+								</el-icon>
+								<el-icon size="medium" color="#c45656" class="no-inherit" v-else>
+									<CircleClose />
+								</el-icon>
+							</template>
+							<Hosts ref="hostRef" :hosts="data.virtualService.spec?.hosts" :name="'Hosts'" />
 						</el-collapse-item>
 						<el-collapse-item name="3">
 							<template #title>
@@ -74,8 +85,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { UploadInstance, UploadProps, UploadRawFile } from 'element-plus';
-import { ElDrawer, ElMessage, FormInstance, FormRules, genFileId, UploadFile } from 'element-plus';
+import { ElDrawer, ElMessage, FormInstance, FormRules } from 'element-plus';
 
 import { VirtualService } from '@kubernetes-models/istio/networking.istio.io/v1beta1/VirtualService';
 import { defineAsyncComponent, onMounted, reactive, ref } from 'vue';
@@ -91,12 +101,19 @@ const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.v
 const Hosts = defineAsyncComponent(() => import('@/components/istio/hosts.vue'));
 const VSHTTP = defineAsyncComponent(() => import('@/components/istio/vshttp.vue'));
 
-const httpRef = ref();
 const k8sStore = kubernetesInfo();
 const virtualServiceApi = useVirtualServiceApi();
 
+const httpRef = ref();
+const hostRef = ref();
+const labelRef = ref();
+const annoRef = ref();
+
 const data = reactive({
+	baseStepStatus: false,
+	hostStepStatus: false,
 	httpStepStatus: false,
+
 	activeCollapse: '1',
 	isBinaryData: false,
 	isUpdate: false,
@@ -121,47 +138,19 @@ const data = reactive({
 			labels: {},
 		},
 		spec: {
-			hosts: [''],
+			hosts: [],
 		},
 	}),
 	keyValues: [] as Array<{ key: string; value: string }>,
 });
 
-const onAddRow = () => {
-	data.virtualService.spec?.hosts?.push('');
-};
-const onDelRow = (k: number) => {
-	data.virtualService.spec?.hosts?.splice(k, 1);
-};
+const rules = reactive<FormRules>({
+	name: [
+		{ required: true, message: '请输入名字', trigger: 'blur' },
+		{ min: 3, max: 5, message: 'Length should be 3 to 5', trigger: 'blur' },
+	],
+});
 
-const formRules = reactive<FormRules>({});
-
-const upload = ref<UploadInstance>();
-
-const handleExceed: UploadProps['onExceed'] = (files) => {
-	upload.value!.clearFiles();
-	const file = files[0] as UploadRawFile;
-	file.uid = genFileId();
-	upload.value!.handleStart(file);
-};
-
-const submitUpload = (uploadFile: UploadFile | undefined, d: any) => {
-	if (uploadFile?.raw) {
-		let fileReader = new FileReader();
-		fileReader.onload = async () => {
-			d.value = fileReader.result;
-		};
-		fileReader.readAsText(uploadFile.raw);
-		d.key = uploadFile.name;
-	}
-};
-
-const addKey = () => {
-	data.keyValues.push({
-		key: '',
-		value: '',
-	});
-};
 const emit = defineEmits(['update:visible', 'refresh']);
 
 const props = defineProps({
@@ -172,6 +161,22 @@ const props = defineProps({
 	title: String,
 });
 
+const getAnnotations = (labels: any) => {
+	data.virtualService.metadata!.annotations = labels;
+};
+
+const getLabels = (labels: any) => {
+	data.virtualService.metadata!.labels = labels;
+};
+
+const handleHosts = async () => {
+	data.hostStepStatus = await hostRef.value.validateHandler();
+	data.virtualService.spec!.hosts! = hostRef.value.returnHosts();
+};
+const handleHttps = async () => {
+	data.httpStepStatus = await httpRef.value.validateHandler();
+	data.virtualService.spec!.http = httpRef.value.returnHttps();
+};
 const handleLabels = (label: { [key: string]: string }) => {
 	const labels = deepClone(label);
 	const labelsTup = [];
@@ -200,31 +205,24 @@ const handAnnotations = (labels: { [key: string]: string }) => {
 	}
 };
 
-const convertConfigMap = () => {
-	const res = {};
-	data.keyValues.forEach((item) => {
-		let obj = {};
-		obj[item.key] = item.value;
-		Object.assign(res, obj);
+const handleName = async () => {
+	if (!formRulesOneRef.value) return false;
+	await formRulesOneRef.value.validate((valid: boolean) => {
+		data.baseStepStatus = valid;
 	});
 };
-
-const getAnnotations = (labels: any) => {
-	data.virtualService.metadata!.annotations = labels;
+const aggregate = () => {
+	//处理hosts字段
+	handleHosts();
+	handleHttps();
+	handleName();
 };
-
-const getLabels = (labels: any) => {
-	data.virtualService.metadata!.labels = labels;
-};
-
 const confirm = async () => {
+	aggregate();
+	console.log(data.virtualService.validate());
 	if (!data.isUpdate) {
-		const res = httpRef.value.returnHttps();
-		data.virtualService.spec!.http = res;
-		data.httpStepStatus = await httpRef.value.validateHandler();
-		delete data.virtualService.metadata?.labels;
 		console.log(yamlJs.dump(data.virtualService));
-		if (data.httpStepStatus) {
+		if (data.httpStepStatus && data.hostStepStatus && data.baseStepStatus) {
 			await virtualServiceApi
 				.createVirtualService({ cloud: k8sStore.state.activeCluster }, data.virtualService)
 				.then(() => {

@@ -26,16 +26,16 @@ type IVirtualService interface {
 	Update(ctx context.Context, VirtualService *v1beta1.VirtualService) *v1beta1.VirtualService
 }
 
-type VirtualService struct {
+type VirtualServices struct {
 	cli *cache.ClientConfig
 	ns  string
 }
 
 func NewVirtualService(cli *cache.ClientConfig, ns string) IVirtualService {
-	return &VirtualService{cli: cli, ns: ns}
+	return &VirtualServices{cli: cli, ns: ns}
 }
 
-func (v *VirtualService) List(ctx context.Context, query *entity.PageParam, name string, label string) *entity.PageVirtualService {
+func (v *VirtualServices) List(ctx context.Context, query *entity.PageParam, name string, label string) *entity.PageVirtualService {
 	data, err := v.cli.IstioSharedInformerFactory.Networking().V1beta1().VirtualServices().Lister().VirtualServices(v.ns).List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	res := &entity.PageVirtualService{}
@@ -76,24 +76,23 @@ func (v *VirtualService) List(ctx context.Context, query *entity.PageParam, name
 	return res
 }
 
-func (v *VirtualService) Get(ctx context.Context, name string) *v1beta1.VirtualService {
+func (v *VirtualServices) Get(ctx context.Context, name string) *v1beta1.VirtualService {
 	vs, err := v.cli.IstioSharedInformerFactory.Networking().V1beta1().VirtualServices().Lister().VirtualServices(v.ns).Get(name)
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	return vs
 }
 
-func (v *VirtualService) Delete(ctx context.Context, name string) {
+func (v *VirtualServices) Delete(ctx context.Context, name string) {
 	restfulx.ErrNotNilDebug(v.cli.IstioClient.NetworkingV1beta1().VirtualServices(v.ns).Delete(ctx, name, metav1.DeleteOptions{}), restfulx.OperatorErr)
 }
 
-func (v *VirtualService) Create(ctx context.Context, virtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
-	global.Logger.Infof("create virtual service: %v", virtualService)
+func (v *VirtualServices) Create(ctx context.Context, virtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
 	newVirtualService, err := v.cli.IstioClient.NetworkingV1beta1().VirtualServices(v.ns).Create(ctx, virtualService, metav1.CreateOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return newVirtualService
 }
 
-func (v *VirtualService) Update(ctx context.Context, virtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
+func (v *VirtualServices) Update(ctx context.Context, virtualService *v1beta1.VirtualService) *v1beta1.VirtualService {
 	updateVirtualService, err := v.cli.IstioClient.NetworkingV1beta1().VirtualServices(v.ns).Update(ctx, virtualService, metav1.UpdateOptions{})
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return updateVirtualService

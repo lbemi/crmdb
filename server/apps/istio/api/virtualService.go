@@ -20,7 +20,7 @@ func GetVirtualService(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	clusterName := rc.Query("cloud")
 	namespace := rc.PathParam("namespace")
-	VirtualServiceName := rc.PathParam("VirtualServiceName")
+	VirtualServiceName := rc.PathParam("name")
 	rc.ResData = core.V1.Cluster(clusterName).Istio().VirtualServices(namespace).Get(c, VirtualServiceName)
 }
 

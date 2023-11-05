@@ -22,7 +22,6 @@ import (
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/metadata"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/metrics/pkg/client/clientset/versioned"
@@ -116,8 +115,10 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *ent
 
 	clientConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(config))
 
+	//TODO  开启的话，istio相关创建代码无法运行，istio client-go代码优化
 	// 使用protobuf传输数据
-	clientConfig = metadata.ConfigFor(clientConfig)
+	//clientConfig = metadata.ConfigFor(clientConfig)
+
 	if err != nil {
 		c.store.Delete(name)
 		return nil, nil, err
