@@ -17,6 +17,24 @@
 						<el-color-picker v-model="getThemeConfig.primary" size="default" @change="onColorPickerChange"> </el-color-picker>
 					</div>
 				</div>
+				<div class="layout-breadcrumb-seting-bar-flex">
+					<div class="layout-breadcrumb-seting-bar-flex-label">danger</div>
+					<div class="layout-breadcrumb-seting-bar-flex-value">
+						<el-color-picker v-model="getThemeConfig.danger" size="default" @change="onColorPickerDangerChange"> </el-color-picker>
+					</div>
+				</div>
+				<div class="layout-breadcrumb-seting-bar-flex">
+					<div class="layout-breadcrumb-seting-bar-flex-label">success</div>
+					<div class="layout-breadcrumb-seting-bar-flex-value">
+						<el-color-picker v-model="getThemeConfig.success" size="default" @change="onColorPickerSuccessChange"> </el-color-picker>
+					</div>
+				</div>
+				<div class="layout-breadcrumb-seting-bar-flex">
+					<div class="layout-breadcrumb-seting-bar-flex-label">warning</div>
+					<div class="layout-breadcrumb-seting-bar-flex-value">
+						<el-color-picker v-model="getThemeConfig.warning" size="default" @change="onColorPickerWarningChange"> </el-color-picker>
+					</div>
+				</div>
 				<div class="layout-breadcrumb-seting-bar-flex mt15">
 					<div class="layout-breadcrumb-seting-bar-flex-label">{{ $t('message.layout.fourIsDark') }}</div>
 					<div class="layout-breadcrumb-seting-bar-flex-value">
@@ -466,6 +484,41 @@ const onColorPickerChange = () => {
 	// 颜色变浅
 	for (let i = 1; i <= 9; i++) {
 		document.documentElement.style.setProperty(`--el-color-primary-light-${i}`, `${getLightColor(getThemeConfig.value.primary, i / 10)}`);
+	}
+	setDispatchThemeConfig();
+};
+
+const onColorPickerDangerChange = () => {
+	if (!getThemeConfig.value.primary) return ElMessage.warning('全局主题 danger 颜色值不能为空');
+	// 颜色加深
+	document.documentElement.style.setProperty('--el-color-danger-dark-2', `${getDarkColor(getThemeConfig.value.danger, 0.1)}`);
+	document.documentElement.style.setProperty('--el-color-danger', getThemeConfig.value.danger);
+	// 颜色变浅
+	for (let i = 1; i <= 9; i++) {
+		document.documentElement.style.setProperty(`--el-color-danger-light-${i}`, `${getLightColor(getThemeConfig.value.danger, i / 10)}`);
+	}
+	setDispatchThemeConfig();
+};
+
+const onColorPickerWarningChange = () => {
+	if (!getThemeConfig.value.primary) return ElMessage.warning('全局主题 warning 颜色值不能为空');
+	// 颜色加深
+	document.documentElement.style.setProperty('--el-color-warning-dark-2', `${getDarkColor(getThemeConfig.value.warning, 0.1)}`);
+	document.documentElement.style.setProperty('--el-color-warning', getThemeConfig.value.warning);
+	// 颜色变浅
+	for (let i = 1; i <= 9; i++) {
+		document.documentElement.style.setProperty(`--el-color-warning-light-${i}`, `${getLightColor(getThemeConfig.value.warning, i / 10)}`);
+	}
+	setDispatchThemeConfig();
+};
+const onColorPickerSuccessChange = () => {
+	if (!getThemeConfig.value.primary) return ElMessage.warning('全局主题 success 颜色值不能为空');
+	// 颜色加深
+	document.documentElement.style.setProperty('--el-color-success-dark-2', `${getDarkColor(getThemeConfig.value.success, 0.1)}`);
+	document.documentElement.style.setProperty('--el-color-success', getThemeConfig.value.success);
+	// 颜色变浅
+	for (let i = 1; i <= 9; i++) {
+		document.documentElement.style.setProperty(`--el-color-success-light-${i}`, `${getLightColor(getThemeConfig.value.success, i / 10)}`);
 	}
 	setDispatchThemeConfig();
 };

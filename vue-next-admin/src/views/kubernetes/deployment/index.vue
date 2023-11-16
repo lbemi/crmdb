@@ -4,38 +4,38 @@
 			<div class="mb15">
 				<el-row :gutter="24">
 					<el-col :span="18" style="display: flex">
-						<el-text class="mx-1" size="small">命名空间：</el-text>
+						<el-text class="mx-1" :size="state.size">命名空间：</el-text>
 						<el-select
 							v-model="k8sStore.state.activeNamespace"
 							style="max-width: 180px"
 							class="m-2"
 							placeholder="Select"
-							size="small"
+							:size="state.size"
 							@change="handleChange"
 							><el-option key="all" label="所有命名空间" value="all"></el-option>
 							<el-option
 								v-for="item in k8sStore.state.namespace"
 								:key="item.metadata?.name"
 								:label="item.metadata?.name"
-								:value="item.metadata?.name"
+								:value="item.metadata!.name!"
 							/>
 						</el-select>
 						<el-input
-							v-model="data.inputValue"
+							v-model="state.inputValue"
 							placeholder="输入标签或者名称"
-							size="small"
+							:size="state.size"
 							clearable
 							@change="search"
-							style="width: 250px; margin-left: 10px"
+							style="width: 350px; margin-left: 10px"
 						>
 							<template #prepend>
-								<el-select v-model="data.type" placeholder="输入标签或者名称" style="width: 80px" size="small">
-									<el-option label="标签" value="0" size="small" />
-									<el-option label="名称" value="1" size="small" />
+								<el-select v-model="state.type" placeholder="输入标签或者名称" style="width: 80px" :size="state.size">
+									<el-option label="标签" value="0" :size="state.size" />
+									<el-option label="名称" value="1" :size="state.size" />
 								</el-select>
 							</template>
 							<template #append>
-								<el-button size="small" @click="search">
+								<el-button :size="state.size" @click="search">
 									<el-icon>
 										<ele-Search />
 									</el-icon>
@@ -44,18 +44,20 @@
 							</template>
 						</el-input>
 
-						<el-button v-auth="'k8s:deployment:add'" type="primary" size="small" class="ml10" @click="createDeployment" :icon="Edit">创建</el-button>
+						<el-button v-auth="'k8s:deployment:add'" type="primary" :size="state.size" class="ml10" @click="createDeployment" :icon="Edit"
+							>创建</el-button
+						>
 						<el-button
 							v-auth="'k8s:deployment:del'"
 							type="danger"
-							size="small"
+							:size="state.size"
 							class="ml10"
-							:disabled="data.selectData.length == 0"
-							@click="deleteDeployments(data.selectData)"
+							:disabled="state.selectData.length == 0"
+							@click="deleteDeployments(state.selectData)"
 							:icon="Delete"
 							>批量删除</el-button
 						>
-						<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
+						<el-button type="success" :size="state.size" @click="refreshCurrentTagsView" style="margin-left: 10px">
 							<el-icon>
 								<ele-RefreshRight />
 							</el-icon>
@@ -65,12 +67,12 @@
 					<el-col :span="6" style="display: flex"> </el-col>
 				</el-row>
 			</div>
-			<el-table :data="data.deployments" style="width: 100%" @selection-change="handleSelectionChange" v-loading="data.loading" size="small">
+			<el-table :data="state.deployments" style="width: 100%" @selection-change="handleSelectionChange" v-loading="state.loading" :size="state.size">
 				<el-table-column type="selection" width="55" />
 				<el-table-column prop="metadata.namespace" label="命名空间" width="200px" v-if="k8sStore.state.activeNamespace === 'all'" />
 				<el-table-column prop="metadata.name" label="名称">
 					<template #default="scope">
-						<el-button link type="primary" size="small" @click="deployDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
+						<el-button link type="primary" :size="state.size" @click="deployDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
 						<div style="color: red">{{ depStatus(scope.row) }}</div>
 					</template>
 				</el-table-column>
@@ -92,8 +94,8 @@
 							"
 							style="display: flex; align-items: center"
 						>
-							<div style="display: inline-block; width: 12px; height: 12px; background: #67c23a; border-radius: 50%"></div>
-							<span style="margin-left: 5px; font-size: 12px; color: #67c23a">Running </span>
+							<div style="display: inline-block; width: 12px; height: 12px; background: #388c04; border-radius: 50%"></div>
+							<span style="margin-left: 5px; font-size: 12px; color: #388c04">Running </span>
 						</div>
 						<div v-else style="display: flex; align-items: center">
 							<div style="display: inline-block; width: 12px; height: 12px; background: #f56c6c; border-radius: 50%"></div>
@@ -114,7 +116,7 @@
 				</el-table-column>
 				<el-table-column label="镜像" show-overflow-tooltip>
 					<template #default="scope">
-						<el-text size="small" truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
+						<el-text :size="state.size" truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
 							item.image.split('@')[0]
 						}}</el-text>
 					</template>
@@ -125,12 +127,19 @@
 						<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
 							<template #content>
 								<div style="display: flex; flex-direction: column">
-									<el-tag class="label" type="" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" effect="plain" size="small">
+									<el-tag
+										class="label"
+										type=""
+										v-for="(item, key, index) in scope.row.metadata.labels"
+										:key="index"
+										effect="plain"
+										:size="state.size"
+									>
 										{{ key }}:{{ item }}
 									</el-tag>
 								</div>
 							</template>
-							<el-tag type="" effect="plain" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
+							<el-tag type="" effect="plain" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" :size="state.size">
 								<div>{{ key }}:{{ item }}</div>
 							</el-tag>
 						</el-tooltip>
@@ -145,13 +154,13 @@
 				<el-table-column fixed="right" label="操作">
 					<template #default="scope">
 						<div style="display: flex; align-items: center">
-							<el-button link type="primary" size="small" @click="deployDetail(scope.row)">详情</el-button>
-							<el-button v-auth="'k8s:deployment:edit'" link type="primary" size="small" @click="handleUpdate(scope.row)">编辑</el-button>
-							<el-button v-auth="'k8s:deployment:scale'" link type="primary" size="small" @click="openScaleDialog(scope.row)">伸缩</el-button>
-							<el-button link type="primary" size="small" @click="deployDetail(scope.row)">监控</el-button>
+							<el-button link type="primary" :size="state.size" @click="deployDetail(scope.row)">详情</el-button>
+							<el-button v-auth="'k8s:deployment:edit'" link type="primary" :size="state.size" @click="handleUpdate(scope.row)">编辑</el-button>
+							<el-button v-auth="'k8s:deployment:scale'" link type="primary" :size="state.size" @click="openScaleDialog(scope.row)">伸缩</el-button>
+							<el-button link type="primary" :size="state.size" @click="deployDetail(scope.row)">监控</el-button>
 							<el-divider direction="vertical" />
 							<div>
-								<el-dropdown size="small">
+								<el-dropdown :size="state.size">
 									<span class="el-dropdown-link" style="font-size: 12px">
 										更多<el-icon class="el-icon--right">
 											<CaretBottom />
@@ -174,38 +183,38 @@
 				</el-table-column>
 			</el-table>
 			<!-- 分页区域 -->
-			<Pagination :total="data.total" @handlePageChange="handlePageChange" />
+			<Pagination :total="state.total" @handlePageChange="handlePageChange" />
 		</el-card>
 		<YamlDialog
-			v-model:dialogVisible="data.dialogVisible"
-			:code-data="data.codeData"
+			v-model:dialogVisible="state.dialogVisible"
+			:code-data="state.codeData"
 			:resourceType="'deployment'"
 			@update="updateDeployment"
-			v-if="data.dialogVisible"
+			v-if="state.dialogVisible"
 		/>
 		<!--    伸缩-->
-		<el-dialog v-model="data.visible" width="300px" @close="data.visible = false">
+		<el-dialog v-model="state.visible" width="300px" @close="state.visible = false">
 			<template #header>
 				<span style="font-size: 14px"
-					>{{ '修改: ' }} <a style="color: teal"> {{ data.scaleDeploy.metadata?.name }}</a> {{ ' 副本' }}</span
+					>{{ '修改: ' }} <a style="color: teal"> {{ state.scaleDeploy.metadata?.name }}</a> {{ ' 副本' }}</span
 				>
 			</template>
 			<div style="text-align: center">
-				<el-input-number v-if="data.scaleDeploy.spec" v-model="data.scaleDeploy.spec.replicas" :min="0" :max="100" size="small" />
+				<el-input-number v-if="state.scaleDeploy.spec" v-model="state.scaleDeploy.spec.replicas" :min="0" :max="100" :size="state.size" />
 			</div>
 			<template #footer>
 				<span class="dialog-footer">
-					<el-button text @click="data.visible = false" size="small">取消</el-button>
-					<el-button text type="primary" @click="scaleDeployment" size="small"> 确定 </el-button>
+					<el-button text @click="state.visible = false" :size="state.size">取消</el-button>
+					<el-button text type="primary" @click="scaleDeployment" :size="state.size"> 确定 </el-button>
 				</span>
 			</template>
 		</el-dialog>
 		<CreateDialog
-			v-model:dialogVisible="data.create.dialogVisible"
-			:title="data.create.title"
-			:deployment="data.deployment"
+			v-model:dialogVisible="state.create.dialogVisible"
+			:title="state.create.title"
+			:deployment="state.deployment"
 			@refresh="listDeployment()"
-			v-if="data.create.dialogVisible"
+			v-if="state.create.dialogVisible"
 		/>
 	</div>
 </template>
@@ -226,10 +235,12 @@ import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '@/utils/formatTime';
 import { deepClone } from '@/utils/other';
+import { useThemeConfig } from '@/stores/themeConfig';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const CreateDialog = defineAsyncComponent(() => import('./component/dialog.vue'));
+const theme = useThemeConfig();
 
 type queryType = {
 	key: string;
@@ -239,7 +250,8 @@ type queryType = {
 	name?: string;
 	label?: string;
 };
-const data = reactive({
+const state = reactive({
+	size: theme.themeConfig.globalComponentSize,
 	create: {
 		dialogVisible: false,
 		title: '',
@@ -280,27 +292,27 @@ ws.onmessage = (e) => {
 			object.result.namespace === k8sStore.state.activeNamespace &&
 			object.cluster == k8sStore.state.activeCluster
 		) {
-			data.deployments = object.result.data;
+			state.deployments = object.result.data;
 		}
 	}
 };
 
 const search = () => {
-	data.loading = true;
-	data.query.cloud = k8sStore.state.activeCluster;
-	if (data.type == '1') {
-		data.query.name = data.inputValue;
-		delete data.query.label;
-	} else if (data.type == '0') {
-		data.query.label = data.inputValue;
-		delete data.query.name;
+	state.loading = true;
+	state.query.cloud = k8sStore.state.activeCluster;
+	if (state.type == '1') {
+		state.query.name = state.inputValue;
+		delete state.query.label;
+	} else if (state.type == '0') {
+		state.query.label = state.inputValue;
+		delete state.query.name;
 	}
-	if (data.inputValue === '') {
-		delete data.query.label;
-		delete data.query.name;
+	if (state.inputValue === '') {
+		delete state.query.label;
+		delete state.query.name;
 	}
 	listDeployment();
-	data.loading = false;
+	state.loading = false;
 };
 
 const depStatus = (deployment: Deployment) => {
@@ -355,7 +367,7 @@ const updateDeployment = async (codeData: any) => {
 		.catch((e) => {
 			ElMessage.error(e.message);
 		});
-	data.dialogVisible = false;
+	state.dialogVisible = false;
 };
 
 const deleteDeployments = (depList: Array<Deployment>) => {
@@ -421,18 +433,18 @@ const deleteDeployment = (dep: Deployment) => {
 const showYaml = async (deployment: Deployment) => {
 	const dep = deepClone(deployment) as Deployment;
 	delete dep.metadata?.managedFields;
-	data.codeData = dep;
-	data.dialogVisible = true;
+	state.codeData = dep;
+	state.dialogVisible = true;
 };
 
 const openScaleDialog = (dep: Deployment) => {
-	data.scaleDeploy = deepClone(dep) as Deployment;
-	data.visible = true;
+	state.scaleDeploy = deepClone(dep) as Deployment;
+	state.visible = true;
 };
 
 const scaleDeployment = () => {
 	deploymentApi
-		.scaleDeployment(data.scaleDeploy.metadata?.namespace!, data.scaleDeploy.metadata?.name!, data.scaleDeploy.spec?.replicas!, {
+		.scaleDeployment(state.scaleDeploy.metadata?.namespace!, state.scaleDeploy.metadata?.name!, state.scaleDeploy.spec?.replicas!, {
 			cloud: k8sStore.state.activeCluster,
 		})
 		.then((res: any) => {
@@ -445,26 +457,26 @@ const scaleDeployment = () => {
 		.catch(() => {
 			ElMessage.error('伸缩失败');
 		});
-	data.visible = false;
+	state.visible = false;
 };
 
 const handleSelectionChange = (value: any) => {
-	data.selectData = value;
+	state.selectData = value;
 };
 
 const listDeployment = async () => {
-	data.namespace = k8sStore.state.activeNamespace;
-	data.query.cloud = k8sStore.state.activeCluster;
+	state.namespace = k8sStore.state.activeNamespace;
+	state.query.cloud = k8sStore.state.activeCluster;
 	try {
-		data.loading = true;
-		await deploymentApi.listDeployment(k8sStore.state.activeNamespace, data.query).then((res) => {
-			data.deployments = res.data.data;
-			data.total = res.data.total;
+		state.loading = true;
+		await deploymentApi.listDeployment(k8sStore.state.activeNamespace, state.query).then((res) => {
+			state.deployments = res.data.data;
+			state.total = res.data.total;
 		});
 	} catch (e: any) {
 		if (e.code != 5003) ElMessage.error(e.message);
 	}
-	data.loading = false;
+	state.loading = false;
 };
 
 mittBus.on('changeNamespace', () => {
@@ -472,10 +484,10 @@ mittBus.on('changeNamespace', () => {
 });
 
 const handlePageChange = (pageInfo: PageInfo) => {
-	data.query.page = pageInfo.page;
-	data.query.limit = pageInfo.limit;
+	state.query.page = pageInfo.page;
+	state.query.limit = pageInfo.limit;
 
-	if (data.search != '') {
+	if (state.search != '') {
 		search();
 	} else {
 		listDeployment();
@@ -492,8 +504,8 @@ const deployDetail = async (dep: Deployment) => {
 };
 
 const createDeployment = () => {
-	data.create.title = '创建deployment';
-	data.create.dialogVisible = true;
+	state.create.title = '创建deployment';
+	state.create.dialogVisible = true;
 };
 
 const handleUpdate = (deployment: Deployment) => {
@@ -501,9 +513,9 @@ const handleUpdate = (deployment: Deployment) => {
 	const dep = deepClone(deployment) as Deployment;
 	delete dep.status;
 	delete dep.metadata?.managedFields;
-	data.deployment = dep;
-	data.create.title = '更新deployment';
-	data.create.dialogVisible = true;
+	state.deployment = dep;
+	state.create.title = '更新deployment';
+	state.create.dialogVisible = true;
 };
 
 onMounted(() => {

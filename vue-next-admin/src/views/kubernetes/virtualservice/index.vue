@@ -2,33 +2,33 @@
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto layout-padding-view">
 			<div class="mb15">
-				<el-text class="mx-1" :size="theme.themeConfig.globalComponentSize">命名空间：</el-text>
+				<el-text class="mx-1" :size="state.size">命名空间：</el-text>
 				<el-select
 					v-model="k8sStore.state.activeNamespace"
 					style="max-width: 280px"
 					class="m-2"
 					placeholder="Select"
-					size="small"
+					:size="state.size"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
 				</el-select>
 				<el-input
-					v-model="data.inputValue"
+					v-model="state.inputValue"
 					placeholder="输入标签或者名称"
-					size="small"
+					:size="state.size"
 					clearable
 					@change="search"
-					style="max-width: 300px; margin-left: 10px"
+					style="width: 350px; margin-left: 10px"
 				>
 					<template #prepend>
-						<el-select v-model="data.type" placeholder="输入标签或者名称" style="max-width: 120px" size="small">
-							<el-option label="标签" value="0" size="small" />
-							<el-option label="名称" value="1" size="small" />
+						<el-select v-model="state.type" style="width: 80px" :size="state.size">
+							<el-option label="标签" value="0" :size="state.size" />
+							<el-option label="名称" value="1" :size="state.size" />
 						</el-select>
 					</template>
 					<template #append>
-						<el-button size="small" @click="search">
+						<el-button :size="state.size" @click="search">
 							<el-icon>
 								<ele-Search />
 							</el-icon>
@@ -36,9 +36,9 @@
 						</el-button>
 					</template>
 				</el-input>
-				<el-button type="primary" size="small" class="ml10" @click="createVirtualService" :icon="Edit">创建</el-button>
-				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete">批量删除</el-button>
-				<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
+				<el-button type="primary" :size="state.size" class="ml10" @click="createVirtualService" :icon="Edit">创建</el-button>
+				<el-button type="danger" :size="state.size" class="ml10" :disabled="state.selectData.length == 0" :icon="Delete">批量删除</el-button>
+				<el-button type="success" :size="state.size" @click="refreshCurrentTagsView" style="margin-left: 10px">
 					<el-icon>
 						<ele-RefreshRight />
 					</el-icon>
@@ -46,17 +46,17 @@
 				</el-button>
 			</div>
 			<el-table
-				:data="data.virtualServices"
+				:data="state.virtualServices"
 				@selection-change="handleSelectionChange"
 				style="width: 100%"
 				max-height="100vh - 235px"
-				v-loading="data.loading"
+				v-loading="state.loading"
 			>
 				<el-table-column type="selection" width="35" />
 				<el-table-column prop="metadata.namespace" label="命名空间" width="200px" v-if="k8sStore.state.activeNamespace === 'all'" />
 				<el-table-column label="名称">
 					<template #default="scope">
-						<el-button size="small" type="primary" text @click="virtualServiceDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
+						<el-button :size="state.size" type="primary" text @click="virtualServiceDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
 					</template>
 				</el-table-column>
 				<el-table-column label="标签">
@@ -70,7 +70,7 @@
 										type="info"
 										v-for="(item, key, index) in scope.row.metadata.labels"
 										:key="index"
-										:size="theme.themeConfig.globalComponentSize"
+										::size="state.size"
 									>
 										{{ key }}:{{ item }}
 									</el-tag>
@@ -90,31 +90,43 @@
 
 				<el-table-column fixed="right" label="操作" width="260px" flex>
 					<template #default="scope">
-						<el-button link type="primary" size="small" @click="virtualServiceDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="updateVirtualService(scope.row)">编辑</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="showYaml(scope.row)">查看YAML</el-button><el-divider direction="vertical" />
-						<el-button :disabled="scope.row.metadata.name === 'kubernetes'" link type="danger" size="small" @click="deleteVirtualService(scope.row)"
+						<el-button link type="primary" :size="state.size" @click="virtualServiceDetail(scope.row)">详情</el-button
+						><el-divider direction="vertical" />
+						<el-button link type="primary" :size="state.size" @click="updateVirtualService(scope.row)">编辑</el-button
+						><el-divider direction="vertical" /> <el-button link type="primary" :size="state.size" @click="showYaml(scope.row)">查看YAML</el-button
+						><el-divider direction="vertical" />
+						<el-button
+							:disabled="scope.row.metadata.name === 'kubernetes'"
+							link
+							type="danger"
+							:size="state.size"
+							@click="deleteVirtualService(scope.row)"
 							>删除</el-button
 						>
 					</template>
 				</el-table-column>
 			</el-table>
 			<!-- 分页区域 -->
-			<pagination :total="data.total" @handlePageChange="handlePageChange"></pagination>
+			<pagination :total="state.total" @handlePageChange="handlePageChange"></pagination>
 		</el-card>
-		<YamlDialog v-model:dialogVisible="data.dialogVisible" :code-data="data.codeData" @update="updateVirtualServiceYaml" v-if="data.dialogVisible" />
+		<YamlDialog
+			v-model:dialogVisible="state.dialogVisible"
+			:code-data="state.codeData"
+			@update="updateVirtualServiceYaml"
+			v-if="state.dialogVisible"
+		/>
 		<DrawDialog
-			v-model:visible="data.draw.visible"
-			:virtualService="data.draw.virtualService"
-			:title="data.draw.title"
+			v-model:visible="state.draw.visible"
+			:virtualService="state.draw.virtualService"
+			:title="state.draw.title"
 			@refresh="listVirtualService"
-			v-if="data.draw.visible"
+			v-if="state.draw.visible"
 		/>
 		<VirtualServiceDetail
-			v-model:visible="data.detail.visible"
-			:virtualService="data.detail.virtualService"
-			:title="data.detail.title"
-			v-if="data.detail.visible"
+			v-model:visible="state.detail.visible"
+			:virtualService="state.detail.virtualService"
+			:title="state.detail.title"
+			v-if="state.detail.visible"
 		/>
 	</div>
 </template>
@@ -154,7 +166,8 @@ const theme = useThemeConfig();
 const socketApi = useWebsocketApi();
 
 //定义数据
-const data = reactive({
+const state = reactive({
+	size: theme.themeConfig.globalComponentSize,
 	detail: {
 		title: '',
 		visible: false,
@@ -196,21 +209,21 @@ ws.onmessage = (e: any) => {
 			object.result.namespace === k8sStore.state.activeNamespace &&
 			object.cluster == k8sStore.state.activeCluster
 		) {
-			data.virtualServices = object.result.data as VirtualService[];
+			state.virtualServices = object.result.data as VirtualService[];
 		}
 	}
 };
 const search = () => {
-	if (data.type == '1') {
-		data.query.name = data.inputValue;
-		delete data.query.label;
-	} else if (data.type == '0') {
-		data.query.label = data.inputValue;
-		delete data.query.name;
+	if (state.type == '1') {
+		state.query.name = state.inputValue;
+		delete state.query.label;
+	} else if (state.type == '0') {
+		state.query.label = state.inputValue;
+		delete state.query.name;
 	}
-	if (data.inputValue === '') {
-		delete data.query.label;
-		delete data.query.name;
+	if (state.inputValue === '') {
+		delete state.query.label;
+		delete state.query.name;
 	}
 
 	listVirtualService();
@@ -241,11 +254,11 @@ const handleChange = () => {
 // 	data.virtualServices = virtualServiceList;
 // };
 const createVirtualService = () => {
-	data.draw.title = '创建虚拟服务';
-	data.draw.visible = true;
+	state.draw.title = '创建虚拟服务';
+	state.draw.visible = true;
 };
 const deleteVirtualService = (virtualService: VirtualService) => {
-	data.loading = true;
+	state.loading = true;
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
@@ -275,18 +288,18 @@ const deleteVirtualService = (virtualService: VirtualService) => {
 		.catch(() => {
 			ElMessage.info('取消');
 		});
-	data.loading = false;
+	state.loading = false;
 };
 const virtualServiceDetail = (virtualService: VirtualService) => {
-	data.detail.title = '详情';
-	data.detail.virtualService = virtualService;
-	data.detail.visible = true;
+	state.detail.title = '详情';
+	state.detail.virtualService = virtualService;
+	state.detail.visible = true;
 };
 
 const showYaml = (VirtualService: VirtualService) => {
-	data.dialogVisible = true;
+	state.dialogVisible = true;
 	delete VirtualService.metadata?.managedFields;
-	data.codeData = VirtualService;
+	state.codeData = VirtualService;
 };
 const updateVirtualServiceYaml = (code: any) => {
 	console.log('更新VirtualService', code);
@@ -294,27 +307,27 @@ const updateVirtualServiceYaml = (code: any) => {
 
 const handleSelectionChange = () => {};
 const updateVirtualService = (virtualService: VirtualService) => {
-	data.draw.title = '编辑';
-	data.draw.virtualService = deepClone(virtualService) as VirtualService;
-	data.draw.visible = true;
+	state.draw.title = '编辑';
+	state.draw.virtualService = deepClone(virtualService) as VirtualService;
+	state.draw.visible = true;
 };
 const handlePageChange = (page: PageInfo) => {
-	data.query.page = page.page;
-	data.query.limit = page.limit;
+	state.query.page = page.page;
+	state.query.limit = page.limit;
 	listVirtualService();
 };
 const listVirtualService = () => {
-	data.loading = true;
-	VirtualServiceApi.listVirtualService(k8sStore.state.activeNamespace, data.query)
+	state.loading = true;
+	VirtualServiceApi.listVirtualService(k8sStore.state.activeNamespace, state.query)
 		.then((res: any) => {
-			data.virtualServices = res.data.data;
-			data.tmpVirtualService = res.data.data;
-			data.total = res.data.total;
+			state.virtualServices = res.data.data;
+			state.tmpVirtualService = res.data.data;
+			state.total = res.data.total;
 		})
 		.catch((e: any) => {
 			ElMessage.error(e.message);
 		});
-	data.loading = false;
+	state.loading = false;
 };
 
 const refreshCurrentTagsView = () => {

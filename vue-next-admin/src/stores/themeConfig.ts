@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import { Session } from '@/utils/storage';
 
 /**
  * 布局配置
@@ -20,7 +19,10 @@ export const useThemeConfig = defineStore('themeConfig', {
 			 * 全局主题
 			 */
 			// 默认 primary 主题颜色
-			primary: '#409eff',
+			primary: '#9620FE',
+			danger: '#c45656',
+			warning: '#eebe77',
+			success: '#529b2e',
 			// 是否开启深色模式
 			isIsDark: false,
 
@@ -147,7 +149,7 @@ export const useThemeConfig = defineStore('themeConfig', {
 			// 默认初始语言，可选值"<zh-cn|en|zh-tw>"，默认 zh-cn
 			globalI18n: 'zh-cn',
 			// 默认全局组件大小，可选值"<large|'default'|small>"，默认 'large'
-			globalComponentSize: 'small',
+			globalComponentSize: 'default',
 		},
 	}),
 	actions: {
