@@ -70,7 +70,7 @@
 					<a style="color: red" v-else>0</a>
 
 					个
-					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow" style="font-size: 10px; margin-left: 5px"
+					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow" style="font-size: 12px; margin-left: 5px"
 						>展开现状详情<el-icon> <CaretBottom /> </el-icon
 					></el-link>
 				</el-descriptions-item>

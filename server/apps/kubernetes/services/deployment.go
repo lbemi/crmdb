@@ -178,9 +178,9 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 	for _, item := range pods {
 		for _, l := range rsLabels {
 			i := 0
-			for k1, v1 := range l {
+			for k1, v := range l {
 				for k2, v2 := range item.Labels {
-					if k1 == k2 && v1 == v2 {
+					if k1 == k2 && v == v2 {
 						i++
 					}
 				}
@@ -215,7 +215,7 @@ func (d *Deployment) GetDeploymentPods(ctx context.Context, name string) ([]*cor
 		// if the creation timestamps are equal, sort by name in ascending order
 		return PodReplicaSets[i].ObjectMeta.GetName() < PodReplicaSets[j].ObjectMeta.GetName()
 	})
-	return pods, PodReplicaSets
+	return res, PodReplicaSets
 
 }
 
