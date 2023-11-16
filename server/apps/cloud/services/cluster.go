@@ -39,9 +39,8 @@ func NewCluster(db *gorm.DB, store *store.ClientStore, clusterName string) IClus
 func (c *Cluster) Create(config *form.ClusterReq) {
 	_, conf, err := c.GenerateClient(config.Name, config.KubeConfig)
 	restfulx.ErrNotNilDebug(err, restfulx.RegisterClusterErr)
-	sec := util.Encrypt(conf.KubeConfig)
-	config.KubeConfig = sec
-	err = c.db.Model(&entity.Cluster{}).Create(&config).Error
+	conf.KubeConfig = util.Encrypt(conf.KubeConfig)
+	err = c.db.Create(conf).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
