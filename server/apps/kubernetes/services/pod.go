@@ -1,6 +1,7 @@
 package services
 
 import (
+	"archive/tar"
 	"context"
 	"fmt"
 	entity2 "github.com/lbemi/lbemi/apps/kubernetes/entity"
@@ -9,9 +10,11 @@ import (
 	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
+	"io"
 	policy "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+	"os"
 	"sort"
 	"strings"
 
@@ -220,6 +223,96 @@ func (p *Pod) GetPodByNode(ctx context.Context, nodeName string) *corev1.PodList
 
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
 	return podList
+}
+
+func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string, src, dst string) remotecommand.Executor {
+
+	option := &corev1.PodExecOptions{
+		Container: container,
+		Command:   []string{"sh", "-c", fmt.Sprintf("tar cf - %s | tail -c+%d", src, 0)},
+		Stderr:    true,
+		Stdin:     true,
+		Stdout:    true,
+		TTY:       true,
+	}
+	request := p.cli.ClientSet.CoreV1().RESTClient().Post().Resource("pods").Namespace(namespace).
+		Name(pod).SubResource("exec").Param("color", "true").
+		VersionedParams(option, scheme.ParameterCodec)
+	println()
+	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
+	pipeReader, pipeWriter := io.Pipe()
+	defer func(pipeReader *io.PipeReader) {
+		err := pipeReader.Close()
+		if err != nil {
+			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		}
+	}(pipeReader)
+
+	go func() {
+		err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
+			Stdin:  os.Stdin,
+			Stdout: pipeWriter,
+			Stderr: os.Stderr,
+			Tty:    false,
+		})
+		defer pipeWriter.Close()
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}()
+
+	reader := tar.NewReader(pipeReader)
+	for {
+		fmt.Println("读取文件了")
+		header, err := reader.Next()
+		if err != nil {
+			if err == io.EOF {
+				fmt.Println("copy over")
+				break
+			}
+			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		}
+		//if header == nil {
+		//	continue
+		//}
+		//if header.Typeflag == tar.TypeDir {
+		//	continue
+		//}
+		fmt.Printf("创建文件: %s", header.Name)
+		//创建文件
+		f, err := os.Create(dst + "/" + header.Name)
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		io.Copy(f, reader)
+	}
+
+	return executor
+}
+
+func (p *Pod) ListPodFiles(ctx context.Context, namespace, pod, container string, src string) []string {
+
+	option := &corev1.PodExecOptions{
+		Container: container,
+		Command:   []string{"ls ", " -l", src},
+		Stderr:    true,
+		Stdin:     true,
+		Stdout:    true,
+		TTY:       true,
+	}
+	request := p.cli.ClientSet.CoreV1().RESTClient().Post().Resource("pods").Namespace(namespace).
+		Name(pod).SubResource("exec").Param("color", "true").
+		VersionedParams(option, scheme.ParameterCodec)
+	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	reader, pipeWriter := io.Pipe()
+	defer reader.Close()
+	err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
+		Stdin:  nil,
+		Stdout: pipeWriter,
+		Stderr: os.Stderr,
+	})
+
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	return []string{}
 }
 
 type PodHandler struct {
