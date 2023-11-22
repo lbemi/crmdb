@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/cmd/app/option"
 	"k8s.io/client-go/kubernetes"
@@ -42,6 +41,8 @@ func TestPod_ExecPodReadString(f *testing.T) {
 		panic(err)
 	}
 	cliStore := &cache.ClientConfig{ClientSet: clientSet, Config: config}
-	pod := NewPod(cliStore, "default", nil)
-	fmt.Println(pod.ExecPodReadString(context.Background(), "default", "nginx2-7cc8cd4598-f66ws", "nginx", []string{"ls", "-l"}))
+	pod := NewPod(cliStore, "", nil)
+	for _, dir := range pod.ExecPodReadString(context.Background(), "default", "nginx2-7cc8cd4598-f66ws", "nginx", []string{"ls", "-l"}) {
+		println(dir)
+	}
 }

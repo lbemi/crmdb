@@ -257,7 +257,12 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string,
 			Stderr: os.Stderr,
 			Tty:    false,
 		})
-		defer pipeWriter.Close()
+		defer func(pipeWriter *io.PipeWriter) {
+			err := pipeWriter.Close()
+			if err != nil {
+				restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+			}
+		}(pipeWriter)
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}()
 
@@ -281,7 +286,8 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string,
 		//创建文件
 		f, err := os.Create(dst + "/" + header.Name)
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-		io.Copy(f, reader)
+		_, err = io.Copy(f, reader)
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
 
 	return executor
@@ -324,6 +330,7 @@ func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container s
 			}
 		}(pipeWriter)
 	}()
+
 	b, err := io.ReadAll(pipeReader)
 	if err != nil && err != io.EOF {
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
@@ -347,7 +354,6 @@ func (p *PodHandler) OnAdd(obj interface{}, isInInitialList bool) {
 
 func (p *PodHandler) OnUpdate(oldObj, newObj interface{}) {
 	p.notifyPods(newObj)
-	//fmt.Println("Pod: OnUpdate: ", oldObj.(*corev1.Pod).Name, " --> ", newObj.(*corev1.Pod).Status.Phase)
 }
 
 func (p *PodHandler) OnDelete(obj interface{}) {
