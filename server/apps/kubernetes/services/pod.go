@@ -263,11 +263,10 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string,
 
 	reader := tar.NewReader(pipeReader)
 	for {
-		fmt.Println("读取文件了")
 		header, err := reader.Next()
 		if err != nil {
 			if err == io.EOF {
-				fmt.Println("copy over")
+				global.Logger.Info("copy over")
 				break
 			}
 			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
@@ -278,7 +277,7 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string,
 		//if header.Typeflag == tar.TypeDir {
 		//	continue
 		//}
-		fmt.Printf("创建文件: %s", header.Name)
+		global.Logger.Infof("创建文件: %s", header.Name)
 		//创建文件
 		f, err := os.Create(dst + "/" + header.Name)
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
@@ -288,31 +287,49 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string,
 	return executor
 }
 
-func (p *Pod) ListPodFiles(ctx context.Context, namespace, pod, container string, src string) []string {
-
+func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container string, cmd []string) []string {
 	option := &corev1.PodExecOptions{
 		Container: container,
-		Command:   []string{"ls ", " -l", src},
+		Command:   cmd,
 		Stderr:    true,
 		Stdin:     true,
 		Stdout:    true,
-		TTY:       true,
+		TTY:       false,
 	}
 	request := p.cli.ClientSet.CoreV1().RESTClient().Post().Resource("pods").Namespace(namespace).
 		Name(pod).SubResource("exec").Param("color", "true").
 		VersionedParams(option, scheme.ParameterCodec)
 	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	reader, pipeWriter := io.Pipe()
-	defer reader.Close()
-	err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
-		Stdin:  nil,
-		Stdout: pipeWriter,
-		Stderr: os.Stderr,
-	})
+	pipeReader, pipeWriter := io.Pipe()
+	defer func(reader *io.PipeReader) {
+		err := reader.Close()
+		if err != nil {
+			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		}
+	}(pipeReader)
+	go func() {
+		err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
+			Stdin:  os.Stdin,
+			Stdout: pipeWriter,
+			Stderr: os.Stderr,
+			Tty:    false,
+		})
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 
-	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	return []string{}
+		defer func(pipeWriter *io.PipeWriter) {
+			err := pipeWriter.Close()
+			if err != nil {
+				restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+			}
+		}(pipeWriter)
+	}()
+	b, err := io.ReadAll(pipeReader)
+	if err != nil && err != io.EOF {
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+
+	return strings.Split(string(b), "\n")
 }
 
 type PodHandler struct {

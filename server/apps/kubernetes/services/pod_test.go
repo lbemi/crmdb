@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/cmd/app/option"
 	"k8s.io/client-go/kubernetes"
@@ -26,4 +27,21 @@ func TestPod_CopyFromPod(t *testing.T) {
 	cliStore := &cache.ClientConfig{ClientSet: clientSet, Config: config}
 	pod := NewPod(cliStore, "default", nil)
 	_ = pod.CopyFromPod(context.Background(), "default", "nginx2-7cc8cd4598-f66ws", "nginx", "test.txt", ".")
+}
+
+func TestPod_ExecPodReadString(f *testing.T) {
+	completedOptions := option.NewOptions().WithConfig("../../../dev.yaml").WithLog().Complete()
+	println(completedOptions.Config.Log.Level)
+	configFile := filepath.Join(homedir.HomeDir(), ".kube", "config")
+	config, err := clientcmd.BuildConfigFromFlags("", configFile)
+	if err != nil {
+		panic(err)
+	}
+	clientSet, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+	cliStore := &cache.ClientConfig{ClientSet: clientSet, Config: config}
+	pod := NewPod(cliStore, "default", nil)
+	fmt.Println(pod.ExecPodReadString(context.Background(), "default", "nginx2-7cc8cd4598-f66ws", "nginx", []string{"ls", "-l"}))
 }
