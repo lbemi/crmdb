@@ -36,6 +36,7 @@ export default {
 		k8sNode: '节点',
 		k8sPod: '容器组',
 		podLog: '日志',
+		podFile: '容器文件管理',
 		nodeDetail: 'node详情',
 		k8sNamespace: '命名空间',
 		k8sConfigmap: '配置字典',

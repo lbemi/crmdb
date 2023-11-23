@@ -69,7 +69,7 @@ func (m *Menu) Create(ctx context.Context, obj *form.MenusReq) *entity.Menu {
 		Method:    obj.Method,
 		Code:      obj.Code,
 	}
-	err := m.db.Create(obj).Error
+	err := m.db.Create(newMenu).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return newMenu
 }
@@ -248,13 +248,22 @@ func (m *Menu) GetMenuByMenuNameUrl(ctx context.Context, url, method string) *en
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	return men
 }
+
+// CheckUniqueMenuNameUrl checks if the menu name URL is unique.
+//
+// It takes in the following parameters:
+// - ctx: the context.
+// - url: the URL of the menu.
+// - method: the HTTP method of the menu.
+//
+// It returns a boolean value indicating whether the menu name URL is unique or not.
 func (m *Menu) CheckUniqueMenuNameUrl(ctx context.Context, url, method string) bool {
 	men := &entity.Menu{}
 	err := m.db.Where("path = ? and method = ?", url, method).First(men).Error
 	if err != nil {
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
 func (m *Menu) CheckMenusIsExist(ctx context.Context, menuID uint64) bool {

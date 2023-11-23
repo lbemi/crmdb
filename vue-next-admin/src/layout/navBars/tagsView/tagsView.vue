@@ -159,7 +159,7 @@ const solveAddTagsView = async (path: string, to?: RouteToFrom) => {
 			)
 	);
 	if (current.length <= 0) {
-		// 防止：Avoid app logic that relies on enumerating keys on a component instance. The keys will be empty in production mode to avoid performance overhead.
+		// 防止：Avoid app logic that relies on enumerating keys on a page instance. The keys will be empty in production mode to avoid performance overhead.
 		let findItem = state.tagsViewRoutesList.find((v: RouteItem) => v.path === isDynamicPath);
 		if (!findItem) return false;
 		if (findItem.meta.isAffix) return false;

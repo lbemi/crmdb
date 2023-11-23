@@ -34,7 +34,7 @@ declare module 'vue-router' {
  * 定义动态路由
  * 前端添加路由，请在顶级节点的 `children 数组` 里添加
  * @description 未开启 isRequestRoutes 为 true 时使用（前端控制路由），开启时第一个顶级 children 的路由将被替换成接口请求回来的路由数据
- * @description 各字段请查看 `@/views/system/menu/component/addMenu.vue 下的 ruleForm`
+ * @description 各字段请查看 `@/views/system/menu/page/addMenu.vue 下的 ruleForm`
  * @returns 返回路由菜单数据
  */
 export const dynamicRoutes: Array<RouteRecordRaw> = [
@@ -1053,7 +1053,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 				},
 				/**
 				 * 打开内置全屏
-				 * component 都为 `() => import('@/layout/routerView/link.vue')`
+				 * page 都为 `() => import('@/layout/routerView/link.vue')`
 				 * isLink 链接为内置的路由地址，地址为 staticRoutes 中定义
 				 */
 				children: [

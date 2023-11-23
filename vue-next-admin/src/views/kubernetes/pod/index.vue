@@ -108,13 +108,14 @@
 						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 					</template>
 				</el-table-column>
-				<el-table-column fixed="right" label="操作" width="160">
+				<el-table-column fixed="right" label="操作" width="180">
 					<template #default="scope">
 						<el-button link type="primary" size="small" @click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
 						<el-button link type="primary" size="small" @click="editPod(scope.row)">编辑</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
+						<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button><el-divider direction="vertical" />
 						<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button>
+						<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" size="small" @click="jumpFileManger(scope.row)">文件</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -259,6 +260,13 @@ const jumpPodLog = (p: Pod) => {
 	podStore.state.podShell = p;
 	router.push({
 		name: 'podLog',
+	});
+};
+
+const jumpFileManger = (p: Pod) => {
+	podStore.state.podShell = p;
+	router.push({
+		name: 'podFile',
 	});
 };
 

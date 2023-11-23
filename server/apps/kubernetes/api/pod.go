@@ -56,7 +56,6 @@ func DeletePod(rc *rctx.ReqCtx) {
 	clusterName := rc.QueryCloud()
 	podName := rc.PathParam("name")
 	core.V1.Cluster(clusterName).K8S().Pods(namespace).Delete(c, podName)
-
 }
 
 func PodExec(rc *rctx.ReqCtx) {
