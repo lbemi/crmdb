@@ -58,6 +58,7 @@ func DeletePod(rc *rctx.ReqCtx) {
 	core.V1.Cluster(clusterName).K8S().Pods(namespace).Delete(c, podName)
 
 }
+
 func PodExec(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	namespace := rc.PathParam("namespace")

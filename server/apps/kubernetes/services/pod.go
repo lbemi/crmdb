@@ -225,6 +225,17 @@ func (p *Pod) GetPodByNode(ctx context.Context, nodeName string) *corev1.PodList
 	return podList
 }
 
+// CopyFromPod copies files from a pod to a local destination.
+//
+// The function takes the following parameters:
+// - ctx: the context of the operation
+// - namespace: the namespace of the pod
+// - pod: the name of the pod
+// - container: the name of the container
+// - src: the source file or directory to be copied
+// - dst: the destination directory
+//
+// The function returns a remotecommand.Executor that can be used to execute commands in the pod.
 func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string, src, dst string) remotecommand.Executor {
 
 	option := &corev1.PodExecOptions{
@@ -293,7 +304,15 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string,
 	return executor
 }
 
-func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container string, cmd []string) []string {
+// ExecPodReadString executes a command in a specific container of a given pod in a given namespace and returns the output as a slice of strings.
+//
+// ctx: The context object for the execution.
+// namespace: The namespace of the pod.
+// pod: The name of the pod.
+// container: The name of the container.
+// cmd: The command to be executed.
+// string: The output of the command as a strings.
+func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container string, cmd []string) string {
 	option := &corev1.PodExecOptions{
 		Container: container,
 		Command:   cmd,
@@ -336,7 +355,63 @@ func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container s
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
 
-	return strings.Split(string(b), "\n")
+	return string(b)
+}
+
+// ExecPodOnce executes a command once inside a pod.
+//
+// The function takes the following parameters:
+// - ctx: the context.Context object for cancellation signal propagation.
+// - namespace: the namespace of the pod.
+// - pod: the name of the pod.
+// - container: the name of the container.
+// - cmd: the command to be executed.
+func (p *Pod) ExecPodOnce(ctx context.Context, namespace, pod, container string, cmd []string) {
+	option := &corev1.PodExecOptions{
+		Container: container,
+		Command:   cmd,
+		Stderr:    true,
+		Stdin:     true,
+		Stdout:    true,
+		TTY:       false,
+	}
+	request := p.cli.ClientSet.CoreV1().RESTClient().Post().Resource("pods").Namespace(namespace).
+		Name(pod).SubResource("exec").Param("color", "true").
+		VersionedParams(option, scheme.ParameterCodec)
+	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	pipeReader, pipeWriter := io.Pipe()
+	defer func(reader *io.PipeReader) {
+		err := reader.Close()
+		if err != nil {
+			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		}
+	}(pipeReader)
+	go func() {
+		err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
+			Stdin:  os.Stdin,
+			Stdout: os.Stdout,
+			Stderr: pipeWriter,
+			Tty:    false,
+		})
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
+		defer func(pipeWriter *io.PipeWriter) {
+			err := pipeWriter.Close()
+			if err != nil {
+				restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+			}
+		}(pipeWriter)
+	}()
+
+	b, err := io.ReadAll(pipeReader)
+	if err != nil && err != io.EOF {
+		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	}
+	if len(b) > 0 {
+		restfulx.ErrNotNilDebug(fmt.Errorf(string(b)), restfulx.OperatorErr)
+	}
+
 }
 
 type PodHandler struct {
