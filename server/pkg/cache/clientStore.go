@@ -2,6 +2,8 @@ package cache
 
 import (
 	"errors"
+	tektonVersiond "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
+	tektonExternalversions "github.com/tektoncd/pipeline/pkg/client/informers/externalversions"
 	"istio.io/client-go/pkg/informers/externalversions"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
@@ -29,6 +31,8 @@ type ClientConfig struct {
 	StopChan                     chan struct{}
 	IstioClient                  *istio.Clientset
 	IstioSharedInformerFactory   externalversions.SharedInformerFactory
+	TektonClient                 *tektonVersiond.Clientset
+	TektonSharedInformerFactory  tektonExternalversions.SharedInformerFactory
 }
 
 type ClientStore struct {

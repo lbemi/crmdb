@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	tekton "github.com/lbemi/lbemi/apps/tekton/router"
 	ws "github.com/lbemi/lbemi/apps/websocket/router"
 	"github.com/lbemi/lbemi/pkg/global"
 	"os"
@@ -125,6 +126,9 @@ func registerRoute(httpSever *server.HttpSever) {
 		//istio路由
 		istio.IstioVirtualServiceRoutes(),
 		istio.IstioGatewayRoutes(),
+
+		//tekton路由
+		tekton.TektonTasksRoutes(),
 	)
 	// websocket取消压缩
 	//httpSever.Container.EnableContentEncoding(false)

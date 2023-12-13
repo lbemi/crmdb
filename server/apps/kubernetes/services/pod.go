@@ -113,6 +113,16 @@ func (p *Pod) Delete(ctx context.Context, name string) {
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 }
 
+// PodExec executes a command inside a pod and returns an Executor.
+//
+// It takes the following parameters:
+// - ctx: the context.Context for the execution.
+// - namespace: the namespace of the pod.
+// - pod: the name of the pod.
+// - container: the name of the container.
+// - command: the command to be executed.
+//
+// It returns a remotecommand.Executor.
 func (p *Pod) PodExec(ctx context.Context, namespace, pod, container string, command []string) remotecommand.Executor {
 	option := &corev1.PodExecOptions{
 		Container: container,
@@ -130,6 +140,14 @@ func (p *Pod) PodExec(ctx context.Context, namespace, pod, container string, com
 	return executor
 }
 
+// GetPodLog returns a *rest.Request to get the logs of a specific pod and container.
+//
+// It takes the following parameters:
+//   - ctx: The context.Context object for the request.
+//   - pod: The name of the pod.
+//   - container: The name of the container.
+//
+// It returns a *rest.Request object.
 func (p *Pod) GetPodLog(ctx context.Context, pod, container string) *rest.Request {
 	var tailLine int64 = 100
 

@@ -17,12 +17,18 @@
 					<el-form-item label="服务名称" prop="name" v-if="data.service.metadata">
 						<el-input v-model="data.service.metadata.name" style="width: 190px" :disabled="data.updateFlag" size="small" />
 						<el-form-item label="命名空间">
-							<el-select v-model="data.service.metadata.namespace" placeholder="指定命名空间" size="small" :disabled="data.updateFlag">
+							<el-select
+								v-model="data.service.metadata.namespace"
+								v-if="k8sStore.state.namespace.length > 0"
+								placeholder="指定命名空间"
+								size="small"
+								:disabled="data.updateFlag"
+							>
 								<el-option
 									v-for="item in k8sStore.state.namespace"
-									:key="item.metadata.name"
-									:label="item.metadata.name"
-									:value="item.metadata.name"
+									:key="item.metadata && item.metadata.name"
+									:label="item.metadata && item.metadata.name"
+									:value="(item.metadata && item.metadata.name) || ''"
 								/>
 							</el-select>
 						</el-form-item>
@@ -57,7 +63,12 @@
 								<el-tab-pane label="无状态" name="deployment">
 									请选择:
 									<el-select class="m-2" placeholder="Select" v-model="data.selectWorkLoad" size="small">
-										<el-option v-for="item in data.deployments" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
+										<el-option
+											v-for="item in data.deployments"
+											:key="item.metadata && item.metadata.name"
+											:label="item.metadata && item.metadata.name"
+											:value="(item.metadata && item.metadata.name) || ''"
+										/>
 									</el-select>
 								</el-tab-pane>
 								<el-tab-pane label="守护进程" name="daemonSet">daemonSet</el-tab-pane>

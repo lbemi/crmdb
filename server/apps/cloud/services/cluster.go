@@ -12,6 +12,8 @@ import (
 	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
+	tektonVersiond "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
+	tektonExternalversions "github.com/tektoncd/pipeline/pkg/client/informers/externalversions"
 	"gorm.io/gorm"
 	istio "istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/client-go/pkg/informers/externalversions"
@@ -127,6 +129,12 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *ent
 		c.store.Delete(name)
 		return nil, nil, err
 	}
+	// 生产tekton client
+	tektonClient, err := tektonVersiond.NewForConfig(clientConfig)
+	if err != nil {
+		c.store.Delete(name)
+		return nil, nil, err
+	}
 
 	//生成clientSet
 	clientSet, err := kubernetes.NewForConfig(clientConfig)
@@ -197,6 +205,8 @@ func (c *Cluster) GenerateClient(name, config string) (*store.ClientConfig, *ent
 		ClientSet:                    clientSet,
 		DynamicSet:                   dynamicClient,
 		DiscoveryClient:              discoveryClient,
+		TektonClient:                 tektonClient,
+		TektonSharedInformerFactory:  tektonExternalversions.NewSharedInformerFactory(tektonClient, 0),
 	}
 
 	c.store.Add(name, client)
@@ -257,12 +267,10 @@ func (c *Cluster) StartInformer(clusterName string) {
 			gvr.Resource = v.Name
 
 			if strings.Contains(gvr.Group, "istio.io") {
-				//fmt.Println("初始化istio资源-----:  ", gvr)
 				_, _ = client.IstioSharedInformerFactory.ForResource(gvr)
-				//if err != nil {
-				//	log.Logger.Error("istio_err:", err)
-				//}
-				//continue
+			}
+			if strings.Contains(gvr.Group, "tekton.dev") {
+				_, _ = client.TektonSharedInformerFactory.ForResource(gvr)
 			}
 
 			_, _ = client.SharedInformerFactory.ForResource(gvr)
@@ -307,6 +315,9 @@ func (c *Cluster) StartInformer(clusterName string) {
 	// start istio informer
 	client.IstioSharedInformerFactory.Start(client.StopChan)
 	client.IstioSharedInformerFactory.WaitForCacheSync(client.StopChan)
+
+	client.TektonSharedInformerFactory.Start(client.StopChan)
+	client.TektonSharedInformerFactory.WaitForCacheSync(client.StopChan)
 
 }
 

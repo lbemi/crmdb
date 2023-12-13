@@ -53,6 +53,8 @@ export default {
 		logs: '系统日志',
 		loginLog: '登录日志',
 		operatorLog: '操作日志',
+		tekton: 'CI/CD',
+		task: '任务',
 		menu: '菜单嵌套',
 		menu1: '菜单1',
 		menu11: '菜单11',
