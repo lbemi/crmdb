@@ -44,6 +44,6 @@ func DeleteTask(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	namespace := rc.PathParam("namespace")
 	clusterName := rc.QueryCloud()
-	name := rc.Query("name")
+	name := rc.PathParam("name")
 	core.V1.Cluster(clusterName).Tekton().Tasks(namespace).Delete(c, name)
 }

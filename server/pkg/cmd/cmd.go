@@ -129,6 +129,9 @@ func registerRoute(httpSever *server.HttpSever) {
 
 		//tekton路由
 		tekton.TektonTasksRoutes(),
+		tekton.TektonTaskRunsRoutes(),
+		tekton.TektonPipelinesRoutes(),
+		tekton.TektonPipelineRunsRoutes(),
 	)
 	// websocket取消压缩
 	//httpSever.Container.EnableContentEncoding(false)

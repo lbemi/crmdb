@@ -115,7 +115,7 @@
 
 <script setup lang="ts" name="task">
 import { VirtualService } from '@kubernetes-models/istio/networking.istio.io/v1beta1/VirtualService';
-import { defineAsyncComponent, h, onBeforeUnmount, onMounted, reactive } from 'vue';
+import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import mittBus from '@/utils/mitt';
