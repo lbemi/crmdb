@@ -185,7 +185,7 @@ const podStatus = (status: PodStatus) => {
 				status.containerStatuses?.forEach((c: ContainerStatus) => {
 					if (!c.ready) {
 						if (c.state?.waiting) {
-							res = ` </div> <div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
+							res = ` <div>${c.state.waiting.reason}</div> <div style="font-size: 10px">${c.state.waiting.message}</div>`;
 							// res = `${c.state.waiting.reason}`;
 						}
 						if (c.state?.terminated) {

@@ -125,14 +125,14 @@ import { PageInfo } from '@/types/kubernetes/common';
 import { Edit, Delete, List } from '@element-plus/icons-vue';
 import { useThemeConfig } from '@/stores/themeConfig';
 import { deepClone } from '@/utils/other';
-import { useTektonTasksApi } from '@/api/tekton/tasks';
 
 import { Task } from '@/types/tekton/task';
+import { useTektonTaskRunsApi } from '@/api/tekton/taskRuns';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 
-const taskApi = useTektonTasksApi();
+const taskRunApi = useTektonTaskRunsApi();
 
 type queryType = {
 	key: string;
@@ -176,7 +176,7 @@ const state = reactive({
 });
 
 onMounted(() => {
-	listTasks();
+	listTaskRuns();
 });
 
 const search = () => {
@@ -192,10 +192,10 @@ const search = () => {
 		delete state.query.name;
 	}
 
-	listTasks();
+	listTaskRuns();
 };
 const handleChange = () => {
-	listTasks();
+	listTaskRuns();
 };
 const createVirtualService = () => {
 	state.draw.title = '创建虚拟服务';
@@ -218,12 +218,12 @@ const deleteTask = (task: Task) => {
 		draggable: true,
 	})
 		.then(() => {
-			taskApi
-				.deleteTask(task.metadata.namespace, task.metadata.name, {
+			taskRunApi
+				.deleteTaskRun(task.metadata.namespace, task.metadata.name, {
 					cloud: k8sStore.state.activeCluster,
 				})
 				.then((res: any) => {
-					listTasks();
+					listTaskRuns();
 					ElMessage.success(res.message);
 				})
 				.catch((e: any) => {
@@ -259,12 +259,12 @@ const updateVirtualService = (virtualService: VirtualService) => {
 const handlePageChange = (page: PageInfo) => {
 	state.query.page = page.page;
 	state.query.limit = page.limit;
-	listTasks();
+	listTaskRuns();
 };
-const listTasks = () => {
+const listTaskRuns = () => {
 	state.loading = true;
-	taskApi
-		.listTask(k8sStore.state.activeNamespace, state.query)
+	taskRunApi
+		.listTaskRun(k8sStore.state.activeNamespace, state.query)
 		.then((res: any) => {
 			state.tasks = res.data.data;
 			state.total = res.data.total;
