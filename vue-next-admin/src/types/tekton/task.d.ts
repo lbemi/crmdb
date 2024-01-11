@@ -1,24 +1,3 @@
-// interface TaskDefinition {
-// 	namespace: string;
-// 	uid: string;
-// 	resourceVersion: string;
-// 	generation: number;
-// 	creationTimestamp: string;
-// 	annotations: annotations;
-// 	spec: {
-// 		params: {
-// 			name: string;
-// 			type: string;
-// 		}[];
-// 		steps: {
-// 			name: string;
-// 			image: string;
-// 			computeResources: any;
-// 			script: string;
-// 		}[];
-// 	};
-// }
-
 export interface Metadata {
 	name: string;
 	namespace: string;
