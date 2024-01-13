@@ -1,37 +1,27 @@
 <template>
 	<div>
-		<el-form-item label-width="90px" style="margin-bottom: 0">
+		<el-form-item label-width="100px" style="margin-bottom: 0;">
 			<template #label>
-				<el-tooltip class="box-item" effect="light" content="用于挂载到容器中使用" placement="top-start" raw-content> 数据卷： </el-tooltip>
+				<el-tooltip class="box-item" effect="light" content="用于挂载到容器中使用" placement="top-start" raw-content> 数据卷：
+				</el-tooltip>
 			</template>
-			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0" @click="handleSet">新增</el-button>
-			<el-button
-				v-if="data.show"
-				type="info"
-				v-show="data.volumeData.length != 0"
-				text
-				:icon="CaretTop"
-				@click="data.show = !data.show"
-				size="small"
-				style="margin-left: 30px"
-				>隐藏</el-button
-			>
-			<el-button v-else type="info" text :icon="CaretBottom" @click="data.show = !data.show" size="small" style="margin-left: 30px">展开</el-button>
+			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0"
+				@click="handleSet">新增</el-button>
+			<el-button v-if="data.show" type="info" v-show="data.volumeData.length != 0" text :icon="CaretTop"
+				@click="data.show = !data.show" size="small" style="margin-left: 20">隐藏</el-button>
+			<el-button v-else type="info" text :icon="CaretBottom" @click="data.show = !data.show" size="small"
+				style="margin-left: 20px">展开</el-button>
 		</el-form-item>
-		<el-form-item label-width="0">
-			<el-table
-				:data="data.volumeData"
-				v-show="data.volumeData.length != 0 && data.show"
-				style="width: 100%; font-size: 10px"
-				:cell-style="{ padding: '0,5px' }"
-				:row-style="{ padding: '2px' }"
-				:header-cell-style="{ padding: '5px' }"
-				:header-row-style="{ padding: '5px' }"
-			>
+		<el-form-item label-width="100">
+			<el-table :data="data.volumeData" v-show="data.volumeData.length != 0 && data.show"
+				style="width: 100%; font-size: 12px" :cell-style="{ padding: '0,5px' }" :row-style="{ padding: '2px' }"
+				:header-cell-style="{ padding: '5px' }" :header-row-style="{ padding: '5px' }">
 				<el-table-column prop="" label="类型" width="130">
 					<template #default="scope">
-						<el-select v-model="scope.row.type" size="small" @change="(val:string) => handleTypeChange(val, scope.$index)">
-							<el-option v-for="item in data.typeList" :key="item.value" :label="item.label" :value="item.value" />
+						<el-select v-model="scope.row.type" size="small"
+							@change="(val: string) => handleTypeChange(val, scope.$index)">
+							<el-option v-for="item in data.typeList" :key="item.value" :label="item.label"
+								:value="item.value" />
 						</el-select>
 					</template>
 				</el-table-column>
@@ -43,35 +33,27 @@
 				</el-table-column>
 				<el-table-column prop="" label="挂载源" width="200">
 					<template #default="scope">
-						<el-input
-							v-if="scope.row.type === 'hostPath' && scope.row.hostPath"
-							v-model="scope.row.hostPath.path"
-							size="small"
-							placeholder="主机路径：/tmp"
-						/>
+						<el-input v-if="scope.row.type === 'hostPath' && scope.row.hostPath"
+							v-model="scope.row.hostPath.path" size="small" placeholder="主机路径：/tmp" />
 						<div v-if="scope.row.type === 'persistentVolumeClaim'" style="display: flex">
-							<el-select
-								v-model="scope.row.persistentVolumeClaim.claimName"
-								size="small"
-								:loading="data.loading"
-								@click="getPvc"
-								show-overflow-tooltip
-							>
-								<el-option v-for="item in data.pvcdata" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
+							<el-select v-model="scope.row.persistentVolumeClaim.claimName" size="small"
+								:loading="data.loading" @click="getPvc" show-overflow-tooltip>
+								<el-option v-for="item in data.pvcdata" :key="item.metadata!.name"
+									:label="item.metadata!.name" :value="item.metadata!.name!" />
 							</el-select>
 						</div>
 						<div v-if="scope.row.type === 'configMap'" style="display: flex">
-							<el-select v-model="scope.row.configMap.name" size="small" :loading="data.loading" @click="getConfigMap()" show-overflow-tooltip>
-								<el-option v-for="item in data.configMapData" :key="item.metadata.name" :label="item.metadata.name" :value="item.metadata.name" />
+							<el-select v-model="scope.row.configMap.name" size="small" :loading="data.loading"
+								@click="getConfigMap()" show-overflow-tooltip>
+								<el-option v-for="item in data.configMapData" :key="item.metadata?.name"
+									:label="item.metadata!.name" :value="item.metadata!.name!" />
 							</el-select>
-							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
+							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small"
+								style="margin-left: 3px">
 								<el-tooltip placement="top" effect="light">
 									<template #content>
-										<div
-											v-for="(item, index) in scope.row.configMap.items"
-											:key="index"
-											style="display: flex; justify-content: space-between; width: 280px"
-										>
+										<div v-for="(item, index) in scope.row.configMap.items" :key="index"
+											style="display: flex; justify-content: space-between; width: 280px">
 											<span>Key : {{ item.key }}</span>
 											<span>Path: {{ item.path }}</span>
 										</div>
@@ -81,17 +63,17 @@
 							</el-button>
 						</div>
 						<div v-if="scope.row.type === 'secret'" style="display: flex">
-							<el-select v-model="scope.row.secret.secretName" size="small" :loading="data.loading" @click="getSecret" show-overflow-tooltip>
-								<el-option v-for="item in data.secretData" :key="item.metadata.uid" :label="item.metadata.name" :value="item.metadata.name" />
+							<el-select v-model="scope.row.secret.secretName" size="small" :loading="data.loading"
+								@click="getSecret" show-overflow-tooltip>
+								<el-option v-for="item in data.secretData" :key="item.metadata!.uid"
+									:label="item.metadata!.name" :value="item.metadata!.name!" />
 							</el-select>
-							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small" style="margin-left: 3px">
+							<el-button text type="primary" @click="openDialog(scope.row, scope.$index)" size="small"
+								style="margin-left: 3px">
 								<el-tooltip placement="top" effect="dark">
 									<template #content>
-										<div
-											v-for="(item, index) in scope.row.secret.items"
-											:key="index"
-											style="display: flex; justify-content: space-between; width: 280px"
-										>
+										<div v-for="(item, index) in scope.row.secret.items" :key="index"
+											style="display: flex; justify-content: space-between; width: 280px">
 											<span>Key : {{ item.key }}</span>
 											<span>Path: {{ item.path }}</span>
 										</div>
@@ -115,26 +97,23 @@
 				</el-table-column>
 				<el-table-column>
 					<template #default="scope">
-						<el-button :icon="RemoveFilled" type="danger" size="small" text @click="data.volumeData.splice(scope.$index, 1)"></el-button>
+						<el-button :icon="RemoveFilled" type="danger" size="small" text
+							@click="data.volumeData.splice(scope.$index, 1)"></el-button>
 					</template>
 				</el-table-column>
 			</el-table>
 		</el-form-item>
 		<el-dialog ref="dialogRef" v-model="dialogFormVisible" title="指定键：" width="400px" v-if="dialogFormVisible">
-			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0" @click="addKey">新增</el-button>
-			<el-table
-				:data="data.items"
-				size="small"
-				style="width: 100%; font-size: 10px"
-				:cell-style="{ padding: '0,5px' }"
-				:row-style="{ padding: '2px' }"
-				:header-cell-style="{ padding: '5px' }"
-				:header-row-style="{ padding: '5px' }"
-			>
+			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0"
+				@click="addKey">新增</el-button>
+			<el-table :data="data.items" size="small" style="width: 100%; font-size: 10px"
+				:cell-style="{ padding: '0,5px' }" :row-style="{ padding: '2px' }" :header-cell-style="{ padding: '5px' }"
+				:header-row-style="{ padding: '5px' }">
 				<el-table-column label="键名">
 					<template #default="scope">
 						<el-select v-model="scope.row.key" placeholder="选择key" size="small">
-							<el-option v-for="(item, key, index) in data.keyValData" :value="key" :key="index" :label="key"> {{ key }} </el-option>
+							<el-option v-for="(item, key, index) in data.keyValData" :value="key" :key="index" :label="key">
+								{{ key }} </el-option>
 						</el-select>
 					</template>
 				</el-table-column>
@@ -145,7 +124,8 @@
 				</el-table-column>
 				<el-table-column width="30">
 					<template #default="scope">
-						<el-button :icon="RemoveFilled" type="danger" size="small" text @click="data.items.splice(scope.$index, 1)"></el-button>
+						<el-button :icon="RemoveFilled" type="danger" size="small" text
+							@click="data.items.splice(scope.$index, 1)"></el-button>
 					</template>
 				</el-table-column>
 			</el-table>

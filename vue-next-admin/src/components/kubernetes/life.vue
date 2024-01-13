@@ -1,73 +1,54 @@
 <template>
 	<div>
 		<el-checkbox v-model="data.set" label="开启" size="small" />
-		<el-button
-			v-if="data.show"
-			type="info"
-			v-show="data.set"
-			text
-			:icon="CaretTop"
-			@click="data.show = !data.show"
-			size="small"
-			style="margin-left: 30px"
-			>隐藏</el-button
-		>
-		<el-button v-else type="info" v-show="data.set" text :icon="CaretBottom" @click="data.show = !data.show" size="small" style="margin-left: 30px"
-			>展开</el-button
-		>
+		<el-button v-if="data.show" type="info" v-show="data.set" text :icon="CaretTop" @click="data.show = !data.show"
+			size="small" style="margin-left: 30px">隐藏</el-button>
+		<el-button v-else type="info" v-show="data.set" text :icon="CaretBottom" @click="data.show = !data.show"
+			size="small" style="margin-left: 30px">展开</el-button>
 		<el-tabs v-model="activeName" v-if="data.set" v-show="data.show">
 			<el-tab-pane label="Http模式" name="httpGet" v-if="data.lifeProbe.httpGet">
 				<el-form :model="data.lifeProbe.httpGet" label-width="120px" v-show="data.lifeProbe.httpGet">
 					<el-form-item label="请求方式" prop="scheme">
 						<el-select v-model="data.lifeProbe.httpGet.scheme" size="small">
-							<el-option v-for="item in schemeType" :label="item.label" :key="item.label" :value="item.value" />
+							<el-option v-for="item in schemeType" :label="item.label" :key="item.label"
+								:value="item.value" />
 						</el-select>
 					</el-form-item>
 					<el-form-item label="路径">
-						<el-input v-model="data.lifeProbe.httpGet.path" size="small" style="width: 200px" />
+						<el-input v-model="data.lifeProbe.httpGet.path" size="small" style="width: 190px" />
 					</el-form-item>
 					<el-form-item label="端口">
-						<el-input v-model.number="data.lifeProbe.httpGet.port" size="small" style="width: 200px" />
+						<el-input v-model.number="data.lifeProbe.httpGet.port" size="small" style="width: 190px" />
 					</el-form-item>
 					<el-form-item label="Http头">
-						<el-button
-							:icon="CirclePlusFilled"
-							type="primary"
-							size="small"
-							text
-							style="padding-left: 0"
-							@click="data.lifeProbe?.httpGet?.httpHeaders?.push({ name: '', value: '' })"
-							>新增</el-button
-						>
+						<el-button :icon="CirclePlusFilled" type="primary" size="small" text
+							@click="data.lifeProbe?.httpGet?.httpHeaders?.push({ name: '', value: '' })">新增</el-button>
 					</el-form-item>
 					<el-form-item :key="index" v-for="(item, index) in data.lifeProbe.httpGet.httpHeaders">
 						<template #label> </template>
 						<el-input v-model="item.name" placeholder="key" size="small" style="width: 100px" />
-						<el-input v-model="item.value" placeholder="value" size="small" style="width: 100px; margin-left: 5px" />
-						<el-button
-							:icon="RemoveFilled"
-							type="primary"
-							size="small"
-							text
-							@click="data.lifeProbe?.httpGet?.httpHeaders?.splice(index, 1)"
-						></el-button>
+						<el-input v-model="item.value" placeholder="value" size="small"
+							style="width: 100px; margin-left: 5px" />
+						<el-button :icon="RemoveFilled" type="primary" size="small" text
+							@click="data.lifeProbe?.httpGet?.httpHeaders?.splice(index, 1)"></el-button>
 					</el-form-item>
 				</el-form>
 			</el-tab-pane>
 			<el-tab-pane label="TCP模式" name="tcpSocket" v-if="data.lifeProbe.tcpSocket">
 				<el-form :model="data.lifeProbe.tcpSocket" label-width="120px" v-show="data.lifeProbe.tcpSocket">
 					<el-form-item label="请求地址">
-						<el-input v-model="data.lifeProbe.tcpSocket.host" placeholder="一般不填写，默认为空" size="small" style="width: 200px" />
+						<el-input v-model="data.lifeProbe.tcpSocket.host" placeholder="一般不填写，默认为空" size="small"
+							style="width: 190px" />
 					</el-form-item>
 					<el-form-item label="端口">
-						<el-input v-model.number="data.lifeProbe.tcpSocket.port" size="small" style="width: 200px" />
+						<el-input v-model.number="data.lifeProbe.tcpSocket.port" size="small" style="width: 190px" />
 					</el-form-item>
 				</el-form>
 			</el-tab-pane>
 			<el-tab-pane label="Exec模式" name="exec">
 				<el-form :model="data.lifeProbe.exec" label-width="120px" v-show="data.lifeProbe.exec">
 					<el-form-item label="命令">
-						<el-input v-model="data.command" size="small" style="width: 200px" />
+						<el-input v-model="data.command" size="small" style="width: 190px" />
 					</el-form-item>
 				</el-form>
 			</el-tab-pane>

@@ -286,6 +286,7 @@ func (c *Cluster) StartInformer(clusterName string) {
 	}
 
 	client.SharedInformerFactory.Apps().V1().Deployments().Informer().AddEventHandler(services.NewDeploymentHandler(client, clusterName))
+	client.SharedInformerFactory.Apps().V1().DaemonSets().Informer().AddEventHandler(services.NewDaemonSetHandler(client, clusterName))
 	//client.SharedInformerFactory.Apps().V1().ReplicaSets().Informer().AddEventHandler(k8s.NewReplicasetHandler(client, clusterName))
 	client.SharedInformerFactory.Core().V1().Pods().Informer().AddEventHandler(services.NewPodHandler(client, clusterName))
 	//client.SharedInformerFactory.Core().V1().Namespaces().Informer().AddEventHandler(k8s.NewNameSpaceHandler(client, clusterName))

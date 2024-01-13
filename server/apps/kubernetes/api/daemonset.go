@@ -4,7 +4,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/rctx"
 
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 func ListDaemonSets(rc *rctx.ReqCtx) {
@@ -25,10 +25,30 @@ func GetDaemonSet(rc *rctx.ReqCtx) {
 	rc.ResData = core.V1.Cluster(clusterName).K8S().DaemonSets(namespace).Get(c, daemonSetName)
 }
 
+func GetDaemonSetPods(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	clusterName := rc.QueryCloud()
+	namespace := rc.PathParam("namespace")
+	daemonSetName := rc.PathParam("name")
+	pods, replicaSets := core.V1.Cluster(clusterName).K8S().DaemonSets(namespace).GetDaemonSetPods(c, daemonSetName)
+	rc.ResData = map[string]interface{}{
+		"pods":        pods,
+		"replicaSets": replicaSets,
+	}
+}
+
+func GetDaemonSetEvents(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	clusterName := rc.QueryCloud()
+	namespace := rc.PathParam("namespace")
+	deploymentName := rc.PathParam("name")
+	rc.ResData = core.V1.Cluster(clusterName).K8S().DaemonSets(namespace).GetDaemonSetEvent(c, deploymentName)
+}
+
 func CreateDaemonSet(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	clusterName := rc.QueryCloud()
-	var daemonSet *v1.DaemonSet
+	var daemonSet *appsv1.DaemonSet
 	rc.ShouldBind(&daemonSet)
 	rc.ResData = core.V1.Cluster(clusterName).K8S().DaemonSets(daemonSet.Namespace).Create(c, daemonSet)
 }
@@ -36,7 +56,7 @@ func CreateDaemonSet(rc *rctx.ReqCtx) {
 func UpdateDaemonSet(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	clusterName := rc.QueryCloud()
-	var daemonSet *v1.DaemonSet
+	var daemonSet *appsv1.DaemonSet
 	rc.ShouldBind(&daemonSet)
 	rc.ResData = core.V1.Cluster(clusterName).K8S().DaemonSets(daemonSet.Namespace).Update(c, daemonSet)
 }

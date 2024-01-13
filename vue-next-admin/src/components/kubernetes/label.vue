@@ -1,23 +1,22 @@
 <template>
 	<div>
-		<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-			<el-form-item :label="name">
-				<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="data.labels!.push({ key: '', value: '' })">新增</el-button>
-			</el-form-item>
-		</el-col>
-		<el-form-item>
-			<el-form ref="labelRef" :key="index" :model="data" v-for="(item, index) in data.labels">
-				<div v-if="item.key !== 'app'" style="display: flex; margin-bottom: 20px">
-					<el-form-item label="key" :prop="'labels.' + index + '.key'" :rules="labelRules.key">
-						<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
-					</el-form-item>
-					<el-form-item label="value" :prop="'labels.' + index + '.value'" style="margin-left: 10px" :rules="labelRules.value">
-						<el-input placeholder="value" v-model="item.value" size="small" />
-					</el-form-item>
-					<el-form-item>
-						<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.labels.splice(index, 1)"></el-button>
-					</el-form-item>
-				</div>
+		<el-form-item :label="name" label-width="90px" style="margin-top: 18px; margin-bottom: 0;">
+			<el-button :icon="CirclePlusFilled" type="primary" size="small" text
+				@click="data.labels!.push({ key: '', value: '' })">新增</el-button>
+		</el-form-item>
+		<el-form-item label-width="90px" :key="index" v-for="( item, index ) in data.labels">
+			<el-form ref="labelRef" :model="data" :inline="true" v-if="item.key !== 'app'">
+				<el-form-item label="key" :prop="'labels.' + index + '.key'" :rules="labelRules.key">
+					<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
+				</el-form-item>
+				<el-form-item label="值" :prop="'labels.' + index + '.value'" :rules="labelRules.value">
+					<el-input placeholder="value" v-model="item.value" size="small" />
+				</el-form-item>
+				<el-form-item>
+					<el-button :icon="RemoveFilled" type="primary" size="small" text
+						@click="data.labels.splice(index, 1)"></el-button>
+				</el-form-item>
+				<el-form-item></el-form-item>
 			</el-form>
 		</el-form-item>
 	</div>
@@ -25,7 +24,7 @@
 
 <script setup lang="ts">
 import { RemoveFilled } from '@element-plus/icons-vue';
-import { reactive, watch, ref } from 'vue';
+import { reactive, watch, ref, onMounted } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { CirclePlusFilled } from '@element-plus/icons-vue';
 import { FormInstance } from 'element-plus';
@@ -38,6 +37,7 @@ interface label {
 const data = reactive({
 	labels: [] as label[],
 });
+
 
 //校验key，不能重复
 const validateKey = (rule: any, value: any, callback: any) => {
@@ -77,7 +77,7 @@ const props = defineProps({
 });
 
 const handleLabels = () => {
-	const labelsTup = {};
+	const labelsTup: { [key: string]: string } = {};
 	for (const k in data.labels) {
 		if (data.labels[k].key != '' && data.labels[k].value != '') {
 			labelsTup[data.labels[k].key] = data.labels[k].value;
@@ -129,6 +129,7 @@ watch(
 		deep: true,
 	}
 );
+
 defineExpose({
 	validateHandler,
 });

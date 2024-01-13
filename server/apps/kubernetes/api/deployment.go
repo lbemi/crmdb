@@ -6,7 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/core"
 	"github.com/lbemi/lbemi/pkg/rctx"
 
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 func ListDeployments(rc *rctx.ReqCtx) {
@@ -30,7 +30,7 @@ func GetDeployment(rc *rctx.ReqCtx) {
 func CreateDeployment(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	clusterName := rc.QueryCloud()
-	var deployment *v1.Deployment
+	var deployment *appsv1.Deployment
 	rc.ShouldBind(&deployment)
 	rc.ResData = core.V1.Cluster(clusterName).K8S().Deployments(deployment.Namespace).Create(c, deployment)
 }
@@ -38,7 +38,7 @@ func CreateDeployment(rc *rctx.ReqCtx) {
 func UpdateDeployment(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	clusterName := rc.QueryCloud()
-	var deployment *v1.Deployment
+	var deployment *appsv1.Deployment
 	rc.ShouldBind(&deployment)
 	rc.ResData = core.V1.Cluster(clusterName).K8S().Deployments(deployment.Namespace).Update(c, deployment)
 }

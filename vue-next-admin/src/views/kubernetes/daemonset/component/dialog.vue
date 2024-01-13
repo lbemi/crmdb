@@ -4,8 +4,7 @@
 			<template #header>
 				<div style="display: flex; justify-content: space-between">
 					{{ title }}
-					<el-button type="primary" @click="showYaml" size="small" :icon="View"
-						style="margin-right: 20px">YAML</el-button>
+					<el-button type="primary" @click="showYaml" size="small" :icon="View" style="margin-right: 20px">YAML</el-button>
 				</div>
 				<el-divider style="margin: 8px 0" />
 			</template>
@@ -24,8 +23,12 @@
 					</el-card>
 				</div>
 				<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-					<Containers ref="containersRef" :containers="data.containers" :initContainers="data.initContainers"
-						:volumes="data.deployments.spec?.template.spec?.volumes" />
+					<Containers
+						ref="containersRef"
+						:containers="data.containers"
+						:initContainers="data.initContainers"
+						:volumes="data.daemonsets.spec?.template.spec?.volumes"
+					/>
 				</div>
 				<div style="margin-top: 10px" id="2" v-show="data.active === 2">
 					<el-checkbox v-model="data.enableService" label="配置service" />
@@ -40,15 +43,14 @@
 				</span>
 			</template>
 		</el-dialog>
-		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployments"
-			v-if="data.yamlDialogVisible" />
+		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.daemonsets" v-if="data.yamlDialogVisible" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref } from 'vue';
 import { Container } from 'kubernetes-types/core/v1';
-import { Deployment } from 'kubernetes-types/apps/v1';
+import { Daemonset } from 'kubernetes-types/apps/v1';
 import yamlJs from 'js-yaml';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
@@ -56,7 +58,7 @@ import { View } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
 import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
-import { useDeploymentApi } from '@/api/kubernetes/deployment';
+import { useDaemonsetApi } from '@/api/kubernetes/daemonset';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 
 const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
@@ -66,7 +68,7 @@ const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vu
 const dialogVisible = ref(false);
 const containersRef = ref();
 const kubeInfo = kubernetesInfo();
-const deploymentApi = useDeploymentApi();
+const daemonsetApi = useDaemonsetApi();
 const metaRef = ref<FormInstance>();
 
 const data = reactive({
@@ -74,15 +76,13 @@ const data = reactive({
 	enableService: false,
 	yamlDialogVisible: false,
 	dialogVisible: false,
-	codeData: {} as Deployment,
+	codeData: {} as Daemonset,
 	loadCode: false,
 	active: 0,
 	containers: [] as Container[],
 	initContainers: [] as Container[],
-	//初始化deployment
-	deployments: <Deployment>{
-		apiVersion: 'apps/v1',
-		kind: 'Deployment',
+	//初始化daemonset
+	daemonsets: <Daemonset>{
 		metadata: {
 			namespace: 'default',
 		},
@@ -114,7 +114,7 @@ const data = reactive({
 	code: '',
 	// 绑定初始值
 	bindMetaData: <CreateK8SBindData>{
-		resourceType: 'deployment',
+		resourceType: 'daemonSet',
 	},
 });
 
@@ -124,17 +124,17 @@ const showYaml = async () => {
 };
 
 const getContainers = () => {
-	delete data.deployments.spec!.template.spec!.containers;
-	delete data.deployments.spec!.template.spec!.initContainers;
+	delete data.daemonsets.spec!.template.spec!.containers;
+	delete data.daemonsets.spec!.template.spec!.initContainers;
 	const { containers, initContainers, volumes } = containersRef.value.returnContainers();
 	if (volumes.length > 0) {
-		data.deployments.spec!.template.spec!.volumes = volumes;
+		data.daemonsets.spec!.template.spec!.volumes = volumes;
 	}
 	if (containers.length > 0) {
-		data.deployments.spec!.template.spec!.containers = containers;
+		data.daemonsets.spec!.template.spec!.containers = containers;
 	}
 	if (initContainers.length > 0) {
-		data.deployments.spec!.template.spec!.initContainers = initContainers;
+		data.daemonsets.spec!.template.spec!.initContainers = initContainers;
 	}
 };
 
@@ -142,15 +142,15 @@ const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
 	metaRef.value = metaRefs;
 	const dep = deepClone(newData);
 	const metaLabels = deepClone(newData);
-	data.deployments.metadata = newData.meta;
+	data.daemonsets.metadata = newData.meta;
 	//更新labels
 	if (!data.isUpdate) {
-		if (dep.meta.name) data.deployments.metadata!.labels!.app = dep.meta.name;
+		if (dep.meta.name) data.daemonsets.metadata!.labels!.app = dep.meta.name;
 	}
 	//更新selector.matchLabels
-	data.deployments.spec!.selector.matchLabels = dep.meta.labels;
-	data.deployments.spec!.template.metadata!.labels = metaLabels.meta.labels;
-	data.deployments.spec!.replicas = newData.replicas;
+	data.daemonsets.spec!.selector.matchLabels = dep.meta.labels;
+	data.daemonsets.spec!.template.metadata!.labels = metaLabels.meta.labels;
+	data.daemonsets.spec!.replicas = newData.replicas;
 	updateCodeMirror();
 };
 const nextStep = () => {
@@ -164,11 +164,11 @@ const next = () => {
 };
 
 const confirm = async () => {
-	// data.code = yaml.dump(data.deployment);
+	// data.code = yaml.dump(data.daemonset);
 	getContainers();
-	if (props.title === '创建deployment') {
-		deploymentApi
-			.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployments)
+	if (props.title === '创建daemonset') {
+		daemonsetApi
+			.createDaemonset({ cloud: kubeInfo.state.activeCluster }, data.daemonsets)
 			.then(() => {
 				ElMessage.success('创建成功');
 				handleClose();
@@ -178,8 +178,8 @@ const confirm = async () => {
 				// handleClose();
 			});
 	} else {
-		await deploymentApi
-			.updateDeployment(data.deployments, { cloud: kubeInfo.state.activeCluster })
+		await daemonsetApi
+			.updateDaemonset(data.daemonsets, { cloud: kubeInfo.state.activeCluster })
 			.then(() => {
 				ElMessage.success('更新成功');
 				handleClose();
@@ -191,7 +191,7 @@ const confirm = async () => {
 };
 const updateCodeMirror = () => {
 	data.loadCode = true;
-	data.code = yamlJs.dump(data.deployments);
+	data.code = yamlJs.dump(data.daemonsets);
 	setTimeout(() => {
 		data.loadCode = false;
 	}, 1);
@@ -211,22 +211,22 @@ const handleClose = () => {
 const props = defineProps({
 	title: String,
 	dialogVisible: Boolean,
-	deployment: Object,
+	daemonset: Object,
 });
 
 onMounted(() => {
 	dialogVisible.value = props.dialogVisible;
-	if (!isObjectValueEqual(props.deployment, {})) {
+	if (!isObjectValueEqual(props.daemonset, {})) {
 		data.isUpdate = true;
-		data.deployments = props.deployment as Deployment;
-		data.bindMetaData.metadata = data.deployments.metadata;
-		data.bindMetaData.replicas = data.deployments.spec?.replicas;
+		data.daemonsets = props.daemonset as Daemonset;
+		data.bindMetaData.metadata = data.daemonsets.metadata;
+		data.bindMetaData.replicas = data.daemonsets.spec?.replicas;
 
-		if (data.deployments.spec?.template.spec?.initContainers) {
-			data.initContainers = data.deployments.spec!.template.spec!.initContainers!;
+		if (data.daemonsets.spec?.template.spec?.initContainers) {
+			data.initContainers = data.daemonsets.spec!.template.spec!.initContainers!;
 		}
-		if (data.deployments.spec?.template.spec?.containers) {
-			data.containers = data.deployments.spec!.template.spec!.containers!;
+		if (data.daemonsets.spec?.template.spec?.containers) {
+			data.containers = data.daemonsets.spec!.template.spec!.containers!;
 		}
 	}
 });

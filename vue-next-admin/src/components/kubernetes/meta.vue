@@ -1,28 +1,27 @@
 <template>
-	<div style="margin-top: 10px">
-		<el-form ref="metaRef" :model="data.meta" v-if="data.meta" label-width="120px" label-position="left" :rules="metaRules" size="default">
+	<div>
+		<el-form ref="metaRef" :model="data.meta" v-if="data.meta" label-width="100px" label-position="left"
+			:rules="metaRules" size="default">
 			<el-form-item label="命名空间">
-				<el-select v-model="data.meta.namespace" style="max-width: 220px" class="m-2" placeholder="Select" :disabled="props.isUpdate">
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name!" />
+				<el-select v-model="data.meta.namespace" style="max-width: 220px" placeholder="Select"
+					:disabled="props.isUpdate">
+					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata!.name"
+						:label="item.metadata!.name" :value="item.metadata!.name!" />
 				</el-select>
 			</el-form-item>
 			<el-form-item label="应用名称" prop="name">
 				<el-input v-model="data.meta.name" style="width: 220px" :disabled="props.isUpdate" />
 			</el-form-item>
 			<el-form-item label="类型">
-				<el-select v-model="data.resourceType" class="m-2" placeholder="Select" style="width: 220px" :disabled="enableEdit">
+				<el-select v-model="data.resourceType" placeholder="Select" style="width: 220px" :disabled="enableEdit">
 					<el-option v-for="item in types" :key="item.name" :label="item.name" :value="item.value" />
 				</el-select>
 			</el-form-item>
 			<el-form-item label="副本数量" v-if="resourceType">
 				<el-input-number v-model="data.replicas" :min="1" :max="100" />
 			</el-form-item>
-			<el-form-item label="标签">
-				<Label :labelData="data.labelData" @updateLabels="getLabels" />
-			</el-form-item>
-			<el-form-item label="注解">
-				<Label :labelData="data.annotationsData" @updateLabels="getAnnotations" />
-			</el-form-item>
+			<Label :labelData="data.labelData" :name="'标签'" @updateLabels="getLabels" />
+			<Label :labelData="data.annotationsData" :name="'注解'" @updateLabels="getAnnotations" />
 		</el-form>
 	</div>
 </template>

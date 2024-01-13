@@ -1,10 +1,10 @@
-export enum ResourceType {
-	Deployment = 'deployment',
-	DaemonSet = 'daemonSet',
-	Job = 'job',
-	CronJob = 'cronJob',
-	StatefulSet = 'statefulSet',
-}
+// export enum ResourceType {
+// 	Deployment = 'deployment',
+// 	DaemonSet = 'daemonSet',
+// 	Job = 'job',
+// 	CronJob = 'cronJob',
+// 	StatefulSet = 'statefulSet',
+// }
 
 import { ObjectMeta } from 'kubernetes-types/meta/v1';
 import {
@@ -42,6 +42,7 @@ export declare type CreateK8SVolumeData = {
 	name: string;
 	hostPath?: HostPathVolumeSource | undefined;
 	secret?: SecretVolumeSource | undefined;
+	configMap?: ConfigMapVolumeSource | undefined;
 	virtualService?: ConfigMapVolumeSource | undefined;
 	persistentVolumeClaim?: PersistentVolumeClaimVolumeSource | undefined;
 	emptyDir?: EmptyDirVolumeSource | undefined;

@@ -1,19 +1,23 @@
 <template>
 	<div class="layout-pd">
 		<div>
-			<el-tabs v-model="editableTabsValue" type="border-card" @tab-remove="tabRemove" class="demo-tabs" :before-leave="tabChange">
-				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :name="index" :closable="data.containers.length != 1">
+			<el-tabs v-model="editableTabsValue" @tab-remove="tabRemove" class="demo-tabs" :before-leave="tabChange">
+				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :name="index"
+					:closable="data.containers.length != 1">
 					<template #label>
 						<span v-if="item.isIntiContainer" class="custom-tabs-label">
 							<SvgIcon name="iconfont icon-container-" class="svg" />{{ ' init容器 ' }}
 						</span>
-						<span v-else class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' }} </span>
+						<span v-else class="custom-tabs-label">
+							<SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' }}
+						</span>
 					</template>
-					<ContainerDiv :ref="(el:refItem)=>setItemRef(el,index)" :container="item" :index="index" :volumes="props.volumes" />
+					<ContainerDiv :ref="(el: refItem) => setItemRef(el, index)" :container="item" :index="index"
+						:volumes="props.volumes" />
 				</el-tab-pane>
 				<el-tab-pane key="CustomBtn" name="CustomBtn" :closable="false">
 					<template #label>
-						<el-link type="primary" :underline="false" :icon="Plus"></el-link>
+						<el-link type="primary" :underline="false" :icon="Plus">添加容器</el-link>
 					</template>
 				</el-tab-pane>
 			</el-tabs>
@@ -22,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, reactive } from 'vue';
+import { computed, defineAsyncComponent, onMounted, reactive } from 'vue';
 import { ComponentPublicInstance, ref } from 'vue-demi';
 import { Container, Volume } from 'kubernetes-types/core/v1';
 import type { TabPaneName } from 'element-plus';
@@ -34,7 +38,7 @@ const ContainerDiv = defineAsyncComponent(() => import('./container.vue'));
 
 type refItem = Element | ComponentPublicInstance | null;
 const editableTabsValue = ref(0);
-const itemRefs = ref([]);
+const itemRefs = ref<(Element | ComponentPublicInstance | null)[]>([]);
 
 const setItemRef = (el: refItem, index: number) => {
 	if (el) {
@@ -59,12 +63,11 @@ const tabRemove = (TabPaneName: TabPaneName) => {
 		return false;
 	}
 	const tabs = deepClone(data.containers);
-	data.containers = tabs.filter((tab, index) => index !== TabPaneName);
+	data.containers = tabs.filter((_tab: any, index: number) => index !== TabPaneName);
 	editableTabsValue.value = data.containers.length - 1;
 };
 
 const data = reactive({
-	isInitContainer: false,
 	loadFromParent: false,
 	currentIndex: 1,
 	addIndex: 1,
@@ -90,9 +93,16 @@ const data = reactive({
 	},
 });
 
+const isInitContainer = (isIntiContainer: boolean) => {
+	return isIntiContainer;
+}
+
 const getContainers = () => {
 	const vs = [] as Volume[];
 	itemRefs.value.forEach((refValue) => {
+		if (!refValue) {
+			return false;
+		}
 		const { index, container, volumes } = refValue.returnContainer();
 		vs.push(...volumes);
 		data.containers[index] = deepClone(container) as ContainerType;
@@ -208,19 +218,5 @@ defineExpose({
 	right: 50px;
 	text-align: center;
 	top: 50%;
-}
-
-.men {
-	font-size: 13px;
-	letter-spacing: 3px;
-}
-
-.el-form-item {
-	margin-bottom: 2px;
-}
-
-.el-table-column {
-	padding-top: 2px;
-	padding-bottom: 2px;
 }
 </style>

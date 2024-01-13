@@ -2,27 +2,18 @@
 	<div>
 		<el-form-item>
 			<el-checkbox v-model="data.set" label="开启" size="small" />
-			<el-button
-				v-if="data.show"
-				type="info"
-				v-show="data.set"
-				text
-				:icon="CaretTop"
-				@click="data.show = !data.show"
-				size="small"
-				style="margin-left: 30px"
-				>隐藏</el-button
-			>
-			<el-button v-else type="info" v-show="data.set" text :icon="CaretBottom" @click="data.show = !data.show" size="small" style="margin-left: 30px"
-				>展开</el-button
-			>
+			<el-button v-if="data.show" type="info" v-show="data.set" text :icon="CaretTop" @click="data.show = !data.show"
+				size="small" style="margin-left: 30px">隐藏</el-button>
+			<el-button v-else type="info" v-show="data.set" text :icon="CaretBottom" @click="data.show = !data.show"
+				size="small" style="margin-left: 30px">展开</el-button>
 		</el-form-item>
 		<el-tabs v-model="activeName" v-if="data.set" v-show="data.show">
 			<el-tab-pane label="Http模式" name="httpGet">
-				<el-form :model="data.probe.httpGet" label-width="120px" v-show="data.probe.httpGet">
+				<el-form :model="data.probe.httpGet" label-width="130px" v-show="data.probe.httpGet">
 					<el-form-item label="请求方式" prop="scheme">
 						<el-select v-model="data.probe!.httpGet!.scheme">
-							<el-option v-for="item in schemeType" :label="item.label" :key="item.label" :value="item.value" />
+							<el-option v-for="item in schemeType" :label="item.label" :key="item.label"
+								:value="item.value" />
 						</el-select>
 					</el-form-item>
 					<el-form-item label="路径">
@@ -32,21 +23,16 @@
 						<el-input v-model.number="data.probe.httpGet!.port" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="Http头">
-						<el-button
-							:icon="CirclePlusFilled"
-							type="primary"
-							size="small"
-							text
-							style="padding-left: 0"
-							@click="data.probe.httpGet?.httpHeaders?.push({ name: '', value: '' })"
-							>新增</el-button
-						>
+						<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0"
+							@click="data.probe.httpGet?.httpHeaders?.push({ name: '', value: '' })">新增</el-button>
 					</el-form-item>
 					<el-form-item :key="index" v-for="(item, index) in data.probe.httpGet?.httpHeaders">
 						<template #label> </template>
 						<el-input v-model="item.name" placeholder="key" size="small" style="width: 100px" />
-						<el-input v-model="item.value" placeholder="value" size="small" style="width: 100px; margin-left: 5px" />
-						<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.probe.httpGet?.httpHeaders!.splice(index, 1)"></el-button>
+						<el-input v-model="item.value" placeholder="value" size="small"
+							style="width: 100px; margin-left: 5px" />
+						<el-button :icon="RemoveFilled" type="primary" size="small" text
+							@click="data.probe.httpGet?.httpHeaders!.splice(index, 1)"></el-button>
 					</el-form-item>
 
 					<el-form-item label="延迟探测时间(s)">
@@ -69,7 +55,8 @@
 			<el-tab-pane label="TCP模式" name="tcpSocket">
 				<el-form :model="data.probe.tcpSocket" label-width="120px" v-show="data.probe.tcpSocket">
 					<el-form-item label="请求地址">
-						<el-input v-model="data.probe.tcpSocket!.host" placeholder="一般不填写，默认为空" size="default" style="width: 200px" />
+						<el-input v-model="data.probe.tcpSocket!.host" placeholder="一般不填写，默认为空" size="default"
+							style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="端口">
 						<el-input v-model="data.probe.tcpSocket!.port" size="default" style="width: 200px" />
@@ -84,7 +71,8 @@
 						<el-input-number v-model="data.probe.timeoutSeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="健康阀值(s)">
-						<el-input-number v-model="data.probe.successThreshold" size="default" style="width: 200px" disabled />
+						<el-input-number v-model="data.probe.successThreshold" size="default" style="width: 200px"
+							disabled />
 					</el-form-item>
 					<el-form-item label="不健康阀值(s)">
 						<el-input-number v-model="data.probe.failureThreshold" size="default" style="width: 200px" />
@@ -106,7 +94,8 @@
 						<el-input-number v-model="data.probe.timeoutSeconds" size="default" style="width: 200px" />
 					</el-form-item>
 					<el-form-item label="健康阀值(s)">
-						<el-input-number v-model="data.probe.successThreshold" size="default" style="width: 200px" disabled />
+						<el-input-number v-model="data.probe.successThreshold" size="default" style="width: 200px"
+							disabled />
 					</el-form-item>
 					<el-form-item label="不健康阀值(s)">
 						<el-input-number v-model="data.probe.failureThreshold" size="default" style="width: 200px" />
@@ -294,4 +283,8 @@ const schemeType = [
 ];
 </script>
 
-<style scoped></style>
+<style scoped>
+.el-form-item {
+	margin-bottom: 10px;
+}
+</style>

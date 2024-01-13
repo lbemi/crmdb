@@ -1,17 +1,17 @@
 <template>
 	<div class="system-user-dialog-container">
-		<el-dialog v-model="dialogVisible" width="800px" @close="handleClose()">
+		<el-drawer v-model="dialogVisible" size="40%" @close="handleClose()">
 			<template #header>
-				<h3>YAML</h3>
+				<h3>yaml</h3>
 			</template>
-			<Codemirror v-model="code" style="height: 100%" :autofocus="true" :tabSize="2" :extensions="extensions" :disabled="disabledUpdate" />
-			<template #footer>
-				<span class="dialog-footer">
-					<el-button size="small" @click="handleClose">关闭</el-button>
-					<el-button type="primary" size="small" @click="update" v-if="!disabledUpdate">更新</el-button>
-				</span>
-			</template>
-		</el-dialog>
+			<Codemirror v-model="code" style="height: 92%;margin-left: 20px;margin-right: 15px;" :autofocus="true"
+				:tabSize="2" :extensions="extensions" :disabled="disabledUpdate" />
+			<div class="mt30" style="align-items: center; margin-left: 20px;">
+				<el-button size="small" @click="handleClose">关闭</el-button>
+				<el-button type="primary" size="small" @click="update" v-if="!disabledUpdate">更新</el-button>
+			</div>
+
+		</el-drawer>
 	</div>
 </template>
 
