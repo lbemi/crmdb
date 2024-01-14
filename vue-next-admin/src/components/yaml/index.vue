@@ -2,15 +2,22 @@
 	<div class="system-user-dialog-container">
 		<el-drawer v-model="dialogVisible" size="40%" @close="handleClose()">
 			<template #header>
-				<h3>yaml</h3>
+				<h3>{{ name }} YAML</h3>
 			</template>
-			<Codemirror v-model="code" style="height: 92%;margin-left: 20px;margin-right: 15px;" :autofocus="true"
-				:tabSize="2" :extensions="extensions" :disabled="disabledUpdate" />
-			<div class="mt30" style="align-items: center; margin-left: 20px;">
+			<Codemirror
+				v-model="code"
+				style="height: 92%; margin-left: 20px; margin-right: 15px"
+				:autofocus="true"
+				:spellcheck="true"
+				:indent-with-tab="true"
+				:tabSize="2"
+				:extensions="extensions"
+				:disabled="disabledUpdate"
+			/>
+			<div class="mt30" style="align-items: center; margin-left: 20px">
 				<el-button size="small" @click="handleClose">关闭</el-button>
 				<el-button type="primary" size="small" @click="update" v-if="!disabledUpdate">更新</el-button>
 			</div>
-
 		</el-drawer>
 	</div>
 </template>
@@ -38,6 +45,7 @@ const update = () => {
 
 const props = defineProps({
 	codeData: Object,
+	name: String,
 	dialogVisible: Boolean,
 	resourceType: String,
 	disabledUpdate: Boolean,
@@ -47,33 +55,6 @@ watch(
 	() => [props.resourceType, props.codeData],
 	() => {
 		dialogVisible.value = props.dialogVisible;
-		if (props.resourceType) {
-			switch (props.resourceType) {
-				case 'deployment':
-					code.value = `apiVersion: apps/v1\nkind: Deployment\n`;
-					break;
-				case 'statefulSet':
-					code.value = `apiVersion: apps/v1\nkind: DaemonSet\n`;
-					break;
-				case 'pod':
-					code.value = `apiVersion: v1\nkind: Pod\n`;
-					break;
-				case 'node':
-					code.value = `apiVersion: v1\nkind: Node\n`;
-					break;
-				case 'ingress':
-					code.value = `apiVersion: networking.k8s.io/v1\nkind: Ingress\n`;
-					break;
-				case 'service':
-					code.value = `apiVersion: v1\nkind: Service\n`;
-					break;
-				case 'virtualService':
-					code.value = `apiVersion: v1\nkind: virtualService\n`;
-					break;
-				default:
-					code.value = '';
-			}
-		}
 		if (props.codeData) {
 			code.value += YAML.dump(props.codeData);
 		}

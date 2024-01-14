@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/apps/kubernetes/api"
 	"github.com/lbemi/lbemi/pkg/common/entity"
 	v1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
@@ -37,6 +38,20 @@ func KubernetesJobRoutes() *restful.WebService {
 		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
 		Param(ws.PathParameter("name", "Job名称").Required(true).DataType("string")).
 		Returns(200, "success", v1.Job{}))
+
+	ws.Route(ws.GET("/namespaces/{namespace}/{name}/pods").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("job").
+			WithHandle(api.GetJobSetPods).Do()
+	}).Doc("获取job所属pod列表").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Writes(map[string]interface{}{
+			"pods": []*corev1.Pod{},
+		}).
+		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
+		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
+		Param(ws.PathParameter("name", "job名称").Required(true).DataType("string")).
+		Returns(200, "success", map[string]interface{}{
+			"pods": []*corev1.Pod{},
+		}))
 
 	ws.Route(ws.POST("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("Job").

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { reactive } from 'vue';
-import { DaemonSet, Deployment } from 'kubernetes-types/apps/v1';
+import { DaemonSet, Deployment, StatefulSet } from 'kubernetes-types/apps/v1';
 import { Namespace, Service } from 'kubernetes-types/core/v1';
 import { Node } from '../types/kubernetes/cluster';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
@@ -8,6 +8,9 @@ import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { ElMessage } from 'element-plus';
 import { useServiceApi } from '@/api/kubernetes/service';
 import { useDaemonsetApi } from '@/api/kubernetes/daemonset';
+import { CronJob, Job } from 'kubernetes-types/batch/v1';
+import { useJobApi } from '@/api/kubernetes/job';
+import { useCronJobApi } from '@/api/kubernetes/cronjob';
 
 /**
  * k8s集群信息
@@ -16,6 +19,8 @@ import { useDaemonsetApi } from '@/api/kubernetes/daemonset';
 const deploymentApi = useDeploymentApi();
 const daemonSetApi = useDaemonsetApi();
 const serviceApi = useServiceApi();
+const jobApi = useJobApi();
+const cronJobApi = useCronJobApi();
 export const kubernetesInfo = defineStore(
 	'kubernetesInfo',
 	() => {
@@ -25,6 +30,9 @@ export const kubernetesInfo = defineStore(
 			activeNamespace: 'default',
 			activeDeployment: {} as Deployment,
 			activeDaemonSet: {} as DaemonSet,
+			activeStatefulSet: {} as StatefulSet,
+			activeCronJob: {} as CronJob,
+			activeJob: {} as Job,
 			activeService: {} as Service,
 			clusters: [],
 			namespace: [] as Namespace[],
@@ -34,6 +42,14 @@ export const kubernetesInfo = defineStore(
 				name: '',
 			},
 			creatDaemonSet: {
+				namespace: '',
+				name: '',
+			},
+			createStatefulSet: {
+				namespace: '',
+				name: '',
+			},
+			createCronJob: {
 				namespace: '',
 				name: '',
 			},
@@ -51,15 +67,41 @@ export const kubernetesInfo = defineStore(
 						ElMessage.error(e.message);
 					});
 		};
-
-		const refreshActiveDaemonset = async () => {
-			if (!isObjectValueEqual(state.activeDeployment, {}))
-				await daemonSetApi
-					.getDaemonset(state.activeDeployment.metadata!.namespace!, state.activeDeployment.metadata!.name!, {
+		const refreshActiveJob = async () => {
+			if (!isObjectValueEqual(state.activeJob, {}))
+				await jobApi
+					.getJob(state.activeJob.metadata!.namespace!, state.activeJob.metadata!.name!, {
 						cloud: state.activeCluster,
 					})
 					.then((res: any) => {
-						state.activeDeployment = res.data;
+						state.activeJob = res.data;
+					})
+					.catch((e: any) => {
+						ElMessage.error(e.message);
+					});
+		};
+
+		const refreshActiveCronJob = async () => {
+			if (!isObjectValueEqual(state.activeJob, {}))
+				await cronJobApi
+					.getCronJob(state.activeCronJob.metadata!.namespace!, state.activeCronJob.metadata!.name!, {
+						cloud: state.activeCluster,
+					})
+					.then((res: any) => {
+						state.activeCronJob = res.data;
+					})
+					.catch((e: any) => {
+						ElMessage.error(e.message);
+					});
+		};
+		const refreshActiveDaemonset = async () => {
+			if (!isObjectValueEqual(state.activeDeployment, {}))
+				await daemonSetApi
+					.getDaemonset(state.activeDaemonSet.metadata!.namespace!, state.activeDaemonSet.metadata!.name!, {
+						cloud: state.activeCluster,
+					})
+					.then((res: any) => {
+						state.activeDaemonSet = res.data;
 					})
 					.catch((e: any) => {
 						ElMessage.error(e.message);
@@ -79,7 +121,7 @@ export const kubernetesInfo = defineStore(
 					});
 		};
 
-		return { state, refreshActiveDeployment, refreshActiveService, refreshActiveDaemonset };
+		return { state, refreshActiveDeployment, refreshActiveService, refreshActiveDaemonset, refreshActiveJob, refreshActiveCronJob };
 	},
 	{
 		persist: true,

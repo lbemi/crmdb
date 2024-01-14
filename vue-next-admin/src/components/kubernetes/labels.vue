@@ -17,6 +17,7 @@
 				<el-form-item>
 					<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.labels.splice(index, 1)"></el-button>
 				</el-form-item>
+				<el-form-item />
 			</div>
 		</el-form>
 	</div>
@@ -74,7 +75,7 @@ const props = defineProps({
 });
 
 const handleLabels = () => {
-	const labelsTup = {};
+	const labelsTup = {} as { [index: string]: string };
 	for (const k in data.labels) {
 		// if (data.labels[k].key != '' && data.labels[k].value != '') {
 		labelsTup[data.labels[k].key] = data.labels[k].value;
@@ -102,7 +103,7 @@ const emit = defineEmits(['updateLabels']);
 // FIXME 在父组件校验
 const nextStep = (formEl: Array<FormInstance> | undefined, labels: Object) => {
 	formEl?.forEach((item) => {
-		item.validate((valid, fields) => {
+		item.validate((valid, _fields) => {
 			if (valid) {
 				emit('updateLabels', labels);
 			}
@@ -140,4 +141,8 @@ watch(
 );
 </script>
 
-<style scoped></style>
+<style scoped>
+.el-form-item {
+	margin-bottom: 18px;
+}
+</style>

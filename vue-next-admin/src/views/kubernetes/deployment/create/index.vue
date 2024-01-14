@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref } from 'vue';
+import { defineAsyncComponent, onBeforeMount, reactive, ref } from 'vue';
 import { Container } from 'kubernetes-types/core/v1';
 import { Deployment } from 'kubernetes-types/apps/v1';
 import yamlJs from 'js-yaml';
@@ -52,13 +52,11 @@ import { deepClone } from '@/utils/other';
 import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
-import { isObjectValueEqual } from '@/utils/arrayOperation';
 
 const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('@/components/kubernetes/containers.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 
-const dialogVisible = ref(false);
 const containersRef = ref();
 const kubeInfo = kubernetesInfo();
 const deploymentApi = useDeploymentApi();
@@ -195,8 +193,35 @@ onBeforeMount(() => {
 	updateCodeMirror();
 });
 
+const emit = defineEmits(['update:dialogVisible', 'refresh']);
 
+// const handleClose = () => {
+// 	emit('update:dialogVisible', false);
+// 	emit('refresh');
+// };
 
+// const props = defineProps({
+// 	title: String,
+// 	dialogVisible: Boolean,
+// 	deployment: Object,
+// });
+
+// onMounted(() => {
+// 	dialogVisible.value = props.dialogVisible;
+// 	if (!isObjectValueEqual(props.deployment, {})) {
+// 		data.isUpdate = true;
+// 		data.deployments = props.deployment as Deployment;
+// 		data.bindMetaData.metadata = data.deployments.metadata;
+// 		data.bindMetaData.replicas = data.deployments.spec?.replicas;
+
+// 		if (data.deployments.spec?.template.spec?.initContainers) {
+// 			data.initContainers = data.deployments.spec!.template.spec!.initContainers!;
+// 		}
+// 		if (data.deployments.spec?.template.spec?.containers) {
+// 			data.containers = data.deployments.spec!.template.spec!.containers!;
+// 		}
+// 	}
+// });
 </script>
 
 <style scoped>

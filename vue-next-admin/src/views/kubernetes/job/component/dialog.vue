@@ -1,47 +1,52 @@
 <template>
-	<div class="layout-pd">
-		<el-card shadow="hover">
+	<div class="system-user-dialog-container">
+		<el-dialog class="dialog" v-model="dialogVisible" width="1000px" @close="handleClose()">
 			<template #header>
-				<div class="card-header">
-					<span>创建deployment</span>
-					<el-button type="primary" :icon="View" size="small" @click="showYaml">预览YAML</el-button>
+				<div style="display: flex; justify-content: space-between">
+					{{ title }}
+					<el-button type="primary" @click="showYaml" size="small" :icon="View"
+						style="margin-right: 20px">YAML</el-button>
 				</div>
+				<el-divider style="margin: 8px 0" />
 			</template>
-			<el-row :gutter="30">
-				<el-col :span="3" :offset="1" style="margin-top: 15px;">
-					<el-steps :active="data.active" finish-status="success" direction="vertical">
-						<el-step title="基本信息" description="基础配置信息" />
-						<el-step title="容器配置" description="容器相关配置信息" />
-						<el-step title="高级配置" description="service高级配置信息" />
-					</el-steps>
-				</el-col>
-				<el-col :span="20">
-					<div id="0" v-show="data.active === 0">
-						<Meta :bindData="data.bindMetaData" :isUpdate="data.isUpdate" @updateData="getMeta" />
-					</div>
-					<div id="1" v-show="data.active === 1">
-						<Containers ref="containersRef" :containers="data.containers" :initContainers="data.initContainers"
-							:volumes="data.deployments.spec?.template.spec?.volumes" />
-					</div>
-					<div id="2" v-show="data.active === 2">
-						<el-checkbox v-model="data.enableService" label="配置service" />
-					</div>
-				</el-col>
-
-			</el-row>
-			<div class="footer">
-				<el-button @click="up" size="small">上一步</el-button>
-				<el-button @click="next" size="small">下一步</el-button>
-				<el-button @click="confirm" type="primary" size="small">确认</el-button>
+			<el-backtop :right="100" :bottom="100" />
+			<div>
+				<el-steps :active="data.active" finish-status="success" align-center>
+					<el-step title="基本信息" />
+					<el-step title="容器配置" />
+					<el-step title="高级配置" />
+				</el-steps>
 			</div>
-		</el-card>
+			<div>
+				<div style="margin-top: 10px" id="0" v-show="data.active === 0">
+					<el-card>
+						<Meta :bindData="data.bindMetaData" :isUpdate="data.isUpdate" @updateData="getMeta" />
+					</el-card>
+				</div>
+				<div style="margin-top: 10px" id="1" v-show="data.active === 1">
+					<Containers ref="containersRef" :containers="data.containers" :initContainers="data.initContainers"
+						:volumes="data.deployments.spec?.template.spec?.volumes" />
+				</div>
+				<div style="margin-top: 10px" id="2" v-show="data.active === 2">
+					<el-checkbox v-model="data.enableService" label="配置service" />
+				</div>
+			</div>
+			<template #footer>
+				<span class="dialog-footer">
+					<el-button @click="up" size="small">上一步</el-button>
+					<el-button @click="next" size="small">下一步</el-button>
+					<el-button @click="confirm" type="success" size="small">确认</el-button>
+					<el-button size="small" type="primary" @click="handleClose">关闭</el-button>
+				</span>
+			</template>
+		</el-dialog>
 		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployments"
 			v-if="data.yamlDialogVisible" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeMount, reactive, ref } from 'vue';
+import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref } from 'vue';
 import { Container } from 'kubernetes-types/core/v1';
 import { Deployment } from 'kubernetes-types/apps/v1';
 import yamlJs from 'js-yaml';
@@ -52,11 +57,13 @@ import { deepClone } from '@/utils/other';
 import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
+import { isObjectValueEqual } from '@/utils/arrayOperation';
 
 const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('@/components/kubernetes/containers.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 
+const dialogVisible = ref(false);
 const containersRef = ref();
 const kubeInfo = kubernetesInfo();
 const deploymentApi = useDeploymentApi();
@@ -117,6 +124,7 @@ const showYaml = async () => {
 };
 
 const getContainers = () => {
+	delete data.deployments.spec!.template.spec!.containers;
 	delete data.deployments.spec!.template.spec!.initContainers;
 	const { containers, initContainers, volumes } = containersRef.value.returnContainers();
 	if (volumes.length > 0) {
@@ -158,28 +166,28 @@ const next = () => {
 const confirm = async () => {
 	// data.code = yaml.dump(data.deployment);
 	getContainers();
-	// if (props.title === '创建deployment') {
-	deploymentApi
-		.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployments)
-		.then(() => {
-			ElMessage.success('创建成功');
-			// handleClose();
-		})
-		.catch((e) => {
-			ElMessage.error(e.message);
-			// handleClose();
-		});
-	// } else {
-	// 	await deploymentApi
-	// 		.updateDeployment(data.deployments, { cloud: kubeInfo.state.activeCluster })
-	// 		.then(() => {
-	// 			ElMessage.success('更新成功');
-	// 			handleClose();
-	// 		})
-	// 		.catch((e) => {
-	// 			ElMessage.error(e.message);
-	// 		});
-	// }
+	if (props.title === '创建deployment') {
+		deploymentApi
+			.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployments)
+			.then(() => {
+				ElMessage.success('创建成功');
+				handleClose();
+			})
+			.catch((e) => {
+				ElMessage.error(e.message);
+				// handleClose();
+			});
+	} else {
+		await deploymentApi
+			.updateDeployment(data.deployments, { cloud: kubeInfo.state.activeCluster })
+			.then(() => {
+				ElMessage.success('更新成功');
+				handleClose();
+			})
+			.catch((e) => {
+				ElMessage.error(e.message);
+			});
+	}
 };
 const updateCodeMirror = () => {
 	data.loadCode = true;
@@ -195,50 +203,38 @@ onBeforeMount(() => {
 
 const emit = defineEmits(['update:dialogVisible', 'refresh']);
 
-// const handleClose = () => {
-// 	emit('update:dialogVisible', false);
-// 	emit('refresh');
-// };
+const handleClose = () => {
+	emit('update:dialogVisible', false);
+	emit('refresh');
+};
 
-// const props = defineProps({
-// 	title: String,
-// 	dialogVisible: Boolean,
-// 	deployment: Object,
-// });
+const props = defineProps({
+	title: String,
+	dialogVisible: Boolean,
+	deployment: Object,
+});
 
-// onMounted(() => {
-// 	dialogVisible.value = props.dialogVisible;
-// 	if (!isObjectValueEqual(props.deployment, {})) {
-// 		data.isUpdate = true;
-// 		data.deployments = props.deployment as Deployment;
-// 		data.bindMetaData.metadata = data.deployments.metadata;
-// 		data.bindMetaData.replicas = data.deployments.spec?.replicas;
+onMounted(() => {
+	dialogVisible.value = props.dialogVisible;
+	if (!isObjectValueEqual(props.deployment, {})) {
+		data.isUpdate = true;
+		data.deployments = props.deployment as Deployment;
+		data.bindMetaData.metadata = data.deployments.metadata;
+		data.bindMetaData.replicas = data.deployments.spec?.replicas;
 
-// 		if (data.deployments.spec?.template.spec?.initContainers) {
-// 			data.initContainers = data.deployments.spec!.template.spec!.initContainers!;
-// 		}
-// 		if (data.deployments.spec?.template.spec?.containers) {
-// 			data.containers = data.deployments.spec!.template.spec!.containers!;
-// 		}
-// 	}
-// });
+		if (data.deployments.spec?.template.spec?.initContainers) {
+			data.initContainers = data.deployments.spec!.template.spec!.initContainers!;
+		}
+		if (data.deployments.spec?.template.spec?.containers) {
+			data.containers = data.deployments.spec!.template.spec!.containers!;
+		}
+	}
+});
 </script>
 
 <style scoped>
-.footer {
-	margin-top: 30px;
-	display: flex;
-	justify-content: center;
-}
-
-.card-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.text {
-	font-size: 14px;
+.card {
+	margin-bottom: 10px;
 }
 
 .d2 {
@@ -259,5 +255,18 @@ const emit = defineEmits(['update:dialogVisible', 'refresh']);
 .men {
 	font-size: 13px;
 	letter-spacing: 3px;
+}
+
+.el-form-item {
+	margin-bottom: 2px;
+}
+
+.el-table-column {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+.dialog .el-dialog__body {
+	--el-dialog-padding-primary: -10px;
 }
 </style>

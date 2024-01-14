@@ -24,6 +24,16 @@ func GetJob(rc *rctx.ReqCtx) {
 	jobName := rc.PathParam("jobName")
 	rc.ResData = core.V1.Cluster(clusterName).K8S().Jobs(namespace).Get(c, jobName)
 }
+func GetJobSetPods(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	clusterName := rc.QueryCloud()
+	namespace := rc.PathParam("namespace")
+	daemonSetName := rc.PathParam("name")
+	pods := core.V1.Cluster(clusterName).K8S().Jobs(namespace).GetJobPods(c, daemonSetName)
+	rc.ResData = map[string]interface{}{
+		"pods": pods,
+	}
+}
 
 func CreateJob(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()

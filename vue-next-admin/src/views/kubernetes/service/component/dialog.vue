@@ -104,7 +104,7 @@
 				</el-card>
 				<el-card class="card" v-if="data.service.metadata">
 					<el-form-item label="标签">
-						<Label :labelData="data.service.metadata.labels" @update-labels="getMetaLabels" />
+						<Label :labelData="data.service.metadata.labels" :name="'标签'" @update-labels="getMetaLabels" />
 					</el-form-item>
 					<el-form-item label="注解">
 						<Label :labelData="data.service.metadata.annotations" @update-labels="getAnnotations" />

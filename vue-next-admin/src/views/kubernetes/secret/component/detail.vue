@@ -1,28 +1,28 @@
 <template>
-	<el-drawer v-model="data.visible" @close="handleClose" size="60%">
+	<el-drawer v-model="state.visible" @close="handleClose" size="60%">
 		<template #header="{ titleId, titleClass }">
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
 		<div class="box_body">
-			<el-descriptions :title="data.virtualService.metadata.name" :column="2" border>
+			<el-descriptions :title="state.secret.metadata!.name" :column="2" border>
 				<el-descriptions-item label="命名空间" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">{{
-					data.virtualService.metadata.namespace
+					state.secret.metadata!.namespace
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center" :span="2">{{
-					dateStrFormat(data.virtualService.metadata.creationTimestamp)
+					dateStrFormat(state.secret.metadata!.creationTimestamp)
 				}}</el-descriptions-item>
 				<el-descriptions-item label="标签" label-align="right" align="center" :span="2">
-					<div v-for="(item, key, index) in data.virtualService.metadata.labels" :key="index">
+					<div v-for="(item, key, index) in state.secret.metadata!.labels" :key="index">
 						<el-tag class="label" type="success" size="small"> {{ key }}:{{ item }} </el-tag>
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="注解" label-align="right" align="center" :span="2">
-					<div v-for="(item, key, index) in data.virtualService.metadata.annotations" :key="index">
+					<div v-for="(item, key, index) in state.secret.metadata!.annotations" :key="index">
 						<span> {{ key }}:{{ item }} </span>
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="数据" label-align="right" align="center" :span="2">
-					<el-table :data="data.keyValues">
+					<el-table :data="state.keyValues">
 						<el-table-column prop="key" label="名称" width="120" />
 						<el-table-column prop="value" label="值" />
 						<el-table-column width="80" label="查看">
@@ -42,26 +42,26 @@
 <script lang="ts" setup>
 import { ElDrawer } from 'element-plus';
 import { View, Hide } from '@element-plus/icons-vue';
-import { virtualService } from 'kubernetes-types/core/v1';
+import { Secret } from 'kubernetes-types/core/v1';
 import { onMounted, reactive } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 
-const data = reactive({
+const state = reactive({
 	visible: false,
-	virtualService: {
+	secret: {
 		metadata: {
 			name: '',
 			namespace: '',
 		},
 		data: {},
-	} as virtualService,
+	} as Secret,
 	keyValues: [] as Array<{ key: string; value: string }>,
 });
 
 const props = defineProps({
 	visible: Boolean,
-	virtualService: {
-		type: Object as () => virtualService,
+	secret: {
+		type: Object as () => Secret,
 	},
 	title: String,
 });
@@ -75,19 +75,21 @@ const secData = (data: any) => {
 
 const convertConfigMapTo = () => {
 	let kvs = [] as Array<{ key: string; value: string }>;
-	Object.keys(data.virtualService.data).forEach((k) => {
-		kvs.push({
-			key: k,
-			value: data.virtualService.data![k],
+	if (state.secret.data) {
+		Object.keys(state.secret.data).forEach((k) => {
+			kvs.push({
+				key: k,
+				value: state.secret.data![k],
+			});
 		});
-	});
-	data.keyValues = kvs;
+	}
+	state.keyValues = kvs;
 };
 
 onMounted(() => {
-	data.visible = props.visible;
-	if (!isObjectValueEqual(props.virtualService, {})) {
-		data.virtualService = props.virtualService;
+	state.visible = props.visible;
+	if (!isObjectValueEqual(props.secret, {})) {
+		state.secret = props.secret;
 		convertConfigMapTo();
 	}
 });

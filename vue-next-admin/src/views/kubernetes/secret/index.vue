@@ -129,7 +129,7 @@
 			@refresh="listSecret"
 			v-if="data.draw.visible"
 		/>
-		<SecretDetail v-model:visible="data.detail.visible" :virtualService="data.detail.secret" :title="data.detail.title" v-if="data.detail.visible" />
+		<SecretDetail v-model:visible="data.detail.visible" :secret="data.detail.secret" :title="data.detail.title" v-if="data.detail.visible" />
 	</div>
 </template>
 
@@ -285,6 +285,7 @@ const updateSecret = (secret: Secret) => {
 	data.draw.secret = secret;
 };
 const secretDetail = (secret: Secret) => {
+	console.log('@@@@', secret);
 	data.detail.visible = true;
 	data.detail.title = '详情';
 	data.detail.secret = secret;
