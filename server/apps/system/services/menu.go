@@ -119,7 +119,7 @@ func (m *Menu) Delete(ctx context.Context, menuID uint64) {
 	}
 
 	// 清除role_menus
-	if err := tx.Where("menuID= ?", menuID).Delete(&entity.RoleMenu{}).Error; err != nil {
+	if err := tx.Where("menuID = ?", menuID).Delete(&entity.RoleMenu{}).Error; err != nil {
 		tx.Rollback()
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
@@ -131,8 +131,7 @@ func (m *Menu) Delete(ctx context.Context, menuID uint64) {
 		tx.Rollback()
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
-
-	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	tx.Commit()
 }
 
 func (m *Menu) Get(ctx context.Context, menuID uint64) *entity.Menu {
