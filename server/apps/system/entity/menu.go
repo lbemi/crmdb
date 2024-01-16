@@ -33,7 +33,7 @@ type Meta struct {
 	IsKeepAlive bool   `json:"isKeepAlive" gorm:"column:isKeepAlive"`
 	IsAffix     bool   `json:"isAffix" gorm:"column:isAffix"`
 	IsIframe    bool   `json:"isIframe" gorm:"column:isIframe"`
-	IsK8s       bool   `json:"isK8S" gorm:"column:isK8S"`
+	IsK8s       bool   `json:"isK8s" gorm:"column:isK8s"`
 	Icon        string `gorm:"column:icon;size:128;comment:icon图标" json:"icon" form:"icon"`
 }
 

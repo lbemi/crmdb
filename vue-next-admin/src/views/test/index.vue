@@ -1,263 +1,146 @@
 <template>
-	<div class="layout-pd">
-		<el-card shadow="hover">
-			<template #header>
-				<div class="card-header">
-					<span>创建deployment</span>
-					<el-button type="primary" :icon="View" size="small" @click="showYaml">预览YAML</el-button>
-				</div>
-			</template>
-			<el-row :gutter="30">
-				<el-col :span="3" :offset="1" style="margin-top: 15px;">
-					<el-steps :active="data.active" finish-status="success" direction="vertical">
-						<el-step title="基本信息" description="基础配置信息" />
-						<el-step title="容器配置" description="容器相关配置信息" />
-						<el-step title="高级配置" description="service高级配置信息" />
-					</el-steps>
-				</el-col>
-				<el-col :span="20">
-					<div id="0" v-show="data.active === 0">
-						<Meta :bindData="data.bindMetaData" :isUpdate="data.isUpdate" @updateData="getMeta" />
-					</div>
-					<div id="1" v-show="data.active === 1">
-						<Containers ref="containersRef" :containers="data.containers" :initContainers="data.initContainers"
-							:volumes="data.deployments.spec?.template.spec?.volumes" />
-					</div>
-					<div id="2" v-show="data.active === 2">
-						<el-checkbox v-model="data.enableService" label="配置service" />
-					</div>
-				</el-col>
-
-			</el-row>
-			<div class="footer">
-				<el-button @click="up" size="small">上一步</el-button>
-				<el-button @click="next" size="small">下一步</el-button>
-				<el-button @click="confirm" type="primary" size="small">确认</el-button>
-			</div>
-		</el-card>
-		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployments"
-			v-if="data.yamlDialogVisible" />
+	<div class="main">
+		asdasd
+		<code-mirror v-model="codeVal" basic style="height: 400px" :extensions="extensions" :phrases="phrases" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeMount, reactive, ref } from 'vue';
-import { Container } from 'kubernetes-types/core/v1';
-import { Deployment } from 'kubernetes-types/apps/v1';
-import yamlJs from 'js-yaml';
-import { kubernetesInfo } from '@/stores/kubernetes';
-import { ElMessage } from 'element-plus';
-import { View } from '@element-plus/icons-vue';
-import { deepClone } from '@/utils/other';
-import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
-import type { FormInstance } from 'element-plus';
-import { useDeploymentApi } from '@/api/kubernetes/deployment';
+import { ref, onMounted } from 'vue';
+import CodeMirror from 'vue-codemirror6';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { json } from '@codemirror/lang-json';
+import { StreamLanguage } from '@codemirror/language';
+import { yaml } from '@codemirror/legacy-modes/mode/yaml';
+import { javascript } from '@codemirror/legacy-modes/mode/javascript';
+import { Ref } from 'vue-demi';
 
-const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
-const Containers = defineAsyncComponent(() => import('@/components/kubernetes/containers.vue'));
-const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
-
-const containersRef = ref();
-const kubeInfo = kubernetesInfo();
-const deploymentApi = useDeploymentApi();
-const metaRef = ref<FormInstance>();
-
-const data = reactive({
-	isUpdate: false,
-	enableService: false,
-	yamlDialogVisible: false,
-	dialogVisible: false,
-	codeData: {} as Deployment,
-	loadCode: false,
-	active: 0,
-	containers: [] as Container[],
-	initContainers: [] as Container[],
-	//初始化deployment
-	deployments: <Deployment>{
-		apiVersion: 'apps/v1',
-		kind: 'Deployment',
-		metadata: {
-			namespace: 'default',
-		},
-		spec: {
-			replicas: 1,
-			selector: {
-				matchLabels: {},
-			},
-			template: {
-				metadata: {
-					labels: {},
-				},
-				spec: {
-					serviceAccount: 'default',
-					initContainers: [] as Container[],
-					containers: [],
-					// volumes: [],
-				},
-			},
-			strategy: {
-				type: 'RollingUpdate',
-				rollingUpdate: {
-					maxUnavailable: '25%',
-					maxSurge: '25%',
-				},
-			},
-		},
-	},
-	code: '',
-	// 绑定初始值
-	bindMetaData: <CreateK8SBindData>{
-		resourceType: 'deployment',
-	},
+// // 初始化
+let codeVal = ref('');
+// // 转成json字符串并格式化
+codeVal.value = `metadata:
+  name: sleep
+  namespace: myistio
+  uid: 9499e43d-02b9-41fb-ac83-bda4b8cb49dd
+  resourceVersion: '236989499'
+  generation: 1
+  creationTimestamp: '2023-10-24T01:37:36Z'
+  annotations:
+    deployment.kubernetes.io/revision: '1'
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"sleep","namespace":"myistio"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"sleep"}},"template":{"metadata":{"labels":{"app":"sleep"}},"spec":{"containers":[{"command":["/bin/sleep","infinity"],"image":"curlimages/curl","imagePullPolicy":"IfNotPresent","name":"sleep","volumeMounts":[{"mountPath":"/etc/sleep/tls","name":"secret-volume"}]}],"serviceAccountName":"sleep","terminationGracePeriodSeconds":0,"volumes":[{"name":"secret-volume","secret":{"optional":true,"secretName":"sleep-secret"}}]}}}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sleep
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: sleep
+    spec:
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: sleep-secret
+            defaultMode: 420
+            optional: true
+      containers:
+        - name: sleep
+          image: curlimages/curl
+          command:
+            - /bin/sleep
+            - infinity
+          resources: {}
+          volumeMounts:
+            - name: secret-volume
+              mountPath: /etc/sleep/tls
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 0
+      dnsPolicy: ClusterFirst
+      serviceAccountName: sleep
+      serviceAccount: sleep
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+status:
+  observedGeneration: 1
+  replicas: 1
+  updatedReplicas: 1
+  readyReplicas: 1
+  availableReplicas: 1
+  conditions:
+    - type: Available
+      status: 'True'
+      lastUpdateTime: '2023-10-24T01:37:45Z'
+      lastTransitionTime: '2023-10-24T01:37:45Z'
+      reason: MinimumReplicasAvailable
+      message: Deployment has minimum availability.
+    - type: Progressing
+      status: 'True'
+      lastUpdateTime: '2023-10-24T01:37:45Z'
+      lastTransitionTime: '2023-10-24T01:37:36Z'
+      reason: NewReplicaSetAvailable
+      message: ReplicaSet "sleep-69cfb4968f" has successfully progressed.
+`
+//
+// // json语言
+// const lang = yaml();
+// // 扩展
+const extensions = [oneDark, StreamLanguage.define(javascript)];
+const phrases: Ref<Record<string, string>> = ref({
+	// @codemirror/view
+	'Control character': '制御文字',
+	// @codemirror/commands
+	'Selection deleted': '選択を削除',
+	// @codemirror/language
+	'Folded lines': '折り畳まれた行',
+	'Unfolded lines': '折り畳める行',
+	to: '行き先',
+	'folded code': '折り畳まれたコード',
+	unfold: '折り畳みを解除',
+	'Fold line': '行を折り畳む',
+	'Unfold line': '行の折り畳む解除',
+	// @codemirror/search
+	'Go to line': '行き先の行',
+	go: 'OK',
+	Find: '検索',
+	Replace: '置き換え',
+	next: '▼',
+	previous: '▲',
+	all: 'すべて',
+	'match case': '一致条件',
+	'by word': '全文検索',
+	regexp: '正規表現',
+	replace: '置き換え',
+	'replace all': 'すべてを置き換え',
+	close: '閉じる',
+	'current match': '現在の一致',
+	'replaced $ matches': '$ 件の一致を置き換え',
+	'replaced match on line $': '$ 行の一致を置き換え',
+	'on line': 'した行',
+	// @codemirror/autocomplete
+	Completions: '自動補完',
+	// @codemirror/lint
+	Diagnostics: 'エラー',
+	'No diagnostics': 'エラーなし',
 });
-
-const showYaml = async () => {
-	getContainers();
-	data.yamlDialogVisible = true;
-};
-
-const getContainers = () => {
-	delete data.deployments.spec!.template.spec!.initContainers;
-	const { containers, initContainers, volumes } = containersRef.value.returnContainers();
-	if (volumes.length > 0) {
-		data.deployments.spec!.template.spec!.volumes = volumes;
-	}
-	if (containers.length > 0) {
-		data.deployments.spec!.template.spec!.containers = containers;
-	}
-	if (initContainers.length > 0) {
-		data.deployments.spec!.template.spec!.initContainers = initContainers;
-	}
-};
-
-const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
-	metaRef.value = metaRefs;
-	const dep = deepClone(newData);
-	const metaLabels = deepClone(newData);
-	data.deployments.metadata = newData.meta;
-	//更新labels
-	if (!data.isUpdate) {
-		if (dep.meta.name) data.deployments.metadata!.labels!.app = dep.meta.name;
-	}
-	//更新selector.matchLabels
-	data.deployments.spec!.selector.matchLabels = dep.meta.labels;
-	data.deployments.spec!.template.metadata!.labels = metaLabels.meta.labels;
-	data.deployments.spec!.replicas = newData.replicas;
-	updateCodeMirror();
-};
-const nextStep = () => {
-	if (data.active++ > 2) data.active = 0;
-};
-const up = () => {
-	if (data.active-- == 0) data.active = 0;
-};
-const next = () => {
-	nextStep();
-};
-
-const confirm = async () => {
-	// data.code = yaml.dump(data.deployment);
-	getContainers();
-	// if (props.title === '创建deployment') {
-	deploymentApi
-		.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployments)
-		.then(() => {
-			ElMessage.success('创建成功');
-			// handleClose();
-		})
-		.catch((e) => {
-			ElMessage.error(e.message);
-			// handleClose();
-		});
-	// } else {
-	// 	await deploymentApi
-	// 		.updateDeployment(data.deployments, { cloud: kubeInfo.state.activeCluster })
-	// 		.then(() => {
-	// 			ElMessage.success('更新成功');
-	// 			handleClose();
-	// 		})
-	// 		.catch((e) => {
-	// 			ElMessage.error(e.message);
-	// 		});
-	// }
-};
-const updateCodeMirror = () => {
-	data.loadCode = true;
-	data.code = yamlJs.dump(data.deployments);
-	setTimeout(() => {
-		data.loadCode = false;
-	}, 1);
-};
-
-onBeforeMount(() => {
-	updateCodeMirror();
-});
-
-const emit = defineEmits(['update:dialogVisible', 'refresh']);
-
-// const handleClose = () => {
-// 	emit('update:dialogVisible', false);
-// 	emit('refresh');
-// };
-
-// const props = defineProps({
-// 	title: String,
-// 	dialogVisible: Boolean,
-// 	deployment: Object,
-// });
-
-// onMounted(() => {
-// 	dialogVisible.value = props.dialogVisible;
-// 	if (!isObjectValueEqual(props.deployment, {})) {
-// 		data.isUpdate = true;
-// 		data.deployments = props.deployment as Deployment;
-// 		data.bindMetaData.metadata = data.deployments.metadata;
-// 		data.bindMetaData.replicas = data.deployments.spec?.replicas;
-
-// 		if (data.deployments.spec?.template.spec?.initContainers) {
-// 			data.initContainers = data.deployments.spec!.template.spec!.initContainers!;
-// 		}
-// 		if (data.deployments.spec?.template.spec?.containers) {
-// 			data.containers = data.deployments.spec!.template.spec!.containers!;
-// 		}
-// 	}
-// });
 </script>
+s
 
-<style scoped>
-.footer {
-	margin-top: 30px;
-	display: flex;
-	justify-content: center;
-}
-
-.card-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.text {
-	font-size: 14px;
-}
-
-.d2 {
-	min-width: 100%;
+<style>
+/* required! */
+.cm-editor {
 	height: 100%;
-	position: relative;
-	display: flex;
-	justify-content: flex-end;
-}
-
-.btn {
-	position: fixed;
-	right: 50px;
-	text-align: center;
-	top: 50%;
-}
-
-.men {
-	font-size: 13px;
-	letter-spacing: 3px;
 }
 </style>
