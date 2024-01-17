@@ -2,49 +2,7 @@
 <template>
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
-			<div class="mb15">
-				<el-text class="mx-1" size="small">命名空间：</el-text>
-				<el-select
-					v-model="k8sStore.state.activeNamespace"
-					style="max-width: 180px"
-					size="small"
-					class="m-2"
-					placeholder="Select"
-					@change="handleChange"
-					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
-				</el-select>
-				<el-input
-					v-model="podStore.state.inputValue"
-					placeholder="输入标签或者名称"
-					size="small"
-					clearable
-					@change="search"
-					style="width: 250px; margin-left: 10px"
-				>
-					<template #prepend>
-						<el-select v-model="podStore.state.type" placeholder="输入标签或者名称" style="width: 60px" size="small">
-							<el-option label="标签" value="0" size="small" />
-							<el-option label="名称" value="1" size="small" />
-						</el-select>
-					</template>
-					<template #append>
-						<el-button size="small" @click="search">
-							<el-icon>
-								<ele-Search />
-							</el-icon>
-							查询
-						</el-button>
-					</template>
-				</el-input>
-				<el-button type="danger" size="small" class="ml10" :disabled="podStore.state.selectData.length == 0" @click="deletePods">批量删除</el-button>
-				<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
-					<el-icon>
-						<ele-RefreshRight />
-					</el-icon>
-					刷新
-				</el-button>
-			</div>
+			<card-header :refresh="handleChange" :search="search" :selectStatus="podStore.state.selectData.length == 0" :deleteFunc="deletePods" />
 			<el-table
 				:data="podStore.state.pods"
 				style="width: 100%"
@@ -57,12 +15,12 @@
 				<el-table-column prop="metadata.name" label="名称" width="300px" show-overflow-tooltip>
 					<template #default="scope">
 						<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>
-						<!-- <div v-if="scope.row.status.phase != 'Running'" style="color: red">
-							<div v-if="scope.row.status.containerStatuses">
-								{{ scope.row.status.containerStatuses[0].state }}
-							</div>
-							<div v-else>{{ scope.row.status.conditions[0].reason }}:{{ scope.row.status.conditions[0].message }}</div>
-						</div> -->
+						<!--						<div v-if="scope.row.status.phase != 'Running'" style="color: red">-->
+						<!--							<div v-if="scope.row.status.containerStatuses">-->
+						<!--								{{ scope.row.status.containerStatuses[0].state }}-->
+						<!--							</div>-->
+						<!--							<div v-else>{{ scope.row.status.conditions[0].reason }}:{{ scope.row.status.conditions[0].message }}</div>-->
+						<!--						</div>-->
 					</template>
 				</el-table-column>
 				<el-table-column label="状态" width="200px">
@@ -127,7 +85,7 @@
 </template>
 
 <script setup lang="ts" name="k8sPod">
-import { defineAsyncComponent, h, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { defineAsyncComponent, h, onBeforeUnmount, onMounted, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import router from '@/router';
 import { podInfo } from '@/stores/pod';
@@ -140,6 +98,7 @@ import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
 import { dateStrFormat } from '@/utils/formatTime';
 import { deepClone } from '@/utils/other';
+import CardHeader from '@/components/kubernetes/cardHeader.vue';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
@@ -270,13 +229,14 @@ const jumpFileManger = (p: Pod) => {
 	});
 };
 
-const deletePods = async () => {
+const deletePods = () => {
 	podStore.state.loading = true;
 	podStore.state.selectData.forEach((pod: Pod) => {
 		podStore.deletePod(pod);
 	});
 	podStore.state.loading = false;
 };
+
 const deletePod = async (p: Pod) => {
 	ElMessageBox({
 		title: '提示',
@@ -295,7 +255,7 @@ const deletePod = async (p: Pod) => {
 		.then(() => {
 			podStore
 				.deletePod(p)
-				.then((res) => {
+				.then(() => {
 					ElMessage({
 						type: 'success',
 						message: `${p.metadata?.name} 已删`,
@@ -312,34 +272,52 @@ const deletePod = async (p: Pod) => {
 };
 
 const filterPod = (pods: Array<Pod>) => {
-	const podList = [] as Pod[];
-	if (podStore.state.type === '1') {
-		pods.forEach((pod: Pod) => {
-			if (pod.metadata?.name?.includes(podStore.state.inputValue)) {
-				podList.push(pod);
-			}
-		});
-	} else {
-		pods.forEach((pod: Pod) => {
-			if (pod.metadata?.labels) {
-				for (let k in pod.metadata.labels) {
-					if (k.includes(podStore.state.inputValue) || pod.metadata.labels[k].includes(podStore.state.inputValue)) {
-						podList.push(pod);
-						break;
-					}
-				}
-			}
-		});
+	if (pods.length === 0) {
+		return;
 	}
-	podStore.state.pods = podList;
+
+	if (k8sStore.state.search.value === '') {
+		// podStore.state.pods = pods;
+		// podStore.state.total = pods.length;
+		return;
+	}
+	// let podList = [] as Pod[];
+	// if (k8sStore.state.search.type === '1' && k8sStore.state.search.value !== '') {
+	// 	pods.forEach((pod: Pod) => {
+	// 		if (pod.metadata?.name?.includes(k8sStore.state.search.value)) {
+	// 			podList.push(pod);
+	// 		}
+	// 	});
+	// } else if (k8sStore.state.search.type === '0' && k8sStore.state.search.value !== '') {
+	// 	pods.forEach((pod: Pod) => {
+	// 		if (pod.metadata?.labels) {
+	// 			for (let k in pod.metadata.labels) {
+	// 				if (k.includes(k8sStore.state.search.value) || pod.metadata.labels[k].includes(k8sStore.state.search.value)) {
+	// 					podList.push(pod);
+	// 					break;
+	// 				}
+	// 			}
+	// 		}
+	// 	});
+	// } else {
+	// 	podList = pods;
+	// }
+	//
+	// podStore.state.pods = podList;
+	// podStore.state.total = podList.length;
 };
+
 const ws = websocketApi.createWebsocket('pod');
 ws.onmessage = (e) => {
 	if (e.data === 'ping') {
 		return;
 	} else {
 		const object = JSON.parse(e.data);
-		if (object.type === 'pod' && object.result.namespace === k8sStore.state.activeNamespace && object.cluster == k8sStore.state.activeCluster) {
+		if (
+			object.type === 'pod' &&
+			(object.result.namespace === k8sStore.state.activeNamespace || k8sStore.state.activeNamespace === 'all') &&
+			object.cluster == k8sStore.state.activeCluster
+		) {
 			// podStore.state.pods = object.result.data;
 			filterPod(object.result.data);
 		}

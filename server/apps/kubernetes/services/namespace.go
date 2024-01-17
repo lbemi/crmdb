@@ -55,9 +55,11 @@ func (n *namespace) List(ctx context.Context, query *entity.PageParam, name stri
 		}
 		data = namespaceList
 	}
-	//按时间排序
+	//按名称排序
 	sort.SliceStable(data, func(i, j int) bool {
-		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
+		return data[i].ObjectMeta.GetName() < data[j].ObjectMeta.GetName()
+
+		//return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 	total := len(data)
 	// 未传递分页查询参数

@@ -5,6 +5,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/common/entity"
 	"github.com/lbemi/lbemi/pkg/restfulx"
+	"github.com/lbemi/lbemi/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
 	"strings"
@@ -48,7 +49,9 @@ func (i *ingresses) List(ctx context.Context, query *entity.PageParam, name stri
 	sort.Slice(ingressList, func(i, j int) bool {
 		return ingressList[j].ObjectMeta.CreationTimestamp.Time.Before(ingressList[i].ObjectMeta.CreationTimestamp.Time)
 	})
-
+	for _, item := range data {
+		util.RestoreGVK(item)
+	}
 	total := len(ingressList)
 	if query.Limit == 0 && query.Page == 0 {
 		res.Data = ingressList

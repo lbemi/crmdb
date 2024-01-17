@@ -17,19 +17,14 @@
 import Dashboard from './component/dashboard.vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { defineAsyncComponent, onMounted } from 'vue';
-import { useNamespaceApi } from '@/api/kubernetes/namespace';
 
 const Info = defineAsyncComponent(() => import('./component/info.vue'));
 const Log = defineAsyncComponent(() => import('./component/log.vue'));
 
-const namespaceApi = useNamespaceApi();
 const k8sStore = kubernetesInfo();
 
 onMounted(() => {
-	namespaceApi.listNamespace({ cloud: k8sStore.state.activeCluster }).then((res) => {
-		k8sStore.state.namespace = res.data.data;
-		k8sStore.state.namespaceTotal = res.data.total;
-	});
+	k8sStore.listNamespace();
 });
 </script>
 

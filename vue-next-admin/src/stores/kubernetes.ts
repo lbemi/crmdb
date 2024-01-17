@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { reactive } from 'vue';
+import { onMounted, reactive } from 'vue';
 import { DaemonSet, Deployment, StatefulSet } from 'kubernetes-types/apps/v1';
 import { Namespace, Service } from 'kubernetes-types/core/v1';
 import { Node } from '../types/kubernetes/cluster';
@@ -11,6 +11,7 @@ import { useDaemonsetApi } from '@/api/kubernetes/daemonset';
 import { CronJob, Job } from 'kubernetes-types/batch/v1';
 import { useJobApi } from '@/api/kubernetes/job';
 import { useCronJobApi } from '@/api/kubernetes/cronjob';
+import { useNamespaceApi } from '@/api/kubernetes/namespace';
 
 /**
  * k8s集群信息
@@ -21,6 +22,7 @@ const daemonSetApi = useDaemonsetApi();
 const serviceApi = useServiceApi();
 const jobApi = useJobApi();
 const cronJobApi = useCronJobApi();
+const namespaceApi = useNamespaceApi();
 export const kubernetesInfo = defineStore(
 	'kubernetesInfo',
 	() => {
@@ -34,6 +36,10 @@ export const kubernetesInfo = defineStore(
 			activeCronJob: {} as CronJob,
 			activeJob: {} as Job,
 			activeService: {} as Service,
+			search: {
+				type: '1',
+				value: '',
+			},
 			clusters: [],
 			namespace: [] as Namespace[],
 			namespaceTotal: 0,
@@ -121,7 +127,13 @@ export const kubernetesInfo = defineStore(
 					});
 		};
 
-		return { state, refreshActiveDeployment, refreshActiveService, refreshActiveDaemonset, refreshActiveJob, refreshActiveCronJob };
+		const listNamespace = () => {
+			namespaceApi.listNamespace({ cloud: state.activeCluster }).then((res) => {
+				state.namespace = res.data.data;
+				state.namespaceTotal = res.data.total;
+			});
+		};
+		return { state, refreshActiveDeployment, refreshActiveService, refreshActiveDaemonset, refreshActiveJob, refreshActiveCronJob, listNamespace };
 	},
 	{
 		persist: true,

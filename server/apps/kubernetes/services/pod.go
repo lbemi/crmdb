@@ -450,7 +450,6 @@ func (p *PodHandler) OnUpdate(oldObj, newObj interface{}) {
 }
 
 func (p *PodHandler) OnDelete(obj interface{}) {
-
 	p.notifyPods(obj)
 }
 
@@ -460,7 +459,6 @@ func (p *PodHandler) notifyPods(obj interface{}) {
 	if err != nil {
 		global.Logger.Error(err)
 	}
-
 	restoreGVKForList(pods)
 	//按时间排序
 	sort.Slice(pods, func(i, j int) bool {

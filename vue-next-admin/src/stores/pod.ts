@@ -40,10 +40,10 @@ export const podInfo = defineStore(
 		const listPod = async () => {
 			state.loading = true;
 			if (state.type == '1') {
-				state.query.name = state.inputValue;
+				state.query.name = k8sStore.state.search.value;
 				delete state.query.label;
 			} else if (state.type == '0') {
-				state.query.label = state.inputValue;
+				state.query.label = k8sStore.state.search.value;
 				delete state.query.name;
 			}
 			if (state.inputValue === '') {

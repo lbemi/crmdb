@@ -5,6 +5,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/common/entity"
 	"github.com/lbemi/lbemi/pkg/restfulx"
+	"github.com/lbemi/lbemi/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
 	"strings"
@@ -61,6 +62,10 @@ func (d *cronJob) List(ctx context.Context, query *entity.PageParam, name string
 		data = cronJobMapList
 	}
 
+	for _, item := range data {
+		util.RestoreGVK(item)
+	}
+	
 	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {

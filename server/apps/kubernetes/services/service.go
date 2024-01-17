@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/common/entity"
 	"github.com/lbemi/lbemi/pkg/restfulx"
+	"github.com/lbemi/lbemi/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
@@ -63,6 +64,9 @@ func (s *Service) List(ctx context.Context, query *entity.PageParam, name string
 	sort.SliceStable(data, func(i, j int) bool {
 		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
+	for _, item := range data {
+		util.RestoreGVK(item)
+	}
 	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {
