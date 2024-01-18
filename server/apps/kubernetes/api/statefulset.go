@@ -25,6 +25,26 @@ func GetStatefulSet(rc *rctx.ReqCtx) {
 	rc.ResData = core.V1.Cluster(clusterName).K8S().StatefulSets(namespace).Get(c, statefulSetName)
 }
 
+func GetStatefulSetPods(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	clusterName := rc.QueryCloud()
+	namespace := rc.PathParam("namespace")
+	statefulSetName := rc.PathParam("name")
+	pods, replicaSets := core.V1.Cluster(clusterName).K8S().StatefulSets(namespace).GetStatefulSetPods(c, statefulSetName)
+	rc.ResData = map[string]interface{}{
+		"pods":        pods,
+		"replicaSets": replicaSets,
+	}
+}
+
+func GetStatefulSetEvents(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	clusterName := rc.QueryCloud()
+	namespace := rc.PathParam("namespace")
+	statefulSetName := rc.PathParam("name")
+	rc.ResData = core.V1.Cluster(clusterName).K8S().StatefulSets(namespace).GetStatefulSetEvent(c, statefulSetName)
+}
+
 func CreateStatefulSet(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()
 	clusterName := rc.QueryCloud()

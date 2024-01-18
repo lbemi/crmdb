@@ -4,12 +4,12 @@
 			<el-row :gutter="20">
 				<el-col :span="18">
 					<el-button type="info" :icon="ArrowLeft" text @click="backRoute">返回</el-button>
-					<span style="font-weight: 35">{{ k8sStore.state.activeDeployment?.metadata?.name }}</span></el-col
+					<span style="font-weight: 35">{{ k8sStore.state.activeStatefulSet?.metadata?.name }}</span></el-col
 				>
 				<el-col :span="6"
-					><el-button v-auth="'k8s:deployment:edit'" type="primary" size="small" :icon="Edit" @click="handleEdit()">编辑</el-button>
+					><el-button v-auth="'k8s:statefulSet:edit'" type="primary" size="small" :icon="Edit" @click="handleEdit()">编辑</el-button>
 					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button>
-					<el-button v-auth="'k8s:deployment:redeploy'" type="primary" size="small" :icon="Refresh" @click="reDeploy">重新部署</el-button>
+					<el-button v-auth="'k8s:statefulSet:redeploy'" type="primary" size="small" :icon="Refresh" @click="reDeploy">重新部署</el-button>
 					<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
 						<el-icon>
 							<ele-RefreshRight />
@@ -21,28 +21,28 @@
 
 			<el-descriptions :column="3" border class="desc-body">
 				<el-descriptions-item label="名称" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">{{
-					k8sStore.state.activeDeployment?.metadata?.name
+					k8sStore.state.activeStatefulSet?.metadata?.name
 				}}</el-descriptions-item>
 				<el-descriptions-item label="命名空间" label-align="right" align="center">{{
-					k8sStore.state.activeDeployment?.metadata?.namespace
+					k8sStore.state.activeStatefulSet?.metadata?.namespace
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center">{{
-					dateStrFormat(k8sStore.state.activeDeployment?.metadata?.creationTimestamp?.toString() || '')
+					dateStrFormat(k8sStore.state.activeStatefulSet?.metadata?.creationTimestamp?.toString() || '')
 				}}</el-descriptions-item>
 				<el-descriptions-item label="副本数" label-align="right" align="center"
 					><el-button
-						v-auth="'k8s:deployment:scale'"
+						v-auth="'k8s:statefulSet:scale'"
 						color="#626aef"
 						:icon="Minus"
 						size="small"
 						plain
 						style="margin-right: 10px"
-						@click="scaleDeploy('minus')" />{{ k8sStore.state.activeDeployment?.spec?.replicas
-					}}<el-button v-auth="'k8s:deployment:scale'" color="#626aef" :icon="Plus" size="small" plain @click="scaleDeploy('plus')"
+						@click="scaleDeploy('minus')" />{{ k8sStore.state.activeStatefulSet?.spec?.replicas
+					}}<el-button v-auth="'k8s:statefulSet:scale'" color="#626aef" :icon="Plus" size="small" plain @click="scaleDeploy('plus')"
 				/></el-descriptions-item>
 				<el-descriptions-item label="镜像" label-align="right" align="center">
 					<div class="tag-center">
-						<el-tag round effect="plain" v-for="(item, index) in k8sStore.state.activeDeployment?.spec?.template?.spec?.containers" :key="index">{{
+						<el-tag round effect="plain" v-for="(item, index) in k8sStore.state.activeStatefulSet?.spec?.template?.spec?.containers" :key="index">{{
 							item.image?.split('@')[0]
 						}}</el-tag>
 					</div>
@@ -50,23 +50,23 @@
 				<el-descriptions-item label="滚动升级策略" label-align="right" align="center">
 					<div>
 						超过期望的Pod数量：
-						{{ k8sStore.state.activeDeployment?.spec?.strategy?.rollingUpdate?.maxSurge }}
+						{{ k8sStore.state.activeStatefulSet?.spec?.strategy?.rollingUpdate?.maxSurge }}
 					</div>
 					<div>
 						不可用Pod最大数量：
-						{{ k8sStore.state.activeDeployment?.spec?.strategy?.rollingUpdate?.maxUnavailable }}
+						{{ k8sStore.state.activeStatefulSet?.spec?.strategy?.rollingUpdate?.maxUnavailable }}
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="策略" label-align="right" align="center">{{
-					k8sStore.state.activeDeployment?.spec?.strategy?.type
+					k8sStore.state.activeStatefulSet?.spec?.strategy?.type
 				}}</el-descriptions-item>
 				<el-descriptions-item label="状态" label-align="right" align="center">
-					就绪：<a v-if="k8sStore.state.activeDeployment?.status?.readyReplicas">{{ k8sStore.state.activeDeployment?.status?.readyReplicas }}</a>
-					<a style="color: red" v-else>0</a> /{{ k8sStore.state.activeDeployment?.status?.replicas }} 个，已更新：{{
-						k8sStore.state.activeDeployment?.status?.updatedReplicas
+					就绪：<a v-if="k8sStore.state.activeStatefulSet?.status?.readyReplicas">{{ k8sStore.state.activeStatefulSet?.status?.readyReplicas }}</a>
+					<a style="color: red" v-else>0</a> /{{ k8sStore.state.activeStatefulSet?.status?.replicas }} 个，已更新：{{
+						k8sStore.state.activeStatefulSet?.status?.updatedReplicas
 					}}
 					个，可用：
-					<a v-if="k8sStore.state.activeDeployment?.status?.readyReplicas">{{ k8sStore.state.activeDeployment?.status?.readyReplicas }}</a>
+					<a v-if="k8sStore.state.activeStatefulSet?.status?.readyReplicas">{{ k8sStore.state.activeStatefulSet?.status?.readyReplicas }}</a>
 					<a style="color: red" v-else>0</a>
 
 					个
@@ -78,7 +78,7 @@
 
 			<div v-show="data.iShow">
 				<el-divider />
-				<el-table :data="k8sStore.state.activeDeployment?.status?.conditions" stripe style="width: 100%">
+				<el-table :data="k8sStore.state.activeStatefulSet?.status?.conditions" stripe style="width: 100%">
 					<el-table-column prop="type" label="类型" />
 					<el-table-column prop="status" label="状态" />
 					<el-table-column prop="lastUpdateTime" label="更新时间">
@@ -170,13 +170,13 @@
 					</el-table>
 				</el-tab-pane>
 				<el-tab-pane label="元数据" name="second">
-					<MetaDetail :metaData="k8sStore.state.activeDeployment.metadata" />
+					<MetaDetail :metaData="k8sStore.state.activeStatefulSet.metadata" />
 				</el-tab-pane>
 				<el-tab-pane label="环境变量" name="third">
 					<el-descriptions :column="1" direction="vertical">
 						<el-descriptions-item
 							:label="'容器: ' + item.name"
-							v-for="(item, index) in k8sStore.state.activeDeployment.spec?.template.spec?.containers"
+							v-for="(item, index) in k8sStore.state.activeStatefulSet.spec?.template.spec?.containers"
 							:key="index"
 						>
 							<el-card class="card" :body-style="{ height: '200px' }">
@@ -192,7 +192,7 @@
 					<el-table :data="data.replicasets" style="width: 100%">
 						<el-table-column p label="版本">
 							<template #default="scope">
-								#{{ scope.row.metadata.annotations['deployment.kubernetes.io/revision'] }}
+								#{{ scope.row.metadata.annotations['statefulSet.kubernetes.io/revision'] }}
 								<el-tag v-if="scope.row.status.replicas != 0" plain size="small" type="success" style="margin-left: 15px">当前版本</el-tag>
 							</template>
 						</el-table-column>
@@ -207,7 +207,7 @@
 							<template #default="scope">
 								<el-button link type="primary" size="small" @click="showRsYaml(scope.row)">详情</el-button>
 								<el-button
-									v-auth="'k8s:deployment:rollback'"
+									v-auth="'k8s:statefulSet:rollback'"
 									link
 									type="primary"
 									size="small"
@@ -256,27 +256,27 @@
 		<YamlDialog
 			v-model:dialogVisible="data.dialogVisible"
 			:code-data="data.codeData"
-			:resourceType="'deployment'"
-			@update="updateDeployment"
+			:resourceType="'statefulSet'"
+			@update="updateStatefulSet"
 			v-if="data.dialogVisible"
 		/>
 
 		<CreateDialog
 			v-model:dialogVisible="data.update.dialogVisible"
 			:title="data.update.title"
-			:deployment="data.deployment"
-			@refresh="refreshActiveDeployment"
+			:statefulSet="data.statefulSet"
+			@refresh="refreshActiveStatefulSet"
 			v-if="data.update.dialogVisible"
 		/>
 	</div>
 </template>
-<script lang="ts" setup name="k8sDeploymentDetail">
+<script lang="ts" setup name="k8sStatefulSetDetail">
 import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, h } from 'vue';
 import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, Refresh } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { useDeploymentApi } from '@/api/kubernetes/deployment';
+import { useStatefulSetApi } from '@/api/kubernetes/statefulSet';
 import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
-import { Deployment, ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
+import { StatefulSet, ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
 import router from '@/router';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -296,9 +296,9 @@ const route = useRoute();
 const websocketApi = useWebsocketApi();
 const podStore = podInfo();
 const k8sStore = kubernetesInfo();
-const { refreshActiveDeployment } = kubernetesInfo();
+const { refreshActiveStatefulSet } = kubernetesInfo();
 const podApi = usePodApi();
-const deploymentApi = useDeploymentApi();
+const statefulSetApi = useStatefulSetApi();
 const timer = ref();
 
 const data = reactive({
@@ -309,7 +309,7 @@ const data = reactive({
 	RsdialogVisible: false,
 	rscode: {},
 	dialogVisible: false,
-	codeData: {} as Deployment,
+	codeData: {} as StatefulSet,
 	param: {
 		cloud: k8sStore.state.activeCluster,
 	},
@@ -317,19 +317,19 @@ const data = reactive({
 	pods: [] as Pod[],
 	iShow: false,
 	activeName: 'first',
-	deployments: [],
-	deployment: {} as Deployment,
+	statefulSets: [],
+	statefulSet: {} as StatefulSet,
 	events: [] as ReplicaSetCondition[],
 });
 
-//编辑deployment
+//编辑statefulSet
 const handleEdit = () => {
-	k8sStore.state.creatDeployment.namespace = k8sStore.state.activeDeployment.metadata!.namespace!;
-	const dep = deepClone(k8sStore.state.activeDeployment) as Deployment;
+	k8sStore.state.creatStatefulSet.namespace = k8sStore.state.activeStatefulSet.metadata!.namespace!;
+	const dep = deepClone(k8sStore.state.activeStatefulSet) as StatefulSet;
 	delete dep.status;
 	delete dep.metadata?.managedFields;
-	data.deployment = dep;
-	data.update.title = '更新deployment';
+	data.statefulSet = dep;
+	data.update.title = '更新statefulSet';
 	data.update.dialogVisible = true;
 };
 
@@ -338,7 +338,7 @@ const rollBack = (rs: ReplicaSet) => {
 		title: '提示',
 		message: h('p', null, [
 			h('span', null, '回滚到 '),
-			h('i', { style: 'color: teal' }, `${rs.metadata?.annotations!['deployment.kubernetes.io/revision']}`),
+			h('i', { style: 'color: teal' }, `${rs.metadata?.annotations!['statefulSet.kubernetes.io/revision']}`),
 			h('span', null, ' 版本. 是否继续? '),
 		]),
 		buttonSize: 'small',
@@ -349,11 +349,11 @@ const rollBack = (rs: ReplicaSet) => {
 		draggable: true,
 	})
 		.then(() => {
-			deploymentApi
-				.rollBackDeployment(
-					k8sStore.state.activeDeployment.metadata!.namespace!,
-					k8sStore.state.activeDeployment.metadata!.name!,
-					rs.metadata!.annotations!['deployment.kubernetes.io/revision'],
+			statefulSetApi
+				.rollBackStatefulSet(
+					k8sStore.state.activeStatefulSet.metadata!.namespace!,
+					k8sStore.state.activeStatefulSet.metadata!.name!,
+					rs.metadata!.annotations!['statefulSet.kubernetes.io/revision'],
 					{
 						cloud: k8sStore.state.activeCluster,
 					}
@@ -376,12 +376,12 @@ const handleClick = (tab: TabsPaneContext) => {
 };
 
 const reDeploy = () => {
-	const deployment = k8sStore.state.activeDeployment;
+	const statefulSet = k8sStore.state.activeStatefulSet;
 	ElMessageBox({
 		title: '提示',
 		message: h('p', null, [
 			h('span', null, '重新部署 '),
-			h('i', { style: 'color: teal' }, `${deployment.metadata?.name}`),
+			h('i', { style: 'color: teal' }, `${statefulSet.metadata?.name}`),
 			h('span', null, ' . 是否继续? '),
 		]),
 		buttonSize: 'small',
@@ -392,8 +392,8 @@ const reDeploy = () => {
 		draggable: true,
 	})
 		.then(() => {
-			deploymentApi
-				.reDeployDeployment(deployment.metadata!.namespace!, deployment.metadata!.name!, { cloud: k8sStore.state.activeCluster })
+			statefulSetApi
+				.reDeployStatefulSet(statefulSet.metadata!.namespace!, statefulSet.metadata!.name!, { cloud: k8sStore.state.activeCluster })
 				.then(() => {
 					ElMessage.success('操作成功');
 				})
@@ -408,15 +408,15 @@ const reDeploy = () => {
 
 const scaleDeploy = (action: string) => {
 	if (action === 'plus') {
-		k8sStore.state.activeDeployment.spec!.replicas!++;
+		k8sStore.state.activeStatefulSet.spec!.replicas!++;
 	} else {
-		k8sStore.state.activeDeployment.spec!.replicas!--;
+		k8sStore.state.activeStatefulSet.spec!.replicas!--;
 	}
-	deploymentApi
-		.scaleDeployment(
-			k8sStore.state.activeDeployment.metadata!.namespace!,
-			k8sStore.state.activeDeployment.metadata!.name!,
-			k8sStore.state.activeDeployment.spec?.replicas!,
+	statefulSetApi
+		.scaleStatefulSet(
+			k8sStore.state.activeStatefulSet.metadata!.namespace!,
+			k8sStore.state.activeStatefulSet.metadata!.name!,
+			k8sStore.state.activeStatefulSet.spec?.replicas!,
 			{ cloud: k8sStore.state.activeCluster }
 		)
 		.then(() => {
@@ -494,13 +494,13 @@ onMounted(() => {
 		window.clearInterval(timer.value);
 	});
 });
-const updateDeployment = async (codeData: any) => {
-	const updateData = YAML.load(codeData) as Deployment;
+const updateStatefulSet = async (codeData: any) => {
+	const updateData = YAML.load(codeData) as StatefulSet;
 	delete updateData.status;
 	delete updateData.metadata?.managedFields;
 
-	await deploymentApi
-		.updateDeployment(updateData, { cloud: k8sStore.state.activeCluster })
+	await statefulSetApi
+		.updateStatefulSet(updateData, { cloud: k8sStore.state.activeCluster })
 		.then(() => {
 			ElMessage.success('更新成功');
 		})
@@ -511,9 +511,9 @@ const updateDeployment = async (codeData: any) => {
 };
 
 const getPods = async () => {
-	const res = await deploymentApi.detailDeployment(
-		k8sStore.state.activeDeployment.metadata!.namespace!.toString(),
-		k8sStore.state.activeDeployment?.metadata!.name!.toString(),
+	const res = await statefulSetApi.detailStatefulSet(
+		k8sStore.state.activeStatefulSet.metadata!.namespace!.toString(),
+		k8sStore.state.activeStatefulSet?.metadata!.name!.toString(),
 		data.param
 	);
 	data.pods = res.data.pods;
@@ -521,9 +521,9 @@ const getPods = async () => {
 };
 
 const getEvents = async () => {
-	const res = await deploymentApi.getDeploymentEvents(
-		k8sStore.state.activeDeployment.metadata!.namespace!.toString(),
-		k8sStore.state.activeDeployment?.metadata!.name!.toString(),
+	const res = await statefulSetApi.getStatefulSetEvents(
+		k8sStore.state.activeStatefulSet.metadata!.namespace!.toString(),
+		k8sStore.state.activeStatefulSet?.metadata!.name!.toString(),
 		data.param
 	);
 	data.events = res.data;
@@ -549,7 +549,7 @@ const jumpPodLog = (p: Pod) => {
 const backRoute = () => {
 	mittBus.emit('onCurrentContextmenuClick', Object.assign({}, { contextMenuClickId: 1, ...route }));
 	router.push({
-		name: 'k8sDeployment',
+		name: 'k8sStatefulSet',
 	});
 };
 const deletePod = async (pod: Pod) => {
@@ -587,12 +587,12 @@ const showRsYaml = async (replicaSets: ReplicaSet) => {
 };
 
 const showYaml = async () => {
-	delete k8sStore.state.activeDeployment.metadata?.managedFields;
-	data.codeData = k8sStore.state.activeDeployment;
+	delete k8sStore.state.activeStatefulSet.metadata?.managedFields;
+	data.codeData = k8sStore.state.activeStatefulSet;
 	data.dialogVisible = true;
 };
 const buildWebsocket = () => {
-	const ws = websocketApi.createWebsocket('deployment');
+	const ws = websocketApi.createWebsocket('statefulSet');
 
 	ws.onmessage = (e) => {
 		if (e.data === 'ping') {
@@ -600,14 +600,14 @@ const buildWebsocket = () => {
 		} else {
 			const object = JSON.parse(e.data);
 			if (
-				object.type === 'deployment' &&
-				object.result.namespace === k8sStore.state.activeDeployment?.metadata?.namespace &&
+				object.type === 'statefulSet' &&
+				object.result.namespace === k8sStore.state.activeStatefulSet?.metadata?.namespace &&
 				object.cluster == k8sStore.state.activeCluster
 			) {
-				data.deployments = object.result.data;
-				data.deployments.forEach((item: Deployment) => {
-					if (item.metadata!.name == k8sStore.state.activeDeployment?.metadata?.name) {
-						k8sStore.state.activeDeployment = item;
+				data.statefulSets = object.result.data;
+				data.statefulSets.forEach((item: StatefulSet) => {
+					if (item.metadata!.name == k8sStore.state.activeStatefulSet?.metadata?.name) {
+						k8sStore.state.activeStatefulSet = item;
 						return;
 					}
 				});
@@ -617,7 +617,7 @@ const buildWebsocket = () => {
 };
 
 const refreshCurrentTagsView = () => {
-	refreshActiveDeployment();
+	refreshActiveStatefulSet();
 };
 </script>
 <style lang="scss">

@@ -277,34 +277,34 @@ const filterPod = (pods: Array<Pod>) => {
 	}
 
 	if (k8sStore.state.search.value === '') {
-		// podStore.state.pods = pods;
-		// podStore.state.total = pods.length;
+		podStore.state.pods = pods;
+		podStore.state.total = pods.length;
 		return;
 	}
-	// let podList = [] as Pod[];
-	// if (k8sStore.state.search.type === '1' && k8sStore.state.search.value !== '') {
-	// 	pods.forEach((pod: Pod) => {
-	// 		if (pod.metadata?.name?.includes(k8sStore.state.search.value)) {
-	// 			podList.push(pod);
-	// 		}
-	// 	});
-	// } else if (k8sStore.state.search.type === '0' && k8sStore.state.search.value !== '') {
-	// 	pods.forEach((pod: Pod) => {
-	// 		if (pod.metadata?.labels) {
-	// 			for (let k in pod.metadata.labels) {
-	// 				if (k.includes(k8sStore.state.search.value) || pod.metadata.labels[k].includes(k8sStore.state.search.value)) {
-	// 					podList.push(pod);
-	// 					break;
-	// 				}
-	// 			}
-	// 		}
-	// 	});
-	// } else {
-	// 	podList = pods;
-	// }
-	//
-	// podStore.state.pods = podList;
-	// podStore.state.total = podList.length;
+	let podList = [] as Pod[];
+	if (k8sStore.state.search.type === '1' && k8sStore.state.search.value !== '') {
+		pods.forEach((pod: Pod) => {
+			if (pod.metadata?.name?.includes(k8sStore.state.search.value)) {
+				podList.push(pod);
+			}
+		});
+	} else if (k8sStore.state.search.type === '0' && k8sStore.state.search.value !== '') {
+		pods.forEach((pod: Pod) => {
+			if (pod.metadata?.labels) {
+				for (let k in pod.metadata.labels) {
+					if (k.includes(k8sStore.state.search.value) || pod.metadata.labels[k].includes(k8sStore.state.search.value)) {
+						podList.push(pod);
+						break;
+					}
+				}
+			}
+		});
+	} else {
+		podList = pods;
+	}
+
+	podStore.state.pods = podList;
+	podStore.state.total = podList.length;
 };
 
 const ws = websocketApi.createWebsocket('pod');

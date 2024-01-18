@@ -24,7 +24,7 @@ export const podInfo = defineStore(
 		const podApi = usePodApi();
 		const state = reactive({
 			podDetail: {} as Pod,
-			pods: [] as Pod[],
+			pods: [] as Array<Pod>,
 			query: <queryType>{
 				cloud: k8sStore.state.activeCluster,
 				page: 1,

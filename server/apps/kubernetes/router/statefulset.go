@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/apps/kubernetes/api"
 	"github.com/lbemi/lbemi/pkg/common/entity"
 	v1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/lbemi/lbemi/pkg/rctx"
 )
@@ -46,6 +47,34 @@ func KubernetesStatefulSetRoutes() *restful.WebService {
 		Reads(v1.StatefulSet{}).
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
 		Returns(200, "success", v1.StatefulSet{}))
+
+	//	deployment.GET("/:namespace/:deploymentName/pod", cloud2.GetDeploymentPods)
+	ws.Route(ws.GET("/namespaces/{namespace}/{name}/pods").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("statefulSet").
+			WithHandle(api.GetStatefulSetPods).Do()
+	}).Doc("获取statefulSet所属pod列表").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Writes(map[string]interface{}{
+			"pods":        []*corev1.Pod{},
+			"replicaSets": []*v1.ReplicaSet{},
+		}).
+		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
+		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
+		Param(ws.PathParameter("name", "statefulSet名称").Required(true).DataType("string")).
+		Returns(200, "success", map[string]interface{}{
+			"pods":        []*corev1.Pod{},
+			"replicaSets": []*v1.ReplicaSet{},
+		}))
+
+	//	deployment.GET("/:namespace/:deploymentName/event", cloud2.GetDeploymentEvents)
+	ws.Route(ws.GET("/namespaces/{namespace}/{name}/events").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("statefulSet").
+			WithHandle(api.GetStatefulSetEvents).Do()
+	}).Doc("获取statefulSet所属事件列表").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Writes([]*corev1.Event{}).
+		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
+		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
+		Param(ws.PathParameter("name", "statefulSet名称").Required(true).DataType("string")).
+		Returns(200, "success", []*corev1.Event{}))
 
 	ws.Route(ws.PUT("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("StatefulSet").
