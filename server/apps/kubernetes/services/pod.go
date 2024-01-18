@@ -450,6 +450,7 @@ func (p *PodHandler) OnUpdate(oldObj, newObj interface{}) {
 }
 
 func (p *PodHandler) OnDelete(obj interface{}) {
+
 	p.notifyPods(obj)
 }
 
