@@ -47,33 +47,33 @@
 						}}</el-tag>
 					</div>
 				</el-descriptions-item>
-				<el-descriptions-item label="滚动升级策略" label-align="right" align="center">
-					<div>
-						超过期望的Pod数量：
-						{{ k8sStore.state.activeStatefulSet?.spec?.strategy?.rollingUpdate?.maxSurge }}
-					</div>
-					<div>
-						不可用Pod最大数量：
-						{{ k8sStore.state.activeStatefulSet?.spec?.strategy?.rollingUpdate?.maxUnavailable }}
-					</div>
-				</el-descriptions-item>
-				<el-descriptions-item label="策略" label-align="right" align="center">{{
-					k8sStore.state.activeStatefulSet?.spec?.strategy?.type
-				}}</el-descriptions-item>
-				<el-descriptions-item label="状态" label-align="right" align="center">
-					就绪：<a v-if="k8sStore.state.activeStatefulSet?.status?.readyReplicas">{{ k8sStore.state.activeStatefulSet?.status?.readyReplicas }}</a>
-					<a style="color: red" v-else>0</a> /{{ k8sStore.state.activeStatefulSet?.status?.replicas }} 个，已更新：{{
-						k8sStore.state.activeStatefulSet?.status?.updatedReplicas
-					}}
-					个，可用：
-					<a v-if="k8sStore.state.activeStatefulSet?.status?.readyReplicas">{{ k8sStore.state.activeStatefulSet?.status?.readyReplicas }}</a>
-					<a style="color: red" v-else>0</a>
+				<!--				<el-descriptions-item label="滚动升级策略" label-align="right" align="center">-->
+				<!--					<div>-->
+				<!--						超过期望的Pod数量：-->
+				<!--						{{ k8sStore.state.activeStatefulSet?.spec?.strategy?.rollingUpdate?.maxSurge }}-->
+				<!--					</div>-->
+				<!--					<div>-->
+				<!--						不可用Pod最大数量：-->
+				<!--						{{ k8sStore.state.activeStatefulSet?.spec?.strategy?.rollingUpdate?.maxUnavailable }}-->
+				<!--					</div>-->
+				<!--				</el-descriptions-item>-->
+				<!--				<el-descriptions-item label="策略" label-align="right" align="center">{{-->
+				<!--					k8sStore.state.activeStatefulSet?.spec?.strategy?.type-->
+				<!--				}}</el-descriptions-item>-->
+				<!--				<el-descriptions-item label="状态" label-align="right" align="center">-->
+				<!--					就绪：<a v-if="k8sStore.state.activeStatefulSet?.status?.readyReplicas">{{ k8sStore.state.activeStatefulSet?.status?.readyReplicas }}</a>-->
+				<!--					<a style="color: red" v-else>0</a> /{{ k8sStore.state.activeStatefulSet?.status?.replicas }} 个，已更新：{{-->
+				<!--						k8sStore.state.activeStatefulSet?.status?.updatedReplicas-->
+				<!--					}}-->
+				<!--					个，可用：-->
+				<!--					<a v-if="k8sStore.state.activeStatefulSet?.status?.readyReplicas">{{ k8sStore.state.activeStatefulSet?.status?.readyReplicas }}</a>-->
+				<!--					<a style="color: red" v-else>0</a>-->
 
-					个
-					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow" style="font-size: 12px; margin-left: 5px"
-						>展开现状详情<el-icon> <CaretBottom /> </el-icon
-					></el-link>
-				</el-descriptions-item>
+				<!--					个-->
+				<!--					<el-link type="primary" :underline="false" @click="data.iShow = !data.iShow" style="font-size: 12px; margin-left: 5px"-->
+				<!--						>展开现状详情<el-icon> <CaretBottom /> </el-icon-->
+				<!--					></el-link>-->
+				<!--				</el-descriptions-item>-->
 			</el-descriptions>
 
 			<div v-show="data.iShow">
@@ -189,15 +189,22 @@
 					</el-descriptions>
 				</el-tab-pane>
 				<el-tab-pane label="历史版本" name="fourth">
-					<el-table :data="data.replicasets" style="width: 100%">
+					<el-table :data="data.controllerRevisions" style="width: 100%">
 						<el-table-column p label="版本">
 							<template #default="scope">
-								#{{ scope.row.metadata.annotations['statefulSet.kubernetes.io/revision'] }}
-								<el-tag v-if="scope.row.status.replicas != 0" plain size="small" type="success" style="margin-left: 15px">当前版本</el-tag>
+								#{{ scope.row.revision }}
+								<el-tag
+									v-if="k8sStore.state.activeStatefulSet.metadata?.generation === scope.row.revision"
+									plain
+									size="small"
+									type="success"
+									style="margin-left: 15px"
+									>当前版本</el-tag
+								>
 							</template>
 						</el-table-column>
 						<el-table-column label="镜像">
-							<template #default="scope"> {{ scope.row.spec.template.spec.containers[0].image }} </template>
+							<template #default="scope"> {{ scope.row.data.spec.template.spec.containers[0].image }} </template>
 						</el-table-column>
 						<el-table-column label="创建时间">
 							<template #default="scope"> {{ dateStrFormat(scope.row.metadata.creationTimestamp) }} </template>
@@ -212,7 +219,7 @@
 									type="primary"
 									size="small"
 									@click="rollBack(scope.row)"
-									:disabled="data.replicasets.length == 1"
+									:disabled="data.controllerRevisions.length == 1"
 									>回滚到该版本</el-button
 								>
 							</template>
@@ -272,11 +279,11 @@
 </template>
 <script lang="ts" setup name="k8sStatefulSetDetail">
 import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, h } from 'vue';
-import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, Refresh } from '@element-plus/icons-vue';
+import { ArrowLeft, Edit, View, Minus, Plus, Refresh } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { useStatefulSetApi } from '@/api/kubernetes/statefulSet';
 import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
-import { StatefulSet, ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
+import { StatefulSet, ReplicaSet, ReplicaSetCondition, ControllerRevision } from 'kubernetes-types/apps/v1';
 import router from '@/router';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
@@ -313,7 +320,7 @@ const data = reactive({
 	param: {
 		cloud: k8sStore.state.activeCluster,
 	},
-	replicasets: [] as ReplicaSet[],
+	controllerRevisions: [] as ControllerRevision[],
 	pods: [] as Pod[],
 	iShow: false,
 	activeName: 'first',
@@ -324,7 +331,7 @@ const data = reactive({
 
 //编辑statefulSet
 const handleEdit = () => {
-	k8sStore.state.creatStatefulSet.namespace = k8sStore.state.activeStatefulSet.metadata!.namespace!;
+	k8sStore.state.createStatefulSet.namespace = k8sStore.state.activeStatefulSet.metadata!.namespace!;
 	const dep = deepClone(k8sStore.state.activeStatefulSet) as StatefulSet;
 	delete dep.status;
 	delete dep.metadata?.managedFields;
@@ -517,7 +524,7 @@ const getPods = async () => {
 		data.param
 	);
 	data.pods = res.data.pods;
-	data.replicasets = res.data.replicaSets;
+	data.controllerRevisions = res.data.controllerRevisions;
 };
 
 const getEvents = async () => {

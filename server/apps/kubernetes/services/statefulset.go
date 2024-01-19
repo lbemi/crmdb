@@ -22,7 +22,7 @@ type StatefulSetGetter interface {
 type IStatefulSet interface {
 	List(ctx context.Context, query *entity.PageParam, name string, label string) *entity.PageResult
 	Get(ctx context.Context, name string) *v1.StatefulSet
-	GetStatefulSetPods(ctx context.Context, name string) ([]*corev1.Pod, []*v1.ReplicaSet)
+	GetStatefulSetPods(ctx context.Context, name string) ([]*corev1.Pod, []*v1.ControllerRevision)
 	GetStatefulSetEvent(ctx context.Context, name string) []*corev1.Event
 	Create(ctx context.Context, obj *v1.StatefulSet) *v1.StatefulSet
 	Update(ctx context.Context, obj *v1.StatefulSet) *v1.StatefulSet
@@ -90,7 +90,7 @@ func (s *StatefulSet) Get(ctx context.Context, name string) *v1.StatefulSet {
 	return sts
 }
 
-func (s *StatefulSet) GetStatefulSetPods(ctx context.Context, name string) ([]*corev1.Pod, []*v1.ReplicaSet) {
+func (s *StatefulSet) GetStatefulSetPods(ctx context.Context, name string) ([]*corev1.Pod, []*v1.ControllerRevision) {
 	statefulSet := s.Get(ctx, name)
 	pods := make([]*corev1.Pod, 0)
 	podList, err := s.cli.SharedInformerFactory.Core().V1().Pods().Lister().Pods(s.namespace).List(labels.Everything())
@@ -114,7 +114,17 @@ func (s *StatefulSet) GetStatefulSetPods(ctx context.Context, name string) ([]*c
 		return podList[i].ObjectMeta.GetName() < podList[j].ObjectMeta.GetName()
 	})
 
-	return pods, nil
+	controllerRevisionList, err := s.cli.SharedInformerFactory.Apps().V1().ControllerRevisions().Lister().List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	controllerRevisions := make([]*v1.ControllerRevision, 0)
+
+	for _, item := range controllerRevisionList {
+		if metav1.IsControlledBy(item, statefulSet) {
+			controllerRevisions = append(controllerRevisions, item)
+		}
+	}
+
+	return pods, controllerRevisions
 
 }
 

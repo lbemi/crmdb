@@ -23,6 +23,7 @@ type K8SInterface interface {
 	IngressesGetter
 	EventGetter
 	ReplicasetGetter
+	ControllerRevisionGetter
 	PersistentVolumeClaimGetter
 }
 
@@ -133,4 +134,11 @@ func (k *K8S) PersistentVolumeClaim(namespace string) PersistentVolumeClaimImp {
 		namespace = ""
 	}
 	return NewPersistentVolumeClaim(k.store.Get(k.clusterName), namespace)
+}
+
+func (k *K8S) ControllerRevision(namespace string) ControllerRevisionImp {
+	if namespace == "all" {
+		namespace = ""
+	}
+	return NewControllerRevision(k.store.Get(k.clusterName), namespace)
 }

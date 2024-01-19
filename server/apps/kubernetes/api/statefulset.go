@@ -30,10 +30,10 @@ func GetStatefulSetPods(rc *rctx.ReqCtx) {
 	clusterName := rc.QueryCloud()
 	namespace := rc.PathParam("namespace")
 	statefulSetName := rc.PathParam("name")
-	pods, replicaSets := core.V1.Cluster(clusterName).K8S().StatefulSets(namespace).GetStatefulSetPods(c, statefulSetName)
+	pods, controllerRevisions := core.V1.Cluster(clusterName).K8S().StatefulSets(namespace).GetStatefulSetPods(c, statefulSetName)
 	rc.ResData = map[string]interface{}{
-		"pods":        pods,
-		"replicaSets": replicaSets,
+		"pods":                pods,
+		"controllerRevisions": controllerRevisions,
 	}
 }
 
