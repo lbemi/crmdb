@@ -2,11 +2,11 @@
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto card">
 			<el-row :gutter="20">
-				<el-col :span="18">
+				<el-col :span="16">
 					<el-button type="info" :icon="ArrowLeft" text @click="backRoute">返回</el-button>
 					<span style="font-weight: 35">{{ k8sStore.state.activeDeployment?.metadata?.name }}</span></el-col
 				>
-				<el-col :span="6"
+				<el-col :span="8"
 					><el-button v-auth="'k8s:deployment:edit'" type="primary" size="small" :icon="Edit" @click="handleEdit()">编辑</el-button>
 					<el-button type="primary" size="small" :icon="View" @click="showYaml">查看YAML</el-button>
 					<el-button v-auth="'k8s:deployment:redeploy'" type="primary" size="small" :icon="Refresh" @click="reDeploy">重新部署</el-button>

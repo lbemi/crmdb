@@ -116,6 +116,8 @@ func registerRoute(httpSever *server.HttpSever) {
 		k8s.KubernetesJobRoutes(),
 		k8s.KubernetesNamespaceRoutes(),
 		k8s.KubernetesNodeRoutes(),
+		k8s.KubernetesPersistentVolumeRoutes(),
+		k8s.KubernetesStorageClassRoutes(),
 		k8s.KubernetesPersistentVolumeClaimRoutes(),
 		k8s.KubernetesPodRoutes(),
 		k8s.KubernetesReplicaSetRoutes(),

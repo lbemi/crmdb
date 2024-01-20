@@ -24,7 +24,9 @@ type K8SInterface interface {
 	EventGetter
 	ReplicasetGetter
 	ControllerRevisionGetter
+	PersistentVolumeGetter
 	PersistentVolumeClaimGetter
+	StorageClassGetter
 }
 
 type K8S struct {
@@ -129,13 +131,19 @@ func (k *K8S) Replicaset(namespace string) ReplicasetImp {
 	return NewReplicaset(k.store.Get(k.clusterName), namespace)
 }
 
+func (k *K8S) PersistentVolume() PersistentVolumeImp {
+	return NewPersistentVolume(k.store.Get(k.clusterName))
+}
+
 func (k *K8S) PersistentVolumeClaim(namespace string) PersistentVolumeClaimImp {
 	if namespace == "all" {
 		namespace = ""
 	}
 	return NewPersistentVolumeClaim(k.store.Get(k.clusterName), namespace)
 }
-
+func (k *K8S) StorageClass() StorageClassImp {
+	return NewStorageClass(k.store.Get(k.clusterName))
+}
 func (k *K8S) ControllerRevision(namespace string) ControllerRevisionImp {
 	if namespace == "all" {
 		namespace = ""
