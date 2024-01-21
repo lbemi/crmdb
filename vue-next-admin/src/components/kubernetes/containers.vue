@@ -2,18 +2,14 @@
 	<div class="layout-pd">
 		<div>
 			<el-tabs v-model="editableTabsValue" @tab-remove="tabRemove" class="demo-tabs" :before-leave="tabChange">
-				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :name="index"
-					:closable="data.containers.length != 1">
+				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :name="index" :closable="data.containers.length != 1">
 					<template #label>
 						<span v-if="item.isIntiContainer" class="custom-tabs-label">
 							<SvgIcon name="iconfont icon-container-" class="svg" />{{ ' init容器 ' }}
 						</span>
-						<span v-else class="custom-tabs-label">
-							<SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' }}
-						</span>
+						<span v-else class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' }} </span>
 					</template>
-					<ContainerDiv :ref="(el: refItem) => setItemRef(el, index)" :container="item" :index="index"
-						:volumes="props.volumes" />
+					<ContainerDiv :ref="(el: refItem) => setItemRef(el, index)" :container="item" :index="index" :volumes="props.volumes" />
 				</el-tab-pane>
 				<el-tab-pane key="CustomBtn" name="CustomBtn" :closable="false">
 					<template #label>
@@ -26,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, reactive } from 'vue';
+import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import { ComponentPublicInstance, ref } from 'vue-demi';
 import { Container, Volume } from 'kubernetes-types/core/v1';
 import type { TabPaneName } from 'element-plus';
@@ -95,7 +91,7 @@ const data = reactive({
 
 const isInitContainer = (isIntiContainer: boolean) => {
 	return isIntiContainer;
-}
+};
 
 const getContainers = () => {
 	const vs = [] as Volume[];

@@ -8,7 +8,7 @@
 				</div>
 			</template>
 			<el-row :gutter="30">
-				<el-col :span="3" :offset="1" style="margin-top: 15px;">
+				<el-col :span="3" :offset="1" style="margin-top: 15px">
 					<el-steps :active="data.active" finish-status="success" direction="vertical">
 						<el-step title="基本信息" description="基础配置信息" />
 						<el-step title="容器配置" description="容器相关配置信息" />
@@ -20,14 +20,17 @@
 						<Meta :bindData="data.bindMetaData" :isUpdate="data.isUpdate" @updateData="getMeta" />
 					</div>
 					<div id="1" v-show="data.active === 1">
-						<Containers ref="containersRef" :containers="data.containers" :initContainers="data.initContainers"
-							:volumes="data.deployments.spec?.template.spec?.volumes" />
+						<Containers
+							ref="containersRef"
+							:containers="data.containers"
+							:initContainers="data.initContainers"
+							:volumes="data.deployments.spec?.template.spec?.volumes"
+						/>
 					</div>
 					<div id="2" v-show="data.active === 2">
 						<el-checkbox v-model="data.enableService" label="配置service" />
 					</div>
 				</el-col>
-
 			</el-row>
 			<div class="footer">
 				<el-button @click="up" size="small">上一步</el-button>
@@ -35,8 +38,7 @@
 				<el-button @click="confirm" type="primary" size="small">确认</el-button>
 			</div>
 		</el-card>
-		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployments"
-			v-if="data.yamlDialogVisible" />
+		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployments" v-if="data.yamlDialogVisible" />
 	</div>
 </template>
 
@@ -193,7 +195,7 @@ onBeforeMount(() => {
 	updateCodeMirror();
 });
 
-const emit = defineEmits(['update:dialogVisible', 'refresh']);
+// const emit = defineEmits(['update:dialogVisible', 'refresh']);
 
 // const handleClose = () => {
 // 	emit('update:dialogVisible', false);

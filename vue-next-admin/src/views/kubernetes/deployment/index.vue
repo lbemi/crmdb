@@ -109,7 +109,7 @@
 
 					<template #default="scope">
 						<a style="color: green">{{ scope.row.status.readyReplicas || '0' }}</a
-						>/ <a style="color: green">{{ scope.row.status.replicas || '0' }}</a
+						>/ <a style="color: green">{{ scope.row.spec.replicas || '0' }}</a
 						>/
 						<a style="color: red">{{ scope.row.status.unavailableReplicas || '0' }}</a>
 					</template>
@@ -521,8 +521,11 @@ const deployDetail = async (dep: Deployment) => {
 };
 
 const createDeployment = () => {
-	state.create.title = '创建deployment';
-	state.create.dialogVisible = true;
+	router.push({
+		name: 'deploymentCreate',
+	});
+	// state.create.title = '创建deployment';
+	// state.create.dialogVisible = true;
 };
 
 const handleUpdate = (deployment: Deployment) => {
