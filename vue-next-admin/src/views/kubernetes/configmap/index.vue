@@ -53,13 +53,13 @@
 				v-loading="data.loading"
 			>
 				<el-table-column type="selection" width="35" />
-				<el-table-column prop="metadata.namespace" label="命名空间" width="200px" v-if="k8sStore.state.activeNamespace === 'all'" />
+				<el-table-column prop="metadata.namespace" label="命名空间" v-if="k8sStore.state.activeNamespace === 'all'" />
 				<el-table-column label="名称">
 					<template #default="scope">
 						<el-button size="small" type="primary" text @click="configMapDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
 					</template>
 				</el-table-column>
-				<el-table-column label="标签" width="70px">
+				<el-table-column label="标签">
 					<template #default="scope">
 						<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
 							<template #content>
@@ -81,13 +81,13 @@
 					</template>
 				</el-table-column>
 
-				<el-table-column label="创建时间" width="170px">
+				<el-table-column label="创建时间">
 					<template #default="scope">
 						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 					</template>
 				</el-table-column>
 
-				<el-table-column fixed="right" label="操作" width="260px" flex>
+				<el-table-column fixed="right" label="操作" width="230px" flex>
 					<template #default="scope">
 						<el-button link type="primary" size="small" @click="configMapDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
 						<el-button link type="primary" size="small" @click="updateConfigMap(scope.row)">编辑</el-button><el-divider direction="vertical" />

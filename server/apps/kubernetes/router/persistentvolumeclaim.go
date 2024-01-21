@@ -38,6 +38,19 @@ func KubernetesPersistentVolumeClaimRoutes() *restful.WebService {
 		Param(ws.PathParameter("name", "Pvc名称").Required(true).DataType("string")).
 		Returns(200, "success", corev1.PersistentVolumeClaim{}))
 
+	ws.Route(ws.GET("").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("pvc").
+			WithHandle(api.GetPersistentVolumeClaimByStorageClassName).Do()
+	}).Doc("获取Pvc列表").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Writes(&entity.PageResult{}).
+		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
+		Param(ws.QueryParameter("page", "页码").Required(false).DataType("string")).
+		Param(ws.QueryParameter("limit", "每页条数").Required(false).DataType("string")).
+		Param(ws.QueryParameter("label", "过滤标签，支持模糊查询").DataType("string")).
+		Param(ws.QueryParameter("storageClassName", "存储类名").DataType("string")).
+		Param(ws.QueryParameter("name", "过滤名称，支持模糊查询").DataType("string")).
+		Returns(200, "success", &entity.PageResult{}))
+
 	ws.Route(ws.POST("").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("pvc").
 			WithHandle(api.CreatePersistentVolumeClaim).Do()

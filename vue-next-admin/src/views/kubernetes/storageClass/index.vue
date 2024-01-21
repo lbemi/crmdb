@@ -59,6 +59,7 @@
 						<el-tag v-else type="warning" effect="plain">否</el-tag>
 					</template>
 				</el-table-column>
+				<el-table-column prop="metadata.annotations['lbemi.io/pvc-count']" label="存储卷声明量" />
 				<el-table-column prop="provisioner" label="提供者" />
 				<el-table-column prop="reclaimPolicy" label="回收策略" />
 				<el-table-column prop="volumeBindingMode" label="绑定策略" />

@@ -52,7 +52,7 @@ const props = defineProps({
 });
 
 watch(
-	() => [props.resourceType, props.codeData],
+	() => [props.codeData],
 	() => {
 		dialogVisible.value = props.dialogVisible;
 		if (props.codeData) {

@@ -4,7 +4,7 @@
 			<el-form ref="ruleFormRef" :model="data.service" label-width="120px" class="demo-ruleForm" status-icon>
 				<el-card class="card">
 					<el-form-item label="类型" prop="type">
-						<el-select v-if="data.service.spec" v-model="data.service.spec.type" :disabled="data.updateFlag" size="small">
+						<el-select v-if="data.service.spec" v-model="data.service.spec.type" size="small">
 							<el-option v-for="item in data.serviceType" :key="item.key" :label="item.key" :value="item.value" />
 						</el-select>
 

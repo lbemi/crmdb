@@ -69,7 +69,11 @@
 						</div>
 					</template>
 				</el-table-column>
-				<el-table-column prop="status.phase" label="状态" />
+				<el-table-column label="状态">
+					<template #default="scope">
+						<el-tag :type="scope.row.status.phase === 'Bound' ? 'success' : 'warning'" effect="plain">{{ scope.row.status.phase }}</el-tag>
+					</template>
+				</el-table-column>
 				<el-table-column prop="status.capacity.storage" label="容量" />
 				<el-table-column prop="spec.accessModes" label="访问模式" />
 				<el-table-column label="关联的存储卷">

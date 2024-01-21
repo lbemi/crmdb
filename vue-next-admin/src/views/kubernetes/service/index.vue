@@ -11,7 +11,7 @@
 					size="small"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata.name" />
+					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
 				</el-select>
 				<el-input
 					v-model="data.query.key"
@@ -70,7 +70,7 @@
 						</template>
 
 						<template #default="scope">
-							<div v-if="scope.row.spec.ports" v-for="(item, index) in scope.row.spec.ports" :key="index">
+							<div v-for="(item, index) in scope.row.spec.ports" :key="index">
 								<el-tag class="label" size="small" effect="plain">
 									<a v-if="scope.row.spec.type === 'NodePort'"> {{ item.nodePort }}:</a>{{ item.port }}/{{ item.protocol }}->{{
 										item.targetPort
@@ -82,7 +82,6 @@
 					<el-table-column label="外部访问IP">
 						<template #default="scope">
 							<el-link
-								v-if="scope.row.status.loadBalancer.ingress"
 								v-for="(item, index) in scope.row.status.loadBalancer.ingress"
 								target="_blank"
 								type="primary"

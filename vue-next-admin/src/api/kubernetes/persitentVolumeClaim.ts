@@ -25,6 +25,13 @@ export function usePersistentVolumeClaimApi() {
 				params: param,
 			});
 		},
+		getPersistentVolumeClaimsByStorageClassName: (param: any) => {
+			return request({
+				url: '/persistentvolumeclaims',
+				method: 'get',
+				params: param,
+			});
+		},
 		deletePersistentVolumeClaim: (namespace: string, name: string, param: any) => {
 			return request({
 				url: `/persistentvolumeclaims/namespaces/${namespace}/${name}`,

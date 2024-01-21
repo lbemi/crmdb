@@ -9,6 +9,7 @@ import (
 	"k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
+	"strconv"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/labels"
@@ -36,6 +37,9 @@ func NewStorageClass(client *cache.ClientConfig) *StorageClass {
 func (p *StorageClass) List(ctx context.Context, query *entity.PageParam, name string, label string) *entity.PageResult {
 	data, err := p.client.SharedInformerFactory.Storage().V1().StorageClasses().Lister().List(labels.Everything())
 	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+	persistentVolumeClaimList, err := p.client.SharedInformerFactory.Core().V1().PersistentVolumeClaims().Lister().List(labels.Everything())
+	restfulx.ErrNotNilDebug(err, restfulx.GetResourceErr)
+
 	res := &entity.PageResult{}
 	var pvcList = make([]*v1.StorageClass, 0)
 	if name != "" {
@@ -60,7 +64,14 @@ func (p *StorageClass) List(ctx context.Context, query *entity.PageParam, name s
 		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 	for _, item := range data {
+		pvcCount := 0
 		util.RestoreGVK(item)
+		for _, persistentVolumeClaim := range persistentVolumeClaimList {
+			if *persistentVolumeClaim.Spec.StorageClassName == item.Name {
+				pvcCount++
+			}
+		}
+		item.Annotations["lbemi.io/pvc-count"] = strconv.Itoa(pvcCount)
 	}
 	total := len(data)
 	// 未传递分页查询参数

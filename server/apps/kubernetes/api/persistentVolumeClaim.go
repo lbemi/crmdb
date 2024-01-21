@@ -24,6 +24,15 @@ func GetPersistentVolumeClaim(rc *rctx.ReqCtx) {
 	pvcName := rc.PathParam("name")
 	rc.ResData = core.V1.Cluster(clusterName).K8S().PersistentVolumeClaim(namespace).Get(c, pvcName)
 }
+func GetPersistentVolumeClaimByStorageClassName(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	clusterName := rc.QueryCloud()
+	pageParam := rc.GetPageQueryParam()
+	name := rc.Query("name")
+	storageClassName := rc.Query("storageClassName")
+	label := rc.Query("label")
+	rc.ResData = core.V1.Cluster(clusterName).K8S().PersistentVolumeClaim("").ListByStorageClassName(c, pageParam, storageClassName, name, label)
+}
 
 func CreatePersistentVolumeClaim(rc *rctx.ReqCtx) {
 	c := rc.Request.Request.Context()

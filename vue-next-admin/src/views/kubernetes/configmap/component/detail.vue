@@ -4,20 +4,20 @@
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
 		<div class="box_body">
-			<el-descriptions :title="data.configMap.metadata.name" :column="2" border>
+			<el-descriptions :title="data.configMap.metadata!.name" :column="2" border>
 				<el-descriptions-item label="命名空间" label-align="right" align="center" label-class-name="my-label" class-name="my-content" width="150px">{{
-					data.configMap.metadata.namespace
+					data.configMap.metadata!.namespace!
 				}}</el-descriptions-item>
 				<el-descriptions-item label="创建时间" label-align="right" align="center" :span="2">{{
-					dateStrFormat(data.configMap.metadata.creationTimestamp)
+					dateStrFormat(data.configMap.metadata!.creationTimestamp!)
 				}}</el-descriptions-item>
 				<el-descriptions-item label="标签" label-align="right" align="center" :span="2">
-					<div v-for="(item, key, index) in data.configMap.metadata.labels" :key="index">
+					<div v-for="(item, key, index) in data.configMap.metadata!.labels" :key="index">
 						<el-tag class="label" type="success" size="small"> {{ key }}:{{ item }} </el-tag>
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="注解" label-align="right" align="center" :span="2">
-					<div v-for="(item, key, index) in data.configMap.metadata.annotations" :key="index">
+					<div v-for="(item, key, index) in data.configMap.metadata!.annotations" :key="index">
 						<span> {{ key }}:{{ item }} </span>
 					</div>
 				</el-descriptions-item>
@@ -33,7 +33,7 @@
 						</el-table-column>
 					</el-table>
 					<el-table class="custom-table" v-if="data.configMap.binaryData" :data="data.binaryKeyValues">
-						<el-table-column prop="key" label="名称" />
+						<el-table-column prop="key" label="名称" width="10%" />
 						<el-table-column prop="value" label="值">
 							<template #default="scope">
 								<div class="custom-cell" :class="{ 'max-height': scope.row.value.length > 200 }">
@@ -53,7 +53,7 @@ import { ElDrawer } from 'element-plus';
 import { ConfigMap } from 'kubernetes-types/core/v1';
 import { onMounted, reactive } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
-
+import { dateStrFormat } from '@/utils/formatTime';
 const data = reactive({
 	visible: false,
 	configMap: {
@@ -89,7 +89,7 @@ const convertConfigMapTo = (obj: { [name: string]: string }) => {
 
 onMounted(() => {
 	data.visible = props.visible;
-	if (!isObjectValueEqual(props.configMap, {})) {
+	if (props.configMap && !isObjectValueEqual(props.configMap, {})) {
 		data.configMap = props.configMap;
 		if (data.configMap.data) {
 			data.keyValues = convertConfigMapTo(data.configMap.data);
