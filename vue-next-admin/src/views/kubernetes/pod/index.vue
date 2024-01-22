@@ -313,12 +313,10 @@ ws.onmessage = (e) => {
 		return;
 	} else {
 		const object = JSON.parse(e.data);
-		if (
-			object.type === 'pod' &&
-			(object.result.namespace === k8sStore.state.activeNamespace || k8sStore.state.activeNamespace === 'all') &&
-			object.cluster == k8sStore.state.activeCluster
-		) {
+		if (object.type === 'pod' && object.result.namespace === k8sStore.state.activeNamespace && object.cluster == k8sStore.state.activeCluster) {
 			// podStore.state.pods = object.result.data;
+			filterPod(object.result.data);
+		} else if (object.type === 'pod' && k8sStore.state.activeNamespace === 'all' && object.cluster == k8sStore.state.activeCluster) {
 			filterPod(object.result.data);
 		}
 	}
