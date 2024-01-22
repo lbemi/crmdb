@@ -120,7 +120,7 @@
 											<el-text size="default" v-if="data.containerStatuses" :type="c.started ? 'success' : 'danger'">
 												{{ c.started ? 'Started' : 'NotStarted' }}
 											</el-text>
-											<el-text size="default" v-if="data.containerStatuses" :type="c.ready ? 'success' : 'warning'">
+											<el-text size="default" v-if="data.containerStatuses" :type="c.ready ? 'success' : 'danger'">
 												{{ c.ready ? 'Ready' : 'NotReady' }}
 											</el-text>
 										</div>
@@ -290,8 +290,7 @@
 											<el-text size="default" :type="c.ready || c.state?.terminated?.reason === 'Completed' ? 'success' : 'danger'">
 												<div v-if="c.state">
 													<div v-if="c.state.waiting">{{ !c.ready ? c.state?.waiting?.reason : 'Running' }}</div>
-													<div v-if="c.state?.terminated">{{ !c.ready ? c.state?.terminated?.reason : 'Running' }}</div>
-													<div v-if="c.state?.terminated">{{ !c.ready ? c.state?.terminated?.reason : 'Running' }}</div>
+													<div v-if="c.ready && c.state?.terminated">{{ c.state?.terminated?.reason }}</div>
 													<div v-if="c.state?.running">{{ 'Running' }}</div>
 												</div>
 
