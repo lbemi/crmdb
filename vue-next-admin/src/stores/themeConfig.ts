@@ -22,7 +22,7 @@ export const useThemeConfig = defineStore('themeConfig', {
 			primary: '#626aef',
 			danger: '#BD0E2B',
 			warning: '#eebe77',
-			success: '#93c7a1',
+			success: '#008000',
 			// 是否开启深色模式
 			isIsDark: false,
 

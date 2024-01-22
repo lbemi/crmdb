@@ -62,13 +62,23 @@ export const podInfo = defineStore(
 				});
 			state.loading = false;
 		};
+		const refreshPodDetail = async () => {
+			await podApi
+				.getPod(state.podDetail.metadata?.namespace!, state.podDetail.metadata?.name!, { cloud: k8sStore.state.activeCluster })
+				.then((res: any) => {
+					state.podDetail = res.data;
+				})
+				.catch((e: any) => {
+					ElMessage.error(e.message);
+				});
+		};
 
 		const deletePod = async (pod: Pod) => {
 			state.query.cloud = k8sStore.state.activeCluster;
 			await podApi.deletePod(pod.metadata?.namespace, pod.metadata?.name, { cloud: k8sStore.state.activeCluster });
 		};
 
-		return { state, listPod, deletePod };
+		return { state, listPod, deletePod, refreshPodDetail };
 	},
 	{
 		persist: {

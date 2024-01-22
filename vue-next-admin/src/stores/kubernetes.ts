@@ -100,7 +100,7 @@ export const kubernetesInfo = defineStore(
 						ElMessage.error(e.message);
 					});
 		};
-		const refreshActiveDaemonset = async () => {
+		const refreshActiveDaemonSet = async () => {
 			if (!isObjectValueEqual(state.activeDeployment, {}))
 				await daemonSetApi
 					.getDaemonset(state.activeDaemonSet.metadata!.namespace!, state.activeDaemonSet.metadata!.name!, {
@@ -133,7 +133,15 @@ export const kubernetesInfo = defineStore(
 				state.namespaceTotal = res.data.total;
 			});
 		};
-		return { state, refreshActiveDeployment, refreshActiveService, refreshActiveDaemonset, refreshActiveJob, refreshActiveCronJob, listNamespace };
+		return {
+			state,
+			refreshActiveDeployment,
+			refreshActiveService,
+			refreshActiveDaemonset: refreshActiveDaemonSet,
+			refreshActiveJob,
+			refreshActiveCronJob,
+			listNamespace,
+		};
 	},
 	{
 		persist: true,

@@ -11,7 +11,7 @@
 				max-height="100vh - 235px"
 			>
 				<el-table-column type="selection" width="55" />
-				<el-table-column prop="metadata.namespace" label="命名空间" width="200px" v-if="k8sStore.state.activeNamespace === 'all'" />
+				<el-table-column v-show="k8sStore.state.activeNamespace === 'all'" prop="metadata.namespace" label="命名空间" width="200px" />
 				<el-table-column prop="metadata.name" label="名称" width="300px" show-overflow-tooltip>
 					<template #default="scope">
 						<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>
@@ -30,12 +30,12 @@
 				</el-table-column>
 				<el-table-column label="重启次数" width="100px">
 					<template #default="scope">
-						<div v-if="scope.row.status.containerStatuses">{{ podRestart(scope.row.status) }}</div>
+						<div>{{ podRestart(scope.row.status) }}</div>
 					</template>
 				</el-table-column>
 				<el-table-column label="标签" width="180px">
 					<template #default="scope">
-						<el-tooltip placement="right" effect="light">
+						<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
 							<template #content>
 								<div style="display: flex; flex-direction: column">
 									<el-tag class="label" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
@@ -125,7 +125,10 @@ const handleChange = () => {
 
 const podRestart = (status: PodStatus) => {
 	let count = 0;
-	status.containerStatuses!.forEach((item) => {
+	if (!status.containerStatuses || status.containerStatuses.length === 0) {
+		return count;
+	}
+	status.containerStatuses.forEach((item) => {
 		count += item.restartCount;
 	});
 	return count;
@@ -275,7 +278,6 @@ const filterPod = (pods: Array<Pod>) => {
 	if (pods.length === 0) {
 		return;
 	}
-
 	if (k8sStore.state.search.value === '') {
 		podStore.state.pods = pods;
 		podStore.state.total = pods.length;
@@ -314,9 +316,6 @@ ws.onmessage = (e) => {
 	} else {
 		const object = JSON.parse(e.data);
 		if (object.type === 'pod' && object.result.namespace === k8sStore.state.activeNamespace && object.cluster == k8sStore.state.activeCluster) {
-			// podStore.state.pods = object.result.data;
-			filterPod(object.result.data);
-		} else if (object.type === 'pod' && k8sStore.state.activeNamespace === 'all' && object.cluster == k8sStore.state.activeCluster) {
 			filterPod(object.result.data);
 		}
 	}
