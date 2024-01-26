@@ -3,7 +3,7 @@
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="mb15">
 				<el-row :gutter="24">
-					<el-col :span="18" style="display: flex">
+					<el-col :span="21" style="display: flex">
 						<el-text class="mx-1" :size="state.size">命名空间：</el-text>
 						<el-select
 							v-model="k8sStore.state.activeNamespace"
@@ -64,7 +64,10 @@
 							刷新
 						</el-button>
 					</el-col>
-					<el-col :span="6" style="display: flex"> </el-col>
+					<el-col :span="3" style="display: flex; align-items: center">
+						自动刷新<el-switch v-model="state.autoRefresh" style="margin-left: 10px; margin-right: 10px" />
+						<el-icon :class="{ 'is-loading': state.autoRefresh }"> <Refresh /> </el-icon>
+					</el-col>
 				</el-row>
 			</div>
 			<el-table :data="state.deployments" style="width: 100%" @selection-change="handleSelectionChange" v-loading="state.loading" :size="state.size">
@@ -238,7 +241,7 @@
 
 <script setup lang="ts" name="k8sDeployment">
 import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, h } from 'vue';
-import { Delete, Edit } from '@element-plus/icons-vue';
+import { Delete, Edit, Refresh } from '@element-plus/icons-vue';
 import { ArrowDown } from '@element-plus/icons-vue';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
 import { Deployment, DeploymentCondition } from 'kubernetes-types/apps/v1';
@@ -268,6 +271,7 @@ type queryType = {
 	label?: string;
 };
 const state = reactive({
+	autoRefresh: true,
 	size: theme.themeConfig.globalComponentSize,
 	create: {
 		dialogVisible: false,
