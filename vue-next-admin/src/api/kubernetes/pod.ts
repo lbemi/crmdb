@@ -9,7 +9,7 @@ export function usePodApi() {
 				params: param,
 			});
 		},
-		getPod: (ns: string,name: string, param: any) => {
+		getPod: (ns: string, name: string, param: any) => {
 			return request({
 				url: `/pods/namespaces/${ns}/${name}`,
 				method: 'get',
@@ -35,12 +35,19 @@ export function usePodApi() {
 				url: '/pods/namespaces/' + ns + '/logs/' + podName + '/' + container,
 				method: 'get',
 				params: param,
-				onDownloadProgress: (e) => {},
+				onDownloadProgress: (e) => { },
 			});
 		},
 		podEvents: (ns: string | undefined, podName: string | undefined, param: any) => {
 			return request({
-				url: '/pods/namespaces/' + ns + '/' + podName+'/events',
+				url: '/pods/namespaces/' + ns + '/' + podName + '/events',
+				method: 'get',
+				params: param,
+			});
+		},
+		getPodFileList: (ns: string | undefined, podName: string | undefined, container: string, param: any) => {
+			return request({
+				url: '/pods/namespaces/' + ns + '/files/' + podName + '/' + container,
 				method: 'get',
 				params: param,
 			});

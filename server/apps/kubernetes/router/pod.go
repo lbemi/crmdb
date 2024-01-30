@@ -94,5 +94,15 @@ func KubernetesPodRoutes() *restful.WebService {
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
 		Returns(200, "success", nil))
 
+	ws.Route(ws.GET("/namespaces/{namespace}/files/{name}/{container}").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("files").
+			WithHandle(api.GetPodFileList).Do()
+	}).Doc("获取Pod文件列表").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
+		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
+		Param(ws.PathParameter("name", "Pod名称").Required(true).DataType("string")).
+		Param(ws.PathParameter("container", "container名称").Required(true).DataType("string")).
+		Returns(200, "success", nil))
+
 	return ws
 }

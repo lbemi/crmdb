@@ -2,19 +2,25 @@
 <template>
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
-			<card-header :refresh="handleChange" :search="search" :selectStatus="podStore.state.selectData.length == 0" :deleteFunc="deletePods" />
-			<el-table
-				:data="podStore.state.pods"
-				style="width: 100%"
-				@selection-change="handleSelectionChange"
-				v-loading="podStore.state.loading"
-				max-height="100vh - 235px"
-			>
+			<card-header :refresh="handleChange" :search="search" :selectStatus="podStore.state.selectData.length == 0"
+				:deleteFunc="deletePods" />
+			<el-table :data="podStore.state.pods" style="width: 100%" @selection-change="handleSelectionChange"
+				v-loading="podStore.state.loading" max-height="100vh - 235px">
 				<el-table-column type="selection" width="55" />
-				<el-table-column v-show="k8sStore.state.activeNamespace === 'all'" prop="metadata.namespace" label="命名空间" width="200px" />
+				<el-table-column v-if="k8sStore.state.activeNamespace === 'all'" prop="metadata.namespace" label="命名空间"
+					width="200px" />
 				<el-table-column prop="metadata.name" label="名称" width="300px" show-overflow-tooltip>
 					<template #default="scope">
-						<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name }}</el-button>
+						<div style="display: flex;align-items: center;">
+							<div style="display: flex;align-items: center;" @click="copyText(scope.row.metadata.name)">
+								<el-icon>
+									<CopyDocument />
+								</el-icon>
+							</div>
+							<el-button link type="primary" @click="jumpPodDetail(scope.row)">{{ scope.row.metadata.name
+							}}</el-button>
+						</div>
+
 						<!--						<div v-if="scope.row.status.phase != 'Running'" style="color: red">-->
 						<!--							<div v-if="scope.row.status.containerStatuses">-->
 						<!--								{{ scope.row.status.containerStatuses[0].state }}-->
@@ -38,12 +44,14 @@
 						<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
 							<template #content>
 								<div style="display: flex; flex-direction: column">
-									<el-tag class="label" type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
+									<el-tag class="label" type="info"
+										v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
 										{{ key }}:{{ item }}
 									</el-tag>
 								</div>
 							</template>
-							<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index" size="small">
+							<el-tag type="info" v-for="(item, key, index) in scope.row.metadata.labels" :key="index"
+								size="small">
 								<div>{{ key }}:{{ item }}</div>
 							</el-tag>
 						</el-tooltip>
@@ -68,11 +76,16 @@
 				</el-table-column>
 				<el-table-column fixed="right" label="操作" width="180">
 					<template #default="scope">
-						<el-button link type="primary" size="small" @click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="editPod(scope.row)">编辑</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" size="small"
+							@click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" size="small" @click="editPod(scope.row)">编辑</el-button><el-divider
+							direction="vertical" />
+						<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button><el-divider
+							direction="vertical" />
+						<el-button link type="primary" size="small"
+							@click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button><el-divider
+							direction="vertical" />
 						<el-button link type="primary" size="small" @click="jumpFileManger(scope.row)">文件</el-button>
 					</template>
 				</el-table-column>
@@ -86,12 +99,13 @@
 
 <script setup lang="ts" name="k8sPod">
 import { defineAsyncComponent, h, onBeforeUnmount, onMounted, ref } from 'vue';
-import { ElMessageBox, ElMessage } from 'element-plus';
+import { ElMessageBox, ElMessage, } from 'element-plus';
 import router from '@/router';
 import { podInfo } from '@/stores/pod';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
 import { useWebsocketApi } from '@/api/kubernetes/websocket';
+import { CopyDocument } from '@element-plus/icons-vue';
 import { PageInfo } from '@/types/kubernetes/common';
 import YAML from 'js-yaml';
 import mittBus from '@/utils/mitt';
@@ -99,6 +113,7 @@ import { useRoute } from 'vue-router';
 import { dateStrFormat } from '@/utils/formatTime';
 import { deepClone } from '@/utils/other';
 import CardHeader from '@/components/kubernetes/cardHeader.vue';
+import commonFunction from '@/utils/commonFunction';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
@@ -108,6 +123,7 @@ const yamlRef = ref();
 const k8sStore = kubernetesInfo();
 const podStore = podInfo();
 const websocketApi = useWebsocketApi();
+const { copyText } = commonFunction();
 
 const search = () => {
 	podStore.listPod();
@@ -118,9 +134,7 @@ const handleSelectionChange = (value: any) => {
 };
 
 const handleChange = () => {
-	podStore.state.loading = true;
 	podStore.listPod();
-	podStore.state.loading = false;
 };
 
 const podRestart = (status: PodStatus) => {
@@ -321,6 +335,7 @@ ws.onmessage = (e) => {
 	}
 };
 
+
 onMounted(() => {
 	podStore.state.loading = true;
 	podStore.listPod();
@@ -336,6 +351,7 @@ onBeforeUnmount(() => {
 	margin-top: 3px;
 	margin-bottom: 1px;
 }
+
 .ellipsis {
 	height: 60px;
 	white-space: nowrap;
@@ -343,12 +359,14 @@ onBeforeUnmount(() => {
 	overflow-y: auto;
 	// text-overflow: ellipsis;
 }
+
 .container {
 	:deep(.el-card__body) {
 		display: flex;
 		flex-direction: column;
 		flex: 1;
 		overflow: auto;
+
 		.el-table {
 			flex: 1;
 		}

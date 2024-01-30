@@ -47,3 +47,13 @@ export interface Node {
 		type: string;
 	}[];
 }
+
+export interface FileType {
+	name: string;
+	isDir: boolean;
+	fsType: string;
+	size: number;
+	lastModify: string;
+	user: string;
+	group: string;
+}

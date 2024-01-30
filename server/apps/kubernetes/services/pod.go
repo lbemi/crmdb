@@ -41,6 +41,7 @@ type IPod interface {
 	Search(ctx context.Context, key string, searchType int) []*corev1.Pod
 	EvictsPod(ctx context.Context, name, namespace string)
 	GetPodByNode(ctx context.Context, nodeName string) *corev1.PodList
+	GetFileList(ctx context.Context, namespace, pod, container string, path string) []*util.FileItem
 }
 
 type Pod struct {
@@ -330,10 +331,10 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string,
 // container: The name of the container.
 // cmd: The command to be executed.
 // string: The output of the command as a strings.
-func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container string, cmd []string) string {
+func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container string, path string) string {
 	option := &corev1.PodExecOptions{
 		Container: container,
-		Command:   cmd,
+		Command:   []string{"ls", "-l", path},
 		Stderr:    true,
 		Stdin:     true,
 		Stdout:    true,
@@ -374,6 +375,11 @@ func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container s
 	}
 
 	return string(b)
+}
+
+func (p *Pod) GetFileList(ctx context.Context, namespace, pod, container string, path string) []*util.FileItem {
+	readString := p.ExecPodReadString(ctx, namespace, pod, container, path)
+	return util.GetDirAndFiles(readString)
 }
 
 // ExecPodOnce executes a command once inside a pod.

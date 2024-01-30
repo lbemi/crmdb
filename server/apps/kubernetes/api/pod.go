@@ -120,3 +120,13 @@ func GetPodEvents(rc *rctx.ReqCtx) {
 	podName := rc.PathParam("name")
 	rc.ResData = core.V1.Cluster(clusterName).K8S().Pods(namespace).GetPodEvent(c, podName)
 }
+
+func GetPodFileList(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	namespace := rc.PathParam("namespace")
+	clusterName := rc.QueryCloud()
+	path := rc.Query("path")
+	podName := rc.PathParam("name")
+	containerName := rc.PathParam("container")
+	rc.ResData = core.V1.Cluster(clusterName).K8S().Pods(namespace).GetFileList(c, namespace, podName, containerName, path)
+}

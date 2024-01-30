@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/cmd/app/option"
+	"github.com/lbemi/lbemi/pkg/util"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
@@ -43,9 +44,13 @@ func TestPod_ExecPodReadString(f *testing.T) {
 	}
 	cliStore := &cache.ClientConfig{ClientSet: clientSet, Config: config}
 	pod := NewPod(cliStore, "", nil)
-	for _, dir := range pod.ExecPodReadString(context.Background(), "default", "nginx2-7cc8cd4598-f66ws", "nginx", []string{"ls", "-l"}) {
-		println(dir)
-	}
+
+	dirs := pod.ExecPodReadString(context.Background(), "default", "nginx-2-598f88c6dc-f7fb8", "nginx-2")
+	item := util.GetDirAndFiles(dirs)
+	println("item:", item[0].Name)
+	//for _, dir := range pod.ExecPodReadString(context.Background(), "default", "nginx-2-598f88c6dc-f7fb8", "nginx-2", []string{"ls", "-l"}) {
+	//	println(string(dir))
+	//}
 }
 
 // TestPod_ExecPodOnce is a test function that executes a pod once.

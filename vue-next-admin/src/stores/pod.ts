@@ -38,6 +38,7 @@ export const podInfo = defineStore(
 			inputValue: '',
 		});
 		const listPod = async () => {
+			console.log(k8sStore.state.activeNamespace)
 			state.loading = true;
 			if (state.type == '1') {
 				state.query.name = k8sStore.state.search.value;
@@ -51,6 +52,7 @@ export const podInfo = defineStore(
 				delete state.query.name;
 			}
 			state.query.cloud = k8sStore.state.activeCluster;
+
 			await podApi
 				.listPods(k8sStore.state.activeNamespace, state.query)
 				.then((res) => {

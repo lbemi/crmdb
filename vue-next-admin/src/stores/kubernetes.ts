@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { onMounted, reactive } from 'vue';
+import { reactive } from 'vue';
 import { DaemonSet, Deployment, StatefulSet } from 'kubernetes-types/apps/v1';
 import { Namespace, Service } from 'kubernetes-types/core/v1';
 import { Node } from '../types/kubernetes/cluster';
