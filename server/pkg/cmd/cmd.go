@@ -4,6 +4,8 @@ import (
 	tekton "github.com/lbemi/lbemi/apps/tekton/router"
 	ws "github.com/lbemi/lbemi/apps/websocket/router"
 	"github.com/lbemi/lbemi/pkg/global"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -59,8 +61,39 @@ func run(cmd *cobra.Command, args []string) {
 	container.Filter(middleware.Cors(container).Filter)
 	//注册路由
 	registerRoute(httpSever)
+
+	//GC分析  go tool trace trace.out  或者 GODEBUG=gctrace=1 go run cmd/main.go
+	//f, err := os.Create("/Users/lei/Documents/GitHub/lbemi/server/trace.out")
+	//f, err := os.Create("/Users/lei/Documents/GitHub/lbemi/server/cpu.profile")
+	//if err != nil {
+	//	global.Logger.Error(err)
+	//}
+	//
+	//defer func(f *os.File) {
+	//	err := f.Close()
+	//	if err != nil {
+	//		global.Logger.Error(err)
+	//	}
+	//}(f)
+	//err = pprof.StartCPUProfile(f)
+	//if err != nil {
+	//	global.Logger.Error(err)
+	//}
+	//defer pprof.StopCPUProfile()
+	//
+	//err = trace.Start(f)
+	//println("trace start----------------")
+	//if err != nil {
+	//	global.Logger.Error(err)
+	//	return
+	//}
+	//defer trace.Stop()
+
+	//启动pprof
+	NewProfileHttpServer(":9999")
 	// 启动服务
 	httpSever.Start()
+
 	//监听停止信号
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -70,22 +103,6 @@ func run(cmd *cobra.Command, args []string) {
 		os.Exit(-3)
 	}
 
-	//GC分析  go tool trace trace.out  或者 GODEBUG=gctrace=1 go run cmd/main.go
-	// f, err := os.Create("/Users/lei/Documents/GitHub/lbemi/server/trace.out")
-	// if err != nil {
-	// 	log.Logger.Error(err)
-	// }
-	// defer func(f *os.File) {
-	// 	err := f.Close()
-	// 	if err != nil {
-
-	// 	}
-	// }(f)
-	//err = trace.Start(f)
-	// if err != nil {
-	// 	return
-	// }
-	// defer trace.Stop()
 }
 
 // registerRoute registers the routes for the HTTP server.
@@ -196,4 +213,10 @@ func loadKubernetes() {
 
 		}
 	}
+}
+
+func NewProfileHttpServer(addr string) {
+	go func() {
+		global.Logger.Error(http.ListenAndServe(addr, nil))
+	}()
 }

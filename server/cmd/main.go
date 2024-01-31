@@ -1,9 +1,8 @@
 package main
 
 import (
-	"os"
-
 	"github.com/lbemi/lbemi/pkg/cmd"
+	"os"
 )
 
 func main() {

@@ -45,9 +45,9 @@ func TestPod_ExecPodReadString(f *testing.T) {
 	cliStore := &cache.ClientConfig{ClientSet: clientSet, Config: config}
 	pod := NewPod(cliStore, "", nil)
 
-	dirs := pod.ExecPodReadString(context.Background(), "default", "nginx-2-598f88c6dc-f7fb8", "nginx-2")
-	item := util.GetDirAndFiles(dirs)
-	println("item:", item[0].Name)
+	dirs := pod.ExecPodReadString(context.Background(), "default", "nginx-2-598f88c6dc-f7fb8", "nginx-2", "/")
+	util.GetDirAndFiles(dirs)
+	//println("item:", item[0].Name)
 	//for _, dir := range pod.ExecPodReadString(context.Background(), "default", "nginx-2-598f88c6dc-f7fb8", "nginx-2", []string{"ls", "-l"}) {
 	//	println(string(dir))
 	//}

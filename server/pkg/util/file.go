@@ -2,6 +2,7 @@ package util
 
 import (
 	"errors"
+	_ "net/http/pprof"
 	"strconv"
 	"strings"
 	"time"
@@ -29,20 +30,20 @@ func ParseFsItem(fileString string) (*FileItem, error) {
 	parts := strings.Fields(fileString)
 
 	if len(parts) < 9 {
-
 		return fsItem, errors.New("invalid file string")
 	}
 
 	// 解析权限模式
-	mode := parts[0]
-	fsItem.IsDir = mode[0] == 'd'
+	fsItem.IsDir = parts[0][0] == 'd'
 
 	// 解析文件类型
-	if fsItem.IsDir {
-		fsItem.FsType = "d"
-	} else {
-		fsItem.FsType = "-"
-	}
+	// if fsItem.IsDir {
+	// 	fsItem.FsType = "d"
+	// } else {
+	// 	fsItem.FsType = "-"
+	// }
+	fsItem.IsDir = parts[0][0] == 'd'
+	fsItem.FsType = string(parts[0][0])
 
 	// 解析文件大小
 	size, err := strconv.ParseInt(parts[4], 10, 64)
@@ -52,6 +53,16 @@ func ParseFsItem(fileString string) (*FileItem, error) {
 	fsItem.Size = size
 
 	// 解析最后修改时间
+	// modifyTimeStr := strings.Join(parts[5:8], " ") + " " + strconv.Itoa(time.Now().Year())
+	// modifyTime, err := time.Parse("Jan 2 15:04 2006", modifyTimeStr)
+	// if err != nil {
+	// 	modifyTime, err = time.Parse("Jan 2 2006", modifyTimeStr)
+	// 	if err != nil {
+	// 		return fsItem, err
+	// 	}
+	// }
+	// fsItem.LastModify = modifyTime.Format("2006-01-02 15:04")
+
 	modifyTimeStr := parts[5] + " " + parts[6] + " " + parts[7]
 
 	if strings.Contains(modifyTimeStr, ":") {
@@ -83,13 +94,11 @@ func ParseFsItem(fileString string) (*FileItem, error) {
 func GetDirAndFiles(fileString string) []*FileItem {
 	fileStrList := strings.Split(fileString, "\n")
 
-	var ret []*FileItem
+	ret := make([]*FileItem, 0, len(fileStrList))
 	for _, item := range fileStrList {
-		fsItem, err := ParseFsItem(item)
-		if err != nil {
-			continue
+		if fsItem, err := ParseFsItem(item); err == nil {
+			ret = append(ret, fsItem)
 		}
-		ret = append(ret, fsItem)
 	}
 	return ret
 }

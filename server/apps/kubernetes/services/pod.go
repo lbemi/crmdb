@@ -4,19 +4,21 @@ import (
 	"archive/tar"
 	"context"
 	"fmt"
+	"io"
+	_ "net/http/pprof"
+	"os"
+	"sort"
+	"strings"
+
 	entity2 "github.com/lbemi/lbemi/apps/kubernetes/entity"
 	"github.com/lbemi/lbemi/pkg/cache"
 	"github.com/lbemi/lbemi/pkg/common/entity"
 	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"github.com/lbemi/lbemi/pkg/util"
-	"io"
 	policy "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"os"
-	"sort"
-	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -343,15 +345,17 @@ func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container s
 	request := p.cli.ClientSet.CoreV1().RESTClient().Post().Resource("pods").Namespace(namespace).
 		Name(pod).SubResource("exec").Param("color", "true").
 		VersionedParams(option, scheme.ParameterCodec)
+
+	pipeReader, pipeWriter := io.Pipe()
+	//defer func(reader *io.PipeReader) {
+	//	err := reader.Close()
+	//	if err != nil {
+	//		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	//	}
+	//}(pipeReader)
+	defer pipeReader.Close()
 	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	pipeReader, pipeWriter := io.Pipe()
-	defer func(reader *io.PipeReader) {
-		err := reader.Close()
-		if err != nil {
-			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-		}
-	}(pipeReader)
 	go func() {
 		err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
 			Stdin:  os.Stdin,
@@ -360,13 +364,13 @@ func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container s
 			Tty:    false,
 		})
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-
-		defer func(pipeWriter *io.PipeWriter) {
-			err := pipeWriter.Close()
-			if err != nil {
-				restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-			}
-		}(pipeWriter)
+		defer pipeWriter.Close()
+		//defer func(pipeWriter *io.PipeWriter) {
+		//	err := pipeWriter.Close()
+		//	if err != nil {
+		//		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		//	}
+		//}(pipeWriter)
 	}()
 
 	b, err := io.ReadAll(pipeReader)
@@ -405,12 +409,13 @@ func (p *Pod) ExecPodOnce(ctx context.Context, namespace, pod, container string,
 	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	pipeReader, pipeWriter := io.Pipe()
-	defer func(reader *io.PipeReader) {
-		err := reader.Close()
-		if err != nil {
-			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-		}
-	}(pipeReader)
+	defer pipeReader.Close()
+	// defer func(reader *io.PipeReader) {
+	// 	err := reader.Close()
+	// 	if err != nil {
+	// 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+	// 	}
+	// }(pipeReader)
 	go func() {
 		err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
 			Stdin:  os.Stdin,
@@ -420,12 +425,13 @@ func (p *Pod) ExecPodOnce(ctx context.Context, namespace, pod, container string,
 		})
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 
-		defer func(pipeWriter *io.PipeWriter) {
-			err := pipeWriter.Close()
-			if err != nil {
-				restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-			}
-		}(pipeWriter)
+		defer pipeWriter.Close()
+		// defer func(pipeWriter *io.PipeWriter) {
+		// 	err := pipeWriter.Close()
+		// 	if err != nil {
+		// 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		// 	}
+		// }(pipeWriter)
 	}()
 
 	b, err := io.ReadAll(pipeReader)
