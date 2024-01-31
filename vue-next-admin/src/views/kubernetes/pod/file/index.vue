@@ -42,15 +42,11 @@
 									<i class="el-icon-delete"></i>
 									删除
 								</el-button>
-								<el-input
-									v-model="state.searchFileName"
-									placeholder="输入名称"
-									style="width: 150px; margin-left: 10px"
-									size="default"
-									clearable
-								></el-input>
+								<el-input v-model="state.searchFileName" placeholder="输入名称"
+									style="width: 150px; margin-left: 10px" size="default" clearable></el-input>
 								<!-- 查询 -->
-								<el-button size="default" type="primary" style="margin-left: 2px" icon="el-icon-search">搜索</el-button>
+								<el-button size="default" type="primary" style="margin-left: 2px"
+									icon="el-icon-search">搜索</el-button>
 							</div>
 						</div>
 					</div>
@@ -60,15 +56,8 @@
 						<div class="list-item" v-bind:key="item.name" v-for="item in state.files">
 							<div>
 								<div class="inner">
-									<el-image
-										:src="getFsImage(item.fsType)"
-										class="icon-thumb"
-										fit="contain"
-										alt
-										@dblclick="gotoDir(item)"
-										@click="selectItem(item)"
-										:key="item.name"
-									></el-image>
+									<el-image :src="getFsImage(item.fsType)" class="icon-thumb" fit="contain" alt
+										@dblclick="gotoDir(item)" @click="selectItem(item)" :key="item.name"></el-image>
 									<i class="icon-folder"></i>
 								</div>
 								<div class="file-name">
@@ -81,6 +70,38 @@
 						<!-- </div>
 						</el-card> -->
 					</div>
+					<el-card v-show="state.selected.name !== undefined">
+						<div slot="header" class="clearfix">
+							<span>详情</span>
+							<el-button style="float: right; padding: 3px 0" link>操作按钮</el-button>
+						</div>
+						<el-form :inline="true">
+							<el-form-item label="名称" key="name">
+								<el-input key="name" v-model="state.selected.name" placeholder="名称">{{ state.selected &&
+									state.selected.name ?
+									state.selected.name : '' }}</el-input>
+							</el-form-item>
+							<el-form-item label="权限:" key="auth">
+								<span>{{ state.selected && state.selected.permissions ? state.selected.permissions : ''
+								}}</span>
+							</el-form-item>
+							<el-form-item label="大小:" key="size">
+								<span>{{ state.selected && state.selected.size ? state.selected.size : '0' }}</span>
+							</el-form-item>
+							<el-form-item label="用户:" key="user">
+								<el-input key="user" v-model="state.selected.user" placeholder="用户">{{ state.selected &&
+									state.selected.user ?
+									state.selected.user : '' }}</el-input>
+
+
+							</el-form-item>
+							<el-form-item label="组:" key="group">
+								<el-input key="group" v-model="state.selected.group" placeholder="用户">{{ state.selected &&
+									state.selected.group ? state.selected.group : '' }}</el-input>
+
+							</el-form-item>
+						</el-form>
+					</el-card>
 				</el-main>
 			</el-container>
 		</el-card>
@@ -101,6 +122,7 @@ onMounted(() => {
 	getFileList();
 });
 const getFileList = async () => {
+	state.loading = true
 	await podApi
 		.getPodFileList('default', 'nginx-2-598f88c6dc-f7fb8', 'nginx-2', {
 			cloud: k8sStore.state.activeCluster,
@@ -110,13 +132,14 @@ const getFileList = async () => {
 			state.files = res.data;
 			console.log(res);
 		});
+	state.loading = false
 };
 const state = reactive({
 	path: '/',
 	searchFileName: '',
 	loading: false,
 	files: [] as Array<FileType>,
-	selected: {},
+	selected: {} as FileType,
 });
 
 const getFsImage = (type: string) => {
@@ -132,7 +155,8 @@ const selectItem = (item: FileType) => {
 	state.selected = item;
 };
 const setDir = (index: number) => {
-	state.selected = {};
+	// state.loading = true
+	state.selected = {} as FileType;
 	if (index === 0) {
 		state.path = '/';
 		getFileList();
@@ -145,7 +169,7 @@ const setDir = (index: number) => {
 	getFileList();
 };
 const gotoDir = (item: FileType) => {
-	state.selected = {};
+	state.selected = {} as FileType;
 	if (item.fsType === 'd') {
 		//文件夹才会进入
 		state.path = state.path + '/' + item.name;
@@ -207,15 +231,15 @@ const gotoDir = (item: FileType) => {
 	border: 1px solid #fff;
 	box-sizing: border-box;
 	position: relative;
-	// height: 120px;
-	// width: 110px;
+	height: 120px;
+	width: 110px;
 	margin: 5px;
 	display: inline-block;
-	// cursor: pointer;
+	cursor: pointer;
 	border-radius: 5px;
 	// display: flex;
-	height: 80px;
-	width: 80px;
+	// height: 80px;
+	// width: 80px;
 
 	// justify-content: flex-start;
 }

@@ -56,4 +56,5 @@ export interface FileType {
 	lastModify: string;
 	user: string;
 	group: string;
+	permissions: string;
 }

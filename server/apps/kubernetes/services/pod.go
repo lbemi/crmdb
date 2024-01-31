@@ -357,13 +357,13 @@ func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container s
 	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	go func() {
-		err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
+		executor.StreamWithContext(ctx, remotecommand.StreamOptions{
 			Stdin:  os.Stdin,
 			Stdout: pipeWriter,
 			Stderr: os.Stderr,
 			Tty:    false,
 		})
-		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		//restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 		defer pipeWriter.Close()
 		//defer func(pipeWriter *io.PipeWriter) {
 		//	err := pipeWriter.Close()
@@ -371,6 +371,7 @@ func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container s
 		//		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 		//	}
 		//}(pipeWriter)
+
 	}()
 
 	b, err := io.ReadAll(pipeReader)

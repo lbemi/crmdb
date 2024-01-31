@@ -9,13 +9,14 @@ import (
 )
 
 type FileItem struct {
-	Name       string `json:"name"`
-	IsDir      bool   `json:"isDir"`
-	FsType     string `json:"fsType"`
-	Size       int64  `json:"size"`
-	LastModify string `json:"lastModify"`
-	User       string `json:"user"`
-	Group      string `json:"group"`
+	Name        string `json:"name"`
+	IsDir       bool   `json:"isDir"`
+	FsType      string `json:"fsType"`
+	Size        int64  `json:"size"`
+	LastModify  string `json:"lastModify"`
+	User        string `json:"user"`
+	Group       string `json:"group"`
+	Permissions string `json:"permissions"`
 }
 
 func ParseFsItem(fileString string) (*FileItem, error) {
@@ -44,7 +45,7 @@ func ParseFsItem(fileString string) (*FileItem, error) {
 	// }
 	fsItem.IsDir = parts[0][0] == 'd'
 	fsItem.FsType = string(parts[0][0])
-
+	fsItem.Permissions = parts[0][1:]
 	// 解析文件大小
 	size, err := strconv.ParseInt(parts[4], 10, 64)
 	if err != nil {
