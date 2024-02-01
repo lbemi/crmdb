@@ -2,10 +2,11 @@ package api
 
 import (
 	"context"
-	"github.com/lbemi/lbemi/pkg/cache"
-	"github.com/lbemi/lbemi/pkg/global"
 	"io"
 	"time"
+
+	"github.com/lbemi/lbemi/pkg/cache"
+	"github.com/lbemi/lbemi/pkg/global"
 
 	"github.com/gorilla/websocket"
 	v1 "k8s.io/api/core/v1"
@@ -129,4 +130,25 @@ func GetPodFileList(rc *rctx.ReqCtx) {
 	podName := rc.PathParam("name")
 	containerName := rc.PathParam("container")
 	rc.ResData = core.V1.Cluster(clusterName).K8S().Pods(namespace).GetFileList(c, namespace, podName, containerName, path)
+}
+
+func ReadFileInfo(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	namespace := rc.PathParam("namespace")
+	clusterName := rc.QueryCloud()
+	file := rc.Query("file")
+	podName := rc.PathParam("name")
+	containerName := rc.PathParam("container")
+	rc.ResData = core.V1.Cluster(clusterName).K8S().Pods(namespace).ReadFileInfo(c, namespace, podName, containerName, file)
+}
+
+func UpdateFileName(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	namespace := rc.PathParam("namespace")
+	clusterName := rc.QueryCloud()
+	src := rc.Query("src")
+	dst := rc.Query("dst")
+	podName := rc.PathParam("name")
+	containerName := rc.PathParam("container")
+	core.V1.Cluster(clusterName).K8S().Pods(namespace).UpdateFileName(c, namespace, podName, containerName, src, dst)
 }

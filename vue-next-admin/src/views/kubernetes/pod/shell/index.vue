@@ -1,13 +1,14 @@
 <template>
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto">
-			<div style="margin-bottom: 8px">
-				<a>容器组名: {{ pod?.metadata?.name }}：</a>
-				<el-select v-model="selectContainer" placeholder="选择容器" size="small" @change="containerChange">
-					<el-option v-for="item in pod?.spec?.containers" :key="item.name" :label="item.name"
-						:value="item.name" />
-				</el-select>
-			</div>
+			<template #header>
+				<div>
+					<a>容器组名: {{ pod?.metadata?.name }}：</a>
+					<el-select v-model="selectContainer" placeholder="选择容器" size="small" @change="containerChange">
+						<el-option v-for="item in pod?.spec?.containers" :key="item.name" :label="item.name" :value="item.name" />
+					</el-select>
+				</div>
+			</template>
 			<div ref="terminal" element-loading-text="拼命连接中" id="xterm" class="xterm" :style="{ height: state.height }" />
 		</el-card>
 	</div>
@@ -20,13 +21,7 @@ import { FitAddon } from 'xterm-addon-fit';
 import { ElMessage } from 'element-plus';
 import { useWebsocketApi } from '@/api/kubernetes/websocket';
 import { podInfo } from '@/stores/pod';
-import { Codemirror } from 'vue-codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { StreamLanguage } from '@codemirror/language';
-import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 
-const code = ref('');
-const extensions = [oneDark, StreamLanguage.define(yaml)];
 const selectContainer = ref();
 const pod = podInfo().state.podShell;
 

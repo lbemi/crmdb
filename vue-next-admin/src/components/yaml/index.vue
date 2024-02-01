@@ -56,7 +56,7 @@ watch(
 	() => {
 		dialogVisible.value = props.dialogVisible;
 		if (props.codeData) {
-			code.value += YAML.dump(props.codeData);
+			code.value = YAML.dump(props.codeData);
 		}
 	},
 	{

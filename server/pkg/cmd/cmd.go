@@ -8,6 +8,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"runtime/trace"
 	"syscall"
 
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
@@ -62,35 +63,8 @@ func run(cmd *cobra.Command, args []string) {
 	//注册路由
 	registerRoute(httpSever)
 
-	//GC分析  go tool trace trace.out  或者 GODEBUG=gctrace=1 go run cmd/main.go
-	//f, err := os.Create("/Users/lei/Documents/GitHub/lbemi/server/trace.out")
-	//f, err := os.Create("/Users/lei/Documents/GitHub/lbemi/server/cpu.profile")
-	//if err != nil {
-	//	global.Logger.Error(err)
-	//}
-	//
-	//defer func(f *os.File) {
-	//	err := f.Close()
-	//	if err != nil {
-	//		global.Logger.Error(err)
-	//	}
-	//}(f)
-	//err = pprof.StartCPUProfile(f)
-	//if err != nil {
-	//	global.Logger.Error(err)
-	//}
-	//defer pprof.StopCPUProfile()
-	//
-	//err = trace.Start(f)
-	//println("trace start----------------")
-	//if err != nil {
-	//	global.Logger.Error(err)
-	//	return
-	//}
-	//defer trace.Stop()
-
 	//启动pprof
-	NewProfileHttpServer(":9999")
+	newProfileHttpServer(":9999")
 	// 启动服务
 	httpSever.Start()
 
@@ -215,8 +189,31 @@ func loadKubernetes() {
 	}
 }
 
-func NewProfileHttpServer(addr string) {
+// 开启pprof
+func newProfileHttpServer(addr string) {
 	go func() {
 		global.Logger.Error(http.ListenAndServe(addr, nil))
 	}()
+}
+
+func newTrace() {
+	//GC分析  go tool trace trace.out  或者 GODEBUG=gctrace=1 go run cmd/main.go
+	f, err := os.Create("/Users/lei/Documents/GitHub/lbemi/server/trace.out")
+	if err != nil {
+		global.Logger.Error(err)
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			global.Logger.Error(err)
+		}
+	}(f)
+
+	err = trace.Start(f)
+	println("trace start----------------")
+	if err != nil {
+		global.Logger.Error(err)
+		return
+	}
+	defer trace.Stop()
 }

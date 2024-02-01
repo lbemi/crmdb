@@ -1,63 +1,40 @@
 <template>
 	<div class="layout-padding container">
-		<el-card shadow="hover" class="layout-padding-auto">
-			<el-container style="height: 500px; border: 1px solid #eee">
-				<el-aside width="200px" style="background-color: rgb(238, 241, 246)">
-					<el-menu :default-openeds="['1', '1-1']">
-						<el-sub-menu index="1">
-							<template v-slot:title><i class="el-icon-message"></i>pod操作</template>
-							<el-sub-menu index="1-1">
-								<template v-slot:title>选择容器</template>
-								<el-menu-item index="1-1-1">
-									<router-link to="/files">nginx</router-link>
-								</el-menu-item>
-								<el-menu-item index="1-1-1">sidecar</el-menu-item>
-							</el-sub-menu>
-						</el-sub-menu>
-					</el-menu>
-				</el-aside>
-				<el-main>
-					<!-- <div class="video-container">
-						<el-card shadow="hover"> -->
-					<div class="video-header clearfix">
-						<div class="header-top">
-							<div>
-								<el-tag style="float: left; cursor: pointer" @click="setDir(0)">根目录</el-tag>
-								<el-breadcrumb separator="/" class="breadcrumb">
-									<el-breadcrumb-item v-bind:key="p" v-for="(p, index) in state.path.split('/')">
-										<a class="breadcrumb-link" @click="setDir(index)">{{ p }}</a>
-									</el-breadcrumb-item>
-								</el-breadcrumb>
-							</div>
-							<div>
-								<el-button type="primary" size="default">
-									<i class="el-icon-upload2"></i>
-									上传
-								</el-button>
-								<el-button type="primary" size="default">
-									<i class="el-icon-plus"></i>
-									新建文件夹
-								</el-button>
-								<el-button type="primary" size="default">
-									<i class="el-icon-delete"></i>
-									删除
-								</el-button>
-								<el-input v-model="state.searchFileName" placeholder="输入名称"
-									style="width: 150px; margin-left: 10px" size="default" clearable></el-input>
-								<!-- 查询 -->
-								<el-button size="default" type="primary" style="margin-left: 2px"
-									icon="el-icon-search">搜索</el-button>
-							</div>
-						</div>
+		<el-card shadow="hover" class="layout-padding-auto card">
+			<template #header>
+				<div class="header-top">
+					<div>
+						<a>容器组名: {{ pod?.metadata?.name }}：</a>
+						<el-select v-model="state.selectContainer" placeholder="选择容器" size="small" @change="getFileList">
+							<el-option v-for="item in pod?.spec?.containers" :key="item.name" :label="item.name" :value="item.name" />
+						</el-select>
 					</div>
-
+					<div>
+						<el-tag style="float: left; cursor: pointer; margin-left: 15px" @click="setDir(0)">根目录</el-tag>
+						<el-breadcrumb separator="/" class="breadcrumb">
+							<el-breadcrumb-item v-bind:key="p" v-for="(p, index) in state.path.split('/')">
+								<a class="breadcrumb-link" @click="setDir(index)">{{ p }}</a>
+							</el-breadcrumb-item>
+						</el-breadcrumb>
+					</div>
+				</div>
+			</template>
+			<el-row :gutter="20">
+				<el-col :span="18">
 					<div v-loading="state.loading" class="video-main">
 						<!-- <ul> -->
 						<div class="list-item" v-bind:key="item.name" v-for="item in state.files">
 							<div>
 								<div class="inner">
-									<el-image :src="getFsImage(item.fsType)" class="icon-thumb" fit="contain" alt
-										@dblclick="gotoDir(item)" @click="selectItem(item)" :key="item.name"></el-image>
+									<el-image
+										:src="getFsImage(item.fsType)"
+										class="icon-thumb"
+										fit="contain"
+										alt
+										@dblclick="gotoDir(item)"
+										@click="selectItem(item)"
+										:key="item.name"
+									></el-image>
 									<i class="icon-folder"></i>
 								</div>
 								<div class="file-name">
@@ -66,55 +43,99 @@
 								</div>
 							</div>
 						</div>
-						<!-- </ul> -->
-						<!-- </div>
-						</el-card> -->
 					</div>
-					<el-card v-show="state.selected.name !== undefined">
-						<div slot="header" class="clearfix">
-							<span>详情</span>
-							<el-button style="float: right; padding: 3px 0" link>操作按钮</el-button>
-						</div>
-						<el-form :inline="true">
-							<el-form-item label="名称" key="name">
-								<el-input key="name" v-model="state.selected.name" placeholder="名称">{{ state.selected &&
-									state.selected.name ?
-									state.selected.name : '' }}</el-input>
+				</el-col>
+				<el-col :span="6" style="display: flex">
+					<el-divider direction="vertical" style="height: 100%; margin-right: 30px" />
+
+					<div>
+						<el-form>
+							<div>
+								<div>
+									<el-button type="primary" size="small"> 上传 </el-button>
+									<el-button type="success" size="small">
+										<i class="el-icon-plus"></i>
+										新建文件夹
+									</el-button>
+									<el-button type="danger" size="small">
+										<i class="el-icon-delete"></i>
+										删除
+									</el-button>
+								</div>
+								<div style="margin-top: 10px; margin-bottom: 10px">
+									<el-input v-model="state.searchFileName" placeholder="输入名称" style="width: 150px" size="small" clearable></el-input>
+									<el-button size="small" type="primary" style="margin-left: 2px" :icon="Search">搜索</el-button>
+								</div>
+							</div>
+
+							<el-text type="info">属性</el-text>
+							<el-form-item label="名称:" key="name">
+								<el-input key="name" v-model="state.selected.name" placeholder="名称" size="small" style="width: 150px" :disabled="!state.edit">
+								</el-input>
+								<el-button v-if="!state.edit" type="primary" text size="small" @click="state.edit = !state.edit">编辑</el-button>
+								<el-button v-if="state.edit" type="primary" text size="small" @click="updateFileName">确定</el-button>
+								<el-button v-if="state.edit" type="primary" text size="small" style="margin: 0; padding-left: 0" @click="state.edit = !state.edit"
+									>取消</el-button
+								>
 							</el-form-item>
 							<el-form-item label="权限:" key="auth">
-								<span>{{ state.selected && state.selected.permissions ? state.selected.permissions : ''
-								}}</span>
+								<span>{{ state.selected && state.selected.permissions ? state.selected.permissions : '' }}</span>
 							</el-form-item>
 							<el-form-item label="大小:" key="size">
 								<span>{{ state.selected && state.selected.size ? state.selected.size : '0' }}</span>
 							</el-form-item>
 							<el-form-item label="用户:" key="user">
-								<el-input key="user" v-model="state.selected.user" placeholder="用户">{{ state.selected &&
-									state.selected.user ?
-									state.selected.user : '' }}</el-input>
-
-
+								<el-input key="user" size="small" v-model="state.selected.user" placeholder="用户">{{
+									state.selected && state.selected.user ? state.selected.user : ''
+								}}</el-input>
 							</el-form-item>
-							<el-form-item label="组:" key="group">
-								<el-input key="group" v-model="state.selected.group" placeholder="用户">{{ state.selected &&
-									state.selected.group ? state.selected.group : '' }}</el-input>
-
+							<el-form-item label="属组:" key="group">
+								<el-input key="group" size="small" v-model="state.selected.group" placeholder="用户">{{
+									state.selected && state.selected.group ? state.selected.group : ''
+								}}</el-input>
+							</el-form-item>
+							<el-form-item label="操作:">
+								<el-button type="primary" text v-if="state.selected.fsType === '-'" @click="readFile">预览文件</el-button>
 							</el-form-item>
 						</el-form>
-					</el-card>
-				</el-main>
-			</el-container>
+					</div>
+				</el-col>
+			</el-row>
 		</el-card>
+		<el-drawer v-model="state.dialogVisible" size="40%">
+			<template #header>
+				<h3>{{ state.selected.name }} 预览</h3>
+			</template>
+			<Codemirror
+				v-loading="state.loading"
+				v-model="state.fileInfo"
+				style="height: 92%; margin-left: 20px; margin-right: 15px"
+				:indent-with-tab="true"
+				:tabSize="2"
+				:extensions="extensions"
+				:disabled="true"
+			/>
+			<div class="mt30" style="align-items: center; margin-left: 20px">
+				<el-button size="small" @click="handleClose">关闭</el-button>
+			</div>
+		</el-drawer>
 	</div>
 </template>
 <script setup lang="ts" name="podFile">
-import { onMounted, reactive } from 'vue';
+import { h, onMounted, reactive } from 'vue';
 import folder from '@/assets/folder.svg';
+import { Codemirror } from 'vue-codemirror';
 import file from '@/assets/file.svg';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { usePodApi } from '@/api/kubernetes/pod';
 import { FileType } from '@/types/kubernetes/cluster';
-
+import { oneDark } from '@codemirror/theme-one-dark';
+import { Search } from '@element-plus/icons-vue';
+import { podInfo } from '@/stores/pod';
+import { deepClone } from '@/utils/other';
+import { ElMessage, ElMessageBox } from 'element-plus';
+const pod = podInfo().state.podShell;
+const extensions = [oneDark];
 const podApi = usePodApi();
 const k8sStore = kubernetesInfo();
 
@@ -122,17 +143,40 @@ onMounted(() => {
 	getFileList();
 });
 const getFileList = async () => {
-	state.loading = true
+	state.loading = true;
 	await podApi
-		.getPodFileList('default', 'nginx-2-598f88c6dc-f7fb8', 'nginx-2', {
+		.getPodFileList(pod.metadata?.namespace, pod?.metadata?.name, state.selectContainer, {
 			cloud: k8sStore.state.activeCluster,
 			path: state.path,
 		})
 		.then((res) => {
 			state.files = res.data;
-			console.log(res);
 		});
-	state.loading = false
+	state.loading = false;
+};
+
+const readFile = async () => {
+	if (state.selected.name === undefined || state.selected.fsType === 'd') {
+		return;
+	}
+
+	let file = (state.path !== '/' ? state.path : '') + '/' + state.selected.name;
+	state.dialogVisible = true;
+	state.loading = true;
+	await podApi
+		.readPodFileInfo(pod.metadata?.namespace, pod?.metadata?.name, state.selectContainer, {
+			cloud: k8sStore.state.activeCluster,
+			file: file,
+		})
+		.then((res) => {
+			state.fileInfo = res.data;
+		});
+	state.loading = false;
+};
+
+const handleClose = () => {
+	state.dialogVisible = false;
+	state.fileInfo = '';
 };
 const state = reactive({
 	path: '/',
@@ -140,8 +184,52 @@ const state = reactive({
 	loading: false,
 	files: [] as Array<FileType>,
 	selected: {} as FileType,
+	dialogVisible: false,
+	fileInfo: '',
+	selectContainer: pod.spec?.containers[0]?.name,
+	srcName: '',
+	edit: false,
 });
-
+const updateFileName = () => {
+	const src = state.path + (state.path !== '/' ? state.path : '') + state.srcName;
+	const dst = state.path + (state.path !== '/' ? state.path : '') + state.selected.name;
+	ElMessageBox({
+		title: '提示',
+		message: h('p', null, [
+			h('span', null, '此操作将 '),
+			h('i', { style: 'color: teal' }, `${src}`),
+			h('span', null, '重命名为 '),
+			h('i', { style: 'color: teal' }, `${dst}`),
+			h('span', null, '  是否继续? '),
+		]),
+		buttonSize: 'small',
+		showCancelButton: true,
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			await podApi
+				.updateFileName(pod.metadata?.namespace, pod?.metadata?.name, state.selectContainer, {
+					cloud: k8sStore.state.activeCluster,
+					src: src,
+					dst: dst,
+				})
+				.then(() => {
+					ElMessage.success('操作成功');
+					state.edit = false;
+					getFileList();
+					state.selected = {} as FileType;
+				})
+				.catch((e) => {
+					ElMessage.error(e.message);
+				});
+		})
+		.catch(() => {
+			ElMessage.info('取消');
+		});
+};
 const getFsImage = (type: string) => {
 	if (type === 'd') {
 		//文件夹
@@ -152,20 +240,18 @@ const getFsImage = (type: string) => {
 };
 
 const selectItem = (item: FileType) => {
-	state.selected = item;
+	state.selected = deepClone(item) as FileType;
+	state.srcName = state.selected.name;
 };
 const setDir = (index: number) => {
-	// state.loading = true
 	state.selected = {} as FileType;
 	if (index === 0) {
 		state.path = '/';
 		getFileList();
 		return;
 	}
-	//        /dev/abc
 	let list = state.path.split('/');
 	state.path = list.slice(0, index + 1).join('/');
-
 	getFileList();
 };
 const gotoDir = (item: FileType) => {
@@ -223,7 +309,6 @@ const gotoDir = (item: FileType) => {
 	// line-height: 40px;
 	// position: relative;
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
 }
 
@@ -343,5 +428,8 @@ const gotoDir = (item: FileType) => {
 .loadding-message {
 	color: #424e67;
 	font-size: 12px;
+}
+.card {
+	overflow-y: auto; /* 开启滚动显示溢出内容 */
 }
 </style>

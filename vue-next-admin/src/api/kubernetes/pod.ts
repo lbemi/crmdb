@@ -35,7 +35,7 @@ export function usePodApi() {
 				url: '/pods/namespaces/' + ns + '/logs/' + podName + '/' + container,
 				method: 'get',
 				params: param,
-				onDownloadProgress: (e) => { },
+				onDownloadProgress: () => {},
 			});
 		},
 		podEvents: (ns: string | undefined, podName: string | undefined, param: any) => {
@@ -45,10 +45,24 @@ export function usePodApi() {
 				params: param,
 			});
 		},
-		getPodFileList: (ns: string | undefined, podName: string | undefined, container: string, param: any) => {
+		getPodFileList: (ns: string | undefined, podName: string | undefined, container: string | undefined, param: any) => {
 			return request({
 				url: '/pods/namespaces/' + ns + '/files/' + podName + '/' + container,
 				method: 'get',
+				params: param,
+			});
+		},
+		readPodFileInfo: (ns: string | undefined, podName: string | undefined, container: string | undefined, param: any) => {
+			return request({
+				url: '/pods/namespaces/' + ns + '/files/' + podName + '/' + container + '/read',
+				method: 'get',
+				params: param,
+			});
+		},
+		updateFileName: (ns: string | undefined, podName: string | undefined, container: string | undefined, param: any) => {
+			return request({
+				url: '/pods/namespaces/' + ns + '/files/' + podName + '/' + container + '/mv',
+				method: 'put',
 				params: param,
 			});
 		},

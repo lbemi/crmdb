@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	_ "net/http/pprof"
 	"os"
 	"sort"
 	"strings"
@@ -44,6 +43,8 @@ type IPod interface {
 	EvictsPod(ctx context.Context, name, namespace string)
 	GetPodByNode(ctx context.Context, nodeName string) *corev1.PodList
 	GetFileList(ctx context.Context, namespace, pod, container string, path string) []*util.FileItem
+	ReadFileInfo(ctx context.Context, namespace, pod, container string, file string) string
+	UpdateFileName(ctx context.Context, namespace, pod, container string, src, dst string)
 }
 
 type Pod struct {
@@ -333,10 +334,10 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string,
 // container: The name of the container.
 // cmd: The command to be executed.
 // string: The output of the command as a strings.
-func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container string, path string) string {
+func (p *Pod) execPodReadString(ctx context.Context, namespace, pod, container string, cmd []string) string {
 	option := &corev1.PodExecOptions{
 		Container: container,
-		Command:   []string{"ls", "-l", path},
+		Command:   cmd,
 		Stderr:    true,
 		Stdin:     true,
 		Stdout:    true,
@@ -347,30 +348,30 @@ func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container s
 		VersionedParams(option, scheme.ParameterCodec)
 
 	pipeReader, pipeWriter := io.Pipe()
-	//defer func(reader *io.PipeReader) {
-	//	err := reader.Close()
-	//	if err != nil {
-	//		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	//	}
-	//}(pipeReader)
-	defer pipeReader.Close()
+	defer func(reader *io.PipeReader) {
+		err := reader.Close()
+		if err != nil {
+			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		}
+	}(pipeReader)
 	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	go func() {
-		executor.StreamWithContext(ctx, remotecommand.StreamOptions{
+		err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
 			Stdin:  os.Stdin,
 			Stdout: pipeWriter,
 			Stderr: os.Stderr,
 			Tty:    false,
 		})
-		//restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-		defer pipeWriter.Close()
-		//defer func(pipeWriter *io.PipeWriter) {
-		//	err := pipeWriter.Close()
-		//	if err != nil {
-		//		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-		//	}
-		//}(pipeWriter)
+		if err != nil {
+			global.Logger.Error(err)
+		}
+		defer func(pipeWriter *io.PipeWriter) {
+			err := pipeWriter.Close()
+			if err != nil {
+				restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+			}
+		}(pipeWriter)
 
 	}()
 
@@ -383,8 +384,16 @@ func (p *Pod) ExecPodReadString(ctx context.Context, namespace, pod, container s
 }
 
 func (p *Pod) GetFileList(ctx context.Context, namespace, pod, container string, path string) []*util.FileItem {
-	readString := p.ExecPodReadString(ctx, namespace, pod, container, path)
+	readString := p.execPodReadString(ctx, namespace, pod, container, []string{"ls", "-l", path})
 	return util.GetDirAndFiles(readString)
+}
+
+func (p *Pod) ReadFileInfo(ctx context.Context, namespace, pod, container string, file string) string {
+	return p.execPodReadString(ctx, namespace, pod, container, []string{"cat", file})
+}
+
+func (p *Pod) UpdateFileName(ctx context.Context, namespace, pod, container string, src, dst string) {
+	p.execPodOnce(ctx, namespace, pod, container, []string{"mv", src, dst})
 }
 
 // ExecPodOnce executes a command once inside a pod.
@@ -395,7 +404,7 @@ func (p *Pod) GetFileList(ctx context.Context, namespace, pod, container string,
 // - pod: the name of the pod.
 // - container: the name of the container.
 // - cmd: the command to be executed.
-func (p *Pod) ExecPodOnce(ctx context.Context, namespace, pod, container string, cmd []string) {
+func (p *Pod) execPodOnce(ctx context.Context, namespace, pod, container string, cmd []string) {
 	option := &corev1.PodExecOptions{
 		Container: container,
 		Command:   cmd,
@@ -410,13 +419,12 @@ func (p *Pod) ExecPodOnce(ctx context.Context, namespace, pod, container string,
 	executor, err := remotecommand.NewSPDYExecutor(p.cli.Config, "POST", request.URL())
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	pipeReader, pipeWriter := io.Pipe()
-	defer pipeReader.Close()
-	// defer func(reader *io.PipeReader) {
-	// 	err := reader.Close()
-	// 	if err != nil {
-	// 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-	// 	}
-	// }(pipeReader)
+	defer func(reader *io.PipeReader) {
+		err := reader.Close()
+		if err != nil {
+			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		}
+	}(pipeReader)
 	go func() {
 		err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
 			Stdin:  os.Stdin,
@@ -424,15 +432,23 @@ func (p *Pod) ExecPodOnce(ctx context.Context, namespace, pod, container string,
 			Stderr: pipeWriter,
 			Tty:    false,
 		})
-		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		if err != nil {
+			global.Logger.Error(err)
+		}
 
-		defer pipeWriter.Close()
-		// defer func(pipeWriter *io.PipeWriter) {
-		// 	err := pipeWriter.Close()
-		// 	if err != nil {
-		// 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-		// 	}
-		// }(pipeWriter)
+		defer func(pipeWriter *io.PipeWriter) {
+			err := pipeWriter.Close()
+			if err != nil {
+				restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+			}
+		}(pipeWriter)
+
+		defer func() {
+			err := recover()
+			if err != nil {
+				restfulx.ErrNotNilDebug(err.(error), restfulx.OperatorErr)
+			}
+		}()
 	}()
 
 	b, err := io.ReadAll(pipeReader)
