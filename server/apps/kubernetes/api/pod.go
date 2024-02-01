@@ -152,3 +152,33 @@ func UpdateFileName(rc *rctx.ReqCtx) {
 	containerName := rc.PathParam("container")
 	core.V1.Cluster(clusterName).K8S().Pods(namespace).UpdateFileName(c, namespace, podName, containerName, src, dst)
 }
+
+func CreateDir(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	namespace := rc.PathParam("namespace")
+	podName := rc.PathParam("name")
+	clusterName := rc.QueryCloud()
+	path := rc.Query("path")
+	containerName := rc.PathParam("container")
+	core.V1.Cluster(clusterName).K8S().Pods(namespace).CreateDir(c, namespace, podName, containerName, path)
+}
+
+func RemoveFileOrDir(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	namespace := rc.PathParam("namespace")
+	clusterName := rc.QueryCloud()
+	dst := rc.Query("dst")
+	podName := rc.PathParam("name")
+	containerName := rc.PathParam("container")
+	core.V1.Cluster(clusterName).K8S().Pods(namespace).RemoveFileOrDir(c, namespace, podName, containerName, dst)
+}
+
+func DownloadFile(rc *rctx.ReqCtx) {
+	c := rc.Request.Request.Context()
+	namespace := rc.PathParam("namespace")
+	clusterName := rc.QueryCloud()
+	file := rc.Query("file")
+	podName := rc.PathParam("name")
+	containerName := rc.PathParam("container")
+	core.V1.Cluster(clusterName).K8S().Pods(namespace).CopyFromPod(c, namespace, podName, containerName, file, rc.Response.ResponseWriter)
+}

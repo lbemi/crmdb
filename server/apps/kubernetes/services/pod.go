@@ -5,8 +5,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 
 	entity2 "github.com/lbemi/lbemi/apps/kubernetes/entity"
@@ -45,6 +47,9 @@ type IPod interface {
 	GetFileList(ctx context.Context, namespace, pod, container string, path string) []*util.FileItem
 	ReadFileInfo(ctx context.Context, namespace, pod, container string, file string) string
 	UpdateFileName(ctx context.Context, namespace, pod, container string, src, dst string)
+	CreateDir(ctx context.Context, namespace, pod, container, path string)
+	RemoveFileOrDir(ctx context.Context, namespace, pod, container string, dst string)
+	CopyFromPod(ctx context.Context, namespace, pod, container, file string, w http.ResponseWriter) remotecommand.Executor
 }
 
 type Pod struct {
@@ -258,7 +263,7 @@ func (p *Pod) GetPodByNode(ctx context.Context, nodeName string) *corev1.PodList
 // - dst: the destination directory
 //
 // The function returns a remotecommand.Executor that can be used to execute commands in the pod.
-func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string, src, dst string) remotecommand.Executor {
+func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container, src string, w http.ResponseWriter) remotecommand.Executor {
 
 	option := &corev1.PodExecOptions{
 		Container: container,
@@ -293,10 +298,16 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string,
 		defer func(pipeWriter *io.PipeWriter) {
 			err := pipeWriter.Close()
 			if err != nil {
-				restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+				global.Logger.Error(err)
 			}
 		}(pipeWriter)
-		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
+		defer func() {
+			if err := recover(); err != nil {
+				global.Logger.Error(err)
+				restfulx.ErrNotNilDebug(err.(error), restfulx.OperatorErr)
+			}
+		}()
 	}()
 
 	reader := tar.NewReader(pipeReader)
@@ -309,17 +320,21 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container string,
 			}
 			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 		}
+
+		w.Header().Set("Content-Type", "application/octet-stream")
+		w.Header().Set("Content-Disposition", "attachment; filename="+header.FileInfo().Name())
+		w.Header().Set("Content-Length", strconv.FormatInt(header.FileInfo().Size(), 10))
 		//if header == nil {
 		//	continue
 		//}
 		//if header.Typeflag == tar.TypeDir {
 		//	continue
 		//}
-		global.Logger.Infof("创建文件: %s", header.Name)
-		//创建文件
-		f, err := os.Create(dst + "/" + header.Name)
-		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-		_, err = io.Copy(f, reader)
+		//global.Logger.Infof("创建文件: %s", header.Name)
+		////创建文件
+		//f, err := os.Create(dst + "/" + header.Name)
+		//restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+		_, err = io.Copy(w, reader)
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
 
@@ -394,6 +409,18 @@ func (p *Pod) ReadFileInfo(ctx context.Context, namespace, pod, container string
 
 func (p *Pod) UpdateFileName(ctx context.Context, namespace, pod, container string, src, dst string) {
 	p.execPodOnce(ctx, namespace, pod, container, []string{"mv", src, dst})
+}
+
+func (p *Pod) CreateDir(ctx context.Context, namespace, pod, container, path string) {
+	cmd := fmt.Sprintf("mkdir -p %s/folder$(( $(find %s -maxdepth 1 -type d  -name 'folder*' | wc -l) + 1 ))", path, path)
+	p.execPodOnce(ctx, namespace, pod, container, []string{"sh", "-c", cmd})
+}
+
+func (p *Pod) RemoveFileOrDir(ctx context.Context, namespace, pod, container string, dst string) {
+	if dst == "/" {
+		restfulx.ErrNotNilDebug(fmt.Errorf("can not remove root"), restfulx.OperatorErr)
+	}
+	p.execPodOnce(ctx, namespace, pod, container, []string{"rm", "-rf", dst})
 }
 
 // ExecPodOnce executes a command once inside a pod.

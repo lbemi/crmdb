@@ -128,5 +128,38 @@ func KubernetesPodRoutes() *restful.WebService {
 		Param(ws.QueryParameter("dst", "目标文件路径").Required(true).DataType("string")).
 		Returns(200, "success", nil))
 
+	ws.Route(ws.POST("/namespaces/{namespace}/files/{name}/{container}/create").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("exec").
+			WithHandle(api.CreateDir).Do()
+	}).Doc("Pod创建目录").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
+		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
+		Param(ws.PathParameter("name", "Pod名称").Required(true).DataType("string")).
+		Param(ws.QueryParameter("path", "路径").Required(true).DataType("string")).
+		Param(ws.PathParameter("container", "container名称").Required(true).DataType("string")).
+		Returns(200, "success", nil))
+
+	ws.Route(ws.DELETE("/namespaces/{namespace}/files/{name}/{container}/remove").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("exec").
+			WithHandle(api.RemoveFileOrDir).Do()
+	}).Doc("删除Pod文件或目录").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
+		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
+		Param(ws.PathParameter("name", "Pod名称").Required(true).DataType("string")).
+		Param(ws.QueryParameter("dst", "目标文件").Required(true).DataType("string")).
+		Param(ws.PathParameter("container", "container名称").Required(true).DataType("string")).
+		Returns(200, "success", nil))
+
+	ws.Route(ws.GET("/namespaces/{namespace}/files/{name}/{container}/download").To(func(request *restful.Request, response *restful.Response) {
+		rctx.NewReqCtx(request, response).WithLog("exec").WithNoRes().
+			WithHandle(api.DownloadFile).Do()
+	}).Doc("下载pod中的文件").Metadata(restfulspec.KeyOpenAPITags, tags).
+		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
+		Param(ws.PathParameter("namespace", "命名空间").Required(true).DataType("string")).
+		Param(ws.PathParameter("name", "Pod名称").Required(true).DataType("string")).
+		Param(ws.QueryParameter("file", "下载的文件").Required(true).DataType("string")).
+		Param(ws.PathParameter("container", "container名称").Required(true).DataType("string")).
+		Returns(200, "success", nil))
+
 	return ws
 }

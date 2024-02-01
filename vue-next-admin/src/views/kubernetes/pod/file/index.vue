@@ -6,7 +6,8 @@
 					<div>
 						<a>容器组名: {{ pod?.metadata?.name }}：</a>
 						<el-select v-model="state.selectContainer" placeholder="选择容器" size="small" @change="getFileList">
-							<el-option v-for="item in pod?.spec?.containers" :key="item.name" :label="item.name" :value="item.name" />
+							<el-option v-for="item in pod?.spec?.containers" :key="item.name" :label="item.name"
+								:value="item.name" />
 						</el-select>
 					</div>
 					<div>
@@ -21,25 +22,15 @@
 			</template>
 			<el-row :gutter="20">
 				<el-col :span="18">
-					<div v-loading="state.loading" class="video-main">
-						<!-- <ul> -->
+					<div v-loading="state.loading">
 						<div class="list-item" v-bind:key="item.name" v-for="item in state.files">
 							<div>
 								<div class="inner">
-									<el-image
-										:src="getFsImage(item.fsType)"
-										class="icon-thumb"
-										fit="contain"
-										alt
-										@dblclick="gotoDir(item)"
-										@click="selectItem(item)"
-										:key="item.name"
-									></el-image>
-									<i class="icon-folder"></i>
+									<el-image :src="getFsImage(item.fsType)" class="icon-thumb" fit="contain" alt
+										@dblclick="gotoDir(item)" @click="selectItem(item)" :key="item.name"></el-image>
 								</div>
 								<div class="file-name">
-									<i class="icon-file-selected"></i>
-									<span :title="item.name">{{ item.name }}</span>
+									<span>{{ item.name }}</span>
 								</div>
 							</div>
 						</div>
@@ -53,33 +44,37 @@
 							<div>
 								<div>
 									<el-button type="primary" size="small"> 上传 </el-button>
-									<el-button type="success" size="small">
-										<i class="el-icon-plus"></i>
+									<el-button type="success" size="small" @click="createDir">
 										新建文件夹
 									</el-button>
-									<el-button type="danger" size="small">
-										<i class="el-icon-delete"></i>
+									<el-button type="danger" size="small" @click="deleteFileOrDir">
+
 										删除
 									</el-button>
 								</div>
 								<div style="margin-top: 10px; margin-bottom: 10px">
-									<el-input v-model="state.searchFileName" placeholder="输入名称" style="width: 150px" size="small" clearable></el-input>
-									<el-button size="small" type="primary" style="margin-left: 2px" :icon="Search">搜索</el-button>
+									<el-input v-model="state.searchFileName" placeholder="输入名称" style="width: 150px"
+										size="small" clearable></el-input>
+									<el-button size="small" type="primary" style="margin-left: 2px"
+										:icon="Search">搜索</el-button>
 								</div>
 							</div>
 
 							<el-text type="info">属性</el-text>
 							<el-form-item label="名称:" key="name">
-								<el-input key="name" v-model="state.selected.name" placeholder="名称" size="small" style="width: 150px" :disabled="!state.edit">
+								<el-input key="name" v-model="state.selected.name" placeholder="名称" size="small"
+									style="width: 150px" :disabled="!state.edit">
 								</el-input>
-								<el-button v-if="!state.edit" type="primary" text size="small" @click="state.edit = !state.edit">编辑</el-button>
-								<el-button v-if="state.edit" type="primary" text size="small" @click="updateFileName">确定</el-button>
-								<el-button v-if="state.edit" type="primary" text size="small" style="margin: 0; padding-left: 0" @click="state.edit = !state.edit"
-									>取消</el-button
-								>
+								<el-button v-if="!state.edit" type="primary" text size="small"
+									@click="state.edit = !state.edit">编辑</el-button>
+								<el-button v-if="state.edit" type="primary" text size="small"
+									@click="updateFileName">确定</el-button>
+								<el-button v-if="state.edit" type="primary" text size="small"
+									style="margin: 0; padding-left: 0" @click="state.edit = !state.edit">取消</el-button>
 							</el-form-item>
 							<el-form-item label="权限:" key="auth">
-								<span>{{ state.selected && state.selected.permissions ? state.selected.permissions : '' }}</span>
+								<span>{{ state.selected && state.selected.permissions ? state.selected.permissions : ''
+								}}</span>
 							</el-form-item>
 							<el-form-item label="大小:" key="size">
 								<span>{{ state.selected && state.selected.size ? state.selected.size : '0' }}</span>
@@ -95,7 +90,12 @@
 								}}</el-input>
 							</el-form-item>
 							<el-form-item label="操作:">
-								<el-button type="primary" text v-if="state.selected.fsType === '-'" @click="readFile">预览文件</el-button>
+								<el-button type="primary" text v-if="state.selected.fsType === '-'"
+									@click="readFile">预览文件</el-button>
+								<el-button type="primary" text v-if="state.selected.fsType === '-'"
+									@click="downloadFile">下载</el-button>
+								<el-link type="primary" v-if="state.selected.fsType === '-'" target="_blank"
+									href="">下载2</el-link>
 							</el-form-item>
 						</el-form>
 					</div>
@@ -106,15 +106,9 @@
 			<template #header>
 				<h3>{{ state.selected.name }} 预览</h3>
 			</template>
-			<Codemirror
-				v-loading="state.loading"
-				v-model="state.fileInfo"
-				style="height: 92%; margin-left: 20px; margin-right: 15px"
-				:indent-with-tab="true"
-				:tabSize="2"
-				:extensions="extensions"
-				:disabled="true"
-			/>
+			<Codemirror v-loading="state.loading" v-model="state.fileInfo"
+				style="height: 92%; margin-left: 20px; margin-right: 15px" :indent-with-tab="true" :tabSize="2"
+				:extensions="extensions" :disabled="true" />
 			<div class="mt30" style="align-items: center; margin-left: 20px">
 				<el-button size="small" @click="handleClose">关闭</el-button>
 			</div>
@@ -239,6 +233,7 @@ const getFsImage = (type: string) => {
 	}
 };
 
+
 const selectItem = (item: FileType) => {
 	state.selected = deepClone(item) as FileType;
 	state.srcName = state.selected.name;
@@ -263,29 +258,45 @@ const gotoDir = (item: FileType) => {
 		getFileList();
 	}
 };
+
+const createDir = async () => {
+	await podApi.createDir(pod.metadata?.namespace, pod?.metadata?.name, state.selectContainer, {
+		cloud: k8sStore.state.activeCluster,
+		path: state.path,
+	}).then(() => {
+		ElMessage.success('操作成功');
+		getFileList();
+	}).catch((e) => {
+		ElMessage.error(e.message);
+	})
+}
+const deleteFileOrDir = async () => {
+	const dst = state.path + (state.path !== '/' ? state.path : '') + state.selected.name;
+	await podApi.removeFileOrDir(pod.metadata?.namespace, pod?.metadata?.name, state.selectContainer, {
+		cloud: k8sStore.state.activeCluster,
+		dst: dst,
+	}).then(() => {
+		ElMessage.success('操作成功');
+		getFileList();
+	}).catch((e) => {
+		ElMessage.error(e.message);
+	})
+}
+
+const downloadFile = async () => {
+	const file = state.path + (state.path !== '/' ? state.path : '') + state.selected.name;
+	await podApi.downloadFile(pod.metadata?.namespace, pod?.metadata?.name, state.selectContainer, {
+		cloud: k8sStore.state.activeCluster,
+		file: file.slice(1),
+	})
+}
 </script>
 
 <style lang="scss" scoped>
-.clearfix:after {
-	content: '';
-	display: block;
-	clear: both;
-}
-
-.video-container {
-	min-width: 630px;
-	margin: 10px;
-}
-
-.video-header {
-	padding: 0 0 5px 0;
-	border-bottom: 1px solid #dbdbdb;
-}
-
 .breadcrumb {
 	float: left;
 	// height: 20px;
-	margin-top: 3px;
+	margin-top: 4px;
 }
 
 .breadcrumb-link {
@@ -296,11 +307,6 @@ const gotoDir = (item: FileType) => {
 .breadcrumb-link:hover {
 	color: #409eff;
 	text-decoration: underline;
-}
-
-.breadcrumb-link-active {
-	// 面包屑当前激活文件夹的样式
-	font-weight: 700;
 }
 
 .header-top {
@@ -322,11 +328,6 @@ const gotoDir = (item: FileType) => {
 	display: inline-block;
 	cursor: pointer;
 	border-radius: 5px;
-	// display: flex;
-	// height: 80px;
-	// width: 80px;
-
-	// justify-content: flex-start;
 }
 
 .inner {
@@ -337,99 +338,43 @@ const gotoDir = (item: FileType) => {
 	padding: 10px 15px 10px 15px;
 }
 
-.icon-folder {
-	display: inline-block;
-	width: 60px;
-	height: 60px;
-	background-size: 100% 100%;
-}
 
 .icon-thumb {
-	width: 50px;
-	height: 50px;
+	width: 60px;
+	height: 60px;
 }
 
 .file-name {
-	padding-left: 35px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	color: #424e67;
 	font-size: 14px;
+	margin-left: 35px;
+	margin-top: 15px;
 }
 
 .file-name:hover {
 	color: #409eff;
 }
 
-.hover-cover {
-	width: 60px;
-	height: 60px;
-	position: absolute;
-	left: 10px;
-	top: 5px;
-	background-color: rgb(0, 0, 0);
-	opacity: 0;
-	text-align: center;
-	line-height: 60px;
-	font-size: 12px;
-}
 
 .list-item:hover {
 	background-color: #f1f5fa;
+	border: 1px solid transparent;
+	border-color: #409eff;
+	transition: border-color 0.3s ease;
 }
 
-.icon-file-selected {
-	opacity: 0.5;
+.list-item:visited {
+	background-color: #f1f5fa;
+	border: 1px solid transparent;
+	border-color: #409eff;
+	transition: border-color 0.3s ease;
 }
 
-.hover-cover {
-	opacity: 0.6;
-}
-
-.icon-file-selected {
-	// 小圆点默认样式
-	position: absolute;
-	left: 5px;
-	top: 5px;
-	display: inline-block;
-	width: 20px;
-	height: 20px;
-	background-size: 100% 100%;
-
-	opacity: 0;
-}
-
-.icon-file-selected:hover {
-	opacity: 1 !important;
-}
-
-.active {
-	border: 1px solid #409eff;
-	border-radius: 8px;
-}
-
-.icon-file-selected {
-	position: absolute;
-	left: 5px;
-	top: 5px;
-	display: inline-block;
-	width: 20px;
-	height: 20px;
-	background-size: 100% 100%;
-
-	opacity: 1;
-}
-
-.icon-file-selected {
-	opacity: 1 !important;
-}
-
-.loadding-message {
-	color: #424e67;
-	font-size: 12px;
-}
 .card {
-	overflow-y: auto; /* 开启滚动显示溢出内容 */
+	overflow-y: auto;
+	/* 开启滚动显示溢出内容 */
 }
 </style>

@@ -35,7 +35,7 @@ export function usePodApi() {
 				url: '/pods/namespaces/' + ns + '/logs/' + podName + '/' + container,
 				method: 'get',
 				params: param,
-				onDownloadProgress: () => {},
+				onDownloadProgress: () => { },
 			});
 		},
 		podEvents: (ns: string | undefined, podName: string | undefined, param: any) => {
@@ -63,6 +63,27 @@ export function usePodApi() {
 			return request({
 				url: '/pods/namespaces/' + ns + '/files/' + podName + '/' + container + '/mv',
 				method: 'put',
+				params: param,
+			});
+		},
+		createDir: (ns: string | undefined, podName: string | undefined, container: string | undefined, param: any) => {
+			return request({
+				url: '/pods/namespaces/' + ns + '/files/' + podName + '/' + container + '/create',
+				method: 'post',
+				params: param,
+			});
+		},
+		removeFileOrDir: (ns: string | undefined, podName: string | undefined, container: string | undefined, param: any) => {
+			return request({
+				url: '/pods/namespaces/' + ns + '/files/' + podName + '/' + container + '/remove',
+				method: 'delete',
+				params: param,
+			});
+		},
+		downloadFile: (ns: string | undefined, podName: string | undefined, container: string | undefined, param: any) => {
+			return request({
+				url: '/pods/namespaces/' + ns + '/files/' + podName + '/' + container + '/download',
+				method: 'get',
 				params: param,
 			});
 		},

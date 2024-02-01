@@ -74,5 +74,5 @@ func TestPod_ExecPodOnce(f *testing.T) {
 	pod := NewPod(cliStore, "", nil)
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancelFunc()
-	pod.ExecPodOnce(ctx, "default", "nginx2-7cc8cd4598-f66ws", "nginx", []string{"mv", "test2.txt", "test.txt"})
+	pod.execPodOnce(ctx, "default", "nginx2-7cc8cd4598-f66ws", "nginx", []string{"mv", "test2.txt", "test.txt"})
 }
