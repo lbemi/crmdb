@@ -83,7 +83,10 @@ func (rc *ReqCtx) Do() {
 			rc.Err = err
 			restfulx.ErrorRes(rc.Response, err)
 		}
-		ApplyHandlerInterceptor(afterHandlers, rc)
+		err := ApplyHandlerInterceptor(afterHandlers, rc)
+		if err != nil {
+			return
+		}
 	}()
 	// 如果rc.Response 为nil，则panic
 	restfulx.ErrNotTrue(rc.Request != nil, restfulx.NewErr("Request == nil"))
@@ -91,7 +94,7 @@ func (rc *ReqCtx) Do() {
 	rc.ResData = nil
 	err := ApplyHandlerInterceptor(beforeHandlers, rc)
 	if err != nil {
-		panic(err)
+		return
 	}
 	begin := time.Now()
 	rc.Handler(rc)

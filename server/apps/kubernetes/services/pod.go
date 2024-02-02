@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 
 	entity2 "github.com/lbemi/lbemi/apps/kubernetes/entity"
@@ -268,10 +267,11 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container, src st
 	option := &corev1.PodExecOptions{
 		Container: container,
 		Command:   []string{"sh", "-c", fmt.Sprintf("tar cf - %s | tail -c+%d", src, 0)},
-		Stderr:    true,
-		Stdin:     true,
-		Stdout:    true,
-		TTY:       true,
+		//Command: []string{"sh", "-c", fmt.Sprintf("tar cf - %s ", src)},
+		Stderr: true,
+		Stdin:  true,
+		Stdout: true,
+		TTY:    true,
 	}
 	request := p.cli.ClientSet.CoreV1().RESTClient().Post().Resource("pods").Namespace(namespace).
 		Name(pod).SubResource("exec").Param("color", "true").
@@ -295,21 +295,21 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container, src st
 	reader := tar.NewReader(pipeReader)
 	for {
 		header, err := reader.Next()
+
 		if err != nil {
 			if err == io.EOF {
-				global.Logger.Info("copy over")
 				break
 			}
 			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-			//break
 		}
-
+		w.Header().Set("Content-Disposition",
+			"attachment; filename="+header.FileInfo().Name())
 		w.Header().Set("Content-Type", "application/octet-stream")
-		w.Header().Set("Content-Disposition", "attachment; filename="+header.FileInfo().Name())
-		w.Header().Set("Content-Length", strconv.FormatInt(header.FileInfo().Size(), 10))
-		//if header == nil {
-		//	continue
-		//}
+		//w.Header().Set("Content-Length", strconv.FormatInt(header.FileInfo().Size(), 10))
+		//需要设置为-1,否则报错http: wrote more than the declared content-length
+		w.Header().Set("Content-Length", "-1")
+		w.Header().Set("Content-Transfer-Encoding", "binary")
+
 		//if header.Typeflag == tar.TypeDir {
 		//	continue
 		//}
@@ -317,6 +317,7 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container, src st
 		////创建文件
 		//f, err := os.Create(dst + "/" + header.Name)
 		//restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+
 		_, err = io.Copy(w, reader)
 		restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 	}
