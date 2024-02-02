@@ -3,6 +3,7 @@ package util
 import (
 	"errors"
 	_ "net/http/pprof"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -101,5 +102,19 @@ func GetDirAndFiles(fileString string) []*FileItem {
 			ret = append(ret, fsItem)
 		}
 	}
+	//排个序
+	sortFn := func(i, j int) bool {
+		// 先按照 FsType 排序
+		if ret[i].FsType != ret[j].FsType {
+			return ret[i].FsType > ret[j].FsType
+		}
+		// 在相同的 FsType 下按照 LastModify 倒序排序
+		timeFormat := "2006-01-02" // 日期格式
+		t1, _ := time.Parse(timeFormat, ret[i].LastModify)
+		t2, _ := time.Parse(timeFormat, ret[j].LastModify)
+		return t1.After(t2)
+	}
+	sort.Slice(ret, sortFn)
+
 	return ret
 }

@@ -281,13 +281,7 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container, src st
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 
 	pipeReader, pipeWriter := io.Pipe()
-	defer func(pipeReader *io.PipeReader) {
-		err := pipeReader.Close()
-		if err != nil {
-			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
-		}
-	}(pipeReader)
-
+	defer pipeReader.Close()
 	go func() {
 		err = executor.StreamWithContext(ctx, remotecommand.StreamOptions{
 			Stdin:  os.Stdin,
@@ -295,19 +289,7 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container, src st
 			Stderr: os.Stderr,
 			Tty:    false,
 		})
-		defer func(pipeWriter *io.PipeWriter) {
-			err := pipeWriter.Close()
-			if err != nil {
-				global.Logger.Error(err)
-			}
-		}(pipeWriter)
-
-		defer func() {
-			if err := recover(); err != nil {
-				global.Logger.Error(err)
-				restfulx.ErrNotNilDebug(err.(error), restfulx.OperatorErr)
-			}
-		}()
+		defer pipeWriter.Close()
 	}()
 
 	reader := tar.NewReader(pipeReader)
@@ -319,6 +301,7 @@ func (p *Pod) CopyFromPod(ctx context.Context, namespace, pod, container, src st
 				break
 			}
 			restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
+			//break
 		}
 
 		w.Header().Set("Content-Type", "application/octet-stream")
@@ -378,16 +361,13 @@ func (p *Pod) execPodReadString(ctx context.Context, namespace, pod, container s
 			Stderr: os.Stderr,
 			Tty:    false,
 		})
-		if err != nil {
-			global.Logger.Error(err)
-		}
+
 		defer func(pipeWriter *io.PipeWriter) {
 			err := pipeWriter.Close()
 			if err != nil {
 				restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)
 			}
 		}(pipeWriter)
-
 	}()
 
 	b, err := io.ReadAll(pipeReader)
