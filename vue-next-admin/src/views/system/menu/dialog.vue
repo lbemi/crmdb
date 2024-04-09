@@ -180,6 +180,7 @@
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
 import { useMenuApi } from '@/api/system/menu';
 import { ElMessage, FormInstance, FormRules } from 'element-plus';
+import { setBackEndControlRefreshRoutes } from '@/router/backEnd';
 
 // import { setBackEndControlRefreshRoutes } from "@/router/backEnd";
 
@@ -319,7 +320,7 @@ const onSubmit = async () => {
 			});
 		closeDialog(); // 关闭弹窗
 	}
-	// setBackEndControlRefreshRoutes() // 刷新菜单，未进行后端接口测试
+	await setBackEndControlRefreshRoutes(); // 刷新菜单，未进行后端接口测试
 };
 // 页面加载时
 onMounted(() => {

@@ -34,6 +34,8 @@ declare interface TagsViewRoutesState<T = any> {
 // 路由列表
 declare interface RoutesListState<T = any> {
 	routesList: T[];
+	kubernetesRoutesList: T[];
+	isKubernetes: Boolean;
 	isColumnsMenuHover: Boolean;
 	isColumnsNavHover: Boolean;
 }

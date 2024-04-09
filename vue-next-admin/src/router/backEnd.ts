@@ -9,8 +9,6 @@ import { formatTwoStageRoutes, formatFlatteningRoutes, router } from '@/router/i
 import { useRoutesList } from '@/stores/routesList';
 import { useTagsViewRoutes } from '@/stores/tagsViewRoutes';
 import { useMenuApi } from '@/api/system/menu';
-import { log } from 'console';
-import { del } from 'vue-demi';
 
 // 后端控制路由
 
@@ -35,6 +33,7 @@ const dynamicViewsModules: Record<string, Function> = Object.assign({}, { ...lay
  * @method setFilterMenuAndCacheTagsViewRoutes 设置路由到 pinia routesList 中（已处理成多级嵌套路由）及缓存多级嵌套数组处理后的一维数组
  */
 export async function initBackEndControlRoutes() {
+	const storesRoutesList = useRoutesList(pinia);
 	// 界面 loading 动画开始执行
 	if (window.nextLoading === undefined) NextLoading.start();
 	// 无 token 停止执行下一步
@@ -45,16 +44,29 @@ export async function initBackEndControlRoutes() {
 
 	// 获取路由菜单数据
 	// const res = await getBackEndControlRoutes();
-	const { kubernetesMenus: kubernetesMenus, permissions: permission, menus: menus } = await parseMenus();
+	const { kubernetesMenus: kubernetesMenus, permissions: permission, newMenus: menus } = await parseMenus();
 	// 无登录权限时，添加判断
 	// https://gitee.com/lyt-top/vue-next-admin/issues/I64HVO
 	if (menus.length <= 0) return Promise.resolve(true);
 	// 设置按钮权限
 	await useUserInfo().setUserAuthButton(permission);
-	// 存储接口原始路由（未处理component），根据需求选择使用
-	useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(menus)));
+	console.log('>>>>>', storesRoutesList.isKubernetes);
+	if (!storesRoutesList.isKubernetes) {
+		console.log('-----:', storesRoutesList.isKubernetes);
+	}
+
 	// 处理路由（page），替换 dynamicRoutes（@/router/route）第一个顶级 children 的路由
-	dynamicRoutes[0].children = await backEndComponent(menus);
+	if (storesRoutesList.isKubernetes) {
+		// 存储接口原始路由（未处理component），根据需求选择使用
+		console.log('-----<<<<', kubernetesMenus);
+		await useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(kubernetesMenus)));
+		dynamicRoutes[0].children = await backEndComponent(kubernetesMenus);
+	} else {
+		await useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(menus)));
+		dynamicRoutes[0].children = await backEndComponent(menus);
+	}
+	// dynamicRoutes[0].children = await backEndComponent(menus);
+	// dynamicRoutes[1].children = await backEndComponent(kubernetesMenus);
 	// 添加动态路由
 	await setAddRoute();
 	// 设置路由到 pinia routesList 中（已处理成多级嵌套路由）及缓存多级嵌套数组处理后的一维数组
@@ -65,28 +77,33 @@ const parseMenus = async () => {
 	const menuList = await getBackEndControlRoutes();
 	const menus = menuList.data.menus;
 	const permissions = menuList.data.permission;
-	let kubernetesMenus = [];
-	for (let i = 0; i < menus.length; i++) {
-		if (menus[i].path === '/kubernetes') {
-			for (let j = 0; j < menus[i].children.length; j++) {
-				if (menus[i].children[j].meta['isK8s']) {
-					console.log(menus[i].children[j].name);
-					kubernetesMenus[j] = menus[i].children[j];
-				}
+	let kubernetesMenus: any[] = [];
+
+	const newMenus = menus
+		.map((item: any) => {
+			// 检查当前项的path属性
+			if (item.path === '/kubernetes') {
+				// 如果是kubernetes条目，处理其children
+				const newChildren = item.children.map((child: any) => {
+					if (child.meta && child.meta.isK8s === true) {
+						// 如果是K8s条目，则添加到filteredK8sEntries数组中
+						kubernetesMenus.push(child);
+						// 返回null以从原始数据中删除该项
+						return null;
+					}
+					// 否则，保持不变
+					return child;
+				});
+				// 更新当前项的children
+				item.children = newChildren.filter((child: any) => child !== null);
 			}
-		}
-	}
-	// for (let i = 0; i < menus.length; i++) {
-	// 	if (menus[i].path === '/kubernetes') {
-	// 		for (let j = 0; j < menus[i].children.length; j++) {
-	// 			if (menus[i].children[j].meta['isK8s']) {
-	// 				delete menus[i].children[j];
-	// 			}
-	// 		}
-	// 	}
-	// }
-	//返回kubernetes 和 permission
-	return { kubernetesMenus, permissions, menus };
+			// 如果当前项不是kubernetes条目，保持不变
+			return item;
+		})
+		.filter((item: any) => item !== null); // 过滤掉null值
+
+	//返回kubernetes 和 permission,newMenus
+	return { kubernetesMenus, permissions, newMenus };
 };
 /**
  * 设置路由到 pinia routesList 中（已处理成多级嵌套路由）及缓存多级嵌套数组处理后的一维数组
@@ -95,7 +112,7 @@ const parseMenus = async () => {
  */
 export async function setFilterMenuAndCacheTagsViewRoutes() {
 	const storesRoutesList = useRoutesList(pinia);
-	storesRoutesList.setRoutesList(dynamicRoutes[0].children as any);
+	await storesRoutesList.setRoutesList(dynamicRoutes[0].children as any);
 	setCacheTagsViewRoutes();
 }
 
@@ -139,15 +156,7 @@ export async function setAddRoute() {
  * @returns 返回后端路由菜单数据
  */
 export function getBackEndControlRoutes() {
-	// 模拟 admin 与 test
-	// const stores = useUserInfo(pinia);
-	// const { userInfos } = storeToRefs(stores);
-	// const auth = userInfos.value.roles[0];
-	// 管理员 admin
-	// if (auth === 'admin') return menuApi.getAdminMenu();
-
 	return menuApi.getUserMenu();
-	// 其它用户 test
 }
 
 /**

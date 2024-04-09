@@ -42,7 +42,7 @@
 				</el-table-column>
 				<el-table-column fixed="right" label="操作" width="170">
 					<template #default="scope">
-						<el-button v-auth="'k8s:cluster:del'"  link type="danger" size="small" @click="deleteCluster(scope.row)">删除</el-button>
+						<el-button v-auth="'k8s:cluster:del'" link type="danger" size="small" @click="deleteCluster(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -58,10 +58,13 @@ import { useClusterApi } from '@/api/kubernetes/cluster';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ClusterInfo } from '@/types/kubernetes/cluster';
+import { initBackEndControlRoutes } from '@/router/backEnd';
+import { useRoutesList } from '@/stores/routesList';
 
 const CreateCluster = defineAsyncComponent(() => import('./component/create.vue'));
 
 const k8sStore = kubernetesInfo();
+const storesRoutesList = useRoutesList();
 const clusterAPI = useClusterApi();
 const state = reactive({
 	dialogVisible: false,
@@ -106,10 +109,11 @@ const deleteCluster = async (cluster: any) => {
 		.catch(); // 取消
 };
 
-const handleCluster = (cluster: any) => {
+const handleCluster = async (cluster: any) => {
 	k8sStore.state.activeCluster = cluster.name;
-
-	router.push({
+	storesRoutesList.isKubernetes = true;
+	await initBackEndControlRoutes();
+	await router.push({
 		name: 'kubernetesDashboard',
 	});
 };
