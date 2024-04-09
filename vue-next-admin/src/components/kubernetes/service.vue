@@ -57,7 +57,6 @@
 								请选择:
 								<el-select class="m-2" placeholder="Select" v-model="data.selectWorkLoad" size="small">
 									<el-option
-										v-if="data.deployments.length > 0"
 										v-for="item in data.deployments"
 										:key="item.metadata!.name"
 										:label="item.metadata!.name!"
@@ -115,14 +114,11 @@ import { defineAsyncComponent, reactive, ref, watch } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
 import { ElMessage } from 'element-plus';
-import { useServiceApi } from '@/api/kubernetes/service';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
-import { ResponseType } from '@/types/response';
 
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/labels.vue'));
 const ServicePort = defineAsyncComponent(() => import('@/components/kubernetes/servicePort.vue'));
 
-const dialogVisible = ref(false);
 const k8sStore = kubernetesInfo();
 const deploymentApi = useDeploymentApi();
 const ruleFormRef = ref();

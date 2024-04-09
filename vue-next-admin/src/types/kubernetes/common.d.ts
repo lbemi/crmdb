@@ -10,7 +10,7 @@ import {
 	VolumeMount,
 } from 'kubernetes-types/core/v1';
 
-export interface RegisterInfo<T> {
+export interface MirrorRepository<T> {
 	auths: {
 		[T]: {
 			username: string;

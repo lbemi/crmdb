@@ -1,6 +1,7 @@
 package restfulx
 
 import (
+	"errors"
 	"github.com/lbemi/lbemi/pkg/global"
 	"gorm.io/gorm"
 	"runtime/debug"
@@ -75,7 +76,7 @@ func ErrIsNil(err error, oe *OpsError) {
 
 func ErrNotNilDebug(err error, oe *OpsError) {
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return
 		}
 		global.Logger.Error(err)

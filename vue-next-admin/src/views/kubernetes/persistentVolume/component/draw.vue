@@ -17,9 +17,9 @@
 						><el-option key="all" label="所有命名空间" value="all"></el-option>
 						<el-option
 							v-for="item in k8sStore.state.namespace"
-							:key="item.metadata!.name"
-							:label="item.metadata!.name!"
-							:value="item.metadata!.name"
+							:key="item.metadata!.name || ''"
+							:label="item.metadata!.name! || ''"
+							:value="item.metadata!.name || ''"
 						/>
 					</el-select>
 				</el-form-item>
@@ -31,14 +31,8 @@
 						><el-input :disabled="data.isUpdate" size="small" v-model="data.secrets.metadata.name"></el-input>
 					</el-form-item>
 				</div>
-				<div>
-					<el-form-item label="标签">
-						<Label class="label" :labelData="data.labels" @updateLabels="getLabels" />
-					</el-form-item>
-				</div>
-				<el-form-item label="注解">
-					<Label class="label" :labelData="data.annotations" @updateLabels="getAnnotations" />
-				</el-form-item>
+				<Label :name="'标签'" :labelData="data.labels" @updateLabels="getLabels" />
+				<Label :name="'注解'" :labelData="data.annotations" @updateLabels="getAnnotations" />
 				<div>
 					<el-form-item label="类型">
 						<el-radio-group v-model="data.secrets.type" size="small" :disabled="data.isUpdate">
@@ -148,18 +142,18 @@
 				</div>
 				<div v-else-if="data.secrets.type === 'kubernetes.io/dockerconfigjson'">
 					<el-form-item label="仓库地址:">
-						<el-input v-model="data.registerInfo.register" size="small"></el-input>
+						<el-input v-model="data.mirrorRepository.register" size="small"></el-input>
 					</el-form-item>
 					<div>
 						<el-form-item label="用户名:">
-							<el-input v-model="data.registerInfo.username" size="small"></el-input>
+							<el-input v-model="data.mirrorRepository.username" size="small"></el-input>
 						</el-form-item>
 					</div>
 					<el-form-item label="密码:">
-						<el-input size="small" type="password" show-password v-model="data.registerInfo.password"></el-input>
+						<el-input size="small" type="password" show-password v-model="data.mirrorRepository.password"></el-input>
 					</el-form-item>
 					<el-form-item label="邮箱:">
-						<el-input size="small" v-model="data.registerInfo.email"></el-input>
+						<el-input size="small" v-model="data.mirrorRepository.email"></el-input>
 					</el-form-item>
 				</div>
 				<!--				</el-form-item>-->
@@ -236,7 +230,7 @@ import { Plus, RemoveFilled } from '@element-plus/icons-vue';
 import { useSecretApi } from '@/api/kubernetes/secret';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
-import { RegisterInfo } from '@/types/kubernetes/common';
+import { MirrorRepository } from '@/types/kubernetes/common';
 
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 
@@ -263,7 +257,7 @@ const data = reactive({
 		username: '',
 		password: '',
 	},
-	registerInfo: {
+	mirrorRepository: {
 		register: '',
 		username: '',
 		password: '',
@@ -384,14 +378,14 @@ const getLabels = (labels: any) => {
 };
 
 const convertRegister = () => {
-	const authSecret = window.btoa(data.registerInfo.username + ':' + data.registerInfo.password);
+	const authSecret = window.btoa(data.mirrorRepository.username + ':' + data.mirrorRepository.password);
 	data.secrets.stringData = {
 		'.dockerconfigjson': JSON.stringify({
 			auths: {
-				[data.registerInfo.register]: {
-					username: data.registerInfo.username,
-					password: data.registerInfo.password,
-					email: data.registerInfo.email,
+				[data.mirrorRepository.register]: {
+					username: data.mirrorRepository.username,
+					password: data.mirrorRepository.password,
+					email: data.mirrorRepository.email,
 					auth: authSecret,
 				},
 			},
@@ -479,13 +473,13 @@ const convertSecretTo = () => {
 			break;
 		case 'kubernetes.io/dockerconfigjson':
 			if (data.secrets.data) {
-				const obj = JSON.parse(decodeURI(atob(data.secrets.data['.dockerconfigjson']))) as RegisterInfo<string>;
+				const obj = JSON.parse(decodeURI(atob(data.secrets.data['.dockerconfigjson']))) as MirrorRepository<string>;
 				let register = '';
 				for (let key in obj.auths) {
 					register = key;
 				}
 				if (obj.auths[register]) {
-					data.registerInfo = {
+					data.mirrorRepository = {
 						register: register,
 						username: obj.auths[register].username,
 						password: obj.auths[register].password,

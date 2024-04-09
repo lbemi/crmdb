@@ -93,7 +93,7 @@ import { kubernetesInfo } from '@/stores/kubernetes';
 import { useVirtualServiceApi } from '@/api/istio/virtualService';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
-import { CircleCheck, CircleClose, InfoFilled } from '@element-plus/icons-vue';
+import { CircleCheck, CircleClose } from '@element-plus/icons-vue';
 import yamlJs from 'js-yaml';
 
 const formRulesOneRef = ref<FormInstance>();

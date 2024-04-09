@@ -1,146 +1,146 @@
 <template>
-	<div class="main">
-		asdasd
-		<code-mirror v-model="codeVal" basic style="height: 400px" :extensions="extensions" :phrases="phrases" />
-	</div>
+	<el-form-item :label="name" label-width="90px" class="mb5">
+		<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="addLabel">新增</el-button>
+	</el-form-item>
+	<el-form-item label-width="90px" :key="index" v-for="(item, index) in data.labels">
+		<template v-if="item">
+			<el-form ref="labelRef" :model="data" :inline="true" v-if="item.key !== 'app'">
+				<el-form-item label="键" :prop="'labels.' + index + '.key'" :rules="labelRules.key">
+					<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
+				</el-form-item>
+				<el-form-item label="值" :prop="'labels.' + index + '.value'" :rules="labelRules.value">
+					<el-input placeholder="value" v-model="item.value" size="small" />
+				</el-form-item>
+				<el-form-item label-width="0px">
+					<el-button :icon="RemoveFilled" type="primary" size="small" text @click="removeLabel(index)"></el-button>
+				</el-form-item>
+			</el-form>
+		</template>
+	</el-form-item>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import CodeMirror from 'vue-codemirror6';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { json } from '@codemirror/lang-json';
-import { StreamLanguage } from '@codemirror/language';
-import { yaml } from '@codemirror/legacy-modes/mode/yaml';
-import { javascript } from '@codemirror/legacy-modes/mode/javascript';
-import { Ref } from 'vue-demi';
+import { RemoveFilled } from '@element-plus/icons-vue';
+import { reactive, watch, ref } from 'vue';
+import { isObjectValueEqual } from '@/utils/arrayOperation';
+import { CirclePlusFilled } from '@element-plus/icons-vue';
+import { FormInstance, FormRules } from 'element-plus';
 
-// // 初始化
-let codeVal = ref('');
-// // 转成json字符串并格式化
-codeVal.value = `metadata:
-  name: sleep
-  namespace: myistio
-  uid: 9499e43d-02b9-41fb-ac83-bda4b8cb49dd
-  resourceVersion: '236989499'
-  generation: 1
-  creationTimestamp: '2023-10-24T01:37:36Z'
-  annotations:
-    deployment.kubernetes.io/revision: '1'
-    kubectl.kubernetes.io/last-applied-configuration: >
-      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"sleep","namespace":"myistio"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"sleep"}},"template":{"metadata":{"labels":{"app":"sleep"}},"spec":{"containers":[{"command":["/bin/sleep","infinity"],"image":"curlimages/curl","imagePullPolicy":"IfNotPresent","name":"sleep","volumeMounts":[{"mountPath":"/etc/sleep/tls","name":"secret-volume"}]}],"serviceAccountName":"sleep","terminationGracePeriodSeconds":0,"volumes":[{"name":"secret-volume","secret":{"optional":true,"secretName":"sleep-secret"}}]}}}}
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: sleep
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app: sleep
-    spec:
-      volumes:
-        - name: secret-volume
-          secret:
-            secretName: sleep-secret
-            defaultMode: 420
-            optional: true
-      containers:
-        - name: sleep
-          image: curlimages/curl
-          command:
-            - /bin/sleep
-            - infinity
-          resources: {}
-          volumeMounts:
-            - name: secret-volume
-              mountPath: /etc/sleep/tls
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          imagePullPolicy: IfNotPresent
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 0
-      dnsPolicy: ClusterFirst
-      serviceAccountName: sleep
-      serviceAccount: sleep
-      securityContext: {}
-      schedulerName: default-scheduler
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 25%
-      maxSurge: 25%
-  revisionHistoryLimit: 10
-  progressDeadlineSeconds: 600
-status:
-  observedGeneration: 1
-  replicas: 1
-  updatedReplicas: 1
-  readyReplicas: 1
-  availableReplicas: 1
-  conditions:
-    - type: Available
-      status: 'True'
-      lastUpdateTime: '2023-10-24T01:37:45Z'
-      lastTransitionTime: '2023-10-24T01:37:45Z'
-      reason: MinimumReplicasAvailable
-      message: Deployment has minimum availability.
-    - type: Progressing
-      status: 'True'
-      lastUpdateTime: '2023-10-24T01:37:45Z'
-      lastTransitionTime: '2023-10-24T01:37:36Z'
-      reason: NewReplicaSetAvailable
-      message: ReplicaSet "sleep-69cfb4968f" has successfully progressed.
-`
-//
-// // json语言
-// const lang = yaml();
-// // 扩展
-const extensions = [oneDark, StreamLanguage.define(javascript)];
-const phrases: Ref<Record<string, string>> = ref({
-	// @codemirror/view
-	'Control character': '制御文字',
-	// @codemirror/commands
-	'Selection deleted': '選択を削除',
-	// @codemirror/language
-	'Folded lines': '折り畳まれた行',
-	'Unfolded lines': '折り畳める行',
-	to: '行き先',
-	'folded code': '折り畳まれたコード',
-	unfold: '折り畳みを解除',
-	'Fold line': '行を折り畳む',
-	'Unfold line': '行の折り畳む解除',
-	// @codemirror/search
-	'Go to line': '行き先の行',
-	go: 'OK',
-	Find: '検索',
-	Replace: '置き換え',
-	next: '▼',
-	previous: '▲',
-	all: 'すべて',
-	'match case': '一致条件',
-	'by word': '全文検索',
-	regexp: '正規表現',
-	replace: '置き換え',
-	'replace all': 'すべてを置き換え',
-	close: '閉じる',
-	'current match': '現在の一致',
-	'replaced $ matches': '$ 件の一致を置き換え',
-	'replaced match on line $': '$ 行の一致を置き換え',
-	'on line': 'した行',
-	// @codemirror/autocomplete
-	Completions: '自動補完',
-	// @codemirror/lint
-	Diagnostics: 'エラー',
-	'No diagnostics': 'エラーなし',
+const labelRef = ref<Array<FormInstance>>([]);
+interface label {
+	key: string;
+	value: string;
+}
+const data = reactive({
+	labels: [] as label[],
+});
+
+const addLabel = () => {
+	data.labels.push({ key: '', value: '' });
+	// labelRef.value.push(null); // Push null initially, it will be populated when the form is rendered
+};
+const removeLabel = (index: number) => {
+	data.labels.splice(index, 1);
+	// labelRef.value.splice(index, 1);
+};
+//校验key，不能重复
+const validateKey = (rule: any, value: any, callback: any) => {
+	if (value === '') {
+		callback(new Error('请输入key'));
+	} else {
+		let count = 0;
+		data.labels.forEach((item: label) => {
+			if (item.key === value) {
+				count++;
+			}
+		});
+		if (count > 1) {
+			callback(new Error('key已存在'));
+		} else {
+			callback();
+		}
+	}
+};
+
+// 校验value
+const validateValue = (rule: any, value: any, callback: any) => {
+	if (value === '') {
+		callback(new Error('请输入value'));
+	} else {
+		callback();
+	}
+};
+const labelRules = reactive<FormRules>({
+	key: [{ required: true, validator: validateKey, trigger: 'blur' }],
+	value: [{ required: true, validator: validateValue, trigger: 'blur' }],
+});
+
+//指定接收值
+const props = defineProps({
+	labelData: Array,
+	name: {
+		type: String,
+		default: '标签:',
+	},
+});
+
+const handleLabels = () => {
+	const labelsTup: { [key: string]: string } = {};
+	for (const k in data.labels) {
+		if (data.labels[k].key != '' && data.labels[k].value != '') {
+			labelsTup[data.labels[k].key] = data.labels[k].value;
+		}
+	}
+	return labelsTup;
+};
+
+const emit = defineEmits(['updateLabels']);
+// FIXME 在父组件校验
+const validateHandler = (formEl: Array<FormInstance> | undefined, labels: Object) => {
+	let status = false;
+	formEl?.forEach((item) => {
+		item.validate((valid) => {
+			status = valid;
+			if (valid) {
+				emit('updateLabels', labels);
+			}
+		});
+	});
+	return status;
+};
+// 监听父组件传递来的数据
+watch(
+	() => props.labelData,
+	() => {
+		if (props.labelData) {
+			data.labels = JSON.parse(JSON.stringify(props.labelData));
+		}
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
+
+// 监听表单数据，如果发生变化则传递到父组件
+watch(
+	() => data.labels,
+	() => {
+		const labels = handleLabels();
+		if (!isObjectValueEqual(labels, { '': '' })) {
+			validateHandler(labelRef.value, labels);
+			// emit('updateLabels', labels);
+		}
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
+
+defineExpose({
+	validateHandler,
 });
 </script>
-s
 
-<style>
-/* required! */
-.cm-editor {
-	height: 100%;
-}
-</style>
+<style scoped></style>

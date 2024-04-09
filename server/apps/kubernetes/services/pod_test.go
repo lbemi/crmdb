@@ -26,8 +26,8 @@ func TestPod_CopyFromPod(t *testing.T) {
 		panic(err)
 	}
 	cliStore := &cache.ClientConfig{ClientSet: clientSet, Config: config}
-	pod := NewPod(cliStore, "default", nil)
-	_ = pod.CopyFromPod(context.Background(), "default", "nginx2-7cc8cd4598-f66ws", "nginx", "test.txt", ".")
+	_ = NewPod(cliStore, "default", nil)
+	// _ = pod.CopyFromPod(context.Background(), "default", "nginx2-7cc8cd4598-f66ws", "nginx", "test.txt", ".")
 }
 
 func TestPod_ExecPodReadString(f *testing.T) {

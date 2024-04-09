@@ -236,7 +236,7 @@ import { Plus, RemoveFilled } from '@element-plus/icons-vue';
 import { useSecretApi } from '@/api/kubernetes/secret';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
-import { RegisterInfo } from '@/types/kubernetes/common';
+import { MirrorRepository } from '@/types/kubernetes/common';
 
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 
@@ -479,7 +479,7 @@ const convertSecretTo = () => {
 			break;
 		case 'kubernetes.io/dockerconfigjson':
 			if (data.secrets.data) {
-				const obj = JSON.parse(decodeURI(atob(data.secrets.data['.dockerconfigjson']))) as RegisterInfo<string>;
+				const obj = JSON.parse(decodeURI(atob(data.secrets.data['.dockerconfigjson']))) as MirrorRepository<string>;
 				let register = '';
 				for (let key in obj.auths) {
 					register = key;

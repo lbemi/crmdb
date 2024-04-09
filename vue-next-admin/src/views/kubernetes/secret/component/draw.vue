@@ -1,11 +1,11 @@
 <template>
-	<el-drawer v-model="data.visible" @close="handleClose" size="45%">
+	<el-drawer v-model="data.visible" @close="handleClose" size="50%">
 		<template #header="{ titleId, titleClass }">
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
 		<div>
-			<el-form :inline="true" class="demo-form-inline" v-model="data" :rules="formRules" label-position="right" label-width="auto">
-				<el-form-item label="命名空间：" prop="namespace">
+			<el-form v-model="data" :rules="formRules" label-width="90px">
+				<el-form-item label="命名空间" prop="namespace">
 					<el-select
 						v-if="data.secrets.metadata"
 						v-model="data.secrets.metadata.namespace"
@@ -19,203 +19,193 @@
 							v-for="item in k8sStore.state.namespace"
 							:key="item.metadata!.name"
 							:label="item.metadata!.name!"
-							:value="item.metadata!.name"
+							:value="item.metadata!.name!"
 						/>
 					</el-select>
 				</el-form-item>
 				<el-form-item label="不可修改:"
 					><el-checkbox v-model="data.secrets.immutable" size="default" label="创建后不可修改" :disabled="data.isUpdate"></el-checkbox>
 				</el-form-item>
-				<div>
-					<el-form-item label="Secret名称:" v-if="data.secrets.metadata"
-						><el-input :disabled="data.isUpdate" size="small" v-model="data.secrets.metadata.name"></el-input>
-					</el-form-item>
-				</div>
-				<div>
-					<el-form-item label="标签">
-						<Label class="label" :labelData="data.labels" @updateLabels="getLabels" />
-					</el-form-item>
-				</div>
-				<el-form-item label="注解">
-					<Label class="label" :labelData="data.annotations" @updateLabels="getAnnotations" />
+				<el-form-item label="Secret名称" v-if="data.secrets.metadata"
+					><el-input :disabled="data.isUpdate" size="small" v-model="data.secrets.metadata.name" style="width: 400px"></el-input>
 				</el-form-item>
-				<div>
-					<el-form-item label="类型">
-						<el-radio-group v-model="data.secrets.type" size="small" :disabled="data.isUpdate">
-							<el-radio-button v-for="(item, index) in secretType" :label="item.value" :key="index">{{ item.key }}</el-radio-button>
-						</el-radio-group>
-					</el-form-item>
-				</div>
+				<!-- <el-form-item> -->
+				<Label :name="'标签'" :labelData="data.labels" @updateLabels="getLabels" :label-width="'90px'" />
+				<!-- </el-form-item> -->
 
-				<!--				<el-form-item label="数据:">-->
-				<div v-if="data.secrets.type === 'Opaque'">
-					<el-table :data="data.keyValues" style="width: 100%">
-						<el-table-column label="名称" width="180">
-							<template #default="scope">
-								<el-input v-model="scope.row.key" size="small" />
-							</template>
-						</el-table-column>
-						<el-table-column label="值" width="380">
-							<template #default="scope">
-								<el-input type="textarea" v-model="scope.row.value" size="small" :rows="4" />
-							</template>
-						</el-table-column>
-						<el-table-column width="30px">
-							<template #default="scope">
-								<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.keyValues.splice(scope.$index, 1)"></el-button>
-							</template>
-						</el-table-column>
-						<el-table-column width="200px">
-							<template #default="scope">
+				<Label :name="'注解'" :labelData="data.annotations" @updateLabels="getAnnotations" :label-width="'90px'" />
+
+				<el-form-item label="类型">
+					<el-radio-group v-model="data.secrets.type" size="small" :disabled="data.isUpdate">
+						<el-radio-button v-for="(item, index) in secretType" :label="item.value" :key="index">{{ item.key }}</el-radio-button>
+					</el-radio-group>
+				</el-form-item>
+				<el-form-item>
+					<div v-if="data.secrets.type === 'Opaque'">
+						<el-table :data="data.keyValues" style="width: 100%">
+							<el-table-column label="名称" width="180">
+								<template #default="scope">
+									<el-input v-model="scope.row.key" size="small" />
+								</template>
+							</el-table-column>
+							<el-table-column label="值" width="380">
+								<template #default="scope">
+									<el-input type="textarea" v-model="scope.row.value" size="small" :rows="4" />
+								</template>
+							</el-table-column>
+							<el-table-column width="30px">
+								<template #default="scope">
+									<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.keyValues.splice(scope.$index, 1)"></el-button>
+								</template>
+							</el-table-column>
+							<el-table-column width="200px">
+								<template #default="scope">
+									<el-upload
+										ref="upload"
+										class="upload-demo"
+										:limit="1"
+										:on-change="($evnet) => submitUpload($evnet, scope.row)"
+										:on-exceed="handleExceed"
+										:auto-upload="false"
+									>
+										<template #tip>
+											<div class="el-upload__tip">file with a size less than 500KB.</div>
+										</template>
+										<template #trigger>
+											<el-button type="primary" size="small" text>从文件上传</el-button>
+										</template>
+									</el-upload>
+								</template>
+							</el-table-column>
+						</el-table>
+						<div class="flex-center">
+							<el-button size="small" @click="addKey()" type="primary" plain
+								><el-icon><Plus /></el-icon>添加</el-button
+							>
+						</div>
+					</div>
+					<div v-else-if="data.secrets.type === 'kubernetes.io/tls'">
+						<!--					<el-form-item label="证书公钥名称">-->
+						<!--						<el-input size="small" v-model="data.tlsValue[0].key" style="width: 400px"></el-input>-->
+						<!--					</el-form-item>-->
+						<div>
+							<el-form-item label="证书公钥内容" label-width="auto">
+								<el-input
+									placeholder="-----BEGIN CERTIFICATE-----"
+									type="textarea"
+									:rows="5"
+									v-model="data.tlsValue[0].value"
+									style="width: 430px"
+								></el-input>
 								<el-upload
 									ref="upload"
 									class="upload-demo"
 									:limit="1"
-									:on-change="($evnet) => submitUpload($evnet, scope.row)"
+									:on-change="($evnet) => uploadCert($evnet)"
 									:on-exceed="handleExceed"
 									:auto-upload="false"
 								>
-									<!--										<template #tip>-->
-									<!--											<div class="el-upload__tip text-red">limit 1 file</div>-->
-									<!--										</template>-->
 									<template #trigger>
 										<el-button type="primary" size="small" text>从文件上传</el-button>
 									</template>
 								</el-upload>
-							</template>
-						</el-table-column>
-					</el-table>
-					<div>
-						<el-button size="small" @click="addKey()" style="width: 90%" type="primary" plain
-							><el-icon><Plus /></el-icon>添加</el-button
-						>
-					</div>
-				</div>
-				<div v-else-if="data.secrets.type === 'kubernetes.io/tls'">
-					<!--					<el-form-item label="证书公钥名称">-->
-					<!--						<el-input size="small" v-model="data.tlsValue[0].key" style="width: 400px"></el-input>-->
-					<!--					</el-form-item>-->
-					<div>
-						<el-form-item label="证书公钥内容">
-							<el-input
-								placeholder="-----BEGIN CERTIFICATE-----"
-								type="textarea"
-								:rows="5"
-								v-model="data.tlsValue[0].value"
-								style="width: 400px"
-							></el-input>
-							<el-upload
-								ref="upload"
-								class="upload-demo"
-								:limit="1"
-								:on-change="($evnet) => uploadCert($evnet)"
-								:on-exceed="handleExceed"
-								:auto-upload="false"
-							>
-								<template #trigger>
-									<el-button type="primary" size="small" text>从文件上传</el-button>
-								</template>
-							</el-upload>
-						</el-form-item>
-					</div>
+							</el-form-item>
+						</div>
 
-					<!--					<el-form-item label="证书私钥名称">-->
-					<!--						<el-input size="small" v-model="data.tlsValue[1].key" style="width: 400px"></el-input>-->
-					<!--					</el-form-item>-->
-					<div>
-						<el-form-item label="证书私钥内容">
-							<el-input
-								placeholder="-----BEGIN PRIVATE KEY-----"
-								type="textarea"
-								:rows="5"
-								v-model="data.tlsValue[1].value"
-								style="width: 400px"
-							></el-input>
-							<el-upload
-								ref="upload"
-								class="upload-demo"
-								:limit="1"
-								:on-change="($evnet) => uploadKey($evnet)"
-								:on-exceed="handleExceed"
-								:auto-upload="false"
-							>
-								<template #trigger>
-									<el-button type="primary" size="small" text>从文件上传</el-button>
-								</template>
-							</el-upload>
-						</el-form-item>
-					</div>
-				</div>
-				<div v-else-if="data.secrets.type === 'kubernetes.io/dockerconfigjson'">
-					<el-form-item label="仓库地址:">
-						<el-input v-model="data.registerInfo.register" size="small"></el-input>
-					</el-form-item>
-					<div>
-						<el-form-item label="用户名:">
-							<el-input v-model="data.registerInfo.username" size="small"></el-input>
-						</el-form-item>
-					</div>
-					<el-form-item label="密码:">
-						<el-input size="small" type="password" show-password v-model="data.registerInfo.password"></el-input>
-					</el-form-item>
-					<el-form-item label="邮箱:">
-						<el-input size="small" v-model="data.registerInfo.email"></el-input>
-					</el-form-item>
-				</div>
-				<!--				</el-form-item>-->
-				<div v-else-if="data.secrets.type === 'kubernetes.io/basic-auth'">
-					<div>
-						<el-form-item label="用户名:">
-							<el-input v-model="data.basicAuth.username" size="small"></el-input>
-						</el-form-item>
-					</div>
-					<el-form-item label="密码:">
-						<el-input type="password" show-password size="small" v-model="data.basicAuth.password"></el-input>
-					</el-form-item>
-				</div>
-				<div v-else>
-					<el-table :data="data.keyValues" style="width: 100%">
-						<el-table-column label="名称" width="180">
-							<template #default="scope">
-								<el-input v-model="scope.row.key" size="small" />
-							</template>
-						</el-table-column>
-						<el-table-column label="值" width="380">
-							<template #default="scope">
-								<el-input type="textarea" v-model="scope.row.value" size="small" :rows="4" />
-							</template>
-						</el-table-column>
-						<el-table-column width="30px">
-							<template #default="scope">
-								<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.keyValues.splice(scope.$index, 1)"></el-button>
-							</template>
-						</el-table-column>
-						<el-table-column width="200px">
-							<template #default="scope">
+						<!--					<el-form-item label="证书私钥名称">-->
+						<!--						<el-input size="small" v-model="data.tlsValue[1].key" style="width: 400px"></el-input>-->
+						<!--					</el-form-item>-->
+						<div>
+							<el-form-item label="证书私钥内容" label-width="auto">
+								<el-input
+									placeholder="-----BEGIN PRIVATE KEY-----"
+									type="textarea"
+									:rows="5"
+									v-model="data.tlsValue[1].value"
+									style="width: 430px"
+								></el-input>
 								<el-upload
 									ref="upload"
 									class="upload-demo"
 									:limit="1"
-									:on-change="($evnet) => submitUpload($evnet, scope.row)"
+									:on-change="($evnet) => uploadKey($evnet)"
 									:on-exceed="handleExceed"
 									:auto-upload="false"
 								>
-									<!--										<template #tip>-->
-									<!--											<div class="el-upload__tip text-red">limit 1 file</div>-->
-									<!--										</template>-->
 									<template #trigger>
 										<el-button type="primary" size="small" text>从文件上传</el-button>
 									</template>
 								</el-upload>
-							</template>
-						</el-table-column>
-					</el-table>
-					<div>
-						<el-button size="small" @click="addKey()" style="width: 90%" type="primary" plain
-							><el-icon><Plus /></el-icon>添加</el-button
-						>
+							</el-form-item>
+						</div>
 					</div>
-				</div>
+					<div v-else-if="data.secrets.type === 'kubernetes.io/dockerconfigjson'">
+						<el-form label-width="auto">
+							<el-form-item label="仓库地址:">
+								<el-input v-model="data.registerInfo.register" size="small" style="width: 350px"></el-input>
+							</el-form-item>
+							<el-form-item label="用户名:">
+								<el-input v-model="data.registerInfo.username" size="small"></el-input>
+							</el-form-item>
+							<el-form-item label="密码:">
+								<el-input size="small" type="password" show-password v-model="data.registerInfo.password"></el-input>
+							</el-form-item>
+							<el-form-item label="邮箱:">
+								<el-input size="small" v-model="data.registerInfo.email"></el-input>
+							</el-form-item>
+						</el-form>
+					</div>
+					<div v-else-if="data.secrets.type === 'kubernetes.io/basic-auth'">
+						<el-form label-width="auto">
+							<el-form-item label="用户名:" style="width: 350px">
+								<el-input v-model="data.basicAuth.username" size="small"></el-input>
+							</el-form-item>
+							<el-form-item label="密码:" style="width: 350px">
+								<el-input type="password" show-password size="small" v-model="data.basicAuth.password"></el-input>
+							</el-form-item>
+						</el-form>
+					</div>
+					<div v-else>
+						<el-table :data="data.keyValues" style="width: 100%">
+							<el-table-column label="名称" width="180">
+								<template #default="scope">
+									<el-input v-model="scope.row.key" size="small" />
+								</template>
+							</el-table-column>
+							<el-table-column label="值" width="380">
+								<template #default="scope">
+									<el-input type="textarea" v-model="scope.row.value" size="small" :rows="4" />
+								</template>
+							</el-table-column>
+							<el-table-column width="30px">
+								<template #default="scope">
+									<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.keyValues.splice(scope.$index, 1)"></el-button>
+								</template>
+							</el-table-column>
+							<el-table-column width="200px">
+								<template #default="scope">
+									<el-upload
+										ref="upload"
+										class="upload-demo"
+										:limit="1"
+										:on-change="($evnet) => submitUpload($evnet, scope.row)"
+										:on-exceed="handleExceed"
+										:auto-upload="false"
+									>
+										<template #trigger>
+											<el-button type="primary" size="small" text>从文件上传</el-button>
+										</template>
+									</el-upload>
+								</template>
+							</el-table-column>
+						</el-table>
+						<div>
+							<el-button size="small" @click="addKey()" style="width: 90%" type="primary" plain
+								><el-icon><Plus /></el-icon>添加</el-button
+							>
+						</div>
+					</div>
+				</el-form-item>
 			</el-form>
 			<div class="footer">
 				<el-button size="small" @click="handleClose">取消</el-button>
@@ -236,7 +226,7 @@ import { Plus, RemoveFilled } from '@element-plus/icons-vue';
 import { useSecretApi } from '@/api/kubernetes/secret';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { deepClone } from '@/utils/other';
-import { RegisterInfo } from '@/types/kubernetes/common';
+import { MirrorRepository } from '@/types/kubernetes/common';
 
 const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 
@@ -246,8 +236,8 @@ const secretApi = useSecretApi();
 const data = reactive({
 	isUpdate: false,
 	visible: false,
-	labels: [],
-	annotations: [],
+	labels: [] as Array<{ key: string; value: string }>,
+	annotations: [] as Array<{ key: string; value: string }>,
 	keyValues: [] as Array<{ key: string; value: string }>,
 	tlsValue: [
 		{
@@ -332,7 +322,7 @@ const addKey = () => {
 const emit = defineEmits(['update:visible', 'refresh']);
 
 type propsType = {
-	visible: Boolean;
+	visible: boolean;
 	secret: Secret | undefined;
 	title: String;
 };
@@ -367,11 +357,11 @@ const handAnnotations = (labels: { [key: string]: string }) => {
 };
 
 const convertSecret = (kvs: Array<{ key: string; value: string }>) => {
-	data.secrets.stringData = {};
+	data.secrets.stringData = {} as { [key: string]: string };
 	kvs.forEach((item) => {
-		let obj = {};
+		let obj = {} as { [key: string]: string };
 		obj[item.key] = item.value;
-		Object.assign(data.secrets.stringData, obj);
+		data.secrets.stringData = { ...data.secrets.stringData, ...obj };
 	});
 };
 
@@ -479,7 +469,7 @@ const convertSecretTo = () => {
 			break;
 		case 'kubernetes.io/dockerconfigjson':
 			if (data.secrets.data) {
-				const obj = JSON.parse(decodeURI(atob(data.secrets.data['.dockerconfigjson']))) as RegisterInfo<string>;
+				const obj = JSON.parse(decodeURI(atob(data.secrets.data['.dockerconfigjson']))) as MirrorRepository<string>;
 				let register = '';
 				for (let key in obj.auths) {
 					register = key;
