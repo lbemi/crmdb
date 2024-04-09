@@ -9,6 +9,8 @@ import { formatTwoStageRoutes, formatFlatteningRoutes, router } from '@/router/i
 import { useRoutesList } from '@/stores/routesList';
 import { useTagsViewRoutes } from '@/stores/tagsViewRoutes';
 import { useMenuApi } from '@/api/system/menu';
+import { log } from 'console';
+import { del } from 'vue-demi';
 
 // 后端控制路由
 
@@ -42,22 +44,50 @@ export async function initBackEndControlRoutes() {
 	await useUserInfo().setUserInfos();
 
 	// 获取路由菜单数据
-	const res = await getBackEndControlRoutes();
+	// const res = await getBackEndControlRoutes();
+	const { kubernetesMenus: kubernetesMenus, permissions: permission, menus: menus } = await parseMenus();
 	// 无登录权限时，添加判断
 	// https://gitee.com/lyt-top/vue-next-admin/issues/I64HVO
-	if (res.data.length <= 0) return Promise.resolve(true);
+	if (menus.length <= 0) return Promise.resolve(true);
 	// 设置按钮权限
-	await useUserInfo().setUserAuthButton(res.data.permission);
+	await useUserInfo().setUserAuthButton(permission);
 	// 存储接口原始路由（未处理component），根据需求选择使用
-	useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(res.data.menus)));
+	useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(menus)));
 	// 处理路由（page），替换 dynamicRoutes（@/router/route）第一个顶级 children 的路由
-	dynamicRoutes[0].children = await backEndComponent(res.data.menus);
+	dynamicRoutes[0].children = await backEndComponent(menus);
 	// 添加动态路由
 	await setAddRoute();
 	// 设置路由到 pinia routesList 中（已处理成多级嵌套路由）及缓存多级嵌套数组处理后的一维数组
 	await setFilterMenuAndCacheTagsViewRoutes();
 }
 
+const parseMenus = async () => {
+	const menuList = await getBackEndControlRoutes();
+	const menus = menuList.data.menus;
+	const permissions = menuList.data.permission;
+	let kubernetesMenus = [];
+	for (let i = 0; i < menus.length; i++) {
+		if (menus[i].path === '/kubernetes') {
+			for (let j = 0; j < menus[i].children.length; j++) {
+				if (menus[i].children[j].meta['isK8s']) {
+					console.log(menus[i].children[j].name);
+					kubernetesMenus[j] = menus[i].children[j];
+				}
+			}
+		}
+	}
+	// for (let i = 0; i < menus.length; i++) {
+	// 	if (menus[i].path === '/kubernetes') {
+	// 		for (let j = 0; j < menus[i].children.length; j++) {
+	// 			if (menus[i].children[j].meta['isK8s']) {
+	// 				delete menus[i].children[j];
+	// 			}
+	// 		}
+	// 	}
+	// }
+	//返回kubernetes 和 permission
+	return { kubernetesMenus, permissions, menus };
+};
 /**
  * 设置路由到 pinia routesList 中（已处理成多级嵌套路由）及缓存多级嵌套数组处理后的一维数组
  * @description 用于左侧菜单、横向菜单的显示
@@ -115,6 +145,7 @@ export function getBackEndControlRoutes() {
 	// const auth = userInfos.value.roles[0];
 	// 管理员 admin
 	// if (auth === 'admin') return menuApi.getAdminMenu();
+
 	return menuApi.getUserMenu();
 	// 其它用户 test
 }

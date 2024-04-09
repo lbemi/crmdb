@@ -6,6 +6,7 @@ import (
 	"github.com/lbemi/lbemi/apps/system/api/form"
 	"github.com/lbemi/lbemi/apps/system/entity"
 	"github.com/lbemi/lbemi/pkg/common/commService"
+	"github.com/lbemi/lbemi/pkg/global"
 	"github.com/lbemi/lbemi/pkg/restfulx"
 	"gorm.io/gorm"
 )
@@ -76,15 +77,14 @@ func (m *Menu) Create(ctx context.Context, obj *form.MenusReq) *entity.Menu {
 
 func (m *Menu) Update(ctx context.Context, newMenu *form.UpdateMenusReq, menuID uint64) {
 	restfulx.ErrNotTrue(m.CheckMenusIsExist(ctx, menuID), restfulx.ResourceExist)
-
 	oldMenu := m.Get(ctx, menuID)
-
 	objMap := structs.Map(newMenu)
 	delete(objMap, "Meta")
 	metaMap := structs.Map(newMenu.Meta)
 	for k, v := range metaMap {
 		objMap[k] = v
 	}
+	global.Logger.Info("objMap:", objMap)
 
 	err := m.db.Model(&entity.Menu{}).Where("id = ?  ", menuID).Updates(objMap).Error
 	restfulx.ErrNotNilDebug(err, restfulx.OperatorErr)

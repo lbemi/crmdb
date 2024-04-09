@@ -25,6 +25,7 @@ declare module 'vue-router' {
 		isKeepAlive?: boolean;
 		isAffix?: boolean;
 		isIframe?: boolean;
+		isK8s?: boolean;
 		roles?: string[];
 		icon?: string;
 	}

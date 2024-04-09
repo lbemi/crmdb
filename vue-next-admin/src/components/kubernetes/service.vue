@@ -123,7 +123,7 @@ const k8sStore = kubernetesInfo();
 const deploymentApi = useDeploymentApi();
 const ruleFormRef = ref();
 
-const emit = defineEmits(['update', 'update:dialogVisible', 'refresh']);
+// const emit = defineEmits(['update', 'update:dialogVisible', 'refresh']);
 
 const data = reactive({
 	keepAliveTime: 10800,
@@ -161,10 +161,10 @@ const data = reactive({
 	],
 });
 
-const handleClose = () => {
-	emit('update:dialogVisible', false);
-	ruleFormRef.value.resetFields();
-};
+// const handleClose = () => {
+// 	emit('update:dialogVisible', false);
+// 	ruleFormRef.value.resetFields();
+// };
 
 const selectWorkLoad = () => {
 	data.visible = true;
