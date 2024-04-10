@@ -6,7 +6,7 @@
 				</el-input>
 				状态：
 				<el-select v-model.number="state.searchStatus" size="default" style="width: 100px">
-					<el-option v-for="item in status" :value="item.value" :label="item.label"> </el-option>
+					<el-option v-for="item in status" :value="item.value" :label="item.label" :key="item.value"> </el-option>
 				</el-select>
 				<el-button size="default" type="primary" class="ml10" @click="getTableData">
 					<el-icon>
@@ -102,14 +102,12 @@
 
 <script setup lang="ts" name="systemMenu">
 import { defineAsyncComponent, ref, onMounted, reactive } from 'vue';
-import { RouteRecordRaw } from 'vue-router';
-import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMenuApi } from '@/api/system/menu';
 import { dateStrFormat } from '@/utils/formatTime';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';
-
-// import { setBackEndControlRefreshRoutes } from "@/router/backEnd";
+import { MenuType } from '@/types/views';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 // 引入组件
 const MenuDialog = defineAsyncComponent(() => import('@/views/system/menu/dialog.vue'));
@@ -125,7 +123,7 @@ const route = useRoute();
 const menuDialogRef = ref();
 const state = reactive({
 	tableData: {
-		data: [] as RouteRecordRaw[],
+		data: [] as MenuType[],
 		loading: true,
 	},
 	params: <query>{
@@ -164,7 +162,7 @@ const onOpenAddMenu = (type: string) => {
 	menuDialogRef.value.openDialog(type);
 };
 // 打开编辑菜单弹窗
-const onOpenEditMenu = (type: string, row: RouteRecordRaw) => {
+const onOpenEditMenu = (type: string, row: MenuType) => {
 	menuDialogRef.value.openDialog(type, row);
 };
 // 删除菜单或按钮

@@ -9,6 +9,7 @@ import { formatTwoStageRoutes, formatFlatteningRoutes, router } from '@/router/i
 import { useRoutesList } from '@/stores/routesList';
 import { useTagsViewRoutes } from '@/stores/tagsViewRoutes';
 import { useMenuApi } from '@/api/system/menu';
+import { kubernetesInfo } from '@/stores/kubernetes';
 
 // 后端控制路由
 
@@ -33,7 +34,7 @@ const dynamicViewsModules: Record<string, Function> = Object.assign({}, { ...lay
  * @method setFilterMenuAndCacheTagsViewRoutes 设置路由到 pinia routesList 中（已处理成多级嵌套路由）及缓存多级嵌套数组处理后的一维数组
  */
 export async function initBackEndControlRoutes() {
-	const storesRoutesList = useRoutesList(pinia);
+	const k8sStore = kubernetesInfo(pinia);
 	// 界面 loading 动画开始执行
 	if (window.nextLoading === undefined) NextLoading.start();
 	// 无 token 停止执行下一步
@@ -50,23 +51,15 @@ export async function initBackEndControlRoutes() {
 	if (menus.length <= 0) return Promise.resolve(true);
 	// 设置按钮权限
 	await useUserInfo().setUserAuthButton(permission);
-	console.log('>>>>>', storesRoutesList.isKubernetes);
-	if (!storesRoutesList.isKubernetes) {
-		console.log('-----:', storesRoutesList.isKubernetes);
-	}
-
 	// 处理路由（page），替换 dynamicRoutes（@/router/route）第一个顶级 children 的路由
-	if (storesRoutesList.isKubernetes) {
+	if (k8sStore.state.isKubernetesRoutes) {
 		// 存储接口原始路由（未处理component），根据需求选择使用
-		console.log('-----<<<<', kubernetesMenus);
 		await useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(kubernetesMenus)));
 		dynamicRoutes[0].children = await backEndComponent(kubernetesMenus);
 	} else {
 		await useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(menus)));
 		dynamicRoutes[0].children = await backEndComponent(menus);
 	}
-	// dynamicRoutes[0].children = await backEndComponent(menus);
-	// dynamicRoutes[1].children = await backEndComponent(kubernetesMenus);
 	// 添加动态路由
 	await setAddRoute();
 	// 设置路由到 pinia routesList 中（已处理成多级嵌套路由）及缓存多级嵌套数组处理后的一维数组
@@ -146,7 +139,8 @@ export function setFilterRouteEnd() {
  */
 export async function setAddRoute() {
 	await setFilterRouteEnd().forEach((route: RouteRecordRaw) => {
-		router.addRoute(route);
+		router.addRoute('/home', route);
+		// router.replace(router.currentRoute.value.fullPath);
 	});
 }
 

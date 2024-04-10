@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { reactive } from 'vue';
 import { DaemonSet, Deployment, StatefulSet } from 'kubernetes-types/apps/v1';
 import { Namespace, Service } from 'kubernetes-types/core/v1';
-import { Node } from '../types/kubernetes/cluster';
+import { ClusterInfo, Node } from '../types/kubernetes/cluster';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { ElMessage } from 'element-plus';
@@ -27,7 +27,9 @@ export const kubernetesInfo = defineStore(
 	'kubernetesInfo',
 	() => {
 		const state = reactive({
+			isKubernetesRoutes: false,
 			activeNode: {} as Node,
+			clusterList: [] as ClusterInfo[],
 			activeCluster: '',
 			activeNamespace: 'default',
 			activeDeployment: {} as Deployment,
@@ -133,6 +135,9 @@ export const kubernetesInfo = defineStore(
 				state.namespaceTotal = res.data.total;
 			});
 		};
+		const setKubernetesRoutes = (enable: boolean) => {
+			state.isKubernetesRoutes = enable;
+		};
 		return {
 			state,
 			refreshActiveDeployment,
@@ -141,6 +146,7 @@ export const kubernetesInfo = defineStore(
 			refreshActiveJob,
 			refreshActiveCronJob,
 			listNamespace,
+			setKubernetesRoutes,
 		};
 	},
 	{

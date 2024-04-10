@@ -60,7 +60,7 @@ import { kubernetesInfo } from '@/stores/kubernetes';
 import { ClusterInfo } from '@/types/kubernetes/cluster';
 import { initBackEndControlRoutes } from '@/router/backEnd';
 import { useRoutesList } from '@/stores/routesList';
-
+import mittBus from '@/utils/mitt';
 const CreateCluster = defineAsyncComponent(() => import('./component/create.vue'));
 
 const k8sStore = kubernetesInfo();
@@ -86,6 +86,7 @@ const data = reactive({
 const getCluster = async () => {
 	const res = await clusterAPI.listCluster();
 	data.clusters = res.data;
+	k8sStore.state.clusterList = res.data;
 };
 
 const deleteCluster = async (cluster: any) => {
@@ -111,8 +112,10 @@ const deleteCluster = async (cluster: any) => {
 
 const handleCluster = async (cluster: any) => {
 	k8sStore.state.activeCluster = cluster.name;
-	storesRoutesList.isKubernetes = true;
+	k8sStore.setKubernetesRoutes(true);
+	// 初始化路由
 	await initBackEndControlRoutes();
+	mittBus.emit('getBreadcrumbIndexSetFilterRoutes');
 	await router.push({
 		name: 'kubernetesDashboard',
 	});

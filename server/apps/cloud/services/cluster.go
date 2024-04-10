@@ -246,7 +246,7 @@ func (c *Cluster) StartInformer(clusterName string) {
 
 	resources, err := client.DiscoveryClient.ServerPreferredResources()
 	if err != nil {
-		restfulx.ErrNotNilDebug(fmt.Errorf("初始化Informer失败"), restfulx.OperatorErr)
+		fmt.Println("初始化Informer失败")
 	}
 	for _, apiResource := range resources {
 		groupVersion := strings.Split(apiResource.GroupVersion, "/")

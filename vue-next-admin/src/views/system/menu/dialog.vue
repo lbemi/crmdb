@@ -181,6 +181,7 @@ import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
 import { useMenuApi } from '@/api/system/menu';
 import { ElMessage, FormInstance, FormRules } from 'element-plus';
 import { setBackEndControlRefreshRoutes } from '@/router/backEnd';
+import { MenuType } from '@/types/views';
 
 // import { setBackEndControlRefreshRoutes } from "@/router/backEnd";
 
@@ -257,7 +258,7 @@ const getMenuData = async () => {
 };
 
 // 打开弹窗
-const openDialog = (type: string, row?: any) => {
+const openDialog = (type: string, row?: MenuType) => {
 	if (type === 'edit') {
 		state.ruleForm = JSON.parse(JSON.stringify(row));
 		state.dialog.title = '修改菜单';

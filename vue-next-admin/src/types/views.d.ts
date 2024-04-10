@@ -137,6 +137,7 @@ export type MenuType = {
 		isAffix: boolean; // 是否固定
 		isLink: string; // 外链/内嵌时链接地址（http:xxx.com），开启外链条件，`1、isLink: 链接地址不为空`
 		isIframe: boolean; // 是否内嵌，开启条件，`1、isIframe:true 2、isLink：链接地址不为空`
+		isK8s: boolean;
 	};
 	children: Array<MenuType>;
 };
