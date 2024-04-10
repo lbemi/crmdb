@@ -25,6 +25,7 @@ import { reactive, watch, ref } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { CirclePlusFilled } from '@element-plus/icons-vue';
 import { FormInstance, FormRules } from 'element-plus';
+import { Task } from '@/types/tekton/task';
 
 const labelRef = ref<Array<FormInstance>>([]);
 interface label {
@@ -33,6 +34,7 @@ interface label {
 }
 const data = reactive({
 	labels: [] as label[],
+	task: [] as Task[],
 });
 
 const addLabel = () => {
