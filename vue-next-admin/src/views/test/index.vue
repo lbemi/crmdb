@@ -1,148 +1,115 @@
 <template>
-	<el-form-item :label="name" label-width="90px" class="mb5">
-		<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="addLabel">新增</el-button>
-	</el-form-item>
-	<el-form-item label-width="90px" :key="index" v-for="(item, index) in data.labels">
-		<template v-if="item">
-			<el-form ref="labelRef" :model="data" :inline="true" v-if="item.key !== 'app'">
-				<el-form-item label="键" :prop="'labels.' + index + '.key'" :rules="labelRules.key">
-					<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
-				</el-form-item>
-				<el-form-item label="值" :prop="'labels.' + index + '.value'" :rules="labelRules.value">
-					<el-input placeholder="value" v-model="item.value" size="small" />
-				</el-form-item>
-				<el-form-item label-width="0px">
-					<el-button :icon="RemoveFilled" type="primary" size="small" text @click="removeLabel(index)"></el-button>
-				</el-form-item>
+	<div class="dynamic-form-container layout-pd">
+		<el-card shadow="hover" header="创建Task">
+			<el-form :model="state.task" ref="formRulesOneRef" size="default" label-width="100px" class="mt35">
+				<el-row :gutter="35" v-for="(v, k) in state.form.list" :key="k">
+					<el-col :xs="24" :sm="12" :md="8" :lg="8" :xl="6" class="mb20">
+						<el-form-item label="名称" :prop="state.task.metadata.name" :rules="[{ required: true, message: '名称不能为空', trigger: 'blur' }]">
+							<el-input v-model="state.task.metadata.name" placeholder="名称" clearable></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="8" :lg="8" :xl="6" class="mb20">
+						<el-form-item label="命名空间">
+							<el-select v-model="state.task.metadata.namespace" style="max-width: 280px" class="m-2" placeholder="Select" :size="state.size"
+								><el-option key="all" label="所有命名空间" value="all"></el-option>
+								<el-option
+									v-for="item in k8sStore.state.namespace"
+									:key="item.metadata?.name"
+									:label="item.metadata?.name"
+									:value="item.metadata!.name!"
+								/>
+							</el-select>
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="8" :lg="8" :xl="6" class="mb20">
+						<Label :name="'注解'" />
+					</el-col>
+				</el-row>
 			</el-form>
-		</template>
-	</el-form-item>
+		</el-card>
+		<el-row class="flex mt15">
+			<div class="flex-margin">
+				<el-button size="default" @click="onResetForm(formRulesOneRef)">
+					<el-icon>
+						<ele-RefreshRight />
+					</el-icon>
+					重置表单
+				</el-button>
+				<el-button size="default" type="primary" @click="onSubmitForm(formRulesOneRef)">
+					<SvgIcon name="iconfont icon-shuxing" />
+					验证表单
+				</el-button>
+			</div>
+		</el-row>
+	</div>
 </template>
 
-<script setup lang="ts">
-import { RemoveFilled } from '@element-plus/icons-vue';
-import { reactive, watch, ref } from 'vue';
-import { isObjectValueEqual } from '@/utils/arrayOperation';
-import { CirclePlusFilled } from '@element-plus/icons-vue';
-import { FormInstance, FormRules } from 'element-plus';
-import { Task } from '@/types/tekton/task';
+<script setup lang="ts" name="test">
+import { defineAsyncComponent, reactive, ref } from 'vue';
+import { ElMessage } from 'element-plus';
+import type { FormInstance } from 'element-plus';
+import { kubernetesInfo } from '@/stores/kubernetes';
+import { useThemeConfig } from '@/stores/themeConfig';
+import { Task, annotations } from '@/types/tekton/task';
 
-const labelRef = ref<Array<FormInstance>>([]);
-interface label {
-	key: string;
-	value: string;
-}
-const data = reactive({
-	labels: [] as label[],
-	task: [] as Task[],
-});
+const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
+// 定义变量内容
+const formRulesOneRef = ref<FormInstance>();
+const theme = useThemeConfig();
+const k8sStore = kubernetesInfo();
 
-const addLabel = () => {
-	data.labels.push({ key: '', value: '' });
-	// labelRef.value.push(null); // Push null initially, it will be populated when the form is rendered
-};
-const removeLabel = (index: number) => {
-	data.labels.splice(index, 1);
-	// labelRef.value.splice(index, 1);
-};
-//校验key，不能重复
-const validateKey = (rule: any, value: any, callback: any) => {
-	if (value === '') {
-		callback(new Error('请输入key'));
-	} else {
-		let count = 0;
-		data.labels.forEach((item: label) => {
-			if (item.key === value) {
-				count++;
-			}
-		});
-		if (count > 1) {
-			callback(new Error('key已存在'));
-		} else {
-			callback();
-		}
-	}
-};
-
-// 校验value
-const validateValue = (rule: any, value: any, callback: any) => {
-	if (value === '') {
-		callback(new Error('请输入value'));
-	} else {
-		callback();
-	}
-};
-const labelRules = reactive<FormRules>({
-	key: [{ required: true, validator: validateKey, trigger: 'blur' }],
-	value: [{ required: true, validator: validateValue, trigger: 'blur' }],
-});
-
-//指定接收值
-const props = defineProps({
-	labelData: Array,
-	name: {
-		type: String,
-		default: '标签:',
+const state = reactive({
+	size: theme.themeConfig.globalComponentSize,
+	task: {
+		metadata: {
+			name: '',
+			namespace: 'default',
+			annotations: {} as annotations,
+		},
+	} as Task,
+	form: {
+		namespace: 'default',
+		name: '',
+		email: '',
+		autograph: '',
+		occupation: '',
+		list: [
+			{
+				year: '',
+				month: '',
+				day: '',
+			},
+		],
+		remarks: '',
 	},
 });
 
-const handleLabels = () => {
-	const labelsTup: { [key: string]: string } = {};
-	for (const k in data.labels) {
-		if (data.labels[k].key != '' && data.labels[k].value != '') {
-			labelsTup[data.labels[k].key] = data.labels[k].value;
-		}
-	}
-	return labelsTup;
-};
-
-const emit = defineEmits(['updateLabels']);
-// FIXME 在父组件校验
-const validateHandler = (formEl: Array<FormInstance> | undefined, labels: Object) => {
-	let status = false;
-	formEl?.forEach((item) => {
-		item.validate((valid) => {
-			status = valid;
-			if (valid) {
-				emit('updateLabels', labels);
-			}
-		});
+// 新增行
+const onAddRow = () => {
+	state.form.list.push({
+		year: '',
+		month: '',
+		day: '',
 	});
-	return status;
 };
-// 监听父组件传递来的数据
-watch(
-	() => props.labelData,
-	() => {
-		if (props.labelData) {
-			data.labels = JSON.parse(JSON.stringify(props.labelData));
+// 删除行
+const onDelRow = (k: number) => {
+	state.form.list.splice(k, 1);
+};
+// 表单验证
+const onSubmitForm = (formEl: FormInstance | undefined) => {
+	if (!formEl) return;
+	formEl.validate((valid: boolean) => {
+		if (valid) {
+			ElMessage.success('验证成功');
+		} else {
+			return false;
 		}
-	},
-	{
-		immediate: true,
-		deep: true,
-	}
-);
-
-// 监听表单数据，如果发生变化则传递到父组件
-watch(
-	() => data.labels,
-	() => {
-		const labels = handleLabels();
-		if (!isObjectValueEqual(labels, { '': '' })) {
-			validateHandler(labelRef.value, labels);
-			// emit('updateLabels', labels);
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
-	}
-);
-
-defineExpose({
-	validateHandler,
-});
+	});
+};
+// 重置表单
+const onResetForm = (formEl: FormInstance | undefined) => {
+	if (!formEl) return;
+	formEl.resetFields();
+};
 </script>
-
-<style scoped></style>
