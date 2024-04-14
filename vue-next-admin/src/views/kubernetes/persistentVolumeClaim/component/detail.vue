@@ -44,7 +44,7 @@
 
 <script lang="ts" setup>
 import { ElDrawer } from 'element-plus';
-import { PersistentVolumeClaim } from 'kubernetes-types/core/v1';
+import { PersistentVolumeClaim } from 'kubernetes-models/v1';
 import { onMounted, reactive } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { dateStrFormat } from '@/utils/formatTime';

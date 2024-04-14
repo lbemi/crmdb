@@ -223,7 +223,7 @@
 import type { UploadInstance, UploadProps, UploadRawFile } from 'element-plus';
 import { ElDrawer, ElMessage, FormRules, genFileId, UploadFile } from 'element-plus';
 
-import { Secret } from 'kubernetes-types/core/v1';
+import { Secret } from 'kubernetes-models/v1';
 import { defineAsyncComponent, onMounted, reactive, ref } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { Plus, RemoveFilled } from '@element-plus/icons-vue';

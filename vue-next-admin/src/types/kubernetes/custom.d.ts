@@ -1,12 +1,4 @@
-// export enum ResourceType {
-// 	Deployment = 'deployment',
-// 	DaemonSet = 'daemonSet',
-// 	Job = 'job',
-// 	CronJob = 'cronJob',
-// 	StatefulSet = 'statefulSet',
-// }
-
-import { ObjectMeta } from 'kubernetes-types/meta/v1';
+import { Container, IContainer, IIoK8sApimachineryPkgApisMetaV1ObjectMeta } from 'kubernetes-models/v1';
 import {
 	VolumeMount,
 	HostPathVolumeSource,
@@ -14,27 +6,20 @@ import {
 	ConfigMapVolumeSource,
 	PersistentVolumeClaimVolumeSource,
 	EmptyDirVolumeSource,
-} from 'kubernetes-types/core/v1';
+} from 'kubernetes-models/v1';
 export declare type ResourceType = 'deployment' | 'daemonSet' | 'statefulSet' | 'job' | 'cronJob';
 
-export declare type CreateK8SBindData = {
-	metadata?: ObjectMeta;
+export declare type CreateK8SMeta = {
+	metadata?: IIoK8sApimachineryPkgApisMetaV1ObjectMeta;
 	replicas?: number;
 	resourceType?: ResourceType;
 };
 
-export interface CreateK8SLabel {
-	key: string;
-	value: string;
-}
-
 export declare type CreateK8SMetaData = {
 	loadFromParent: boolean;
-	labelData?: Array<CreateK8SLabel>;
-	annotationsData?: Array<CreateK8SLabel>;
 	replicas?: number;
 	resourceType?: ResourceType;
-	meta?: ObjectMeta;
+	meta?: IIoK8sApimachineryPkgApisMetaV1ObjectMeta;
 };
 
 export declare type CreateK8SVolumeData = {
@@ -48,3 +33,4 @@ export declare type CreateK8SVolumeData = {
 	emptyDir?: EmptyDirVolumeSource | undefined;
 	volumeMountData?: VolumeMount | undefined;
 };
+

@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts" name="namespaceDialog">
-import { Namespace } from 'kubernetes-types/core/v1';
+import { Namespace } from 'kubernetes-models/v1';
 import { FormRules, FormInstance, ElMessage } from 'element-plus';
 import { reactive, watch, ref, onMounted } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';

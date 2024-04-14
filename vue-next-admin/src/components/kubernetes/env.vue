@@ -1,12 +1,25 @@
 <template>
 	<div>
 		<el-form-item label="环境变量：" style="margin-bottom: 0">
-			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0"
-				@click="data.env.push({ type: 'custom', name: '', value: '', otherValue: '' })">新增</el-button>
+			<el-button
+				:icon="CirclePlusFilled"
+				type="primary"
+				size="small"
+				text
+				style="padding-left: 0"
+				@click="data.env.push({ type: 'custom', name: '', value: '', otherValue: '' })"
+				>新增</el-button
+			>
 		</el-form-item>
 		<el-form-item>
-			<el-table ref="envRef" :data="data.env" style="width: 100%; font-size: 13px" v-show="data.env.length != 0"
-				:cell-style="{ padding: '10px' }" :header-cell-style="{ padding: '5px' }">
+			<el-table
+				ref="envRef"
+				:data="data.env"
+				style="width: 100%; font-size: 13px"
+				v-show="data.env.length != 0"
+				:cell-style="{ padding: '10px' }"
+				:header-cell-style="{ padding: '5px' }"
+			>
 				<el-table-column label="类型" width="130">
 					<template #default="scope">
 						<el-select v-model="scope.row.type" size="small">
@@ -23,10 +36,15 @@
 				<el-table-column label="变量/变量引用" width="320">
 					<template #default="scope">
 						<el-input v-model="scope.row.value" size="small" style="width: 120px" />
-						<el-input v-model="scope.row.otherValue" size="small" v-if="scope.row.type != 'custom'"
-							style="width: 120px; margin-left: 5px" />
-						<el-button :icon="RemoveFilled" type="primary" size="small" text style="margin-left: 10px;"
-							@click="data.env.splice(scope.$index, 1)"></el-button>
+						<el-input v-model="scope.row.otherValue" size="small" v-if="scope.row.type != 'custom'" style="width: 120px; margin-left: 5px" />
+						<el-button
+							:icon="RemoveFilled"
+							type="primary"
+							size="small"
+							text
+							style="margin-left: 10px"
+							@click="data.env.splice(scope.$index, 1)"
+						></el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -36,7 +54,7 @@
 
 <script setup lang="ts">
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { EnvVar } from 'kubernetes-types/core/v1';
+import { EnvVar } from 'kubernetes-models/v1';
 import { onMounted, reactive } from 'vue';
 import { deepClone } from '@/utils/other';
 

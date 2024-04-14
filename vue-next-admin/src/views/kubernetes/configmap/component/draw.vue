@@ -89,7 +89,7 @@
 <script lang="ts" setup>
 import { ElDrawer, ElMessage, FormRules, UploadFile } from 'element-plus';
 
-import { ConfigMap } from 'kubernetes-types/core/v1';
+import { ConfigMap } from 'kubernetes-models/v1';
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import { ref } from 'vue';
 import { genFileId } from 'element-plus';

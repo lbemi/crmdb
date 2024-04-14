@@ -22,9 +22,9 @@
 </template>
 
 <script setup lang="ts">
-import { ObjectMeta } from 'kubernetes-types/meta/v1';
+import { IIoK8sApimachineryPkgApisMetaV1ObjectMeta } from 'kubernetes-models/v1';
 type propsType = {
-	metaData: ObjectMeta | undefined;
+	metaData: IIoK8sApimachineryPkgApisMetaV1ObjectMeta | undefined;
 };
 const props = defineProps<propsType>();
 </script>

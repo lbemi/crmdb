@@ -1,8 +1,7 @@
 <template>
 	<div>
 		<el-form-item label="端口设置：" style="margin-bottom: 0">
-			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0"
-				@click="pushPort">新增</el-button>
+			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0" @click="pushPort">新增</el-button>
 		</el-form-item>
 		<el-form-item>
 			<el-form :key="portIndex" v-for="(item, portIndex) in data.ports" :inline="true">
@@ -16,11 +15,9 @@
 					<el-select v-model="item.protocol" size="small" style="width: 80px">
 						<el-option v-for="item in protocolType" :key="item.type" :label="item.type" :value="item.value" />
 					</el-select>
-					<el-button :icon="RemoveFilled" type="primary" size="small" text
-						@click="data.ports.splice(portIndex, 1)"></el-button>
+					<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.ports.splice(portIndex, 1)"></el-button>
 				</el-form-item>
-				<el-form-item>
-				</el-form-item>
+				<el-form-item> </el-form-item>
 			</el-form>
 		</el-form-item>
 	</div>
@@ -28,25 +25,29 @@
 
 <script setup lang="ts">
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { ContainerPort } from 'kubernetes-types/core/v1';
+import { ContainerPort } from 'kubernetes-models/v1';
 import { onMounted, reactive } from 'vue';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;
 import { deepClone } from '@/utils/other';
 
 const data = reactive({
-	loadFromParent: false,
 	ports: <Array<ContainerPort>>[],
 });
 
-type propsType = {
-	ports: Array<ContainerPort> | undefined;
-};
-const props = defineProps<propsType>();
+
+const props = defineProps({
+	ports: Array<ContainerPort>,
+});
 
 const pushPort = () => {
 	const name = uuid().toString().split('-')[1];
-	data.ports.push({ name: 'p-' + name, containerPort: 80, protocol: 'TCP' });
+	const port = new ContainerPort({
+		name: 'p-' + name,
+		containerPort: 80,
+		protocol: 'TCP',
+	})	;
+	data.ports.push(port);
 };
 
 onMounted(() => {
@@ -56,6 +57,10 @@ onMounted(() => {
 });
 
 const returnPorts = () => {
+	// 校验port
+	data.ports.forEach((item: ContainerPort) => {
+		item.validate();
+	})
 	return data.ports;
 };
 
@@ -72,6 +77,10 @@ const protocolType = [
 		type: 'udp',
 		value: 'UDP',
 	},
+	{
+		type: 'sctp',
+		value: 'SCTP',
+	}
 ];
 </script>
 

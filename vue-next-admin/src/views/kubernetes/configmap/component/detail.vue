@@ -50,7 +50,7 @@
 
 <script lang="ts" setup>
 import { ElDrawer } from 'element-plus';
-import { ConfigMap } from 'kubernetes-types/core/v1';
+import { ConfigMap } from 'kubernetes-models/v1';
 import { onMounted, reactive } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { dateStrFormat } from '@/utils/formatTime';
@@ -117,12 +117,7 @@ const handleClose = () => {
 .custom-cell.max-height {
 	max-height: 200px; /* 设置最大高度为 200px，可以根据需要进行调整 */
 }
-.footer {
-	display: flex;
-	margin-top: 50px;
-	/*margin-left: 80px;*/
-	justify-content: center;
-}
+
 .label {
 	margin-top: 3px;
 	margin-bottom: 1px;

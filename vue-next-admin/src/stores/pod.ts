@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { reactive } from 'vue';
-import { Pod } from 'kubernetes-types/core/v1';
+import { Pod } from 'kubernetes-models/v1';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { usePodApi } from '@/api/kubernetes/pod';
 import { ElMessage } from 'element-plus';

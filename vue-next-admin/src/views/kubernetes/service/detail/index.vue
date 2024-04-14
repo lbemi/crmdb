@@ -260,8 +260,8 @@
 import { reactive, onMounted, defineAsyncComponent } from 'vue';
 import { ArrowLeft, Edit, View, InfoFilled } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { Event, Pod, Service, Endpoints } from 'kubernetes-types/core/v1';
-import { DaemonSet, Deployment, ReplicaSet, ReplicaSetCondition, StatefulSet } from 'kubernetes-types/apps/v1';
+import { Event, Pod, Service, Endpoints } from 'kubernetes-models/v1';
+import { DaemonSet, Deployment, ReplicaSet, ReplicaSetCondition, StatefulSet } from 'kubernetes-models/apps/v1';
 import router from '@/router';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';

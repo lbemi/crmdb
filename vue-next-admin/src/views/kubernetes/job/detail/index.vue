@@ -243,8 +243,8 @@ import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, h } fr
 import { ArrowLeft, CaretBottom, Edit, View, Minus, Plus, Refresh } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { useJobApi } from '@/api/kubernetes/job';
-import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
-import { Job } from 'kubernetes-types/batch/v1';
+import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-models/v1';
+import { Job } from 'kubernetes-models/batch/v1';
 import router from '@/router';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';

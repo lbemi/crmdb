@@ -225,7 +225,7 @@ import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, h } from 'v
 import { Delete, Edit } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
 import { useStatefulSetApi } from '@/api/kubernetes/statefulSet';
-import { StatefulSet, StatefulSetCondition } from 'kubernetes-types/apps/v1';
+import { StatefulSet, StatefulSetCondition } from 'kubernetes-models/apps/v1';
 import { PageInfo } from '@/types/kubernetes/common';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import router from '@/router';

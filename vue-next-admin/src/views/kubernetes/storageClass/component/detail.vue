@@ -84,13 +84,13 @@
 
 <script lang="ts" setup>
 import { ElDrawer, ElMessage } from 'element-plus';
-import { StorageClass } from 'kubernetes-types/storage/v1';
+import { StorageClass } from 'kubernetes-models/storage.k8s.io/v1';
 import { onMounted, reactive } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { dateStrFormat } from '@/utils/formatTime';
 import { usePersistentVolumeClaimApi } from '@/api/kubernetes/persitentVolumeClaim';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { PersistentVolumeClaim } from 'kubernetes-types/core/v1';
+import { PersistentVolumeClaim } from 'kubernetes-models/v1';
 import { PageInfo } from '@/types/kubernetes/common';
 import Pagination from '@/components/pagination/pagination.vue';
 

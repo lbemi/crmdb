@@ -121,7 +121,7 @@
 <script setup lang="ts" name="k8sNamespace">
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
-import { Namespace } from 'kubernetes-types/core/v1';
+import { Namespace } from 'kubernetes-models/v1';
 import { dateStrFormat } from '@/utils/formatTime';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';

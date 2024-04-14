@@ -4,31 +4,34 @@
 			<template #header>
 				<div style="display: flex; justify-content: space-between">
 					{{ title }}
-					<el-button type="primary" @click="showYaml" size="small" :icon="View"
-						style="margin-right: 20px">YAML</el-button>
+					<el-button type="primary" @click="showYaml" size="small" :icon="View" style="margin-right: 20px">YAML</el-button>
 				</div>
 				<el-divider style="margin: 8px 0" />
 			</template>
 			<el-backtop :right="100" :bottom="100" />
 			<div>
-				<el-steps :active="data.active" finish-status="success" align-center>
+				<el-steps :active="state.active" finish-status="success" align-center>
 					<el-step title="基本信息" />
 					<el-step title="容器配置" />
 					<el-step title="高级配置" />
 				</el-steps>
 			</div>
 			<div>
-				<div style="margin-top: 10px" id="0" v-show="data.active === 0">
+				<div style="margin-top: 10px" id="0" v-show="state.active === 0">
 					<el-card>
-						<Meta :bindData="data.bindMetaData" :isUpdate="data.isUpdate" @updateData="getMeta" />
+						<Meta ref="metaRef" :metaData="state.metaData" :isUpdate="state.isUpdate" />
 					</el-card>
 				</div>
-				<div style="margin-top: 10px" id="1" v-show="data.active === 1">
-					<Containers ref="containersRef" :containers="data.containers" :initContainers="data.initContainers"
-						:volumes="data.deployments.spec?.template.spec?.volumes" />
+				<div style="margin-top: 10px" id="1" v-show="state.active === 1">
+					<Containers
+						ref="containersRef"
+						:containers="state.containers"
+						:initContainers="state.initContainers"
+						:volumes="state.deployment.spec?.template.spec?.volumes"
+					/>
 				</div>
-				<div style="margin-top: 10px" id="2" v-show="data.active === 2">
-					<el-checkbox v-model="data.enableService" label="配置service" />
+				<div style="margin-top: 10px" id="2" v-show="state.active === 2">
+					<el-checkbox v-model="state.enableService" label="配置service" />
 				</div>
 			</div>
 			<template #footer>
@@ -40,24 +43,22 @@
 				</span>
 			</template>
 		</el-dialog>
-		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployments"
-			v-if="data.yamlDialogVisible" />
+		<YamlDialog v-model:dialogVisible="state.yamlDialogVisible" :code-data="state.deployment" v-if="state.yamlDialogVisible" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref } from 'vue';
-import { Container } from 'kubernetes-types/core/v1';
-import { Deployment } from 'kubernetes-types/apps/v1';
+import { Container } from 'kubernetes-models/v1';
+import { Deployment } from 'kubernetes-models/apps/v1';
 import yamlJs from 'js-yaml';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
 import { View } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
-import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
+import { CreateK8SMeta, CreateK8SMetaData } from '@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
-import { isObjectValueEqual } from '@/utils/arrayOperation';
 
 const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
 const Containers = defineAsyncComponent(() => import('@/components/kubernetes/containers.vue'));
@@ -69,7 +70,7 @@ const kubeInfo = kubernetesInfo();
 const deploymentApi = useDeploymentApi();
 const metaRef = ref<FormInstance>();
 
-const data = reactive({
+const state = reactive({
 	isUpdate: false,
 	enableService: false,
 	yamlDialogVisible: false,
@@ -80,7 +81,7 @@ const data = reactive({
 	containers: [] as Container[],
 	initContainers: [] as Container[],
 	//初始化deployment
-	deployments: <Deployment>{
+	deployment: <Deployment>{
 		apiVersion: 'apps/v1',
 		kind: 'Deployment',
 		metadata: {
@@ -98,8 +99,8 @@ const data = reactive({
 				spec: {
 					serviceAccount: 'default',
 					initContainers: [] as Container[],
-					containers: [],
-					// volumes: [],
+					containers: [] as Container[],
+					volumes: [],
 				},
 			},
 			strategy: {
@@ -113,53 +114,74 @@ const data = reactive({
 	},
 	code: '',
 	// 绑定初始值
-	bindMetaData: <CreateK8SBindData>{
+	metaData: <CreateK8SMeta>{
 		resourceType: 'deployment',
 	},
+	validateRef: <Array<FormInstance>>[],
 });
 
 const showYaml = async () => {
 	getContainers();
-	data.yamlDialogVisible = true;
+	state.yamlDialogVisible = true;
 };
 
 const getContainers = () => {
-	delete data.deployments.spec!.template.spec!.containers;
-	delete data.deployments.spec!.template.spec!.initContainers;
+	delete state.deployment.spec!.template.spec!.containers;
+	delete state.deployment.spec!.template.spec!.initContainers;
 	const { containers, initContainers, volumes } = containersRef.value.returnContainers();
 	if (volumes.length > 0) {
-		data.deployments.spec!.template.spec!.volumes = volumes;
+		state.deployment.spec!.template.spec!.volumes = volumes;
 	}
 	if (containers.length > 0) {
-		data.deployments.spec!.template.spec!.containers = containers;
+		state.deployment.spec!.template.spec!.containers = containers;
 	}
 	if (initContainers.length > 0) {
-		data.deployments.spec!.template.spec!.initContainers = initContainers;
+		state.deployment.spec!.template.spec!.initContainers = initContainers;
 	}
 };
 
-const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
-	metaRef.value = metaRefs;
-	const dep = deepClone(newData);
-	const metaLabels = deepClone(newData);
-	data.deployments.metadata = newData.meta;
-	//更新labels
-	if (!data.isUpdate) {
-		if (dep.meta.name) data.deployments.metadata!.labels!.app = dep.meta.name;
+const getMeta = () => {
+	const metaData = deepClone(metaRef.value.getMeta());
+	if (metaData.validateRefs.length > 0) {
+		state.validateRef = metaData.validateRefs;
 	}
+	state.deployment.metadata = deepClone(metaData.meta);
+	//更新labels
+	state.deployment.metadata!.labels!.app = metaData.meta.name;
 	//更新selector.matchLabels
-	data.deployments.spec!.selector.matchLabels = dep.meta.labels;
-	data.deployments.spec!.template.metadata!.labels = metaLabels.meta.labels;
-	data.deployments.spec!.replicas = newData.replicas;
+	state.deployment.spec!.selector.matchLabels = deepClone(metaData.meta.labels);
+	state.deployment.spec!.template.metadata!.labels = deepClone(metaData.meta.labels);
+	state.deployment.spec!.replicas = metaData.replicas;
 	updateCodeMirror();
 };
+const validate = async () => {
+	state.validateRef = [];
+	if (metaRef.value) {
+		state.validateRef.push(metaRef.value);
+	}
+	getMeta();
+	try {
+		for (const item of state.validateRef) {
+			// 使用 Promise.all 来等待所有表单验证完成
+			await Promise.all([item.validate()]);
+		}
+		ElMessage.success('验证成功');
+		return true;
+	} catch (error) {
+		// 如果有表单验证不通过，则返回 false
+		console.log(error);
+		ElMessage.error('验证不通过');
+		return false;
+	}
+};
 const nextStep = () => {
-	if (data.active++ > 2) data.active = 0;
+	if (state.active++ > 2) state.active = 0;
 };
 const up = () => {
-	if (data.active-- == 0) data.active = 0;
+	if (state.active-- == 0) state.active = 0;
 };
-const next = () => {
+const next = async () => {
+	if (!(await validate())) return;
 	nextStep();
 };
 
@@ -168,7 +190,7 @@ const confirm = async () => {
 	getContainers();
 	if (props.title === '创建deployment') {
 		deploymentApi
-			.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployments)
+			.createDeployment({ cloud: kubeInfo.state.activeCluster }, state.deployment)
 			.then(() => {
 				ElMessage.success('创建成功');
 				handleClose();
@@ -179,7 +201,7 @@ const confirm = async () => {
 			});
 	} else {
 		await deploymentApi
-			.updateDeployment(data.deployments, { cloud: kubeInfo.state.activeCluster })
+			.updateDeployment(state.deployment, { cloud: kubeInfo.state.activeCluster })
 			.then(() => {
 				ElMessage.success('更新成功');
 				handleClose();
@@ -190,10 +212,10 @@ const confirm = async () => {
 	}
 };
 const updateCodeMirror = () => {
-	data.loadCode = true;
-	data.code = yamlJs.dump(data.deployments);
+	state.loadCode = true;
+	state.code = yamlJs.dump(state.deployment);
 	setTimeout(() => {
-		data.loadCode = false;
+		state.loadCode = false;
 	}, 1);
 };
 
@@ -216,17 +238,17 @@ const props = defineProps({
 
 onMounted(() => {
 	dialogVisible.value = props.dialogVisible;
-	if (!isObjectValueEqual(props.deployment, {})) {
-		data.isUpdate = true;
-		data.deployments = props.deployment as Deployment;
-		data.bindMetaData.metadata = data.deployments.metadata;
-		data.bindMetaData.replicas = data.deployments.spec?.replicas;
+	if (props.deployment) {
+		state.isUpdate = true;
+		state.deployment = deepClone(props.deployment) as Deployment;
+		state.metaData.metadata = state.deployment.metadata;
+		state.metaData.replicas = state.deployment.spec?.replicas;
 
-		if (data.deployments.spec?.template.spec?.initContainers) {
-			data.initContainers = data.deployments.spec!.template.spec!.initContainers!;
+		if (state.deployment.spec?.template.spec?.initContainers) {
+			state.initContainers = state.deployment.spec!.template.spec!.initContainers!;
 		}
-		if (data.deployments.spec?.template.spec?.containers) {
-			data.containers = data.deployments.spec!.template.spec!.containers!;
+		if (state.deployment.spec?.template.spec?.containers) {
+			state.containers = state.deployment.spec!.template.spec!.containers!;
 		}
 	}
 });

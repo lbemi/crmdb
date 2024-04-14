@@ -191,7 +191,7 @@ import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, h } from 'v
 import { Delete, Edit } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
 import { useCronJobApi } from '@/api/kubernetes/cronjob';
-import { CronJob } from 'kubernetes-types/batch/v1';
+import { CronJob } from 'kubernetes-models/batch/v1';
 import { PageInfo } from '@/types/kubernetes/common';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import router from '@/router';

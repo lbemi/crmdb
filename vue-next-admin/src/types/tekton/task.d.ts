@@ -5,10 +5,10 @@ export interface Metadata {
 	resourceVersion: string;
 	generation: number;
 	creationTimestamp: string;
-	annotations: annotations;
+	annotations: Annotations;
 }
 
-export interface annotations {
+export interface Annotations {
 	[key: string]: string;
 }
 

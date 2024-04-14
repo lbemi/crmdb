@@ -49,14 +49,14 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref } from 'vue';
-import { Container } from 'kubernetes-types/core/v1';
-import { Daemonset } from 'kubernetes-types/apps/v1';
+import { Container } from 'kubernetes-models/v1';
+import { Daemonset } from 'kubernetes-models/apps/v1';
 import yamlJs from 'js-yaml';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
 import { View } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
-import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
+import { CreateK8SMeta, CreateK8SMetaData } from '@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
 import { useDaemonsetApi } from '@/api/kubernetes/daemonset';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
@@ -113,7 +113,7 @@ const data = reactive({
 	},
 	code: '',
 	// 绑定初始值
-	bindMetaData: <CreateK8SBindData>{
+	bindMetaData: <CreateK8SMeta>{
 		resourceType: 'daemonSet',
 	},
 });

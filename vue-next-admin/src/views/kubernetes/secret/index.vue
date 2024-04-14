@@ -134,7 +134,7 @@
 </template>
 
 <script setup lang="ts" name="k8sSecret">
-import { Secret } from 'kubernetes-types/core/v1';
+import { Secret } from 'kubernetes-models/v1';
 import { defineAsyncComponent, h, onMounted, reactive, ref } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage, ElMessageBox } from 'element-plus';
