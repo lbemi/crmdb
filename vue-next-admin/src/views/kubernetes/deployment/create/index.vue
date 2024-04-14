@@ -156,14 +156,10 @@ const validate = async () => {
 	if (data.active == 0) {
 		getMeta();
 	}
-	// // 重置校验
-	// if (metaRef.value) {
-	// 	data.validateRef.push(metaRef.value);
-	// }
+
 	if (data.active == 1) {
 		getContainers();
 	}
-	console.log('----', data.validateRef);
 
 	try {
 		for (const item of data.validateRef) {

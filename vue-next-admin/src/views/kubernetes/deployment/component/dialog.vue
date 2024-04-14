@@ -81,9 +81,7 @@ const state = reactive({
 	containers: [] as Container[],
 	initContainers: [] as Container[],
 	//初始化deployment
-	deployment: <Deployment>{
-		apiVersion: 'apps/v1',
-		kind: 'Deployment',
+	deployment: new Deployment({
 		metadata: {
 			namespace: 'default',
 		},
@@ -111,7 +109,7 @@ const state = reactive({
 				},
 			},
 		},
-	},
+	}),
 	code: '',
 	// 绑定初始值
 	metaData: <CreateK8SMeta>{
@@ -126,9 +124,12 @@ const showYaml = async () => {
 };
 
 const getContainers = () => {
-	delete state.deployment.spec!.template.spec!.containers;
-	delete state.deployment.spec!.template.spec!.initContainers;
-	const { containers, initContainers, volumes } = containersRef.value.returnContainers();
+	const { containers, initContainers, volumes, validateRefs } = containersRef.value.returnContainers();
+
+	if (validateRefs.length > 0) {
+		state.validateRef.push(...validateRefs);
+	}
+
 	if (volumes.length > 0) {
 		state.deployment.spec!.template.spec!.volumes = volumes;
 	}
@@ -142,8 +143,9 @@ const getContainers = () => {
 
 const getMeta = () => {
 	const metaData = deepClone(metaRef.value.getMeta());
+
 	if (metaData.validateRefs.length > 0) {
-		state.validateRef = metaData.validateRefs;
+		state.validateRef.push(...metaData.validateRefs);
 	}
 	state.deployment.metadata = deepClone(metaData.meta);
 	//更新labels
@@ -156,25 +158,33 @@ const getMeta = () => {
 };
 const validate = async () => {
 	state.validateRef = [];
-	if (metaRef.value) {
-		state.validateRef.push(metaRef.value);
+	if (state.active == 0) {
+		getMeta();
 	}
-	getMeta();
+
+	if (state.active == 1) {
+		getContainers();
+	}
+
 	try {
 		for (const item of state.validateRef) {
 			// 使用 Promise.all 来等待所有表单验证完成
 			await Promise.all([item.validate()]);
 		}
-		ElMessage.success('验证成功');
+
 		return true;
 	} catch (error) {
 		// 如果有表单验证不通过，则返回 false
-		console.log(error);
-		ElMessage.error('验证不通过');
 		return false;
 	}
 };
-const nextStep = () => {
+const nextStep = async () => {
+	if (state.active == 0) {
+		if (!(await validate())) return;
+	}
+	if (state.active == 1) {
+		if (!(await validate())) return;
+	}
 	if (state.active++ > 2) state.active = 0;
 };
 const up = () => {

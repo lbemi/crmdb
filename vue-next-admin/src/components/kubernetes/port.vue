@@ -62,10 +62,7 @@ onMounted(() => {
 });
 
 const returnPorts = () => {
-	// 校验port
-	data.ports.forEach((item: ContainerPort) => {
-		item.validate();
-	})
+	
 	return data.ports;
 };
 

@@ -102,7 +102,7 @@ const getContainers = () => {
 type propsType = {
 	containers: Array<Container>;
 	initContainers: Array<Container>;
-	volumes: Array<Volume>;
+	volumes: Array<Volume>|undefined;
 };
 const props = defineProps<propsType>();
 onMounted(() => {
