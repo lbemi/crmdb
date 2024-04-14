@@ -118,8 +118,13 @@ const showYaml = async () => {
 };
 
 const getContainers = () => {
-	delete data.deployment.spec!.template.spec!.initContainers;
-	const { containers, initContainers, volumes } = containersRef.value.returnContainers();
+	// delete data.deployment.spec!.template.spec!.initContainers;
+	const { containers, initContainers, volumes, validateRefs } = containersRef.value.returnContainers();
+
+	if (validateRefs.length > 0) {
+		data.validateRef.push(...validateRefs);
+	}
+
 	if (volumes.length > 0) {
 		data.deployment.spec!.template.spec!.volumes = volumes;
 	}
@@ -133,8 +138,9 @@ const getContainers = () => {
 
 const getMeta = () => {
 	const metaData = deepClone(metaRef.value.getMeta());
+
 	if (metaData.validateRefs.length > 0) {
-		data.validateRef = metaData.validateRefs;
+		data.validateRef.push(...metaData.validateRefs);
 	}
 	data.deployment.metadata = deepClone(metaData.meta);
 	//更新labels
@@ -147,51 +153,65 @@ const getMeta = () => {
 };
 const validate = async () => {
 	data.validateRef = [];
-	if (metaRef.value) {
-		data.validateRef.push(metaRef.value);
+	if (data.active == 0) {
+		getMeta();
 	}
-	getMeta();
+	// // 重置校验
+	// if (metaRef.value) {
+	// 	data.validateRef.push(metaRef.value);
+	// }
+	if (data.active == 1) {
+		getContainers();
+	}
+	console.log('----', data.validateRef);
+
 	try {
 		for (const item of data.validateRef) {
 			// 使用 Promise.all 来等待所有表单验证完成
 			await Promise.all([item.validate()]);
 		}
-		// 校验deployment是否有问题
-		data.deployment.validate();
-		ElMessage.success('验证成功');
+
 		return true;
 	} catch (error) {
 		// 如果有表单验证不通过，则返回 false
-		ElMessage.error((error as Error).message);
 		return false;
 	}
 };
-const nextStep = () => {
+const nextStep = async () => {
+	if (data.active == 0) {
+		if (!(await validate())) return;
+	}
+	if (data.active == 1) {
+		if (!(await validate())) return;
+	}
 	if (data.active++ > 2) data.active = 0;
 };
 
 const up = () => {
 	if (data.active-- == 0) data.active = 0;
 };
-const next = async () => {
-	if (!(await validate())) return;
+const next = () => {
 	nextStep();
 };
 
 const confirm = async () => {
-	// data.code = yaml.dump(data.deployment);
-	getContainers();
-	// if (props.title === '创建deployment') {
-	deploymentApi
-		.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployment)
-		.then(() => {
-			ElMessage.success('创建成功');
-			// handleClose();
-		})
-		.catch((e) => {
-			ElMessage.error(e.message);
-			// handleClose();
-		});
+	if (!(await validate())) return;
+	// 校验deployment是否有问题
+	try {
+		data.deployment.validate();
+		deploymentApi
+			.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployment)
+			.then(() => {
+				ElMessage.success('创建成功');
+				// handleClose();
+			})
+			.catch((e) => {
+				ElMessage.error(e.message);
+				// handleClose();
+			});
+	} catch (error) {
+		ElMessage.error((error as Error).message);
+	}
 	// } else {
 	// 	await deploymentApi
 	// 		.updateDeployment(data.deployments, { cloud: kubeInfo.state.activeCluster })
@@ -215,7 +235,6 @@ const updateCodeMirror = () => {
 onBeforeMount(() => {
 	updateCodeMirror();
 });
-
 </script>
 
 <style scoped>

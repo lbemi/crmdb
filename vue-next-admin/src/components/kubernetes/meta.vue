@@ -117,6 +117,7 @@ onMounted(() => {
 // 	{ immediate: true, deep: true }
 // );
 const getMeta = () => {
+	state.validateRefs = [];
 	if (labelsRef.value.ruleFormRef) {
 		state.validateRefs.push(...labelsRef.value.ruleFormRef);
 		state.meta.labels = labelsRef.value.getLabels();

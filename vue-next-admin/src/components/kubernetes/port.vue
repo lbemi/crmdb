@@ -37,7 +37,12 @@ const data = reactive({
 
 
 const props = defineProps({
-	ports: Array<ContainerPort>,
+	ports: {
+		type: Array<ContainerPort> || undefined,
+		default: () => {
+			return [];
+		}
+	},
 });
 
 const pushPort = () => {

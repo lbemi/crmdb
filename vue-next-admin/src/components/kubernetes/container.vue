@@ -1,15 +1,15 @@
 <template>
 	<div>
-		<el-form ref="containerRef" v-model="data.container" label-width="100px" label-position="left">
+		<el-form ref="containerRef" :model="data.container" label-width="100px" label-position="left">
 			<el-card shadow="hover">
 				<el-form-item label="初始化容器:">
 					<el-checkbox v-model="data.container.isInitContainer">设置为初始化容器</el-checkbox>
 				</el-form-item>
-				<el-form-item label="容器名称：">
-					<el-input v-model="data.container.name" size="default" style="width: 296px" />
+				<el-form-item label="容器名称：" prop="name" :rules="[{ required: true, message: '请输入容器名称', trigger: 'blur' }]">
+					<el-input v-model="data.container.name" size="default" style="width: 296px" clearable />
 				</el-form-item>
 				<el-form-item label="镜像名称：" prop="image" :rules="[{ required: true, message: '请输入镜像名称', trigger: 'blur' }]">
-					<el-input v-model="data.container.image" size="default" style="width: 296px" />
+					<el-input v-model="data.container.image" size="default" style="width: 296px" clearable />
 				</el-form-item>
 				<el-form-item label="拉取策略：">
 					<el-select v-model="data.container.imagePullPolicy" class="m-2" placeholder="Select" size="default" style="width: 296px">
@@ -162,7 +162,7 @@ import { defineAsyncComponent, onMounted, reactive, ref } from 'vue';
 import { ContainerPort, EnvVar, Volume } from 'kubernetes-models/v1';
 import { Delete, Edit, InfoFilled } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
-import { CustomizeContainer } from '@/types/kubernetes/common';
+import { CustomizeContainer } from '@/types/kubernetes/container';
 import { FormInstance } from 'element-plus';
 
 //子组件引用
@@ -200,17 +200,7 @@ const data = reactive({
 		securityContext: {
 			privileged: false,
 		},
-		ports: [],
-		// resources: {
-		// 	limits: {
-		// 		cpu: '',
-		// 		memory: '0',
-		// 	},
-		// 	requests: {
-		// 		cpu: '0.5',
-		// 		memory: '500',
-		// 	},
-		// },
+		image: '',
 	}),
 });
 const getPorts = () => {
@@ -311,9 +301,7 @@ const setResource = () => {
 
 const cancelResource = () => {
 	data.resourceSet = !data.resourceSet;
-	delete data.container.resources?.limits;
-	delete data.container.resources?.requests;
-	data.resourceHasSet = false;
+	delete data.container.resources;
 };
 
 type propsType = {
@@ -344,7 +332,7 @@ const returnContainer = () => {
 	getCommands();
 	getVolumeMounts();
 	getEnvs();
-
+	data.validateRefs = [];
 	// 聚合refs
 	if (containerRef.value) {
 		data.validateRefs.push(containerRef.value);
@@ -354,19 +342,18 @@ const returnContainer = () => {
 		delete data.container.securityContext;
 	}
 
-	if (data.resourceSet && !data.resourceHasSet) {
-		data.container.resources = {
-			limits: {
-				cpu: '',
-				memory: '',
-			},
-			requests: {
-				cpu: '',
-				memory: '',
-			},
-		};
-		data.resourceHasSet = true;
-	}
+	// if (data.resourceSet ) {
+	// 	data.container.resources = {
+	// 		limits: {
+	// 			cpu: '',
+	// 			memory: '',
+	// 		},
+	// 		requests: {
+	// 			cpu: '',
+	// 			memory: '',
+	// 		},
+	// 	};
+	// }
 	return { index: props.index, container: data.container, volumes: volumeMountRef.value.returnVolumes(), validateRefs: data.validateRefs };
 };
 

@@ -1,4 +1,4 @@
-import { Container, IContainer, IIoK8sApimachineryPkgApisMetaV1ObjectMeta } from 'kubernetes-models/v1';
+import { IIoK8sApimachineryPkgApisMetaV1ObjectMeta } from 'kubernetes-models/v1';
 import {
 	VolumeMount,
 	HostPathVolumeSource,
@@ -33,4 +33,3 @@ export declare type CreateK8SVolumeData = {
 	emptyDir?: EmptyDirVolumeSource | undefined;
 	volumeMountData?: VolumeMount | undefined;
 };
-

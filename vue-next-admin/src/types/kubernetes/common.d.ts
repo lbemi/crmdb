@@ -26,15 +26,3 @@ export interface PageInfo {
 	page: number;
 	limit: number;
 }
-
-export interface IInitContainer extends IContainer {
-	isInitContainer: boolean;
-}
-// 继承 IContainer 接口并添加 isInitContainer 属性
-export declare class CustomizeContainer extends Container implements IInitContainer {
-	isInitContainer: boolean;
-	constructor(options: IContainer & { isInitContainer: boolean }) {
-		super(options);
-		this.isInitContainer = options.isInitContainer;
-	}
-}

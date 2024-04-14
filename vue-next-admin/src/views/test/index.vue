@@ -43,7 +43,6 @@ import { kubernetesInfo } from '@/stores/kubernetes';
 import { useThemeConfig } from '@/stores/themeConfig';
 import { Task, Annotations } from '@/types/tekton/task';
 import { Deployment } from 'kubernetes-models/apps/v1';
-
 const KeyValue = defineAsyncComponent(() => import('@/components/kubernetes/KeyValue.vue'));
 // 定义变量内容
 const formRef = ref<FormInstance>();
@@ -65,6 +64,8 @@ const state = reactive({
 
 // 表单验证
 const onSubmitForm = async (formEl: FormInstance | undefined) => {
+	
+	
 	console.log(labelRef.value.ruleFormRef);
 	if (!formEl) return;
 	state.validateRef.push(formEl);

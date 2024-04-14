@@ -25,10 +25,10 @@
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import { ComponentPublicInstance, ref } from 'vue-demi';
 import { Container, Volume } from 'kubernetes-models/v1';
-import type { TabPaneName } from 'element-plus';
+import type { FormInstance, TabPaneName } from 'element-plus';
 import { deepClone } from '@/utils/other';
 import { Plus } from '@element-plus/icons-vue';
-import { CustomizeContainer } from '@/types/kubernetes/common';
+import { CustomizeContainer } from '@/types/kubernetes/container';
 
 const ContainerDiv = defineAsyncComponent(() => import('./container.vue'));
 
@@ -64,13 +64,14 @@ const tabRemove = (TabPaneName: TabPaneName) => {
 };
 
 const data = reactive({
+	validateRefs: <Array<FormInstance>>[],
 	loadFromParent: false,
 	currentIndex: 1,
 	addIndex: 1,
 	tabIndex: 1,
 	editableTabsValue: '1',
 	volumes: [] as Volume[],
-	containers: <Array<CustomizeContainer>>[] ,
+	containers: <Array<CustomizeContainer>>[],
 	container: new CustomizeContainer({
 		isInitContainer: false,
 		name: '',
@@ -82,14 +83,15 @@ const data = reactive({
 	}),
 });
 
-
 const getContainers = () => {
+	data.validateRefs = [];
 	const vs = [];
 	const containers = data.containers;
 	for (let i = 0, len = itemRefs.value.length; i < len; i++) {
 		const refValue = itemRefs.value[i];
 		if (!refValue) continue;
-		const { index, container, volumes } = refValue.returnContainer();
+		const { index, container, volumes, validateRefs } = refValue.returnContainer();
+		data.validateRefs.push(...validateRefs);
 		vs.push(...volumes);
 		containers[index] = { ...container };
 	}
@@ -100,20 +102,29 @@ const getContainers = () => {
 type propsType = {
 	containers: Array<Container>;
 	initContainers: Array<Container>;
-	volumes: Array<Volume> ;
+	volumes: Array<Volume>;
 };
 const props = defineProps<propsType>();
 onMounted(() => {
-	const containers = props.containers.length > 0 ? props.containers.map(item => new CustomizeContainer({
-		...item,
-		isInitContainer: false,
-	})) : [data.container];
+	const containers =
+		props.containers.length > 0
+			? props.containers.map(
+					(item) =>
+						new CustomizeContainer({
+							...item,
+							isInitContainer: false,
+						})
+			  )
+			: [data.container];
 
 	if (props.initContainers.length > 0) {
-		const initContainers = props.initContainers.map(item => new CustomizeContainer({
-			...item,
-			isInitContainer: true,
-		}));
+		const initContainers = props.initContainers.map(
+			(item) =>
+				new CustomizeContainer({
+					...item,
+					isInitContainer: true,
+				})
+		);
 		data.containers = [...containers, ...initContainers];
 	} else {
 		data.containers = containers;
@@ -130,23 +141,21 @@ const returnContainers = () => {
 	while (resIndex < resLength) {
 		const item = data.containers[resIndex];
 		if (item.isInitContainer) {
-			initContainers.push(
-				{
-					...item,
-					isInitContainer: undefined,
-					lifecycle: undefined,
-					livenessProbe: undefined,
-					readinessProbe: undefined,
-					startupProbe: undefined,
-				} as Omit<CustomizeContainer, 'isInitContainer' | 'lifecycle' | 'livenessProbe' | 'readinessProbe' | 'startupProbe'>
-			);
+			initContainers.push({
+				...item,
+				isInitContainer: undefined,
+				lifecycle: undefined,
+				livenessProbe: undefined,
+				readinessProbe: undefined,
+				startupProbe: undefined,
+			} as Omit<CustomizeContainer, 'isInitContainer' | 'lifecycle' | 'livenessProbe' | 'readinessProbe' | 'startupProbe'>);
 		} else {
 			containers.push(item);
 		}
 		resIndex++;
 	}
 
-	return { containers, initContainers, volumes: data.volumes };
+	return { containers, initContainers, volumes: data.volumes, validateRefs: data.validateRefs };
 };
 
 defineExpose({
