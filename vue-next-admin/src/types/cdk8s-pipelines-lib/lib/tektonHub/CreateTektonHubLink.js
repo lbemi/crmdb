@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const TektonHubLink_1 = require("./TektonHubLink");
+const tektonHub = new TektonHubLink_1.TektonHubLink();
+tektonHub.build().then((success => {
+    if (!success) {
+        throw Error('Unable to build Tekton Hub Link');
+    }
+    console.log('Tekton hub task completed!');
+})).catch(reason => {
+    console.error(reason);
+});
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQ3JlYXRlVGVrdG9uSHViTGluay5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy90ZWt0b25IdWIvQ3JlYXRlVGVrdG9uSHViTGluay50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUFBLG1EQUFnRDtBQUNoRCxNQUFNLFNBQVMsR0FBRyxJQUFJLDZCQUFhLEVBQUUsQ0FBQztBQUN0QyxTQUFTLENBQUMsS0FBSyxFQUFFLENBQUMsSUFBSSxDQUFDLENBQUMsT0FBTyxDQUFDLEVBQUU7SUFDaEMsSUFBSSxDQUFDLE9BQU8sRUFBRTtRQUNaLE1BQU0sS0FBSyxDQUFDLGlDQUFpQyxDQUFDLENBQUM7S0FDaEQ7SUFDRCxPQUFPLENBQUMsR0FBRyxDQUFDLDRCQUE0QixDQUFDLENBQUM7QUFDNUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxLQUFLLENBQUMsTUFBTSxDQUFDLEVBQUU7SUFDakIsT0FBTyxDQUFDLEtBQUssQ0FBQyxNQUFNLENBQUMsQ0FBQztBQUN4QixDQUFDLENBQUMsQ0FBQyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IFRla3Rvbkh1YkxpbmsgfSBmcm9tICcuL1Rla3Rvbkh1YkxpbmsnO1xuY29uc3QgdGVrdG9uSHViID0gbmV3IFRla3Rvbkh1YkxpbmsoKTtcbnRla3Rvbkh1Yi5idWlsZCgpLnRoZW4oKHN1Y2Nlc3MgPT4ge1xuICBpZiAoIXN1Y2Nlc3MpIHtcbiAgICB0aHJvdyBFcnJvcignVW5hYmxlIHRvIGJ1aWxkIFRla3RvbiBIdWIgTGluaycpO1xuICB9XG4gIGNvbnNvbGUubG9nKCdUZWt0b24gaHViIHRhc2sgY29tcGxldGVkIScpO1xufSkpLmNhdGNoKHJlYXNvbiA9PiB7XG4gIGNvbnNvbGUuZXJyb3IocmVhc29uKTtcbn0pOyJdfQ==

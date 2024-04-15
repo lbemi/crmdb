@@ -1,0 +1,468 @@
+{
+  "author": {
+    "email": "nathan.good@ibm.com",
+    "name": "Nathan Good",
+    "roles": [
+      "author"
+    ]
+  },
+  "bundled": {
+    "axios": "^1.5.0",
+    "octokit": "^3.1.0"
+  },
+  "dependencies": {
+    "cdk8s": "^2.68.30",
+    "cdk8s-pipelines": "^0.0.16",
+    "constructs": "^10.0.0"
+  },
+  "dependencyClosure": {
+    "cdk8s": {
+      "targets": {
+        "dotnet": {
+          "namespace": "Org.Cdk8s",
+          "packageId": "Org.Cdk8s"
+        },
+        "go": {
+          "moduleName": "github.com/cdk8s-team/cdk8s-core-go"
+        },
+        "java": {
+          "maven": {
+            "artifactId": "cdk8s",
+            "groupId": "org.cdk8s"
+          },
+          "package": "org.cdk8s"
+        },
+        "js": {
+          "npm": "cdk8s"
+        },
+        "python": {
+          "distName": "cdk8s",
+          "module": "cdk8s"
+        }
+      }
+    },
+    "cdk8s-pipelines": {
+      "targets": {
+        "js": {
+          "npm": "cdk8s-pipelines"
+        }
+      }
+    },
+    "constructs": {
+      "targets": {
+        "dotnet": {
+          "namespace": "Constructs",
+          "packageId": "Constructs"
+        },
+        "go": {
+          "moduleName": "github.com/aws/constructs-go"
+        },
+        "java": {
+          "maven": {
+            "artifactId": "constructs",
+            "groupId": "software.constructs"
+          },
+          "package": "software.constructs"
+        },
+        "js": {
+          "npm": "constructs"
+        },
+        "python": {
+          "distName": "constructs",
+          "module": "constructs"
+        }
+      }
+    }
+  },
+  "description": "Library of common Tekton pipeline patterns and Tekton hub tasks as cdk8s constructs.",
+  "docs": {
+    "stability": "stable"
+  },
+  "homepage": "https://github.com/cloud-native-toolkit/cdk8s-pipelines-lib.git",
+  "jsiiVersion": "5.2.44 (build ff4e411)",
+  "keywords": [
+    "cdk",
+    "cdk8s-pipelines",
+    "kubernetes",
+    "pipelines",
+    "tekton"
+  ],
+  "license": "Apache-2.0",
+  "metadata": {
+    "jsii": {
+      "pacmak": {
+        "hasDefaultInterfaces": true
+      }
+    },
+    "tscRootDir": "src"
+  },
+  "name": "cdk8s-pipelines-lib",
+  "readme": {
+    "markdown": "[![build](https://github.com/cloud-native-toolkit/cdk8s-pipelines-lib/actions/workflows/build.yml/badge.svg)](https://github.com/cloud-native-toolkit/cdk8s-pipelines-lib/actions/workflows/build.yml)\n\n[![View on Construct Hub](https://constructs.dev/badge?package=cdk8s-pipelines-lib)](https://constructs.dev/packages/cdk8s-pipelines-lib)\n\n# Pipeline Library of cdk8s Constructs\n\nThis is a library of several \"pattern\" pipelines that are intended to be\nbasic and therefore easily reusable.\n\nAdditionally, using the `TaskBuilder`, each `Task`\n(see [Tasks](https://tekton.dev/docs/getting-started/tasks/))\nfrom [Tekton Hub](https://hub.tekton.dev/) can be found in this library as a construct.\n\n## Using tasks from Tekton Hub\n\nThe following is an example chart that uses a Tekton Hub Task for\nan [OpenShift client](https://hub.tekton.dev/tekton/task/openshift-client).\n\n```ts\nimport { App, Chart, ChartProps } from 'cdk8s';\nimport { ParameterBuilder, PipelineBuilder } from 'cdk8s-pipelines';\nimport { openshift_client } from 'cdk8s-pipelines-lib';\nimport { Construct } from 'constructs';\n\nexport class MyChart extends Chart {\n  constructor(scope: Construct, id: string, props: ChartProps = {}) {\n    super(scope, id, props);\n\n    const projectName = 'my-project';\n\n    const createProject = openshift_client(this, 'create-project')\n      .withStringParam(new ParameterBuilder('SCRIPT')\n        .withValue(`oc create ${projectName}`));\n\n    new PipelineBuilder(this, 'create-some-namespace')\n      .withDescription('Creates a namespace and then does some other stuff')\n      .withTask(createProject)\n      // ... more tasks go here\n      .buildPipeline({ includeDependencies: true });\n  }\n}\nconst app = new App();\nnew MyChart(app, 'hello');\napp.synth();\n```\n\nThe result of this code will include the dependent tasks. The output will look like this:\n\n```yaml\napiVersion: tekton.dev/v1\nkind: Task\nmetadata:\n  name: openshift-client\nspec:\n  description: null\n  workspaces:\n    - name: manifest-dir\n      description: The workspace which contains kubernetes manifests which we want to apply on the cluster.\n    - name: kubeconfig-dir\n      description: The workspace which contains the the kubeconfig file if in case we want to run the oc command on another cluster.\n  params:\n    - name: SCRIPT\n      description: \"\"\n      default: null\n    - name: VERSION\n      description: The OpenShift Version to use\n      default: \"4.7\"\n  steps:\n    - name: oc\n      image: quay.io/openshift/origin-cli:$(params.VERSION)\n      script: |\n        #!/usr/bin/env bash\n\n        [[ \"$(workspaces.manifest-dir.bound)\" == \"true\" ]] && \\\n        cd $(workspaces.manifest-dir.path)\n\n        [[ \"$(workspaces.kubeconfig-dir.bound)\" == \"true\" ]] && \\\n        [[ -f $(workspaces.kubeconfig-dir.path)/kubeconfig ]] && \\\n        export KUBECONFIG=$(workspaces.kubeconfig-dir.path)/kubeconfig\n\n        $(params.SCRIPT)\n      workingDir: null\n      env: null\n---\napiVersion: tekton.dev/v1\nkind: Pipeline\nmetadata:\n  name: create-some-namespace\nspec:\n  description: Creates a namespace and then does some other stuff\n  params:\n    - name: VERSION\n      type: string\n  workspaces:\n    - name: manifest-dir\n      description: The workspace which contains kubernetes manifests which we want to apply on the cluster.\n    - name: kubeconfig-dir\n      description: The workspace which contains the the kubeconfig file if in case we want to run the oc command on another cluster.\n  tasks:\n    - name: create-project\n      taskRef:\n        name: openshift-client\n      params:\n        - name: SCRIPT\n          value: oc create my-project\n        - name: VERSION\n          value: $(params.VERSION)\n      workspaces:\n        - name: manifest-dir\n          workspace: manifest-dir\n        - name: kubeconfig-dir\n          workspace: kubeconfig-dir\n```\n\n## Using in a build\n\nThe goal of using cdk8s-pipeline and cdk8s-pipeline-lib should be to produce YAML artifacts in a build process that are\nincluded in the release of a project. As an example, see [this example AWS CDK project](https://github.ibm.com/Nathan-Good/example-cdk-aws-ec2-vm),\nwhich demonstrates how to include the output created by the CDK `synth()` in the output of the build as a versioned\nrelease.\n"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloud-native-toolkit/cdk8s-pipelines-lib.git"
+  },
+  "schema": "jsii/0.10.0",
+  "targets": {
+    "js": {
+      "npm": "cdk8s-pipelines-lib"
+    }
+  },
+  "types": {
+    "cdk8s-pipelines-lib.AWSCDKPipeline": {
+      "assembly": "cdk8s-pipelines-lib",
+      "docs": {
+        "stability": "stable",
+        "summary": "Creator for the AWSCDKPipelineChart."
+      },
+      "fqn": "cdk8s-pipelines-lib.AWSCDKPipeline",
+      "initializer": {
+        "docs": {
+          "stability": "stable"
+        }
+      },
+      "kind": "class",
+      "locationInModule": {
+        "filename": "src/awscdkpipeline.ts",
+        "line": 100
+      },
+      "methods": [
+        {
+          "docs": {
+            "stability": "stable",
+            "summary": "Generates the AWS CDK Pipeline (AWSCDKPipelineChart) based on the actual project located in GitHub and specified by the configuration."
+          },
+          "locationInModule": {
+            "filename": "src/awscdkpipeline.ts",
+            "line": 107
+          },
+          "name": "createFrom",
+          "parameters": [
+            {
+              "name": "config",
+              "type": {
+                "fqn": "cdk8s-pipelines-lib.GitRepoConfig"
+              }
+            }
+          ],
+          "static": true
+        }
+      ],
+      "name": "AWSCDKPipeline",
+      "symbolId": "src/awscdkpipeline:AWSCDKPipeline"
+    },
+    "cdk8s-pipelines-lib.AWSCDKPipelineChart": {
+      "assembly": "cdk8s-pipelines-lib",
+      "base": "cdk8s.Chart",
+      "docs": {
+        "stability": "stable",
+        "summary": "The chart for creating a Tekton Pipeline that will use an AWS CDK project to create resources in AWS for re-usable artifacts."
+      },
+      "fqn": "cdk8s-pipelines-lib.AWSCDKPipelineChart",
+      "initializer": {
+        "docs": {
+          "stability": "stable",
+          "summary": "Initializes an instance of the AWSCDKPipelineChart."
+        },
+        "locationInModule": {
+          "filename": "src/awscdkpipeline.ts",
+          "line": 26
+        },
+        "parameters": [
+          {
+            "name": "scope",
+            "type": {
+              "fqn": "constructs.Construct"
+            }
+          },
+          {
+            "name": "id",
+            "type": {
+              "primitive": "string"
+            }
+          },
+          {
+            "name": "props",
+            "optional": true,
+            "type": {
+              "fqn": "cdk8s-pipelines-lib.AWSCDKPipelineChartProps"
+            }
+          }
+        ]
+      },
+      "kind": "class",
+      "locationInModule": {
+        "filename": "src/awscdkpipeline.ts",
+        "line": 18
+      },
+      "name": "AWSCDKPipelineChart",
+      "symbolId": "src/awscdkpipeline:AWSCDKPipelineChart"
+    },
+    "cdk8s-pipelines-lib.AWSCDKPipelineChartProps": {
+      "assembly": "cdk8s-pipelines-lib",
+      "datatype": true,
+      "docs": {
+        "stability": "stable",
+        "summary": "Initialization properties for the AWSCDKPipelineChart."
+      },
+      "fqn": "cdk8s-pipelines-lib.AWSCDKPipelineChartProps",
+      "interfaces": [
+        "cdk8s.ChartProps"
+      ],
+      "kind": "interface",
+      "locationInModule": {
+        "filename": "src/awscdkpipeline.ts",
+        "line": 10
+      },
+      "name": "AWSCDKPipelineChartProps",
+      "properties": [
+        {
+          "abstract": true,
+          "docs": {
+            "stability": "stable"
+          },
+          "immutable": true,
+          "locationInModule": {
+            "filename": "src/awscdkpipeline.ts",
+            "line": 11
+          },
+          "name": "params",
+          "optional": true,
+          "type": {
+            "collection": {
+              "elementtype": {
+                "primitive": "string"
+              },
+              "kind": "array"
+            }
+          }
+        }
+      ],
+      "symbolId": "src/awscdkpipeline:AWSCDKPipelineChartProps"
+    },
+    "cdk8s-pipelines-lib.GitRepoConfig": {
+      "assembly": "cdk8s-pipelines-lib",
+      "datatype": true,
+      "docs": {
+        "stability": "stable",
+        "summary": "Contains the information for the GitHub repo and the stack so we can go get it and generate the AWS CDK pipeline."
+      },
+      "fqn": "cdk8s-pipelines-lib.GitRepoConfig",
+      "kind": "interface",
+      "locationInModule": {
+        "filename": "src/awscdkpipeline.ts",
+        "line": 68
+      },
+      "name": "GitRepoConfig",
+      "properties": [
+        {
+          "abstract": true,
+          "docs": {
+            "remarks": "The value should look like https://api.github.com or\nhttps://github.mycompany.com/api/v3.",
+            "stability": "stable",
+            "summary": "The URL for the GitHub or GHE API."
+          },
+          "immutable": true,
+          "locationInModule": {
+            "filename": "src/awscdkpipeline.ts",
+            "line": 73
+          },
+          "name": "ghUrl",
+          "optional": true,
+          "type": {
+            "primitive": "string"
+          }
+        },
+        {
+          "abstract": true,
+          "docs": {
+            "stability": "stable",
+            "summary": "The owner of the GitHub repository."
+          },
+          "immutable": true,
+          "locationInModule": {
+            "filename": "src/awscdkpipeline.ts",
+            "line": 77
+          },
+          "name": "owner",
+          "optional": true,
+          "type": {
+            "primitive": "string"
+          }
+        },
+        {
+          "abstract": true,
+          "docs": {
+            "stability": "stable",
+            "summary": "The release tag for the release in which the AWS CDK template should be found."
+          },
+          "immutable": true,
+          "locationInModule": {
+            "filename": "src/awscdkpipeline.ts",
+            "line": 81
+          },
+          "name": "release",
+          "optional": true,
+          "type": {
+            "primitive": "string"
+          }
+        },
+        {
+          "abstract": true,
+          "docs": {
+            "stability": "stable",
+            "summary": "The name of the repository."
+          },
+          "immutable": true,
+          "locationInModule": {
+            "filename": "src/awscdkpipeline.ts",
+            "line": 85
+          },
+          "name": "repo",
+          "optional": true,
+          "type": {
+            "primitive": "string"
+          }
+        },
+        {
+          "abstract": true,
+          "docs": {
+            "remarks": "This should be a generated template that is included\nin the release.",
+            "stability": "stable",
+            "summary": "The name of the AWS CDK stack."
+          },
+          "immutable": true,
+          "locationInModule": {
+            "filename": "src/awscdkpipeline.ts",
+            "line": 90
+          },
+          "name": "stackName",
+          "optional": true,
+          "type": {
+            "primitive": "string"
+          }
+        },
+        {
+          "abstract": true,
+          "docs": {
+            "stability": "stable",
+            "summary": "The personal access token (PAT) for accessing the library in GitHub."
+          },
+          "immutable": true,
+          "locationInModule": {
+            "filename": "src/awscdkpipeline.ts",
+            "line": 94
+          },
+          "name": "token",
+          "optional": true,
+          "type": {
+            "primitive": "string"
+          }
+        }
+      ],
+      "symbolId": "src/awscdkpipeline:GitRepoConfig"
+    },
+    "cdk8s-pipelines-lib.InstallFromIBMOperatorPipeline": {
+      "assembly": "cdk8s-pipelines-lib",
+      "base": "cdk8s-pipelines.PipelineBuilder",
+      "docs": {
+        "remarks": "The following steps are included in this pipeline, so you do not need to add\nthem. The pipeline:\n\n1. Creates the specified namespace.\n1. Registers the IBM operator.\n1. Creates an OperatorGroup.\n1. Subscribes to the given `name` and `channel`",
+        "stability": "stable",
+        "summary": "A basic pipeline that starts with a subscription to the IBM operator catalog."
+      },
+      "fqn": "cdk8s-pipelines-lib.InstallFromIBMOperatorPipeline",
+      "initializer": {
+        "docs": {
+          "stability": "stable"
+        },
+        "locationInModule": {
+          "filename": "src/commonpipelines.ts",
+          "line": 26
+        },
+        "parameters": [
+          {
+            "docs": {
+              "summary": "The parent [Construct](https://cdk8s.io/docs/latest/basics/constructs/)."
+            },
+            "name": "scope",
+            "type": {
+              "fqn": "constructs.Construct"
+            }
+          },
+          {
+            "docs": {
+              "remarks": "Must be unique for each one in a chart.",
+              "summary": "The `id` of the construct."
+            },
+            "name": "id",
+            "type": {
+              "primitive": "string"
+            }
+          },
+          {
+            "docs": {
+              "summary": "The namespace to create and to use for subscribing to the product and channel."
+            },
+            "name": "ns",
+            "type": {
+              "primitive": "string"
+            }
+          },
+          {
+            "docs": {
+              "remarks": "For example, for IBM Event Streams is it `ibm-eventstreams`. For Red Hat Serverless, it is `serverless-operator`.",
+              "summary": "The name of the subscription."
+            },
+            "name": "subscription",
+            "type": {
+              "primitive": "string"
+            }
+          },
+          {
+            "docs": {
+              "summary": "The name of the channel (e.g., `v3.3`, `stable`)."
+            },
+            "name": "channel",
+            "type": {
+              "primitive": "string"
+            }
+          }
+        ]
+      },
+      "kind": "class",
+      "locationInModule": {
+        "filename": "src/commonpipelines.ts",
+        "line": 16
+      },
+      "methods": [
+        {
+          "docs": {
+            "stability": "stable",
+            "summary": "Builds the actual [Pipeline](https://tekton.dev/docs/getting-started/pipelines/) from the settings configured using the fluid syntax."
+          },
+          "locationInModule": {
+            "filename": "src/commonpipelines.ts",
+            "line": 39
+          },
+          "name": "buildPipeline",
+          "overrides": "cdk8s-pipelines.PipelineBuilder",
+          "parameters": [
+            {
+              "name": "opts",
+              "optional": true,
+              "type": {
+                "fqn": "cdk8s-pipelines.BuilderOptions"
+              }
+            }
+          ]
+        }
+      ],
+      "name": "InstallFromIBMOperatorPipeline",
+      "symbolId": "src/commonpipelines:InstallFromIBMOperatorPipeline"
+    }
+  },
+  "version": "0.0.12",
+  "fingerprint": "ajmk6zVFgT6+8jFYiEu1F1We7s/s9cnCWwjlMnkrwT4="
+}

@@ -7,18 +7,18 @@ import {
 	PersistentVolumeClaimVolumeSource,
 	EmptyDirVolumeSource,
 } from 'kubernetes-models/v1';
-export declare type ResourceType = 'deployment' | 'daemonSet' | 'statefulSet' | 'job' | 'cronJob';
+export declare type KubernetesResourceType = 'deployment' | 'daemonSet' | 'statefulSet' | 'job' | 'cronJob' | 'task';
 
 export declare type CreateK8SMeta = {
 	metadata?: IIoK8sApimachineryPkgApisMetaV1ObjectMeta;
 	replicas?: number;
-	resourceType?: ResourceType;
+	resourceType?: KubernetesResourceType;
 };
 
 export declare type CreateK8SMetaData = {
 	loadFromParent: boolean;
 	replicas?: number;
-	resourceType?: ResourceType;
+	resourceType?: KubernetesResourceType;
 	meta?: IIoK8sApimachineryPkgApisMetaV1ObjectMeta;
 };
 

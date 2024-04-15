@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<el-form ref="containerRef" :model="data.container" label-width="100px" label-position="left">
+		<el-form ref="containerRef" :model="data.container" label-width="100px">
 			<el-card shadow="hover">
 				<el-form-item label="初始化容器:">
 					<el-checkbox v-model="data.container.isInitContainer">设置为初始化容器</el-checkbox>
@@ -12,20 +12,22 @@
 					<el-input v-model="data.container.image" size="default" style="width: 296px" clearable />
 				</el-form-item>
 				<el-form-item label="拉取策略：">
-					<el-select v-model="data.container.imagePullPolicy" class="m-2" placeholder="Select" size="default"
-						style="width: 296px">
-						<el-option v-for="item in imagePullPolicy" :key="item.name" :label="item.name"
-							:value="item.value" />
+					<el-select v-model="data.container.imagePullPolicy" class="m-2" placeholder="Select" size="default" style="width: 296px">
+						<el-option v-for="item in imagePullPolicy" :key="item.name" :label="item.name" :value="item.value" />
 					</el-select>
 				</el-form-item>
-				<el-tooltip class="box-item" effect="light"
+				<el-tooltip
+					class="box-item"
+					effect="light"
 					content="<div>即为该应用预留资源额度，包括CPU和内存两种资源，即容器独占该资源，</div><div> 防止因资源不足而被其他服务或进程争夺资源，导致应用不可用</div>"
-					placement="top-start" raw-content>
+					placement="top-start"
+					raw-content
+				>
 					<el-form-item label="资源配置：">
-						<el-button :icon="Edit" type="primary" size="small" text style="padding-left: 0"
-							v-if="!data.resourceSet" @click="setResource">配置</el-button>
-						<el-button :icon="Delete" type="primary" size="small" text v-else style="padding-left: 0"
-							@click="cancelResource">取消配置</el-button>
+						<el-button :icon="Edit" type="primary" size="small" text style="padding-left: 0" v-if="!data.resourceSet" @click="setResource"
+							>配置</el-button
+						>
+						<el-button :icon="Delete" type="primary" size="small" text v-else style="padding-left: 0" @click="cancelResource">取消配置</el-button>
 					</el-form-item>
 				</el-tooltip>
 				<div v-if="data.resourceSet">
@@ -33,31 +35,29 @@
 						<div>
 							<div v-if="data.container.resources.requests">
 								<span>所需资源： CPU</span>
-								<el-input placeholder="如：0.5" v-model="data.container.resources.requests.cpu" size="small"
-									class="limit" />
+								<el-input placeholder="如：0.5" v-model="data.container.resources.requests.cpu" size="small" class="limit" />
 								<span class="limit"> Core</span>
 								<el-divider direction="vertical" />
 								<a>内存</a>
-								<el-input placeholder="如：300Mi" v-model="data.container.resources.requests.memory"
-									size="small" class="limit" /><span>
-									(单位：MiB)</span>
+								<el-input placeholder="如：300Mi" v-model="data.container.resources.requests.memory" size="small" class="limit" /><span>
+									(单位：MiB)</span
+								>
 							</div>
 							<div class="k-description">
 								<el-icon size="13px" color="#181a18" class="mr-2">
-									<InfoFilled />
-								</el-icon>建议根据实际使用情况设置，防止由于资源约束而无法调度或引发内存不足(OOM)错误
+									<InfoFilled /> </el-icon
+								>建议根据实际使用情况设置，防止由于资源约束而无法调度或引发内存不足(OOM)错误
 							</div>
 
 							<div v-if="data.container.resources.limits">
 								<span>资源限制： CPU</span>
-								<el-input placeholder="如：0.5" v-model="data.container.resources.limits.cpu" size="small"
-									class="limit" />
+								<el-input placeholder="如：0.5" v-model="data.container.resources.limits.cpu" size="small" class="limit" />
 								<span class="limit"> Core</span>
 								<el-divider direction="vertical" />
 								<a>内存</a>
-								<el-input placeholder="如：500Mi" v-model="data.container.resources.limits.memory"
-									size="small" class="limit" /><span>
-									(单位：MiB)</span>
+								<el-input placeholder="如：500Mi" v-model="data.container.resources.limits.memory" size="small" class="limit" /><span>
+									(单位：MiB)</span
+								>
 							</div>
 							<div class="k-description">
 								<el-icon size="13px" color="#181a18">
@@ -71,9 +71,13 @@
 
 				<el-form-item label="容器启动项：">
 					<template #label>
-						<el-tooltip class="box-item" effect="light"
+						<el-tooltip
+							class="box-item"
+							effect="light"
 							content="<div>默认情况下，容器是不可以访问宿主上的任何设备；特权容器则</div><div> 被授权访问宿主上所有设备，享有宿主上运行的进程的所有访问权限</div>"
-							placement="top-start" raw-content>
+							placement="top-start"
+							raw-content
+						>
 							容器启动项：
 						</el-tooltip>
 					</template>
@@ -82,14 +86,17 @@
 				</el-form-item>
 				<el-form-item label="特权容器：">
 					<template #label>
-						<el-tooltip class="box-item" effect="light"
+						<el-tooltip
+							class="box-item"
+							effect="light"
 							content="<div>默认情况下，容器是不可以访问宿主上的任何设备；特权容器则</div><div> 被授权访问宿主上所有设备，享有宿主上运行的进程的所有访问权限</div>"
-							placement="top-start" raw-content>
+							placement="top-start"
+							raw-content
+						>
 							特权容器：
 						</el-tooltip>
 					</template>
-					<el-checkbox v-if="data.container.securityContext"
-						v-model="data.container.securityContext.privileged" />
+					<el-checkbox v-if="data.container.securityContext" v-model="data.container.securityContext.privileged" />
 				</el-form-item>
 			</el-card>
 			<el-card shadow="hover">
@@ -101,15 +108,13 @@
 			<el-card shadow="hover" v-show="!data.container.isInitContainer">
 				<el-form-item label="存活检查">
 					<template #label>
-						<el-tooltip effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start" raw-content> 存活检查：
-						</el-tooltip>
+						<el-tooltip effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start" raw-content> 存活检查： </el-tooltip>
 					</template>
 					<HealthCheck ref="lifeCheckRef" :checkData="data.container.livenessProbe" />
 				</el-form-item>
 				<el-form-item label="就绪检查">
 					<template #label>
-						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start"
-							raw-content>
+						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start" raw-content>
 							就绪检查：
 						</el-tooltip>
 					</template>
@@ -117,8 +122,7 @@
 				</el-form-item>
 				<el-form-item label="启动探测">
 					<template #label>
-						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start"
-							raw-content>
+						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start" raw-content>
 							启动探测：
 						</el-tooltip>
 					</template>
@@ -129,8 +133,7 @@
 				<el-form-item label="生命周期配置" />
 				<el-form-item label="启动前：">
 					<template #label>
-						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start"
-							raw-content>
+						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start" raw-content>
 							启动前：
 						</el-tooltip>
 					</template>
@@ -138,8 +141,7 @@
 				</el-form-item>
 				<el-form-item label="停止前：">
 					<template #label>
-						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start"
-							raw-content>
+						<el-tooltip class="box-item" effect="light" content="用来检查容器是否正常，不正常则重启容器" placement="top-start" raw-content>
 							停止前：
 						</el-tooltip>
 					</template>
@@ -317,7 +319,7 @@ onMounted(() => {
 			privileged: false,
 		};
 	}
-	if (copyData.resources &&!isObjectValueEqual(copyData.resources,{})) data.resourceSet = true;
+	if (copyData.resources && !isObjectValueEqual(copyData.resources, {})) data.resourceSet = true;
 	data.container = copyData;
 	if (data.resourceSet) {
 		data.container.resources = {
@@ -328,11 +330,9 @@ onMounted(() => {
 			requests: {
 				cpu: copyData.resources?.requests?.cpu || '',
 				memory: copyData.resources?.requests?.memory || '',
-			}
+			},
 		};
 	}
-
-
 });
 
 const returnContainer = () => {

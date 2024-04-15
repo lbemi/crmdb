@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<el-form ref="metaRef" :model="state.meta" v-if="state.meta" label-width="100px" label-position="left" :rules="metaRules" size="default">
+		<el-form ref="metaRef" :model="state.meta" v-if="state.meta" label-width="100px" :rules="metaRules" size="default">
 			<el-form-item label="命名空间">
 				<el-select v-model="state.meta.namespace" style="max-width: 220px" placeholder="Select" :disabled="props.isUpdate">
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name!" />
@@ -31,7 +31,7 @@ import { computed, defineAsyncComponent, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ref } from 'vue-demi';
 import { deepClone } from '@/utils/other';
-import { CreateK8SMeta, ResourceType } from '@/types/kubernetes/custom';
+import { CreateK8SMeta, KubernetesResourceType } from '@/types/kubernetes/custom';
 import type { FormInstance, FormRules } from 'element-plus';
 import { IObjectMeta } from '@kubernetes-models/apimachinery/apis/meta/v1/ObjectMeta';
 
@@ -45,13 +45,13 @@ const enableEdit = ref(false);
 // 当父组件未传递值是使用下面的初始化值
 const state = reactive({
 	replicas: 1,
-	resourceType: 'deployment' as ResourceType,
-	meta:<IObjectMeta> {
+	resourceType: <KubernetesResourceType>'deployment',
+	meta: <IObjectMeta>{
 		name: '',
 		namespace: 'default',
 		labels: { app: '' },
 		annotations: {},
-	} ,
+	},
 	validateRefs: <Array<FormInstance>>[],
 });
 const metaRules = reactive<FormRules>({
@@ -60,29 +60,20 @@ const metaRules = reactive<FormRules>({
 		{ min: 1, max: 50, message: '长度大于1个字符小于50个字符', trigger: 'blur' },
 	],
 });
-
 const resourceType = computed(() => {
-	switch (state.resourceType) {
-		case 'deployment': {
-			return true;
-		}
-		case 'daemonSet': {
-			return true;
-		}
-		case 'statefulSet': {
-			return true;
-		}
-		default:
-			return false;
-	}
+	return state.resourceType as KubernetesResourceType;
 });
 
 const props = defineProps<{
 	metaData?: CreateK8SMeta;
 	isUpdate: boolean;
+	resourceType?: KubernetesResourceType;
 }>();
 
 onMounted(() => {
+	if (props.resourceType) {
+		state.resourceType = props.resourceType;
+	}
 	if (props.metaData) {
 		if (props.metaData.metadata) {
 			state.meta = deepClone(props.metaData.metadata) as IObjectMeta;
@@ -96,26 +87,6 @@ onMounted(() => {
 	}
 });
 
-// watch(
-// 	() => [state.meta, state.replicas],
-// 	(value, oldValue) => {
-// 		// 监听变化，父组件传值时不更新
-// 		if (!state.loadFromParent) {
-// 			if (state.meta) {
-// 				// 缓存namespace
-// 				if (state.meta.namespace) {
-// 					k8sStore.state.creatDeployment.namespace = state.meta.namespace;
-// 				}
-// 				// FIXME 优化，这个会处罚两次更新
-// 				// if (data.meta.name && data.meta.name != '') {
-// 				// 	data.meta.labels!.app = data.meta.name;
-// 				// }
-// 			}
-// 			emit('updateData', state, metaRef.value); //触发更新数据事件
-// 		}
-// 	},
-// 	{ immediate: true, deep: true }
-// );
 const getMeta = () => {
 	state.validateRefs = [];
 	if (labelsRef.value.ruleFormRef) {
