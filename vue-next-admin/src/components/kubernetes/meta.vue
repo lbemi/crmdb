@@ -49,7 +49,7 @@ const state = reactive({
 	meta: <IObjectMeta>{
 		name: '',
 		namespace: 'default',
-		labels: { app: '' },
+		params: { app: '' },
 		annotations: {},
 	},
 	validateRefs: <Array<FormInstance>>[],

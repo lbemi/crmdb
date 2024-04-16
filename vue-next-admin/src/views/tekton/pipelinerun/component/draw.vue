@@ -135,7 +135,7 @@ const data = reactive({
 		metadata: {
 			name: '',
 			namespace: k8sStore.state.activeNamespace,
-			labels: {},
+			params: {},
 		},
 		spec: {
 			hosts: [],

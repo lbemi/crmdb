@@ -157,7 +157,7 @@ const data = reactive({
 		metadata: {
 			name: '',
 			namespace: 'default',
-			labels: {},
+			params: {},
 			annotations: {},
 		},
 		spec: {

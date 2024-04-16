@@ -1,12 +1,12 @@
 /**
  * The supported apiVerion for the Pipelines, Tasks, etc.
  */
-export declare const TektonV1ApiVersion = "tekton.dev/v1";
+export declare const TektonV1ApiVersion = 'tekton.dev/v1';
 export interface NamedResource {
-    readonly name?: string;
+	name?: string;
 }
 export interface NameKeyPair extends NamedResource {
-    readonly key?: string;
+	key?: string;
 }
 export declare function secretKeyRef(name: string, key: string): NameKeyPair;
 /**

@@ -72,12 +72,12 @@ export interface TaskSpecResult extends NamedResource {
 	/**
 	 * The description of the result.
 	 */
-	readonly description?: string;
+	description?: string;
 	/**
 	 * The type of result. This could be an array, but if it is not supplied the
 	 * default is a string.
 	 */
-	readonly type?: string;
+	type?: string;
 }
 /**
  * Specifies execution parameters for the Task.
@@ -86,15 +86,27 @@ export interface TaskSpecParam extends NamedResource {
 	/**
 	 * The parameter's type.
 	 */
-	readonly type?: string;
+	type?: string;
 	/**
 	 * The parameter's description.
 	 */
-	readonly description?: string;
+	description?: string;
 	/**
 	 * The default value for a parameter.
 	 */
-	readonly default?: string;
+	default?:
+		| string
+		| {
+				[key: string]: string;
+		  };
+	/**
+	 * object param must specify the properties section to define the schema i.e. what keys are available for this object param. See how to define properties section in the following example and the TEP-0075.
+	 */
+	properties?: {
+		[key: string]: {
+			type: string;
+		};
+	};
 }
 /**
  * The volume mount for the task.
@@ -149,20 +161,20 @@ export interface TaskSpec {
 	 * The description of the `Task`.
 	 * @see https://tekton.dev/docs/pipelines/tasks/#adding-a-description
 	 */
-	readonly description?: string;
+	description?: string;
 	/**
 	 * The `Task`'s parameters.
 	 * @see https://tekton.dev/docs/pipelines/tasks/#specifying-parameters
 	 */
-	readonly params?: TaskSpecParam[];
-	readonly results?: TaskSpecResult[];
-	readonly workspaces?: TaskWorkspace[];
+	params?: TaskSpecParam[];
+	results?: TaskSpecResult[];
+	workspaces?: TaskWorkspace[];
 	/**
 	 * The steps that will be executed as part of the Task. The `Step` should
 	 * fit the (container contract)[https://tekton.dev/docs/pipelines/container-contract/]
 	 * @see https://tekton.dev/docs/pipelines/tasks/#defining-steps
 	 */
-	readonly steps?: TaskStep[];
+	steps?: TaskStep[];
 }
 /**
  * Properties used to create the Task.
