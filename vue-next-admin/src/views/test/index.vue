@@ -7,7 +7,31 @@
 					<el-input v-model="state.task.spec!.description" placeholder="请输入描述信息" style="width: 250px" />
 				</el-form-item>
 				<Params v-if="state.task.spec" ref="paramRef" :params="state.task.spec.params" :name="'参数'" />
-				<el-form-item label="resources" prop="state.task.spec.resources"> </el-form-item>
+				<el-form-item label="results">
+					<div>
+						<div>
+							<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="onAddResult">新增</el-button>
+						</div>
+						<div v-for="(item,index) in state.task.spec!.results" :key="index" class="mb10">
+							<el-form :model="state" inline>
+								<el-form-item
+									label="名称"
+									:key="index"
+									prop="'results.' + index + '.name'"
+									:rules="[{ required: true, message: '请输入名称', trigger: 'blur' }]"
+								>
+									<el-input v-model="item.name" placeholder="请输入名称" style="width: 250px" size="small" />
+								</el-form-item>
+								<el-form-item label="描述" :key="index" class="mr1">
+									<el-input v-model="item.description" placeholder="描述，可选" style="width: 250px" size="small" />
+								</el-form-item>
+								<el-form-item>
+									<el-button :icon="RemoveFilled" type="primary" size="small" text @click="onRemoveResult(index)"></el-button>
+								</el-form-item>
+							</el-form>
+						</div>
+					</div>
+				</el-form-item>
 				<el-form-item label="步骤">
 					<el-input placeholder="请输入步骤" />
 				</el-form-item>
@@ -36,6 +60,7 @@ import { ElMessage } from 'element-plus';
 import type { FormInstance } from 'element-plus';
 import { useThemeConfig } from '@/stores/themeConfig';
 import { TaskProps } from '@/types/cdk8s-pipelines/lib/tasks';
+import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 
 const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
 const Params = defineAsyncComponent(() => import('@/components/tekton/params.vue'));
@@ -63,7 +88,15 @@ const state = reactive({
 	},
 	validateRef: <Array<FormInstance>>[],
 });
-
+const onAddResult = () => {
+	state.task.spec!.results!.push({
+		name: '',
+		description: '',
+	});
+};
+const onRemoveResult = (index: number) => {
+	state.task.spec!.results!.splice(index, 1);
+};
 const validate = async () => {
 	if (!formRef.value) return;
 	state.validateRef.push(formRef.value);
@@ -86,6 +119,7 @@ const validate = async () => {
 		return false;
 	}
 };
+
 // 表单验证
 const onSubmitForm = async () => {
 	await validate();
