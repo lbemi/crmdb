@@ -43,7 +43,6 @@
 					</el-form>
 				</template>
 			</div>
-			<a class="k-description">object类型暂不支持</a>
 		</div>
 	</el-form-item>
 </template>

@@ -41,11 +41,13 @@ export interface TaskStepEnv extends NamedResource {
  * A workspace used by a Task. See https://tekton.dev/docs/pipelines/workspaces/#using-workspaces-in-tasks for more information.
  */
 export interface TaskWorkspace extends NamedResource {
-	readonly logicalID?: string;
+	logicalID?: string;
 	/**
 	 * The description of the workspace.
 	 */
-	readonly description?: string;
+	description?: string;
+
+	mountPath?: string;
 }
 /**
  * A `Task` reference. Will be generated as a `taskRef`.
@@ -61,7 +63,7 @@ export interface TaskParam extends NamedResource {
 	/**
 	 * The value of the task parameter.
 	 */
-	readonly value?: string;
+	value?: string;
 }
 /**
  * The Task results.
@@ -78,6 +80,12 @@ export interface TaskSpecResult extends NamedResource {
 	 * default is a string.
 	 */
 	type?: string;
+
+	properties?: {
+		[key: string]: {
+			type: string;
+		};
+	};
 }
 /**
  * Specifies execution parameters for the Task.
@@ -112,7 +120,7 @@ export interface TaskSpecParam extends NamedResource {
  * The volume mount for the task.
  */
 export interface TaskVolumeMount extends NamedResource {
-	readonly mountPath?: string;
+	mountPath?: string;
 }
 /**
  * The step for a Task. See https://tekton.dev/docs/pipelines/tasks/#defining-steps
@@ -122,34 +130,34 @@ export interface TaskStep extends NamedResource {
 	/**
 	 * The name of the container image to use for the Step.
 	 */
-	readonly image?: string;
+	image?: string;
 	/**
 	 * A script that will be executed on the image. If `script` is specified,
 	 * then the `command` value should not be specified.
 	 */
-	readonly script?: string;
+	script?: string;
 	/**
 	 * The command and its arguments (provided in the form of an array) to
 	 * execute on the container. If `command` is supplied, you should not supply
 	 * `script`.
 	 */
-	readonly command?: string[];
+	command?: string[];
 	/**
 	 * Alternatively, you can supply `args` to the `command` value here.
 	 */
-	readonly args?: string[];
+	args?: string[];
 	/**
 	 * The volume mounts to use for the task.
 	 */
-	readonly volumeMounts?: TaskVolumeMount[];
+	volumeMounts?: TaskVolumeMount[];
 	/**
 	 * The name of the working directory for the step
 	 */
-	readonly workingDir?: string;
+	workingDir?: string;
 	/**
 	 * Environment variables for the `Step` on the `Task`.
 	 */
-	readonly env?: TaskStepEnv[];
+	env?: TaskStepEnv[];
 }
 /**
  * The Task spec.

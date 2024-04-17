@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<el-form ref="metaRef" :model="state.meta" v-if="state.meta" label-width="100px" :rules="metaRules" size="default">
+		<el-form ref="metaRef" :model="state.meta" v-if="state.meta" :label-width="labelWidth" :rules="metaRules" size="default">
 			<el-form-item label="命名空间">
 				<el-select v-model="state.meta.namespace" style="max-width: 220px" placeholder="Select" :disabled="props.isUpdate">
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata!.name" :label="item.metadata!.name" :value="item.metadata!.name!" />
@@ -20,8 +20,8 @@
 			<el-form-item label="副本数量" v-if="resourceType">
 				<el-input-number v-model="state.replicas" :min="1" :max="100" />
 			</el-form-item>
-			<Label ref="labelsRef" :labels="state.meta.labels" :name="'标签'" />
-			<Label ref="annotationRef" :labels="state.meta.annotations" :name="'注解'" />
+			<Label ref="labelsRef" :labels="state.meta.labels" :name="'标签'" :label-width="labelWidth" />
+			<Label ref="annotationRef" :labels="state.meta.annotations" :name="'注解'" :label-width="labelWidth" />
 		</el-form>
 	</div>
 </template>
@@ -68,6 +68,7 @@ const props = defineProps<{
 	metaData?: CreateK8SMeta;
 	isUpdate: boolean;
 	resourceType?: KubernetesResourceType;
+	labelWidth?: string;
 }>();
 
 onMounted(() => {

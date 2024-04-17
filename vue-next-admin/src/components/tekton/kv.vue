@@ -17,7 +17,6 @@
 					</el-form>
 				</template>
 			</div>
-			<!--			<a class="k-description">标签键值以字母、数字开头和结尾, 且只能包含字母、数字及分隔符。</a>-->
 		</div>
 	</el-form-item>
 </template>
@@ -78,13 +77,10 @@ const props = defineProps({
 });
 
 const getLabels = () => {
-	if (!validate()) return;
 	const labelsTup: { [key: string]: object } = {};
-	for (const k in data.labels) {
-		if (data.labels[k].key != '') {
-			labelsTup[data.labels[k].key] = {
-				type: 'string',
-			};
+	for (const { key, value } of data.labels) {
+		if (key) {
+			labelsTup[key] = { type: 'string' };
 		}
 	}
 	emits('kv-update', labelsTup);
@@ -102,16 +98,7 @@ const parseLabels = (label: { [key: string]: object }) => {
 	}
 	return labelsTup;
 };
-const validate = async () => {
-	try {
-		for (const item in ruleFormRef) {
-			await Promise.all([item.validate()]);
-		}
-		return true;
-	} catch (error) {
-		return false;
-	}
-};
+
 onMounted(() => {
 	if (props.labels) {
 		data.labels = parseLabels(props.labels);
@@ -128,9 +115,4 @@ watch(
 		immediate: true,
 	}
 );
-//
-// defineExpose({
-// 	ruleFormRef,
-// 	getLabels,
-// });
 </script>
