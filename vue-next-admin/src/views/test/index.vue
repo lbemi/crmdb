@@ -9,9 +9,7 @@
 				<Params v-if="state.task.spec" ref="paramRef" :params="state.task.spec.params" :name="'参数'" />
 				<Result v-if="state.task.spec" ref="resultRef" :results="state.task.spec.results" />
 				<Workspace v-if="state.task.spec" ref="workspaceRef" :workspaces="state.task.spec.workspaces" />
-				<el-form-item label="步骤">
-					<el-input placeholder="请输入步骤" />
-				</el-form-item>
+				<Step v-if="state.task.spec" ref="stepRef" :steps="state.task.spec.steps" />
 			</el-form>
 		</el-card>
 		<el-row class="flex mt15">
@@ -42,13 +40,14 @@ const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue
 const Params = defineAsyncComponent(() => import('@/components/tekton/params.vue'));
 const Result = defineAsyncComponent(() => import('@/components/tekton/results.vue'));
 const Workspace = defineAsyncComponent(() => import('@/components/tekton/workspaces.vue'));
-
+const Step = defineAsyncComponent(() => import('@/components/tekton/steps.vue'));
 // 定义变量内容
 const formRef = ref<FormInstance>();
 const metaRef = ref();
 const paramRef = ref();
 const resultRef = ref();
 const workspaceRef = ref();
+const stepRef = ref();
 
 const theme = useThemeConfig();
 
