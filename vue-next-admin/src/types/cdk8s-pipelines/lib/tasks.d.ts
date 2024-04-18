@@ -24,7 +24,7 @@ import { NamedResource, NameKeyPair } from './common';
  * The source for a `env` `valueFrom`.
  */
 export interface TaskEnvValueSource {
-	readonly secretKeyRef: NameKeyPair;
+	secretKeyRef: NameKeyPair;
 }
 /**
  * Creates an `env` source that can be used in the `env`'s `valueFrom`.
@@ -35,7 +35,7 @@ export declare function valueFrom(nk: NameKeyPair): TaskEnvValueSource;
  * An `env` for a `Step` on a `Task`.
  */
 export interface TaskStepEnv extends NamedResource {
-	readonly valueFrom?: TaskEnvValueSource;
+	valueFrom?: TaskEnvValueSource;
 }
 /**
  * A workspace used by a Task. See https://tekton.dev/docs/pipelines/workspaces/#using-workspaces-in-tasks for more information.

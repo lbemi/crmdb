@@ -35,6 +35,8 @@ import { ElMessage } from 'element-plus';
 import type { FormInstance } from 'element-plus';
 import { useThemeConfig } from '@/stores/themeConfig';
 import { TaskProps } from '@/types/cdk8s-pipelines/lib/tasks';
+import { useTektonTasksApi } from '@/api/tekton/tasks';
+import { kubernetesInfo } from '@/stores/kubernetes';
 
 const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
 const Params = defineAsyncComponent(() => import('@/components/tekton/params.vue'));
@@ -49,6 +51,8 @@ const resultRef = ref();
 const workspaceRef = ref();
 const stepRef = ref();
 
+const api = useTektonTasksApi();
+const k8sStore = kubernetesInfo();
 const theme = useThemeConfig();
 
 const state = reactive({
@@ -88,6 +92,10 @@ const validate = async () => {
 	state.task.spec!.workspaces = workspaceRef.value.getWorkspaces();
 	state.validateRef.push(...workspaceRef.value.ruleFormRef);
 
+	//校验steps
+	state.task.spec!.steps = stepRef.value.getSteps();
+	state.validateRef.push(...stepRef.value.ruleFormRef);
+
 	try {
 		for (const item of state.validateRef) {
 			// 使用 Promise.all 来等待所有表单验证完成
@@ -105,6 +113,13 @@ const validate = async () => {
 const onSubmitForm = async () => {
 	if (!(await validate())) return;
 	console.log(state.task);
+	try {
+		await api.createTask({ cloud: k8sStore.state.activeCluster }, state.task);
+		ElMessage.success('创建成功');
+	} catch (error) {
+		console.log(error);
+		ElMessage.error('创建失败');
+	}
 };
 // 重置表单
 const onResetForm = (formEl: FormInstance | undefined) => {

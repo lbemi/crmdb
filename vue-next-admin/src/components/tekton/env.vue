@@ -1,6 +1,6 @@
 <template>
-	<div>
-		<el-form-item label="环境变量：" style="margin-bottom: 0">
+	<div class="mb18">
+		<el-form-item label="环境变量">
 			<el-button
 				:icon="CirclePlusFilled"
 				type="primary"
