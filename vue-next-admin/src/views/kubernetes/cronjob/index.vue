@@ -134,15 +134,13 @@
 						{{ dateStrFormat(scope.row.status.lastSuccessfulTime) }}
 					</template>
 				</el-table-column>
-				<el-table-column fixed="right" label="操作">
+				<el-table-column fixed="right" label="操作" width="165px">
 					<template #default="scope">
 						<div style="display: flex; align-items: center">
 							<el-button link type="primary" :size="state.size" @click="deployDetail(scope.row)">详情</el-button>
 							<el-button v-auth="'k8s:cronjob:edit'" link type="primary" :size="state.size" @click="handleUpdate(scope.row)">编辑</el-button>
-							<el-button v-auth="'k8s:cronjob:scale'" link type="primary" :size="state.size" @click="openScaleDialog(scope.row)">伸缩</el-button>
-							<el-button link type="primary" :size="state.size" @click="deployDetail(scope.row)">监控</el-button>
 							<el-divider direction="vertical" />
-							<div>
+							<div class="flex-auto">
 								<el-dropdown :size="state.size">
 									<span class="el-dropdown-link" style="font-size: 12px">
 										更多<el-icon class="el-icon--right">

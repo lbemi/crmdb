@@ -74,14 +74,18 @@
 						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 					</template>
 				</el-table-column>
-				<el-table-column fixed="right" label="操作" width="180">
+				<el-table-column fixed="right" label="操作" width="150">
 					<template #default="scope">
-						<el-button link type="primary" size="small" @click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="editPod(scope.row)">编辑</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="jumpFileManger(scope.row)">文件</el-button>
+						<div>
+							<el-button link type="primary" size="small" @click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
+							<el-button link type="primary" size="small" @click="editPod(scope.row)">编辑</el-button><el-divider direction="vertical" />
+							<el-button link type="primary" size="small" @click="deletePod(scope.row)">删除</el-button>
+						</div>
+						<div>
+							<el-button link type="primary" size="small" @click="jumpPodExec(scope.row)">终端</el-button><el-divider direction="vertical" />
+							<el-button link type="primary" size="small" @click="jumpPodLog(scope.row)">日志</el-button><el-divider direction="vertical" />
+							<el-button link type="primary" size="small" @click="jumpFileManger(scope.row)">文件</el-button>
+						</div>
 					</template>
 				</el-table-column>
 			</el-table>

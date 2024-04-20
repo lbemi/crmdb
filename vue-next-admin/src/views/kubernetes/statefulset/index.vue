@@ -152,7 +152,7 @@
 						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 					</template>
 				</el-table-column>
-				<el-table-column fixed="right" label="操作">
+				<el-table-column fixed="right" label="操作" width="260px">
 					<template #default="scope">
 						<div style="display: flex; align-items: center">
 							<el-button link type="primary" :size="state.size" @click="statefulSetDetail(scope.row)">详情</el-button>
