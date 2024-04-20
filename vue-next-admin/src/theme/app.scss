@@ -217,6 +217,10 @@ body,
 	flex: 1;
 	overflow: hidden;
 }
+.flex-between {
+	@extend .flex;
+	justify-content: space-between;
+}
 .flex-center {
 	@extend .flex;
 	flex-direction: column;

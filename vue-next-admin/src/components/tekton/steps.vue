@@ -60,8 +60,8 @@ echo hello"
 </template>
 <script setup lang="ts">
 import { TaskStep } from '@/types/cdk8s-pipelines';
-import { defineAsyncComponent, reactive, ref } from 'vue';
-import { FormInstance } from 'element-plus';
+import { defineAsyncComponent, onMounted, reactive, ref } from 'vue';
+import { FormInstance, progressProps } from 'element-plus';
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
 
 const Env = defineAsyncComponent(() => import('./env.vue'));
@@ -74,7 +74,7 @@ const state = reactive({
 	steps: <Array<TaskStep>>[],
 });
 
-defineProps<{
+const props=defineProps<{
 	steps: Array<TaskStep> | undefined;
 }>();
 
@@ -128,6 +128,11 @@ const getSteps = () => {
 	return state.steps;
 };
 
+onMounted(() => {
+	if(props.steps) {
+		state.steps  = props.steps;
+	}
+})
 defineExpose({
 	ruleFormRef,
 	getSteps,

@@ -13,6 +13,7 @@ import { useCronJobApi } from '@/api/kubernetes/cronjob';
 import { useNamespaceApi } from '@/api/kubernetes/namespace';
 import jsPlumb from 'jsplumb';
 import isEmpty = jsPlumb.jsPlumbUtil.isEmpty;
+import { TaskProps } from '@/types/cdk8s-pipelines/lib';
 
 /**
  * k8s集群信息
@@ -62,6 +63,9 @@ export const kubernetesInfo = defineStore(
 				namespace: '',
 				name: '',
 			},
+			tekton:{
+				updateTask:{} as TaskProps
+			}
 		});
 		const refreshActiveDeployment = async () => {
 			if (!isEmpty(state.activeDeployment))

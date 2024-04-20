@@ -114,7 +114,8 @@ const nextStep = (formEl: Array<FormInstance> | undefined, labels: Object) => {
 watch(
 	() => props.labelData,
 	() => {
-		if (props.labelData && !isObjectValueEqual(props.labelData, { '': '' })) {
+		// if (props.labelData && !isObjectValueEqual(props.labelData, { '': '' })) {
+		if (props.labelData) {
 			let labels = JSON.parse(JSON.stringify(props.labelData));
 			parseLabels(labels);
 		}
@@ -130,7 +131,8 @@ watch(
 	() => data.labels,
 	() => {
 		const labels = handleLabels();
-		if (!isObjectValueEqual(labels, { '': '' })) {
+		// if (!isObjectValueEqual(labels, { '': '' })) {
+		if (labels) {
 			nextStep(labelRef.value, labels);
 		}
 	},

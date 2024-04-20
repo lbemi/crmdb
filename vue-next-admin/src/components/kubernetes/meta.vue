@@ -17,7 +17,7 @@
 					<el-option v-for="item in resourceTypes" :key="item.name" :label="item.name" :value="item.value" />
 				</el-select>
 			</el-form-item>
-			<el-form-item label="副本数量" v-if="resourceType">
+			<el-form-item label="副本数量" v-if="resourceType !== 'task'">
 				<el-input-number v-model="state.replicas" :min="1" :max="100" />
 			</el-form-item>
 			<Label ref="labelsRef" :labels="state.meta.labels" :name="'标签'" :label-width="labelWidth" />
@@ -86,6 +86,7 @@ onMounted(() => {
 			enableEdit.value = true;
 		}
 	}
+	console.log(props);
 });
 
 const getMeta = () => {
@@ -132,11 +133,11 @@ const resourceTypes = [
 		value: 'cronJob',
 		name: 'CronJob(定时任务)',
 	},
+	{
+		value: 'task',
+		name: 'Task(CI任务)',
+	},
 ];
 </script>
 
-<style scoped>
-/* .el-form-item {
-	margin-bottom: 4px;
-} */
-</style>
+
