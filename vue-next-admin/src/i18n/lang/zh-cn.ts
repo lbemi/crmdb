@@ -73,6 +73,7 @@ export default {
 		task: '任务',
 		createTask: '创建/更新任务',
 		taskrun: '任务运行时',
+		createTaskRun: '创建/更新任务运行时',
 		pipeline: '流水线',
 		pipelinerun: '流水线运行时',
 		menu: '菜单嵌套',
