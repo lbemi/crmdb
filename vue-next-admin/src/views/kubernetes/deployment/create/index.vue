@@ -17,7 +17,7 @@
 				</el-col>
 				<el-col :span="20">
 					<div id="0" v-show="data.active === 0">
-						<Meta ref="metaRef" :bindData="data.bindMetaData" :isUpdate="data.isUpdate" />
+						<Meta ref="metaRef" :bindData="data.bindMetaData" :isUpdate="data.isUpdate" :label-width="'90px'" />
 					</div>
 					<div id="1" v-show="data.active === 1">
 						<Containers

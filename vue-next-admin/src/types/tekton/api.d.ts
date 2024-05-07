@@ -12,26 +12,21 @@
  * Do not edit the class manually.
  */
 
-import type { Configuration } from './configuration';
-import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
-// Some imports not used depending on template conditions
+// import {
+// 	DUMMY_BASE_URL,
+// 	assertParamExists,
+// 	setApiKeyToObject,
+// 	setBasicAuthToObject,
+// 	setBearerAuthToObject,
+// 	setOAuthToObject,
+// 	setSearchParams,
+// 	serializeDataIfNeeded,
+// 	toPathString,
+// 	createRequestFunction,
+// } from './common';
+// import type { RequestArgs } from './test/base';
 // @ts-ignore
-import {
-	DUMMY_BASE_URL,
-	assertParamExists,
-	setApiKeyToObject,
-	setBasicAuthToObject,
-	setBearerAuthToObject,
-	setOAuthToObject,
-	setSearchParams,
-	serializeDataIfNeeded,
-	toPathString,
-	createRequestFunction,
-} from './common';
-import type { RequestArgs } from './base';
-// @ts-ignore
-import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
+// import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './test/base';
 import {
 	Affinity,
 	CSIVolumeSource,
@@ -729,7 +724,6 @@ export interface PipelineRunResult {
 	 */
 	value: ParamValue;
 }
-
 
 /**
  * PipelineRunRunStatus contains the name of the PipelineTask for this Run and the Run\'s Status

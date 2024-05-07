@@ -27,7 +27,7 @@
 						ref="containersRef"
 						:containers="state.containers"
 						:initContainers="state.initContainers"
-						:volumes="state.deployment.spec?.template.spec?.volumes"
+						:volumes="state.deployment.spec!.template.spec!.volumes!"
 					/>
 				</div>
 				<div style="margin-top: 10px" id="2" v-show="state.active === 2">

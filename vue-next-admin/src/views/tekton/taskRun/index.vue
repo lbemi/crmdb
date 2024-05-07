@@ -117,13 +117,14 @@ import { PageInfo } from '@/types/kubernetes/common';
 import { Edit, Delete, List } from '@element-plus/icons-vue';
 import { useThemeConfig } from '@/stores/themeConfig';
 import { deepClone } from '@/utils/other';
-import { TaskProps as Task } from '@/types/cdk8s-pipelines/lib';
 import { useTektonTaskRunsApi } from '@/api/tekton/taskRuns';
-import { TaskRun } from '@/types/tekton/test/api';
+import { TaskRun, Task } from '@/types/tekton/api';
+import { useRouter } from 'vue-router';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 
+const router = useRouter();
 const taskRunApi = useTektonTaskRunsApi();
 
 type queryType = {
@@ -190,8 +191,9 @@ const handleChange = () => {
 	listTaskRuns();
 };
 const createTaskRun = () => {
-	state.draw.title = '创建虚拟服务';
-	state.draw.visible = true;
+	router.push({
+		path: '/tekton/taskrun/create/',
+	});
 };
 const deleteTask = (task: Task) => {
 	state.loading = true;
@@ -211,7 +213,7 @@ const deleteTask = (task: Task) => {
 	})
 		.then(() => {
 			taskRunApi
-				.deleteTaskRun(task.metadata.namespace, task.metadata.name, {
+				.deleteTaskRun(task.metadata!.namespace, task.metadata!.name, {
 					cloud: k8sStore.state.activeCluster,
 				})
 				.then((res: any) => {
@@ -235,7 +237,6 @@ const taskRunDetail = (taskRun: TaskRun) => {
 
 const showYaml = (TaskRun: TaskRun) => {
 	state.dialogVisible = true;
-	delete TaskRun.metadata?.managedFields;
 	state.codeData = TaskRun;
 };
 const updateTaskRunYaml = (code: any) => {

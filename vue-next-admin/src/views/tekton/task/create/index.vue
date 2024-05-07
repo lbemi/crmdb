@@ -4,7 +4,7 @@
 			<template #header>
 				<div class="flex-between">
 					<div class="card-header">
-						<span>{{state.title}}Task</span>
+						<span>{{ state.title }}Task</span>
 					</div>
 					<div class="mr15">
 						<el-button plain type="primary" @click="onOpenYaml()">yaml</el-button>
@@ -12,7 +12,7 @@
 				</div>
 			</template>
 			<el-form ref="formRef" :model="state.task" label-width="120px">
-				<Meta ref="metaRef" :meta-data="{metadata: state.task.metadata}" :isUpdate="state.update" :resourceType="'task'" :label-width="'120px'" />
+				<Meta ref="metaRef" :meta-data="{ metadata: state.task.metadata }" :isUpdate="state.update" :resourceType="'task'" :label-width="'120px'" />
 				<el-form-item label="描述" prop="description">
 					<el-input v-model="state.task.spec!.description" placeholder="请输入描述信息" style="width: 250px" />
 				</el-form-item>
@@ -22,7 +22,13 @@
 				<Step v-if="state.task.spec" ref="stepRef" :steps="state.task.spec.steps" />
 			</el-form>
 		</el-card>
-		<YamlDialog :dialogVisible="state.dialogVisible" :code-data="state.task" @update="" v-if="state.dialogVisible" :disabledUpdate="true" />
+		<YamlDialog
+			:dialogVisible="state.dialogVisible"
+			:code-data="state.task"
+			@update="updateTaskYaml"
+			v-if="state.dialogVisible"
+			:disabledUpdate="true"
+		/>
 		<el-row class="flex mt15">
 			<div class="flex-margin">
 				<el-button size="default" @click="onCancel()">
@@ -41,14 +47,14 @@
 </template>
 
 <script setup lang="ts" name="test">
-import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref } from 'vue';
+import { defineAsyncComponent, onBeforeMount, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { FormInstance } from 'element-plus';
 import { useThemeConfig } from '@/stores/themeConfig';
-import {  TaskProps } from '@/types/cdk8s-pipelines/lib/tasks';
+import { Task } from '@/types/tekton/api';
 import { useTektonTasksApi } from '@/api/tekton/tasks';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { useRouter,useRoute } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
@@ -72,10 +78,10 @@ const theme = useThemeConfig();
 
 const state = reactive({
 	update: false,
-	title : '创建',
+	title: '创建',
 	dialogVisible: false,
 	size: theme.themeConfig.globalComponentSize,
-	task: <TaskProps>{
+	task: <Task>{
 		metadata: {
 			name: '',
 			namespace: 'default',
@@ -132,28 +138,32 @@ onBeforeMount(() => {
 		state.task = k8sStore.state.tekton.updateTask;
 		state.title = '更新';
 		state.update = true;
-		console.log(state.task);
-		
 	}
-})
+});
 const onOpenYaml = async () => {
 	await validate();
 	state.dialogVisible = true;
 };
+const updateTaskYaml = async (task: Task) => {
+	try {
+		await api.updateTask({ cloud: k8sStore.state.activeCluster }, task);
+		ElMessage.success('更新成功');
+	} catch (error) {
+		ElMessage.error('更新失败');
+	}
+};
 // 表单验证并提交
 const onSubmitForm = async () => {
 	if (!(await validate())) return;
-	console.log(state.task);
 	try {
 		if (state.update) {
-		await api.updateTask({ cloud: k8sStore.state.activeCluster }, state.task);
+			await api.updateTask({ cloud: k8sStore.state.activeCluster }, state.task);
 		} else {
-		await api.createTask({ cloud: k8sStore.state.activeCluster }, state.task);
+			await api.createTask({ cloud: k8sStore.state.activeCluster }, state.task);
 		}
 		ElMessage.success('创建成功');
 		await router.push('/tekton/task');
 	} catch (error) {
-		console.log(error);
 		ElMessage.error('创建失败');
 	}
 };

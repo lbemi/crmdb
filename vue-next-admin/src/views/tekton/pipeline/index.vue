@@ -127,7 +127,7 @@ import { useThemeConfig } from '@/stores/themeConfig';
 import { deepClone } from '@/utils/other';
 import { useTektonPipelinesApi } from '@/api/tekton/pipelines';
 
-import { Pipeline } from '@/types/tekton/pipeline';
+import { Pipeline } from '@/types/tekton/test/pipeline';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));

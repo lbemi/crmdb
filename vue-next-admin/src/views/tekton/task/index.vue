@@ -119,7 +119,7 @@ import { useThemeConfig } from '@/stores/themeConfig';
 import { deepClone } from '@/utils/other';
 import { useTektonTasksApi } from '@/api/tekton/tasks';
 import { useRouter } from 'vue-router';
-import { TaskProps } from '@/types/cdk8s-pipelines';
+import { Task } from '@/types/tekton/api';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
@@ -144,19 +144,19 @@ const state = reactive({
 	detail: {
 		title: '',
 		visible: false,
-		task: {} as TaskProps,
+		task: {} as Task,
 	},
 	draw: {
 		title: '',
 		visible: false,
-		task: {} as TaskProps,
+		task: {} as Task,
 	},
 	dialogVisible: false,
-	codeData: {} as TaskProps,
+	codeData: {} as Task,
 	loading: false,
-	selectData: [] as TaskProps[],
-	tasks: [] as TaskProps[],
-	tmpTask: [] as TaskProps[],
+	selectData: [] as Task[],
+	tasks: [] as Task[],
+	tmpTask: [] as Task[],
 	total: 0,
 	type: '1',
 	inputValue: '',
@@ -192,7 +192,7 @@ const handleChange = () => {
 const createTask = () => {
 	router.push('/tekton/task/create');
 };
-const deleteTask = (task: TaskProps) => {
+const deleteTask = (task: Task) => {
 	state.loading = true;
 	ElMessageBox({
 		title: '提示',
@@ -210,7 +210,7 @@ const deleteTask = (task: TaskProps) => {
 	})
 		.then(() => {
 			taskApi
-				.deleteTask(task.metadata!.namespace!, task.metadata!.name, {
+				.deleteTask(task.metadata!.namespace!, task.metadata!.name!, {
 					cloud: k8sStore.state.activeCluster,
 				})
 				.then((res: any) => {
@@ -226,13 +226,13 @@ const deleteTask = (task: TaskProps) => {
 		});
 	state.loading = false;
 };
-const taskDetail = (task: TaskProps) => {
+const taskDetail = (task: Task) => {
 	state.detail.title = '详情';
 	state.detail.task = task;
 	state.detail.visible = true;
 };
 
-const showYaml = (Task: TaskProps) => {
+const showYaml = (Task: Task) => {
 	state.dialogVisible = true;
 	state.codeData = Task;
 };
@@ -241,14 +241,14 @@ const updateTaskYaml = (code: any) => {
 };
 
 const handleSelectionChange = () => {};
-const updateTask = (task: TaskProps) => {
+const updateTask = (task: Task) => {
 	router.push({
 		name: 'createTask',
 		query: {
 			update: 'true',
 		},
 	});
-	k8sStore.state.tekton.updateTask = deepClone(task) as TaskProps;
+	k8sStore.state.tekton.updateTask = deepClone(task) as Task;
 };
 const handlePageChange = (page: PageInfo) => {
 	state.query.page = page.page;

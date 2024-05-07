@@ -86,7 +86,6 @@ onMounted(() => {
 			enableEdit.value = true;
 		}
 	}
-	console.log(props);
 });
 
 const getMeta = () => {
@@ -139,5 +138,3 @@ const resourceTypes = [
 	},
 ];
 </script>
-
-

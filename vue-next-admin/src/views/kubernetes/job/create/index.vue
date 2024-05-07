@@ -75,9 +75,7 @@ const data = reactive({
 	containers: [] as Container[],
 	initContainers: [] as Container[],
 	//初始化deployment
-	deployments: <Deployment>{
-		apiVersion: 'apps/v1',
-		kind: 'Deployment',
+	deployments: new Deployment({
 		metadata: {
 			namespace: 'default',
 		},
@@ -105,7 +103,7 @@ const data = reactive({
 				},
 			},
 		},
-	},
+	}),
 	code: '',
 	// 绑定初始值
 	bindMetaData: <CreateK8SMeta>{

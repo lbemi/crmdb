@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { RemoveFilled } from '@element-plus/icons-vue';
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, watch } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { CirclePlusFilled } from '@element-plus/icons-vue';
 import { FormInstance, FormRules } from 'element-plus';
@@ -115,6 +115,21 @@ const parseLabels = (label: { [key: string]: string }) => {
 	}
 	return labelsTup;
 };
+// 监听父组件传递来的数据
+watch(
+	() => props.labels,
+	() => {
+		// if (props.labelData && !isObjectValueEqual(props.labelData, { '': '' })) {
+		if (props.labels) {
+			data.labels = parseLabels(deepClone(props.labels));
+		}
+	},
+	{
+		immediate: true,
+		deep: true,
+	}
+);
+
 onMounted(() => {
 	if (props.labels && !isObjectValueEqual(props.labels, {})) {
 		data.labels = parseLabels(deepClone(props.labels));

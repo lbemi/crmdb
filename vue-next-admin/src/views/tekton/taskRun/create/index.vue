@@ -4,7 +4,7 @@
 			<template #header>
 				<div class="flex-between">
 					<div class="card-header">
-						<span>{{state.title}}Task</span>
+						<span>{{ state.title }}TaskRun</span>
 					</div>
 					<div class="mr15">
 						<el-button plain type="primary" @click="onOpenYaml()">yaml</el-button>
@@ -12,7 +12,7 @@
 				</div>
 			</template>
 			<el-form ref="formRef" :model="state.task" label-width="120px">
-				<Meta ref="metaRef" :meta-data="{metadata: state.task.metadata}" :isUpdate="state.update" :resourceType="'task'" :label-width="'120px'" />
+				<Meta ref="metaRef" :meta-data="{ metadata: state.task.metadata }" :isUpdate="state.update" :resourceType="'task'" :label-width="'120px'" />
 				<el-form-item label="描述" prop="description">
 					<el-input v-model="state.task.spec!.description" placeholder="请输入描述信息" style="width: 250px" />
 				</el-form-item>
@@ -41,14 +41,14 @@
 </template>
 
 <script setup lang="ts" name="test">
-import { defineAsyncComponent, onBeforeMount, onMounted, reactive, ref } from 'vue';
+import { defineAsyncComponent, onBeforeMount, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { FormInstance } from 'element-plus';
 import { useThemeConfig } from '@/stores/themeConfig';
-import {  TaskProps } from '@/types/cdk8s-pipelines/lib/tasks';
 import { useTektonTasksApi } from '@/api/tekton/tasks';
 import { kubernetesInfo } from '@/stores/kubernetes';
-import { useRouter,useRoute } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import { TaskRun } from '@/types/tekton/api';
 
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
@@ -72,10 +72,10 @@ const theme = useThemeConfig();
 
 const state = reactive({
 	update: false,
-	title : '创建',
+	title: '创建',
 	dialogVisible: false,
 	size: theme.themeConfig.globalComponentSize,
-	task: <TaskProps>{
+	task: <TaskRun>{
 		metadata: {
 			name: '',
 			namespace: 'default',
@@ -85,8 +85,6 @@ const state = reactive({
 			description: '',
 			params: [],
 			workspaces: [],
-			results: [],
-			steps: [],
 		},
 	},
 	validateRef: <Array<FormInstance>>[],
@@ -133,9 +131,8 @@ onBeforeMount(() => {
 		state.title = '更新';
 		state.update = true;
 		console.log(state.task);
-		
 	}
-})
+});
 const onOpenYaml = async () => {
 	await validate();
 	state.dialogVisible = true;
@@ -146,9 +143,9 @@ const onSubmitForm = async () => {
 	console.log(state.task);
 	try {
 		if (state.update) {
-		await api.updateTask({ cloud: k8sStore.state.activeCluster }, state.task);
+			await api.updateTask({ cloud: k8sStore.state.activeCluster }, state.task);
 		} else {
-		await api.createTask({ cloud: k8sStore.state.activeCluster }, state.task);
+			await api.createTask({ cloud: k8sStore.state.activeCluster }, state.task);
 		}
 		ElMessage.success('创建成功');
 		await router.push('/tekton/task');
