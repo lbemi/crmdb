@@ -4,7 +4,7 @@
 			<el-tabs v-model="editableTabsValue" @tab-remove="tabRemove" class="demo-tabs" :before-leave="tabChange">
 				<el-tab-pane v-for="(item, index) in data.containers" :key="index" :name="index" :closable="data.containers.length != 1">
 					<template #label>
-						<span v-if="item.isIntiContainer" class="custom-tabs-label">
+						<span v-if="item.isInitContainer" class="custom-tabs-label">
 							<SvgIcon name="iconfont icon-container-" class="svg" />{{ ' init容器 ' }}
 						</span>
 						<span v-else class="custom-tabs-label"> <SvgIcon name="iconfont icon-container-" class="svg" />{{ ' 容器 ' }} </span>
@@ -24,11 +24,11 @@
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import { ComponentPublicInstance, ref } from 'vue-demi';
-import { Container, Volume } from 'kubernetes-types/core/v1';
-import type { TabPaneName } from 'element-plus';
+import { Container, Volume } from 'kubernetes-models/v1';
+import type { FormInstance, TabPaneName } from 'element-plus';
 import { deepClone } from '@/utils/other';
 import { Plus } from '@element-plus/icons-vue';
-import { ContainerType } from '@/types/kubernetes/common';
+import { CustomizeContainer } from '@/types/kubernetes/container';
 
 const ContainerDiv = defineAsyncComponent(() => import('./container.vue'));
 
@@ -64,45 +64,37 @@ const tabRemove = (TabPaneName: TabPaneName) => {
 };
 
 const data = reactive({
+	validateRefs: <Array<FormInstance>>[],
 	loadFromParent: false,
 	currentIndex: 1,
 	addIndex: 1,
 	tabIndex: 1,
 	editableTabsValue: '1',
 	volumes: [] as Volume[],
-	containers: [] as Array<ContainerType>,
-	container: <ContainerType>{
-		isIntiContainer: false,
+	containers: <Array<CustomizeContainer>>[],
+	container: new CustomizeContainer({
+		isInitContainer: false,
 		name: '',
 		image: '',
 		imagePullPolicy: 'IfNotPresent',
 		securityContext: {
 			privileged: false,
 		},
-		// ports: [],
-		// env: [],
-		// resources: {},
-		// livenessProbe: {},
-		// readinessProbe: {},
-		// startupProbe: {},
-		// lifecycle: {},
-	},
+	}),
 });
 
-const isInitContainer = (isIntiContainer: boolean) => {
-	return isIntiContainer;
-};
-
 const getContainers = () => {
-	const vs = [] as Volume[];
-	itemRefs.value.forEach((refValue) => {
-		if (!refValue) {
-			return false;
-		}
-		const { index, container, volumes } = refValue.returnContainer();
+	data.validateRefs = [];
+	const vs = [];
+	const containers = data.containers;
+	for (let i = 0, len = itemRefs.value.length; i < len; i++) {
+		const refValue = itemRefs.value[i];
+		if (!refValue) continue;
+		const { index, container, volumes, validateRefs } = refValue.returnContainer();
+		data.validateRefs.push(...validateRefs);
 		vs.push(...volumes);
-		data.containers[index] = deepClone(container) as ContainerType;
-	});
+		containers[index] = { ...container };
+	}
 
 	data.volumes = vs;
 };
@@ -110,97 +102,60 @@ const getContainers = () => {
 type propsType = {
 	containers: Array<Container>;
 	initContainers: Array<Container>;
-	volumes: Array<Volume> | undefined;
+	volumes: Array<Volume>|undefined;
 };
 const props = defineProps<propsType>();
-
 onMounted(() => {
-	const containers = [] as ContainerType[];
-	if (props.containers && props.containers.length > 0) {
-		props.containers.forEach((item: Container) => {
-			const container: ContainerType = {
-				args: item.args,
-				command: item.command,
-				env: item.env,
-				envFrom: item.envFrom,
-				image: item.image,
-				imagePullPolicy: item.imagePullPolicy,
-				isIntiContainer: false,
-				lifecycle: item.lifecycle,
-				livenessProbe: item.livenessProbe,
-				name: item.name,
-				ports: item.ports,
-				readinessProbe: item.readinessProbe,
-				resources: item.resources,
-				securityContext: item.securityContext,
-				startupProbe: item.startupProbe,
-				stdin: item.stdin,
-				stdinOnce: item.stdinOnce,
-				terminationMessagePath: item.terminationMessagePath,
-				terminationMessagePolicy: item.terminationMessagePolicy,
-				tty: item.tty,
-				volumeDevices: item.volumeDevices,
-				volumeMounts: item.volumeMounts,
-				workingDir: item.workingDir,
-			};
-			containers.push(container);
-		});
+	const containers =
+		props.containers.length > 0
+			? props.containers.map(
+					(item) =>
+						new CustomizeContainer({
+							...item,
+							isInitContainer: false,
+						})
+			  )
+			: [data.container];
+
+	if (props.initContainers.length > 0) {
+		const initContainers = props.initContainers.map(
+			(item) =>
+				new CustomizeContainer({
+					...item,
+					isInitContainer: true,
+				})
+		);
+		data.containers = [...containers, ...initContainers];
 	} else {
-		containers.push(data.container);
-	}
-	if (props.initContainers && props.initContainers.length > 0) {
-		props.initContainers.forEach((item: Container) => {
-			const container: ContainerType = {
-				args: item.args,
-				command: item.command,
-				env: item.env,
-				envFrom: item.envFrom,
-				image: item.image,
-				imagePullPolicy: item.imagePullPolicy,
-				isIntiContainer: true,
-				lifecycle: item.lifecycle,
-				livenessProbe: item.livenessProbe,
-				name: item.name,
-				ports: item.ports,
-				readinessProbe: item.readinessProbe,
-				resources: item.resources,
-				securityContext: item.securityContext,
-				startupProbe: item.startupProbe,
-				stdin: item.stdin,
-				stdinOnce: item.stdinOnce,
-				terminationMessagePath: item.terminationMessagePath,
-				terminationMessagePolicy: item.terminationMessagePolicy,
-				tty: item.tty,
-				volumeDevices: item.volumeDevices,
-				volumeMounts: item.volumeMounts,
-				workingDir: item.workingDir,
-			};
-			containers.push(container);
-		});
 		data.containers = containers;
 	}
-	data.containers = containers;
 });
 
 const returnContainers = () => {
 	getContainers();
 	const containers = [] as Container[];
 	const initContainers = [] as Container[];
-	const res = deepClone(data.containers) as ContainerType[];
-	res.forEach((item) => {
-		if (item.isIntiContainer) {
-			delete item.isIntiContainer;
-			delete item.lifecycle;
-			delete item.livenessProbe;
-			delete item.readinessProbe;
-			delete item.startupProbe;
-			initContainers.push(item);
+
+	let resIndex = 0;
+	const resLength = data.containers.length;
+	while (resIndex < resLength) {
+		const item = data.containers[resIndex];
+		if (item.isInitContainer) {
+			initContainers.push({
+				...item,
+				isInitContainer: undefined,
+				lifecycle: undefined,
+				livenessProbe: undefined,
+				readinessProbe: undefined,
+				startupProbe: undefined,
+			} as Omit<CustomizeContainer, 'isInitContainer' | 'lifecycle' | 'livenessProbe' | 'readinessProbe' | 'startupProbe'>);
 		} else {
-			delete item.isIntiContainer;
 			containers.push(item);
 		}
-	});
-	return { containers: containers, initContainers: initContainers, volumes: data.volumes };
+		resIndex++;
+	}
+
+	return { containers, initContainers, volumes: data.volumes, validateRefs: data.validateRefs };
 };
 
 defineExpose({

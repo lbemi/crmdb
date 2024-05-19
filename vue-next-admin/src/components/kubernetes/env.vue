@@ -1,12 +1,23 @@
 <template>
 	<div>
 		<el-form-item label="环境变量：" style="margin-bottom: 0">
-			<el-button :icon="CirclePlusFilled" type="primary" size="small" text style="padding-left: 0"
-				@click="data.env.push({ type: 'custom', name: '', value: '', otherValue: '' })">新增</el-button>
-		</el-form-item>
-		<el-form-item>
-			<el-table ref="envRef" :data="data.env" style="width: 100%; font-size: 13px" v-show="data.env.length != 0"
-				:cell-style="{ padding: '10px' }" :header-cell-style="{ padding: '5px' }">
+			<el-button
+				:icon="CirclePlusFilled"
+				type="primary"
+				size="small"
+				text
+				style="padding-left: 0"
+				@click="data.env.push({ type: 'custom', name: '', value: '', otherValue: '' })"
+				>新增</el-button
+			>
+			<el-table
+				ref="envRef"
+				:data="data.env"
+				style="width: 100%; font-size: 13px"
+				v-show="data.env.length != 0"
+				:cell-style="{ padding: '10px' }"
+				:header-cell-style="{ padding: '5px' }"
+			>
 				<el-table-column label="类型" width="130">
 					<template #default="scope">
 						<el-select v-model="scope.row.type" size="small">
@@ -23,10 +34,15 @@
 				<el-table-column label="变量/变量引用" width="320">
 					<template #default="scope">
 						<el-input v-model="scope.row.value" size="small" style="width: 120px" />
-						<el-input v-model="scope.row.otherValue" size="small" v-if="scope.row.type != 'custom'"
-							style="width: 120px; margin-left: 5px" />
-						<el-button :icon="RemoveFilled" type="primary" size="small" text style="margin-left: 10px;"
-							@click="data.env.splice(scope.$index, 1)"></el-button>
+						<el-input v-model="scope.row.otherValue" size="small" v-if="scope.row.type != 'custom'" style="width: 120px; margin-left: 5px" />
+						<el-button
+							:icon="RemoveFilled"
+							type="primary"
+							size="small"
+							text
+							style="margin-left: 10px"
+							@click="data.env.splice(scope.$index, 1)"
+						></el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -36,9 +52,8 @@
 
 <script setup lang="ts">
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { EnvVar } from 'kubernetes-types/core/v1';
+import { EnvVar } from 'kubernetes-models/v1';
 import { onMounted, reactive } from 'vue';
-import { deepClone } from '@/utils/other';
 
 // FIXME 资源引用有问题，待修复
 interface envImp {
@@ -48,7 +63,6 @@ interface envImp {
 	type: 'custom' | 'secretKeyRef' | 'resourceFieldRef' | 'fieldRef' | 'configMapKeyRef';
 }
 const data = reactive({
-	loadFromParent: false,
 	env: <Array<envImp>>[],
 });
 
@@ -59,143 +73,64 @@ const props = defineProps<propsType>();
 
 const buildEnv = () => {
 	const envData = [] as EnvVar[];
-	const envTup = deepClone(data.env);
-	envTup.forEach((item: any, index: number) => {
-		if (item.type === 'custom') {
-			//自定义变量
-			const envVar: EnvVar = {
-				name: item.name,
-				value: item.value,
-			};
-			envData[index] = envVar;
-		} else if (item.type === 'fieldRef') {
-			const envVar: EnvVar = {
-				name: item.name,
-				valueFrom: {
-					fieldRef: {
-						fieldPath: item.otherValue,
-					},
-				},
-			};
-			envData[index] = envVar;
-		} else if (item.type === 'resourceFieldRef') {
-			const envVar: EnvVar = {
-				name: item.name,
-				valueFrom: {
-					resourceFieldRef: {
-						containerName: item.value,
-						resource: item.otherValue,
-					},
-				},
-			};
-			envData[index] = envVar;
-		} else if (item.type === 'configMapKeyRef') {
-			const envVar: EnvVar = {
-				name: item.name,
-				valueFrom: {
-					configMapKeyRef: {
-						name: item.value,
-						key: item.otherValue,
-					},
-				},
-			};
-			envData[index] = envVar;
-		} else if (item.type === 'secretKeyRef') {
-			const envVar: EnvVar = {
-				name: item.name,
-				valueFrom: {
-					secretKeyRef: {
-						name: item.value,
-						key: item.otherValue,
-					},
-				},
-			};
-			envData[index] = envVar;
-		}
-	});
-
+	const envTup = data.env;
+	for (let i = 0; i < envTup.length; i++) {
+		const item = envTup[i];
+		const envVar = new EnvVar({
+			name: item.name,
+			value: item.type === 'custom' ? item.value : undefined,
+			valueFrom:
+				item.type !== 'custom'
+					? {
+							fieldRef: item.type === 'fieldRef' ? { fieldPath: item.otherValue } : undefined,
+							resourceFieldRef: item.type === 'resourceFieldRef' ? { containerName: item.value, resource: item.otherValue } : undefined,
+							configMapKeyRef: item.type === 'configMapKeyRef' ? { name: item.value, key: item.otherValue } : undefined,
+							secretKeyRef: item.type === 'secretKeyRef' ? { name: item.value, key: item.otherValue } : undefined,
+					  }
+					: undefined,
+		});
+		envData.push(envVar);
+	}
 	return envData;
 };
 
 const parseEnv = (envs: Array<EnvVar>) => {
-	const envData = [] as envImp[];
-	envs.forEach((env, index) => {
-		envData.push({
-			name: '',
-			value: '',
-			type: 'custom',
-			otherValue: '',
-		});
-		envData[index].name = env.name;
-		if (env.valueFrom) {
-			if (env.valueFrom.fieldRef) envData[index].type = 'fieldRef';
-			if (env.valueFrom.fieldRef?.fieldPath) envData[index].value = env.valueFrom.fieldRef.fieldPath;
-
-			if (env.valueFrom.secretKeyRef) envData[index].type = 'secretKeyRef';
-			if (env.valueFrom.secretKeyRef?.key) envData[index].otherValue = env.valueFrom.secretKeyRef.key;
-			if (env.valueFrom.secretKeyRef?.name) envData[index].value = env.valueFrom.secretKeyRef.name;
-
-			if (env.valueFrom.configMapKeyRef) envData[index].type = 'configMapKeyRef';
-			if (env.valueFrom.configMapKeyRef?.key) envData[index].otherValue = env.valueFrom.configMapKeyRef.key;
-			if (env.valueFrom.configMapKeyRef?.name) envData[index].value = env.valueFrom.configMapKeyRef.name;
-
-			if (env.valueFrom.resourceFieldRef) envData[index].type = 'resourceFieldRef';
-			if (env.valueFrom.resourceFieldRef?.resource) envData[index].otherValue = env.valueFrom.resourceFieldRef.resource;
-			if (env.valueFrom.resourceFieldRef?.containerName) envData[index].value = env.valueFrom.resourceFieldRef.containerName;
+	const envData: envImp[] = envs.map((env) => {
+		const { name, value, valueFrom } = env;
+		let type: envImp['type'] = 'custom';
+		let otherValue: envImp['otherValue'] = '';
+		if (valueFrom) {
+			const { fieldRef, secretKeyRef, configMapKeyRef, resourceFieldRef } = valueFrom;
+			if (fieldRef) {
+				type = 'fieldRef';
+				otherValue = fieldRef.fieldPath || '';
+			} else if (secretKeyRef) {
+				type = 'secretKeyRef';
+				otherValue = secretKeyRef.key || '';
+			} else if (configMapKeyRef) {
+				type = 'configMapKeyRef';
+				otherValue = configMapKeyRef.key || '';
+			} else if (resourceFieldRef) {
+				type = 'resourceFieldRef';
+				otherValue = resourceFieldRef.resource || '';
+			}
 		}
-		if (env.value) {
-			envData[index].value = env.value;
-			envData[index].type = 'custom';
-		}
+		return { name, value: value || '', type, otherValue };
 	});
 	data.env = envData;
 };
 onMounted(() => {
 	if (props.env != undefined) {
-		data.loadFromParent = true;
 		parseEnv(props.env);
-		setTimeout(() => {
-			data.loadFromParent = false;
-		}, 100);
 	}
 });
-// watch(
-// 	() => props.env,
-// 	() => {
-// 		if (props.env) {
-// 			data.loadFromParent = true;
-// 			parseEnv(props.env);
-// 			setTimeout(() => {
-// 				data.loadFromParent = false;
-// 			}, 100);
-// 		}
-// 	},
-// 	{
-// 		immediate: true,
-// 		deep: true,
-// 	}
-// );
 const returnEnvs = () => {
-	const env = buildEnv();
-	return env;
+	return buildEnv();
 };
 
 defineExpose({
 	returnEnvs,
 });
-// watch(
-// 	() => data.env,
-// 	() => {
-// 		if (!data.loadFromParent) {
-// 			const env = buildEnv();
-// 			emit('updateEnv', env);
-// 		}
-// 	},
-// 	{
-// 		immediate: true,
-// 		deep: true,
-// 	}
-// );
 
 const envType = [
 	{

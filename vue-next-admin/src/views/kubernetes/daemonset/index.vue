@@ -88,9 +88,12 @@
 				</el-table-column>
 				<el-table-column label="镜像" show-overflow-tooltip>
 					<template #default="scope">
-						<el-text :size="state.size" truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
-							item.image.split('@')[0]
-						}}</el-text>
+						<div class="flex">
+							<SvgIcon :name="'iconfont icon-jingxiangbanben'" class="mr5" style="color: #409eff" />
+							<el-text :size="state.size" truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
+								item.image.split('@')[0]
+							}}</el-text>
+						</div>
 					</template>
 				</el-table-column>
 
@@ -123,7 +126,7 @@
 						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 					</template>
 				</el-table-column>
-				<el-table-column fixed="right" label="操作">
+				<el-table-column fixed="right" label="操作" width="220px">
 					<template #default="scope">
 						<div style="display: flex; align-items: center">
 							<el-button link type="primary" :size="state.size" @click="daemonsetDetail(scope.row)">详情</el-button>
@@ -177,7 +180,7 @@ import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, h } from 'v
 import { Delete, Edit } from '@element-plus/icons-vue';
 import { CaretBottom } from '@element-plus/icons-vue';
 import { useDaemonsetApi } from '@/api/kubernetes/daemonset';
-import { DaemonSet } from 'kubernetes-types/apps/v1';
+import { DaemonSet } from 'kubernetes-models/apps/v1';
 import { PageInfo } from '@/types/kubernetes/common';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import router from '@/router';

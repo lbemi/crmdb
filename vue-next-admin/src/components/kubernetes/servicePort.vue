@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { CirclePlusFilled, RemoveFilled } from '@element-plus/icons-vue';
-import { Service, ServicePort } from 'kubernetes-types/core/v1';
+import { Service, ServicePort } from 'kubernetes-models/v1';
 import { reactive, watch } from 'vue';
 import jsPlumb from 'jsplumb';
 import uuid = jsPlumb.jsPlumbUtil.uuid;

@@ -117,7 +117,7 @@ import { PageInfo } from '@/types/kubernetes/common';
 import { Edit, Delete } from '@element-plus/icons-vue';
 import { useThemeConfig } from '@/stores/themeConfig';
 import { useStorageClassApi } from '@/api/kubernetes/storageClass';
-import { StorageClass } from 'kubernetes-types/storage/v1';
+import { StorageClass } from 'kubernetes-models/storage.k8s.io/v1';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));

@@ -1,4 +1,4 @@
-import { Event } from 'kubernetes-types/core/v1';
-declare interface EventData extends QueryType {
+import { Event } from 'kubernetes-models/v1';
+export declare interface EventData extends QueryType {
 	events: Event[];
 }

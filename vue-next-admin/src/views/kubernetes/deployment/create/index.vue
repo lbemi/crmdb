@@ -17,14 +17,14 @@
 				</el-col>
 				<el-col :span="20">
 					<div id="0" v-show="data.active === 0">
-						<Meta :bindData="data.bindMetaData" :isUpdate="data.isUpdate" @updateData="getMeta" />
+						<Meta ref="metaRef" :bindData="data.bindMetaData" :isUpdate="data.isUpdate" :label-width="'90px'" />
 					</div>
 					<div id="1" v-show="data.active === 1">
 						<Containers
 							ref="containersRef"
 							:containers="data.containers"
 							:initContainers="data.initContainers"
-							:volumes="data.deployments.spec?.template.spec?.volumes"
+							:volumes="data.deployment.spec!.template.spec!.volumes"
 						/>
 					</div>
 					<div id="2" v-show="data.active === 2">
@@ -38,20 +38,20 @@
 				<el-button @click="confirm" type="primary" size="small">确认</el-button>
 			</div>
 		</el-card>
-		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployments" v-if="data.yamlDialogVisible" />
+		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployment" v-if="data.yamlDialogVisible" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent, onBeforeMount, reactive, ref } from 'vue';
-import { Container } from 'kubernetes-types/core/v1';
-import { Deployment } from 'kubernetes-types/apps/v1';
+import { Container } from 'kubernetes-models/v1';
+import { Deployment } from 'kubernetes-models/apps/v1';
 import yamlJs from 'js-yaml';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
 import { View } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
-import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
+import { CreateK8SMeta } from '@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
 
@@ -62,7 +62,7 @@ const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vu
 const containersRef = ref();
 const kubeInfo = kubernetesInfo();
 const deploymentApi = useDeploymentApi();
-const metaRef = ref<FormInstance>();
+const metaRef = ref();
 
 const data = reactive({
 	isUpdate: false,
@@ -75,9 +75,7 @@ const data = reactive({
 	containers: [] as Container[],
 	initContainers: [] as Container[],
 	//初始化deployment
-	deployments: <Deployment>{
-		apiVersion: 'apps/v1',
-		kind: 'Deployment',
+	deployment: new Deployment({
 		metadata: {
 			namespace: 'default',
 		},
@@ -92,9 +90,9 @@ const data = reactive({
 				},
 				spec: {
 					serviceAccount: 'default',
-					initContainers: [] as Container[],
+					initContainers: [],
 					containers: [],
-					// volumes: [],
+					volumes: [],
 				},
 			},
 			strategy: {
@@ -105,12 +103,13 @@ const data = reactive({
 				},
 			},
 		},
-	},
+	}),
 	code: '',
 	// 绑定初始值
-	bindMetaData: <CreateK8SBindData>{
+	bindMetaData: <CreateK8SMeta>{
 		resourceType: 'deployment',
 	},
+	validateRef: <Array<FormInstance>>[],
 });
 
 const showYaml = async () => {
@@ -119,37 +118,71 @@ const showYaml = async () => {
 };
 
 const getContainers = () => {
-	delete data.deployments.spec!.template.spec!.initContainers;
-	const { containers, initContainers, volumes } = containersRef.value.returnContainers();
+	// delete data.deployment.spec!.template.spec!.initContainers;
+	const { containers, initContainers, volumes, validateRefs } = containersRef.value.returnContainers();
+
+	if (validateRefs.length > 0) {
+		data.validateRef.push(...validateRefs);
+	}
+
 	if (volumes.length > 0) {
-		data.deployments.spec!.template.spec!.volumes = volumes;
+		data.deployment.spec!.template.spec!.volumes = volumes;
 	}
 	if (containers.length > 0) {
-		data.deployments.spec!.template.spec!.containers = containers;
+		data.deployment.spec!.template.spec!.containers = containers;
 	}
 	if (initContainers.length > 0) {
-		data.deployments.spec!.template.spec!.initContainers = initContainers;
+		data.deployment.spec!.template.spec!.initContainers = initContainers;
 	}
 };
 
-const getMeta = (newData: CreateK8SMetaData, metaRefs: FormInstance) => {
-	metaRef.value = metaRefs;
-	const dep = deepClone(newData);
-	const metaLabels = deepClone(newData);
-	data.deployments.metadata = newData.meta;
-	//更新labels
-	if (!data.isUpdate) {
-		if (dep.meta.name) data.deployments.metadata!.labels!.app = dep.meta.name;
+const getMeta = () => {
+	const metaData = deepClone(metaRef.value.getMeta());
+
+	if (metaData.validateRefs.length > 0) {
+		data.validateRef.push(...metaData.validateRefs);
 	}
+	data.deployment.metadata = deepClone(metaData.meta);
+	//更新labels
+	data.deployment.metadata!.labels!.app = metaData.meta.name;
 	//更新selector.matchLabels
-	data.deployments.spec!.selector.matchLabels = dep.meta.labels;
-	data.deployments.spec!.template.metadata!.labels = metaLabels.meta.labels;
-	data.deployments.spec!.replicas = newData.replicas;
+	data.deployment.spec!.selector.matchLabels = deepClone(metaData.meta.labels);
+	data.deployment.spec!.template.metadata!.labels = deepClone(metaData.meta.labels);
+	data.deployment.spec!.replicas = metaData.replicas;
 	updateCodeMirror();
 };
-const nextStep = () => {
+const validate = async () => {
+	data.validateRef = [];
+	if (data.active == 0) {
+		getMeta();
+	}
+
+	if (data.active == 1) {
+		getContainers();
+	}
+
+	try {
+		for (const item of data.validateRef) {
+			// 使用 Promise.all 来等待所有表单验证完成
+			await Promise.all([item.validate()]);
+		}
+
+		return true;
+	} catch (error) {
+		// 如果有表单验证不通过，则返回 false
+		return false;
+	}
+};
+const nextStep = async () => {
+	if (data.active == 0) {
+		if (!(await validate())) return;
+	}
+	if (data.active == 1) {
+		if (!(await validate())) return;
+	}
 	if (data.active++ > 2) data.active = 0;
 };
+
 const up = () => {
 	if (data.active-- == 0) data.active = 0;
 };
@@ -158,19 +191,23 @@ const next = () => {
 };
 
 const confirm = async () => {
-	// data.code = yaml.dump(data.deployment);
-	getContainers();
-	// if (props.title === '创建deployment') {
-	deploymentApi
-		.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployments)
-		.then(() => {
-			ElMessage.success('创建成功');
-			// handleClose();
-		})
-		.catch((e) => {
-			ElMessage.error(e.message);
-			// handleClose();
-		});
+	if (!(await validate())) return;
+	// 校验deployment是否有问题
+	try {
+		data.deployment.validate();
+		deploymentApi
+			.createDeployment({ cloud: kubeInfo.state.activeCluster }, data.deployment)
+			.then(() => {
+				ElMessage.success('创建成功');
+				// handleClose();
+			})
+			.catch((e) => {
+				ElMessage.error(e.message);
+				// handleClose();
+			});
+	} catch (error) {
+		ElMessage.error((error as Error).message);
+	}
 	// } else {
 	// 	await deploymentApi
 	// 		.updateDeployment(data.deployments, { cloud: kubeInfo.state.activeCluster })
@@ -185,7 +222,7 @@ const confirm = async () => {
 };
 const updateCodeMirror = () => {
 	data.loadCode = true;
-	data.code = yamlJs.dump(data.deployments);
+	data.code = yamlJs.dump(data.deployment);
 	setTimeout(() => {
 		data.loadCode = false;
 	}, 1);
@@ -194,36 +231,6 @@ const updateCodeMirror = () => {
 onBeforeMount(() => {
 	updateCodeMirror();
 });
-
-// const emit = defineEmits(['update:dialogVisible', 'refresh']);
-
-// const handleClose = () => {
-// 	emit('update:dialogVisible', false);
-// 	emit('refresh');
-// };
-
-// const props = defineProps({
-// 	title: String,
-// 	dialogVisible: Boolean,
-// 	deployment: Object,
-// });
-
-// onMounted(() => {
-// 	dialogVisible.value = props.dialogVisible;
-// 	if (!isObjectValueEqual(props.deployment, {})) {
-// 		data.isUpdate = true;
-// 		data.deployments = props.deployment as Deployment;
-// 		data.bindMetaData.metadata = data.deployments.metadata;
-// 		data.bindMetaData.replicas = data.deployments.spec?.replicas;
-
-// 		if (data.deployments.spec?.template.spec?.initContainers) {
-// 			data.initContainers = data.deployments.spec!.template.spec!.initContainers!;
-// 		}
-// 		if (data.deployments.spec?.template.spec?.containers) {
-// 			data.containers = data.deployments.spec!.template.spec!.containers!;
-// 		}
-// 	}
-// });
 </script>
 
 <style scoped>

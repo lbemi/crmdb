@@ -119,9 +119,12 @@
 				</el-table-column>
 				<el-table-column label="镜像" show-overflow-tooltip>
 					<template #default="scope">
-						<el-text :size="state.size" truncated type="" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
-							item.image.split('@')[0]
-						}}</el-text>
+						<div class="flex">
+							<SvgIcon :name="'iconfont icon-jingxiangbanben'" class="mr5" style="color: #409eff" />
+							<el-text :size="state.size" truncated type="info" v-for="(item, index) in scope.row.spec.template.spec.containers" :key="index">{{
+								item.image.split('@')[0]
+							}}</el-text>
+						</div>
 					</template>
 				</el-table-column>
 
@@ -233,7 +236,7 @@
 			v-model:dialogVisible="state.create.dialogVisible"
 			:title="state.create.title"
 			:deployment="state.deployment"
-			@refresh="listDeployment()"
+			@refresh="listDeployment"
 			v-if="state.create.dialogVisible"
 		/>
 	</div>
@@ -244,7 +247,7 @@ import { reactive, onMounted, onBeforeUnmount, defineAsyncComponent, h } from 'v
 import { Delete, Edit, Refresh } from '@element-plus/icons-vue';
 import { ArrowDown } from '@element-plus/icons-vue';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
-import { Deployment, DeploymentCondition } from 'kubernetes-types/apps/v1';
+import { Deployment, DeploymentCondition } from 'kubernetes-models/apps/v1';
 import { PageInfo } from '@/types/kubernetes/common';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import router from '@/router';
@@ -528,16 +531,15 @@ const createDeployment = () => {
 	router.push({
 		name: 'deploymentCreate',
 	});
-	// state.create.title = '创建deployment';
-	// state.create.dialogVisible = true;
 };
 
 const handleUpdate = (deployment: Deployment) => {
 	k8sStore.state.creatDeployment.namespace = deployment.metadata!.namespace!;
-	const dep = deepClone(deployment) as Deployment;
+	const dep = JSON.parse(JSON.stringify(deployment));
 	delete dep.status;
 	delete dep.metadata?.managedFields;
 	state.deployment = dep;
+
 	state.create.title = '更新deployment';
 	state.create.dialogVisible = true;
 };

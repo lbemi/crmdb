@@ -282,8 +282,8 @@ import { reactive, onMounted, ref, onBeforeUnmount, defineAsyncComponent, h } fr
 import { ArrowLeft, Edit, View, Minus, Plus, Refresh } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { useStatefulSetApi } from '@/api/kubernetes/statefulSet';
-import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
-import { StatefulSet, ReplicaSet, ReplicaSetCondition, ControllerRevision } from 'kubernetes-types/apps/v1';
+import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-models/v1';
+import { StatefulSet, ReplicaSet, ReplicaSetCondition, ControllerRevision } from 'kubernetes-models/apps/v1';
 import router from '@/router';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';

@@ -36,7 +36,7 @@
 						</el-button>
 					</template>
 				</el-input>
-				<el-button type="primary" :size="state.size" class="ml10" @click="createVirtualService" :icon="Edit">创建</el-button>
+				<el-button type="primary" :size="state.size" class="ml10" @click="createTask" :icon="Edit">创建</el-button>
 				<el-button type="danger" :size="state.size" class="ml10" :disabled="state.selectData.length == 0" :icon="Delete">批量删除</el-button>
 				<el-button type="success" :size="state.size" @click="refreshCurrentTagsView" style="margin-left: 10px">
 					<el-icon>
@@ -56,7 +56,7 @@
 				<el-table-column prop="metadata.namespace" label="命名空间" width="200px" v-if="k8sStore.state.activeNamespace === 'all'" />
 				<el-table-column label="名称">
 					<template #default="scope">
-						<el-button :size="state.size" type="primary" text @click="virtualServiceDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
+						<el-button :size="state.size" type="primary" text @click="taskDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
 					</template>
 				</el-table-column>
 				<el-table-column label="标签">
@@ -90,11 +90,9 @@
 
 				<el-table-column fixed="right" label="操作" width="260px" flex>
 					<template #default="scope">
-						<el-button link type="primary" :size="state.size" @click="virtualServiceDetail(scope.row)">详情</el-button
-						><el-divider direction="vertical" />
-						<el-button link type="primary" :size="state.size" @click="updateVirtualService(scope.row)">编辑</el-button
-						><el-divider direction="vertical" /> <el-button link type="primary" :size="state.size" @click="showYaml(scope.row)">查看YAML</el-button
-						><el-divider direction="vertical" />
+						<el-button link type="primary" :size="state.size" @click="taskDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" :size="state.size" @click="updateTask(scope.row)">编辑</el-button><el-divider direction="vertical" />
+						<el-button link type="primary" :size="state.size" @click="showYaml(scope.row)">查看YAML</el-button><el-divider direction="vertical" />
 						<el-button :disabled="scope.row.metadata.name === 'kubernetes'" link type="danger" :size="state.size" @click="deleteTask(scope.row)"
 							>删除</el-button
 						>
@@ -104,17 +102,11 @@
 			<!-- 分页区域 -->
 			<pagination :total="state.total" @handlePageChange="handlePageChange"></pagination>
 		</el-card>
-		<YamlDialog
-			v-model:dialogVisible="state.dialogVisible"
-			:code-data="state.codeData"
-			@update="updateVirtualServiceYaml"
-			v-if="state.dialogVisible"
-		/>
+		<YamlDialog v-model:dialogVisible="state.dialogVisible" :code-data="state.codeData" @update="updateTaskYaml" v-if="state.dialogVisible" />
 	</div>
 </template>
 
 <script setup lang="ts" name="task">
-import { VirtualService } from '@kubernetes-models/istio/networking.istio.io/v1beta1/VirtualService';
 import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -126,14 +118,14 @@ import { Edit, Delete, List } from '@element-plus/icons-vue';
 import { useThemeConfig } from '@/stores/themeConfig';
 import { deepClone } from '@/utils/other';
 import { useTektonTasksApi } from '@/api/tekton/tasks';
-
-import { Task } from '@/types/tekton/task';
+import { useRouter } from 'vue-router';
+import { Task } from '@/types/tekton/api';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
 
 const taskApi = useTektonTasksApi();
-
+const router = useRouter();
 type queryType = {
 	key: string;
 	page: number;
@@ -152,19 +144,19 @@ const state = reactive({
 	detail: {
 		title: '',
 		visible: false,
-		virtualService: {} as VirtualService,
+		task: {} as Task,
 	},
 	draw: {
 		title: '',
 		visible: false,
-		virtualService: {} as VirtualService,
+		task: {} as Task,
 	},
 	dialogVisible: false,
-	codeData: {} as VirtualService,
+	codeData: {} as Task,
 	loading: false,
-	selectData: [] as VirtualService[],
+	selectData: [] as Task[],
 	tasks: [] as Task[],
-	tmpVirtualService: [] as VirtualService[],
+	tmpTask: [] as Task[],
 	total: 0,
 	type: '1',
 	inputValue: '',
@@ -197,9 +189,8 @@ const search = () => {
 const handleChange = () => {
 	listTasks();
 };
-const createVirtualService = () => {
-	state.draw.title = '创建虚拟服务';
-	state.draw.visible = true;
+const createTask = () => {
+	router.push('/tekton/task/create');
 };
 const deleteTask = (task: Task) => {
 	state.loading = true;
@@ -219,7 +210,7 @@ const deleteTask = (task: Task) => {
 	})
 		.then(() => {
 			taskApi
-				.deleteTask(task.metadata.namespace, task.metadata.name, {
+				.deleteTask(task.metadata!.namespace!, task.metadata!.name!, {
 					cloud: k8sStore.state.activeCluster,
 				})
 				.then((res: any) => {
@@ -235,26 +226,29 @@ const deleteTask = (task: Task) => {
 		});
 	state.loading = false;
 };
-const virtualServiceDetail = (virtualService: VirtualService) => {
+const taskDetail = (task: Task) => {
 	state.detail.title = '详情';
-	state.detail.virtualService = virtualService;
+	state.detail.task = task;
 	state.detail.visible = true;
 };
 
-const showYaml = (VirtualService: VirtualService) => {
+const showYaml = (Task: Task) => {
 	state.dialogVisible = true;
-	delete VirtualService.metadata?.managedFields;
-	state.codeData = VirtualService;
+	state.codeData = Task;
 };
-const updateVirtualServiceYaml = (code: any) => {
-	console.log('更新VirtualService', code);
+const updateTaskYaml = (code: any) => {
+	console.log('更新Task', code);
 };
 
 const handleSelectionChange = () => {};
-const updateVirtualService = (virtualService: VirtualService) => {
-	state.draw.title = '编辑';
-	state.draw.virtualService = deepClone(virtualService) as VirtualService;
-	state.draw.visible = true;
+const updateTask = (task: Task) => {
+	router.push({
+		name: 'createTask',
+		query: {
+			update: 'true',
+		},
+	});
+	k8sStore.state.tekton.updateTask = deepClone(task) as Task;
 };
 const handlePageChange = (page: PageInfo) => {
 	state.query.page = page.page;

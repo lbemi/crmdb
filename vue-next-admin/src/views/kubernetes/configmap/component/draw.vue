@@ -4,33 +4,30 @@
 			<h4 :id="titleId" :class="titleClass">{{ title }}</h4>
 		</template>
 		<div>
-			<el-form :inline="true" class="demo-form-inline" v-model="data" :rules="formRules">
-				<el-form-item label="命名空间：" prop="data.configMap.metadata.namespace">
+			<el-form v-model="data" :rules="formRules" label-width="90px">
+				<el-form-item label="命名空间" prop="data.configMap.metadata.namespace">
 					<el-select
-						v-model="data.configMap.metadata.namespace"
+						v-model="data.configMap.metadata!.namespace"
 						style="max-width: 180px"
 						size="small"
 						class="m-2"
 						placeholder="Select"
 						:disabled="data.isUpdate"
-						><el-option key="all" label="所有命名空间" value="all"></el-option>
-						<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata.name" :value="item.metadata.name" />
+					>
+						<el-option
+							v-for="item in k8sStore.state.namespace"
+							:key="item.metadata?.name"
+							:label="item.metadata!.name"
+							:value="item.metadata!.name || 'default'"
+						/>
 					</el-select>
 				</el-form-item>
-				<div>
-					<el-form-item label="配置项名称:"
-						><el-input :disabled="data.isUpdate" size="small" v-model="data.configMap.metadata.name"></el-input>
-					</el-form-item>
-				</div>
-				<div>
-					<el-form-item label="标签">
-						<Label class="label" :labelData="data.labels" @updateLabels="getLabels" />
-					</el-form-item>
-				</div>
-
-				<el-form-item label="注解">
-					<Label class="label" :labelData="data.annotations" @updateLabels="getAnnotations" />
+				<el-form-item label="配置项名称"
+					><el-input :disabled="data.isUpdate" size="small" v-model="data.configMap.metadata!.name" style="width: 180px"></el-input>
 				</el-form-item>
+				<Label class="label" :name="'标签'" :labelData="data.labels" @updateLabels="getLabels" />
+
+				<Label class="label" :name="'注解'" :labelData="data.annotations" @updateLabels="getAnnotations" />
 				<el-form-item label="数据:">
 					<div>
 						<el-table :data="data.keyValues" style="width: 100%">
@@ -39,12 +36,12 @@
 									<el-input v-model="scope.row.key" size="small" />
 								</template>
 							</el-table-column>
-							<el-table-column label="值" width="380">
+							<el-table-column label="值" width="350">
 								<template #default="scope">
 									<el-input type="textarea" v-model="scope.row.value" size="small" />
 								</template>
 							</el-table-column>
-							<el-table-column>
+							<el-table-column width="30">
 								<template #default="scope">
 									<el-button :icon="RemoveFilled" type="primary" size="small" text @click="data.keyValues.splice(scope.$index, 1)"></el-button>
 								</template>
@@ -65,18 +62,17 @@
 										<template #trigger>
 											<el-button type="primary" size="small" text>从文件上传</el-button>
 										</template>
-										<!--									<el-button class="ml-3" type="success" @click="submitUpload"> upload to server </el-button>-->
 									</el-upload>
 								</template>
 							</el-table-column>
 						</el-table>
+						<div style="display: flex; justify-content: center; margin-top: 15px">
+							<el-button size="small" @click="addKey()" style="width: 15%" type="primary" plain
+								><el-icon><Plus /></el-icon>添加</el-button
+							>
+						</div>
 					</div>
 				</el-form-item>
-				<div>
-					<el-button size="small" @click="addKey()" style="width: 90%" type="primary" plain
-						><el-icon><Plus /></el-icon>添加</el-button
-					>
-				</div>
 			</el-form>
 			<div class="footer">
 				<el-button size="small" @click="handleClose">取消</el-button>
@@ -88,8 +84,7 @@
 
 <script lang="ts" setup>
 import { ElDrawer, ElMessage, FormRules, UploadFile } from 'element-plus';
-
-import { ConfigMap } from 'kubernetes-types/core/v1';
+import { ConfigMap } from 'kubernetes-models/v1';
 import { defineAsyncComponent, onMounted, reactive } from 'vue';
 import { ref } from 'vue';
 import { genFileId } from 'element-plus';

@@ -2,11 +2,11 @@ import { createApp } from 'vue';
 import pinia from '@/stores/index';
 import App from '@/App.vue';
 import router from '@/router';
-import { directive } from '@/directive/index';
-import { i18n } from '@/i18n/index';
+import { directive } from '@/directive';
+import { i18n } from '@/i18n';
 import other from '@/utils/other';
-import {addDateRange,parseTime,handleTree,selectDictLabel,download} from '@/utils'
-import { dateStrFormat } from "@/utils/formatTime"
+import { addDateRange, parseTime, handleTree, selectDictLabel, download } from '@/utils';
+import { dateStrFormat } from '@/utils/formatTime';
 import mitt from 'mitt';
 
 import ElementPlus from 'element-plus';
@@ -23,8 +23,8 @@ app.use(pinia).use(router).use(ElementPlus).use(i18n).use(VueGridLayout).mount('
 // 全局方法挂载
 app.config.globalProperties.mittBus = mitt();
 app.config.globalProperties.addDateRange = addDateRange;
-app.config.globalProperties.parseTime = parseTime
-app.config.globalProperties.handleTree = handleTree
-app.config.globalProperties.selectDictLabel = selectDictLabel
-app.config.globalProperties.download = download
-app.config.globalProperties.dateStrFormat = dateStrFormat
+app.config.globalProperties.parseTime = parseTime;
+app.config.globalProperties.handleTree = handleTree;
+app.config.globalProperties.selectDictLabel = selectDictLabel;
+app.config.globalProperties.download = download;
+app.config.globalProperties.dateStrFormat = dateStrFormat;

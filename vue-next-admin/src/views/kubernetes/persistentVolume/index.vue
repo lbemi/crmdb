@@ -113,7 +113,7 @@
 </template>
 
 <script setup lang="ts" name="k8sPersistentVolume">
-import { PersistentVolume } from 'kubernetes-types/core/v1';
+import { PersistentVolume } from 'kubernetes-models/v1';
 import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage, ElMessageBox } from 'element-plus';

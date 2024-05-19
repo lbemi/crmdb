@@ -8,7 +8,7 @@
 				</div>
 			</template>
 			<el-row :gutter="30">
-				<el-col :span="3" :offset="1" style="margin-top: 15px;">
+				<el-col :span="3" :offset="1" style="margin-top: 15px">
 					<el-steps :active="data.active" finish-status="success" direction="vertical">
 						<el-step title="基本信息" description="基础配置信息" />
 						<el-step title="容器配置" description="容器相关配置信息" />
@@ -20,14 +20,17 @@
 						<Meta :bindData="data.bindMetaData" :isUpdate="data.isUpdate" @updateData="getMeta" />
 					</div>
 					<div id="1" v-show="data.active === 1">
-						<Containers ref="containersRef" :containers="data.containers" :initContainers="data.initContainers"
-							:volumes="data.deployments.spec?.template.spec?.volumes" />
+						<Containers
+							ref="containersRef"
+							:containers="data.containers"
+							:initContainers="data.initContainers"
+							:volumes="data.deployments.spec?.template.spec?.volumes"
+						/>
 					</div>
 					<div id="2" v-show="data.active === 2">
 						<el-checkbox v-model="data.enableService" label="配置service" />
 					</div>
 				</el-col>
-
 			</el-row>
 			<div class="footer">
 				<el-button @click="up" size="small">上一步</el-button>
@@ -35,21 +38,20 @@
 				<el-button @click="confirm" type="primary" size="small">确认</el-button>
 			</div>
 		</el-card>
-		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployments"
-			v-if="data.yamlDialogVisible" />
+		<YamlDialog v-model:dialogVisible="data.yamlDialogVisible" :code-data="data.deployments" v-if="data.yamlDialogVisible" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent, onBeforeMount, reactive, ref } from 'vue';
-import { Container } from 'kubernetes-types/core/v1';
-import { Deployment } from 'kubernetes-types/apps/v1';
+import { Container } from 'kubernetes-models/v1';
+import { Deployment } from 'kubernetes-models/apps/v1';
 import yamlJs from 'js-yaml';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage } from 'element-plus';
 import { View } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
-import { CreateK8SBindData, CreateK8SMetaData } from '@/types/kubernetes/custom';
+import { CreateK8SMeta, CreateK8SMetaData } from '@/types/kubernetes/custom';
 import type { FormInstance } from 'element-plus';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
 
@@ -106,7 +108,7 @@ const data = reactive({
 	},
 	code: '',
 	// 绑定初始值
-	bindMetaData: <CreateK8SBindData>{
+	bindMetaData: <CreateK8SMeta>{
 		resourceType: 'deployment',
 	},
 });

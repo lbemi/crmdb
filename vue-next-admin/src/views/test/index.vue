@@ -1,146 +1,147 @@
 <template>
-	<el-form-item :label="name" label-width="90px" class="mb5">
-		<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="addLabel">新增</el-button>
-	</el-form-item>
-	<el-form-item label-width="90px" :key="index" v-for="(item, index) in data.labels">
-		<template v-if="item">
-			<el-form ref="labelRef" :model="data" :inline="true" v-if="item.key !== 'app'">
-				<el-form-item label="键" :prop="'labels.' + index + '.key'" :rules="labelRules.key">
-					<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
+	<div class="dynamic-form-container layout-pd">
+		<el-card shadow="hover">
+			<template #header>
+				<div class="flex-between">
+					<div class="card-header">
+						<span>创建Task</span>
+					</div>
+					<div class="mr15">
+						<el-button plain type="primary" @click="onOpenYaml()">yaml</el-button>
+					</div>
+				</div>
+			</template>
+			<el-form ref="formRef" :model="state.task" label-width="120px">
+				<Meta ref="metaRef" :meta="state.task.metadata" :isUpdate="false" :resourceType="'task'" :label-width="'120px'" />
+				<el-form-item label="描述" prop="description">
+					<el-input v-model="state.task.spec!.description" placeholder="请输入描述信息" style="width: 250px" />
 				</el-form-item>
-				<el-form-item label="值" :prop="'labels.' + index + '.value'" :rules="labelRules.value">
-					<el-input placeholder="value" v-model="item.value" size="small" />
-				</el-form-item>
-				<el-form-item label-width="0px">
-					<el-button :icon="RemoveFilled" type="primary" size="small" text @click="removeLabel(index)"></el-button>
-				</el-form-item>
+				<Params v-if="state.task.spec" ref="paramRef" :params="state.task.spec.params" :name="'参数'" />
+				<Result v-if="state.task.spec" ref="resultRef" :results="state.task.spec.results" />
+				<Workspace v-if="state.task.spec" ref="workspaceRef" :workspaces="state.task.spec.workspaces" />
+				<Step v-if="state.task.spec" ref="stepRef" :steps="state.task.spec.steps" />
 			</el-form>
-		</template>
-	</el-form-item>
+		</el-card>
+		<YamlDialog :dialogVisible="state.dialogVisible" :code-data="state.task" @update="" v-if="state.dialogVisible" :disabledUpdate="true" />
+		<el-row class="flex mt15">
+			<div class="flex-margin">
+				<el-button size="default" @click="onCancel()">
+					<el-icon>
+						<ele-RefreshRight />
+					</el-icon>
+					取消
+				</el-button>
+				<el-button size="default" type="primary" @click="onSubmitForm()">
+					<SvgIcon name="iconfont icon-shuxing" />
+					确认
+				</el-button>
+			</div>
+		</el-row>
+	</div>
 </template>
 
-<script setup lang="ts">
-import { RemoveFilled } from '@element-plus/icons-vue';
-import { reactive, watch, ref } from 'vue';
-import { isObjectValueEqual } from '@/utils/arrayOperation';
-import { CirclePlusFilled } from '@element-plus/icons-vue';
-import { FormInstance, FormRules } from 'element-plus';
+<script setup lang="ts" name="test">
+import { defineAsyncComponent, reactive, ref } from 'vue';
+import { ElMessage } from 'element-plus';
+import type { FormInstance } from 'element-plus';
+import { useThemeConfig } from '@/stores/themeConfig';
+import { TaskProps } from '@/types/cdk8s-pipelines/lib/tasks';
+import { useTektonTasksApi } from '@/api/tekton/tasks';
+import { kubernetesInfo } from '@/stores/kubernetes';
 
-const labelRef = ref<Array<FormInstance>>([]);
-interface label {
-	key: string;
-	value: string;
-}
-const data = reactive({
-	labels: [] as label[],
-});
+const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
+const Meta = defineAsyncComponent(() => import('@/components/kubernetes/meta.vue'));
+const Params = defineAsyncComponent(() => import('@/components/tekton/params.vue'));
+const Result = defineAsyncComponent(() => import('@/components/tekton/results.vue'));
+const Workspace = defineAsyncComponent(() => import('@/components/tekton/workspaces.vue'));
+const Step = defineAsyncComponent(() => import('@/components/tekton/steps.vue'));
+// 定义变量内容
+const formRef = ref<FormInstance>();
+const metaRef = ref();
+const paramRef = ref();
+const resultRef = ref();
+const workspaceRef = ref();
+const stepRef = ref();
 
-const addLabel = () => {
-	data.labels.push({ key: '', value: '' });
-	// labelRef.value.push(null); // Push null initially, it will be populated when the form is rendered
-};
-const removeLabel = (index: number) => {
-	data.labels.splice(index, 1);
-	// labelRef.value.splice(index, 1);
-};
-//校验key，不能重复
-const validateKey = (rule: any, value: any, callback: any) => {
-	if (value === '') {
-		callback(new Error('请输入key'));
-	} else {
-		let count = 0;
-		data.labels.forEach((item: label) => {
-			if (item.key === value) {
-				count++;
-			}
-		});
-		if (count > 1) {
-			callback(new Error('key已存在'));
-		} else {
-			callback();
-		}
-	}
-};
+const api = useTektonTasksApi();
+const k8sStore = kubernetesInfo();
+const theme = useThemeConfig();
 
-// 校验value
-const validateValue = (rule: any, value: any, callback: any) => {
-	if (value === '') {
-		callback(new Error('请输入value'));
-	} else {
-		callback();
-	}
-};
-const labelRules = reactive<FormRules>({
-	key: [{ required: true, validator: validateKey, trigger: 'blur' }],
-	value: [{ required: true, validator: validateValue, trigger: 'blur' }],
-});
-
-//指定接收值
-const props = defineProps({
-	labelData: Array,
-	name: {
-		type: String,
-		default: '标签:',
+const state = reactive({
+	dialogVisible: false,
+	size: theme.themeConfig.globalComponentSize,
+	task: <TaskProps>{
+		metadata: {
+			name: '',
+			namespace: 'default',
+			annotations: {},
+		},
+		spec: {
+			description: '',
+			params: [],
+			workspaces: [],
+			results: [],
+			steps: [],
+		},
 	},
+	validateRef: <Array<FormInstance>>[],
 });
 
-const handleLabels = () => {
-	const labelsTup: { [key: string]: string } = {};
-	for (const k in data.labels) {
-		if (data.labels[k].key != '' && data.labels[k].value != '') {
-			labelsTup[data.labels[k].key] = data.labels[k].value;
-		}
+const validate = async () => {
+	if (!formRef.value) return;
+	state.validateRef.push(formRef.value);
+	const res = metaRef.value.getMeta();
+	state.task.metadata = res.meta;
+	state.validateRef.push(...res.validateRefs);
+
+	state.task.spec!.params = paramRef.value.getParams();
+	state.validateRef.push(...paramRef.value.ruleFormRef);
+
+	//校验results
+	state.task.spec!.results = resultRef.value.getResults();
+	state.validateRef.push(...resultRef.value.ruleFormRef);
+
+	//校验workspaces
+	state.task.spec!.workspaces = workspaceRef.value.getWorkspaces();
+	state.validateRef.push(...workspaceRef.value.ruleFormRef);
+
+	//校验steps
+	state.task.spec!.steps = stepRef.value.getSteps();
+	if (stepRef.value.ruleFormRef && stepRef.value.ruleFormRef.length > 0) {
+		state.validateRef.push(...stepRef.value.ruleFormRef);
 	}
-	return labelsTup;
+
+	try {
+		for (const item of state.validateRef) {
+			// 使用 Promise.all 来等待所有表单验证完成
+			await Promise.all([item.validate()]);
+		}
+		ElMessage.success('验证成功');
+		return true;
+	} catch (error) {
+		// 如果有表单验证不通过，则返回 false
+		return false;
+	}
+};
+const onOpenYaml = async () => {
+	await validate();
+	state.dialogVisible = true;
+};
+// 表单验证并提交
+const onSubmitForm = async () => {
+	if (!(await validate())) return;
+	console.log(state.task);
+	try {
+		await api.createTask({ cloud: k8sStore.state.activeCluster }, state.task);
+		ElMessage.success('创建成功');
+	} catch (error) {
+		console.log(error);
+		ElMessage.error('创建失败');
+	}
 };
 
-const emit = defineEmits(['updateLabels']);
-// FIXME 在父组件校验
-const validateHandler = (formEl: Array<FormInstance> | undefined, labels: Object) => {
-	let status = false;
-	formEl?.forEach((item) => {
-		item.validate((valid) => {
-			status = valid;
-			if (valid) {
-				emit('updateLabels', labels);
-			}
-		});
-	});
-	return status;
+// 返回上一次路由地址
+const onCancel = () => {
+	window.history.go(-1);
 };
-// 监听父组件传递来的数据
-watch(
-	() => props.labelData,
-	() => {
-		if (props.labelData) {
-			data.labels = JSON.parse(JSON.stringify(props.labelData));
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
-	}
-);
-
-// 监听表单数据，如果发生变化则传递到父组件
-watch(
-	() => data.labels,
-	() => {
-		const labels = handleLabels();
-		if (!isObjectValueEqual(labels, { '': '' })) {
-			validateHandler(labelRef.value, labels);
-			// emit('updateLabels', labels);
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
-	}
-);
-
-defineExpose({
-	validateHandler,
-});
 </script>
-
-<style scoped></style>

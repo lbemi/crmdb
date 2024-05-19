@@ -1,17 +1,19 @@
 import { defineStore } from 'pinia';
 import { reactive } from 'vue';
-import { DaemonSet, Deployment, StatefulSet } from 'kubernetes-types/apps/v1';
-import { Namespace, Service } from 'kubernetes-types/core/v1';
-import { ClusterInfo, Node } from '../types/kubernetes/cluster';
+import { DaemonSet, Deployment, StatefulSet } from 'kubernetes-models/apps/v1';
+import { Namespace, Service } from 'kubernetes-models/v1';
+import { ClusterInfo, Node } from '@/types/kubernetes/cluster';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
-import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { ElMessage } from 'element-plus';
 import { useServiceApi } from '@/api/kubernetes/service';
 import { useDaemonsetApi } from '@/api/kubernetes/daemonset';
-import { CronJob, Job } from 'kubernetes-types/batch/v1';
+import { CronJob, Job } from 'kubernetes-models/batch/v1';
 import { useJobApi } from '@/api/kubernetes/job';
 import { useCronJobApi } from '@/api/kubernetes/cronjob';
 import { useNamespaceApi } from '@/api/kubernetes/namespace';
+import jsPlumb from 'jsplumb';
+import isEmpty = jsPlumb.jsPlumbUtil.isEmpty;
+import { TaskProps } from '@/types/cdk8s-pipelines/lib';
 
 /**
  * k8s集群信息
@@ -61,9 +63,12 @@ export const kubernetesInfo = defineStore(
 				namespace: '',
 				name: '',
 			},
+			tekton:{
+				updateTask:{} as TaskProps
+			}
 		});
 		const refreshActiveDeployment = async () => {
-			if (!isObjectValueEqual(state.activeDeployment, {}))
+			if (!isEmpty(state.activeDeployment))
 				await deploymentApi
 					.getDeployment(state.activeDeployment.metadata!.namespace!, state.activeDeployment.metadata!.name!, {
 						cloud: state.activeCluster,
@@ -76,7 +81,7 @@ export const kubernetesInfo = defineStore(
 					});
 		};
 		const refreshActiveJob = async () => {
-			if (!isObjectValueEqual(state.activeJob, {}))
+			if (!isEmpty(state.activeJob))
 				await jobApi
 					.getJob(state.activeJob.metadata!.namespace!, state.activeJob.metadata!.name!, {
 						cloud: state.activeCluster,
@@ -90,7 +95,7 @@ export const kubernetesInfo = defineStore(
 		};
 
 		const refreshActiveCronJob = async () => {
-			if (!isObjectValueEqual(state.activeJob, {}))
+			if (!isEmpty(state.activeJob))
 				await cronJobApi
 					.getCronJob(state.activeCronJob.metadata!.namespace!, state.activeCronJob.metadata!.name!, {
 						cloud: state.activeCluster,
@@ -103,7 +108,7 @@ export const kubernetesInfo = defineStore(
 					});
 		};
 		const refreshActiveDaemonSet = async () => {
-			if (!isObjectValueEqual(state.activeDeployment, {}))
+			if (!isEmpty(state.activeDeployment))
 				await daemonSetApi
 					.getDaemonset(state.activeDaemonSet.metadata!.namespace!, state.activeDaemonSet.metadata!.name!, {
 						cloud: state.activeCluster,
@@ -116,7 +121,7 @@ export const kubernetesInfo = defineStore(
 					});
 		};
 		const refreshActiveService = async () => {
-			if (!isObjectValueEqual(state.activeService, {}))
+			if (!isEmpty(state.activeService))
 				await serviceApi
 					.getService(state.activeService.metadata!.namespace!, state.activeService.metadata!.name!, {
 						cloud: state.activeCluster,

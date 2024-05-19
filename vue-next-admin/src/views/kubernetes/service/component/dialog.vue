@@ -1,7 +1,7 @@
 <template>
 	<div class="system-user-dialog-container">
 		<el-dialog v-model="dialogVisible" width="780px" :title="title" @close="handleClose()">
-			<el-form ref="ruleFormRef" :model="data.service" label-width="120px" class="demo-ruleForm" status-icon>
+			<el-form ref="ruleFormRef" :model="data.service" label-width="90px" class="demo-ruleForm" status-icon>
 				<el-card class="card">
 					<el-form-item label="类型" prop="type">
 						<el-select v-if="data.service.spec" v-model="data.service.spec.type" size="small">
@@ -58,7 +58,7 @@
 				<el-card class="card">
 					<el-form-item label="关联后端">
 						<el-popover :visible="data.visible" placement="right" :width="400">
-							<el-text class="mx-1" type="info">使用工作负载的标签作为选择器</el-text>
+							<el-text class="k-description" type="info">使用工作负载的标签作为选择器</el-text>
 							<el-tabs v-model="data.activeName" type="border-card" style="margin-top: 8px; margin-bottom: 8px">
 								<el-tab-pane label="无状态" name="deployment">
 									请选择:
@@ -83,9 +83,9 @@
 							</template>
 						</el-popover>
 					</el-form-item>
-					<el-form-item label="标签选择器" prop="selector">
-						<Label v-if="data.service.spec" :labelData="data.service.spec.selector" @update-labels="getLabels" />
-					</el-form-item>
+					<!--					<el-form-item label="标签选择器" prop="selector">-->
+					<Label v-if="data.service.spec" :label="'标签选择器'" :labels="data.service.spec.selector" @update-labels="getLabels" />
+					<!--					</el-form-item>-->
 				</el-card>
 
 				<el-card class="card">
@@ -103,12 +103,8 @@
 					<ServicePort :ports="data.service.spec?.ports" @updatePort="getServicePorts" />
 				</el-card>
 				<el-card class="card" v-if="data.service.metadata">
-					<el-form-item label="标签">
-						<Label :labelData="data.service.metadata.labels" :name="'标签'" @update-labels="getMetaLabels" />
-					</el-form-item>
-					<el-form-item label="注解">
-						<Label :labelData="data.service.metadata.annotations" @update-labels="getAnnotations" />
-					</el-form-item>
+					<Label :label="'标签'" :labels="data.service.metadata.labels" :name="'标签'" @update-labels="getMetaLabels" />
+					<Label label="'注解'" :labels="data.service.metadata.annotations" @update-labels="getAnnotations" />
 				</el-card>
 			</el-form>
 			<template #footer>
@@ -122,8 +118,8 @@
 </template>
 
 <script setup lang="ts">
-import { Service } from 'kubernetes-types/core/v1';
-import { DaemonSet, Deployment, StatefulSet } from 'kubernetes-types/apps/v1';
+import { Service } from 'kubernetes-models/v1';
+import { DaemonSet, Deployment, StatefulSet } from 'kubernetes-models/apps/v1';
 import { defineAsyncComponent, reactive, ref, watch } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
@@ -131,7 +127,7 @@ import { ElMessage } from 'element-plus';
 import { useServiceApi } from '@/api/kubernetes/service';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 
-const Label = defineAsyncComponent(() => import('@/components/kubernetes/labels.vue'));
+const Label = defineAsyncComponent(() => import('@/components/kubernetes/label.vue'));
 const ServicePort = defineAsyncComponent(() => import('@/components/kubernetes/servicePort.vue'));
 
 const dialogVisible = ref(false);
@@ -157,7 +153,7 @@ const data = reactive({
 		metadata: {
 			name: '',
 			namespace: 'default',
-			labels: {},
+			params: {},
 			annotations: {},
 		},
 		spec: {

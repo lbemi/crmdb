@@ -1,47 +1,52 @@
 <template>
 	<el-form-item :label="name" :label-width="labelWidth">
-		<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="addLabel">新增</el-button>
-	</el-form-item>
-	<el-form-item :key="index" v-for="(item, index) in data.labels" :label-width="labelWidth">
-		<template v-if="item">
-			<el-form ref="labelRef" :model="data" :inline="true" v-if="item.key !== 'app'">
-				<el-form-item label="键" :prop="'labels.' + index + '.key'" :rules="labelRules.key">
-					<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
-				</el-form-item>
-				<el-form-item label="值" :prop="'labels.' + index + '.value'" :rules="labelRules.value">
-					<el-input placeholder="value" v-model="item.value" size="small" />
-				</el-form-item>
-				<el-form-item>
-					<el-button :icon="RemoveFilled" type="primary" size="small" text @click="removeLabel(index)"></el-button>
-				</el-form-item>
-			</el-form>
-		</template>
+		<div>
+			<div>
+				<el-button :icon="CirclePlusFilled" type="primary" size="small" text @click="addLabel">新增</el-button>
+			</div>
+			<div :key="index" v-for="(item, index) in data.labels" class="mb10">
+				<template v-if="item">
+					<el-form ref="ruleFormRef" :model="data" :inline="true" v-if="item.key !== 'app'">
+						<el-form-item label="键" :prop="'labels.' + index + '.key'" :rules="labelRules.key">
+							<el-input placeholder="key" v-model="item.key" size="small" style="width: 120px" />
+						</el-form-item>
+						<el-form-item label="值" :prop="'labels.' + index + '.value'" :rules="labelRules.value" class="mr5">
+							<el-input placeholder="value" v-model="item.value" size="small" />
+						</el-form-item>
+						<el-form-item>
+							<el-button :icon="RemoveFilled" type="primary" size="small" text @click="removeLabel(index)"></el-button>
+						</el-form-item>
+					</el-form>
+				</template>
+			</div>
+			<a class="k-description">标签键值以字母、数字开头和结尾, 且只能包含字母、数字及分隔符。</a>
+		</div>
 	</el-form-item>
 </template>
 
 <script setup lang="ts">
 import { RemoveFilled } from '@element-plus/icons-vue';
-import { reactive, watch, ref } from 'vue';
+import { reactive, ref, onMounted, watch } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 import { CirclePlusFilled } from '@element-plus/icons-vue';
 import { FormInstance, FormRules } from 'element-plus';
+import { deepClone } from '@/utils/other';
 
-const labelRef = ref<Array<FormInstance>>([]);
+const ruleFormRef = ref<Array<FormInstance>>([]);
 interface label {
 	key: string;
 	value: string;
 }
 const data = reactive({
 	labels: [] as label[],
+	validate: false,
 });
 
-const addLabel = () => {
+const addLabel = async () => {
 	data.labels.push({ key: '', value: '' });
-	// labelRef.value.push(null); // Push null initially, it will be populated when the form is rendered
 };
 const removeLabel = (index: number) => {
 	data.labels.splice(index, 1);
-	// labelRef.value.splice(index, 1);
 };
 //校验key，不能重复
 const validateKey = (rule: any, value: any, callback: any) => {
@@ -77,7 +82,7 @@ const labelRules = reactive<FormRules>({
 
 //指定接收值
 const props = defineProps({
-	labelData: Array,
+	labels: Object,
 	name: {
 		type: String,
 		default: '标签',
@@ -88,7 +93,7 @@ const props = defineProps({
 	},
 });
 
-const handleLabels = () => {
+const getLabels = () => {
 	const labelsTup: { [key: string]: string } = {};
 	for (const k in data.labels) {
 		if (data.labels[k].key != '' && data.labels[k].value != '') {
@@ -98,26 +103,25 @@ const handleLabels = () => {
 	return labelsTup;
 };
 
-const emit = defineEmits(['updateLabels']);
-// FIXME 在父组件校验
-const validateHandler = (formEl: Array<FormInstance> | undefined, labels: Object) => {
-	let status = false;
-	formEl?.forEach((item) => {
-		item.validate((valid) => {
-			status = valid;
-			if (valid) {
-				emit('updateLabels', labels);
-			}
-		});
-	});
-	return status;
+const parseLabels = (label: { [key: string]: string }) => {
+	const labels = JSON.parse(JSON.stringify(label));
+	const labelsTup = [];
+	for (let key in labels) {
+		const l = {
+			key: key,
+			value: labels![key],
+		};
+		labelsTup.push(l);
+	}
+	return labelsTup;
 };
 // 监听父组件传递来的数据
 watch(
-	() => props.labelData,
+	() => props.labels,
 	() => {
-		if (props.labelData) {
-			data.labels = JSON.parse(JSON.stringify(props.labelData));
+		// if (props.labelData && !isObjectValueEqual(props.labelData, { '': '' })) {
+		if (props.labels) {
+			data.labels = parseLabels(deepClone(props.labels));
 		}
 	},
 	{
@@ -126,25 +130,14 @@ watch(
 	}
 );
 
-// 监听表单数据，如果发生变化则传递到父组件
-watch(
-	() => data.labels,
-	() => {
-		const labels = handleLabels();
-		if (!isObjectValueEqual(labels, { '': '' })) {
-			validateHandler(labelRef.value, labels);
-			// emit('updateLabels', labels);
-		}
-	},
-	{
-		immediate: true,
-		deep: true,
+onMounted(() => {
+	if (props.labels && !isObjectValueEqual(props.labels, {})) {
+		data.labels = parseLabels(deepClone(props.labels));
 	}
-);
+});
 
 defineExpose({
-	validateHandler,
+	ruleFormRef,
+	getLabels,
 });
 </script>
-
-<style scoped></style>

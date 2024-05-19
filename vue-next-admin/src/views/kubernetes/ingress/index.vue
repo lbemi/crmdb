@@ -150,7 +150,7 @@
 </template>
 
 <script setup lang="ts" name="k8sIngress">
-import { Ingress } from 'kubernetes-types/networking/v1';
+import { Ingress } from 'kubernetes-models/networking.k8s.io/v1';
 import { defineAsyncComponent, h, onMounted, reactive } from 'vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { ElMessage, ElMessageBox } from 'element-plus';

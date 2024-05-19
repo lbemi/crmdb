@@ -42,7 +42,7 @@
 <script lang="ts" setup>
 import { ElDrawer } from 'element-plus';
 import { View, Hide } from '@element-plus/icons-vue';
-import { Secret } from 'kubernetes-types/core/v1';
+import { Secret } from 'kubernetes-models/v1';
 import { onMounted, reactive } from 'vue';
 import { isObjectValueEqual } from '@/utils/arrayOperation';
 

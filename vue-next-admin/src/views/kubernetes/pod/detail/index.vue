@@ -29,7 +29,9 @@
 				}}</el-descriptions-item>
 				<el-descriptions-item label="镜像" :span="2" label-align="right">
 					<div v-for="(item, index) in podStore.state.podDetail?.spec?.containers" :key="index">
-						<el-tag size="small" round effect="plain">{{ item.image?.split('@')[0] }}</el-tag>
+						<el-tag size="small" round effect="plain"
+							><SvgIcon :name="'iconfont icon-jingxiangbanben'" class="mr5" style="color: #409eff" />{{ item.image?.split('@')[0] }}</el-tag
+						>
 					</div>
 				</el-descriptions-item>
 				<el-descriptions-item label="所在节点及IP" label-align="right">
@@ -84,7 +86,7 @@
 						<el-card class="box-card" v-for="(container, index) in data.containers" :key="index">
 							<template #header>
 								<div style="display: flex; justify-content: space-between">
-									<h3><SvgIcon name="iconfont icon-container-" class="svg" />{{ container.name }}</h3>
+									<h3><SvgIcon name="iconfont icon-container-" class="svg" style="color: #409eff" />{{ container.name }}</h3>
 									<div>
 										<el-button link type="primary" size="small" @click="jumpPodExec()">终端</el-button>
 										<el-divider direction="vertical" />
@@ -535,8 +537,8 @@ import { reactive, defineAsyncComponent, h } from 'vue';
 import { ArrowLeft, CaretBottom, Edit, View, Delete } from '@element-plus/icons-vue';
 import { kubernetesInfo } from '@/stores/kubernetes';
 import { useDeploymentApi } from '@/api/kubernetes/deployment';
-import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-types/core/v1';
-import { ReplicaSet, ReplicaSetCondition } from 'kubernetes-types/apps/v1';
+import { ContainerStatus, Pod, PodCondition, PodStatus } from 'kubernetes-models/v1';
+import { ReplicaSet, ReplicaSetCondition } from 'kubernetes-models/apps/v1';
 import router from '@/router';
 import mittBus from '@/utils/mitt';
 import { useRoute } from 'vue-router';

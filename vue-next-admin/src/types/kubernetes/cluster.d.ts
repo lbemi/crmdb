@@ -1,5 +1,5 @@
-import { NodeSpec, NodeStatus } from 'kubernetes-types/core/v1';
-import { ObjectMeta } from 'kubernetes-types/meta/v1';
+import { NodeSpec, NodeStatus } from 'kubernetes-models/v1';
+import { IIoK8sApimachineryPkgApisMetaV1ObjectMeta } from 'kubernetes-models/v1';
 import { UploadFile } from 'element-plus';
 
 export interface ClusterInfo {
@@ -27,7 +27,7 @@ export interface ClusterForm {
 export interface Node {
 	apiVersion?: string;
 	kind?: string;
-	metadata?: ObjectMeta;
+	metadata?: IIoK8sApimachineryPkgApisMetaV1ObjectMeta;
 	spec?: NodeSpec;
 	status?: NodeStatus;
 	usage?: {

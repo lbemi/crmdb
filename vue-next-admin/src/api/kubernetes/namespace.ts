@@ -1,4 +1,4 @@
-import { Namespace } from 'kubernetes-types/core/v1';
+import { Namespace } from 'kubernetes-models/v1';
 
 import request from '@/utils/request';
 
