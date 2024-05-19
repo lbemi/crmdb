@@ -64,15 +64,16 @@ func (p *StorageClass) List(ctx context.Context, query *entity.PageParam, name s
 		return data[j].ObjectMeta.GetCreationTimestamp().Time.Before(data[i].ObjectMeta.GetCreationTimestamp().Time)
 	})
 	for _, item := range data {
-		pvcCount := 0
 		util.RestoreGVK(item)
+		pvcCount := 0
 		for _, persistentVolumeClaim := range persistentVolumeClaimList {
-			if *persistentVolumeClaim.Spec.StorageClassName == item.Name {
+			if persistentVolumeClaim.Spec.StorageClassName != nil && *persistentVolumeClaim.Spec.StorageClassName == item.Name {
 				pvcCount++
 			}
 		}
 		item.Annotations["lbemi.io/pvc-count"] = strconv.Itoa(pvcCount)
 	}
+
 	total := len(data)
 	// 未传递分页查询参数
 	if query.Limit == 0 && query.Page == 0 {

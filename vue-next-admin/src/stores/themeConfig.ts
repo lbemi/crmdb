@@ -19,10 +19,10 @@ export const useThemeConfig = defineStore('themeConfig', {
 			 * 全局主题
 			 */
 			// 默认 primary 主题颜色
-			primary: '#626aef',
-			danger: '#BD0E2B',
-			warning: '#eebe77',
-			success: '#008000',
+			primary: '#626AEF',
+			danger: '#B10421',
+			warning: '#C27503',
+			success: '#027602',
 			// 是否开启深色模式
 			isIsDark: false,
 
@@ -40,11 +40,11 @@ export const useThemeConfig = defineStore('themeConfig', {
 			 * 菜单设置
 			 */
 			// 默认菜单导航背景颜色
-			menuBar: '#545c64',
+			menuBar: '#ffffff',
 			// 默认菜单导航字体颜色
-			menuBarColor: '#eaeaea',
+			menuBarColor: '#000000',
 			// 默认菜单高亮背景色
-			menuBarActiveColor: 'rgba(0, 0, 0, 0.2)',
+			menuBarActiveColor: 'rgb(0,0,0)',
 			// 是否开启菜单背景颜色渐变
 			isMenuBarColorGradual: false,
 
@@ -52,7 +52,7 @@ export const useThemeConfig = defineStore('themeConfig', {
 			 * 分栏设置
 			 */
 			// 默认分栏菜单背景颜色
-			columnsMenuBar: '#545c64',
+			columnsMenuBar: '#000000',
 			// 默认分栏菜单字体颜色
 			columnsMenuBarColor: '#e6e6e6',
 			// 是否开启分栏菜单背景颜色渐变
