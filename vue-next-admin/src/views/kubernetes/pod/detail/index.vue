@@ -4,7 +4,9 @@
 			<el-row :gutter="20">
 				<el-col :span="16">
 					<el-button type="info" :icon="ArrowLeft" text @click="backRoute">返回</el-button>
-					<span style="font-weight: 35">{{ podStore.state.podDetail?.metadata?.name }}</span></el-col
+					<SvgIcon name="iconfont icon-container-" class="svg" style="color: #409eff" /><span>{{
+						podStore.state.podDetail?.metadata?.name
+					}}</span></el-col
 				>
 				<el-col :span="8"
 					><el-button type="primary" size="small" :icon="Edit" @click="showYaml">编辑</el-button>

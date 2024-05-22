@@ -8,27 +8,32 @@
 					style="max-width: 280px"
 					class="m-2"
 					placeholder="Select"
-					size="small"
+					:size="theme.themeConfig.globalComponentSize"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
-					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata.name" :value="item.metadata!.name!" />
+					<el-option
+						v-for="item in k8sStore.state.namespace"
+						:key="item.metadata?.name"
+						:label="item.metadata!.name!"
+						:value="item.metadata!.name!"
+					/>
 				</el-select>
 				<el-input
 					v-model="data.inputValue"
 					placeholder="输入标签或者名称"
-					size="small"
+					:size="theme.themeConfig.globalComponentSize"
 					clearable
 					@change="search"
-					style="max-width: 300px; margin-left: 10px"
+					style="max-width: 330px; margin-left: 10px"
 				>
 					<template #prepend>
-						<el-select v-model="data.type" placeholder="输入标签或者名称" style="max-width: 120px" size="small">
-							<el-option label="标签" value="0" size="small" />
-							<el-option label="名称" value="1" size="small" />
+						<el-select v-model="data.type" placeholder="输入标签或者名称" style="max-width: 100px" :size="theme.themeConfig.globalComponentSize">
+							<el-option label="标签" value="0" :size="theme.themeConfig.globalComponentSize" />
+							<el-option label="名称" value="1" :size="theme.themeConfig.globalComponentSize" />
 						</el-select>
 					</template>
 					<template #append>
-						<el-button size="small" @click="search">
+						<el-button :size="theme.themeConfig.globalComponentSize" @click="search">
 							<el-icon>
 								<ele-Search />
 							</el-icon>
@@ -36,9 +41,11 @@
 						</el-button>
 					</template>
 				</el-input>
-				<el-button type="primary" size="small" class="ml10" @click="createConfigMap" :icon="Edit">创建</el-button>
-				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete">批量删除</el-button>
-				<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
+				<el-button type="primary" :size="theme.themeConfig.globalComponentSize" class="ml10" @click="createConfigMap" :icon="Edit">创建</el-button>
+				<el-button type="danger" :size="theme.themeConfig.globalComponentSize" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete"
+					>批量删除</el-button
+				>
+				<el-button type="success" :size="theme.themeConfig.globalComponentSize" @click="refreshCurrentTagsView" style="margin-left: 10px">
 					<el-icon>
 						<ele-RefreshRight />
 					</el-icon>
@@ -56,7 +63,9 @@
 				<el-table-column prop="metadata.namespace" label="命名空间" v-if="k8sStore.state.activeNamespace === 'all'" />
 				<el-table-column label="名称">
 					<template #default="scope">
-						<el-button size="small" type="primary" text @click="configMapDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
+						<el-button :size="theme.themeConfig.globalComponentSize" type="primary" text @click="configMapDetail(scope.row)">
+							{{ scope.row.metadata.name }}</el-button
+						>
 					</template>
 				</el-table-column>
 				<el-table-column label="标签">
@@ -87,12 +96,20 @@
 					</template>
 				</el-table-column>
 
-				<el-table-column fixed="right" label="操作" width="230px" flex>
+				<el-table-column fixed="right" label="操作" flex>
 					<template #default="scope">
-						<el-button link type="primary" size="small" @click="configMapDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="updateConfigMap(scope.row)">编辑</el-button><el-divider direction="vertical" />
-						<el-button link type="primary" size="small" @click="showYaml(scope.row)">查看YAML</el-button><el-divider direction="vertical" />
-						<el-button :disabled="scope.row.metadata.name === 'kubernetes'" link type="danger" size="small" @click="deleteConfigMap(scope.row)"
+						<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="configMapDetail(scope.row)">详情</el-button
+						><el-divider direction="vertical" />
+						<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="updateConfigMap(scope.row)">编辑</el-button
+						><el-divider direction="vertical" />
+						<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="showYaml(scope.row)">查看YAML</el-button
+						><el-divider direction="vertical" />
+						<el-button
+							:disabled="scope.row.metadata.name === 'kubernetes'"
+							link
+							type="danger"
+							:size="theme.themeConfig.globalComponentSize"
+							@click="deleteConfigMap(scope.row)"
 							>删除</el-button
 						>
 					</template>

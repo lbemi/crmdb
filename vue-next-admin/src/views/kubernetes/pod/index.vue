@@ -74,7 +74,7 @@
 						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 					</template>
 				</el-table-column>
-				<el-table-column fixed="right" label="操作" width="150">
+				<el-table-column fixed="right" label="操作">
 					<template #default="scope">
 						<div>
 							<el-button link type="primary" size="small" @click="jumpPodDetail(scope.row)">详情</el-button><el-divider direction="vertical" />

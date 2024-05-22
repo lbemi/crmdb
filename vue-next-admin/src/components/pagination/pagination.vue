@@ -3,7 +3,7 @@
 		<!-- 分页区域 -->
 		<el-pagination
 			class="mt15"
-			small
+			:small="theme.themeConfig.globalComponentSize === 'small'"
 			background
 			v-model:current-page="page.page"
 			v-model:page-size="page.limit"
@@ -18,8 +18,9 @@
 </template>
 
 <script setup lang="ts">
+import { useThemeConfig } from '@/stores/themeConfig';
 import { reactive } from 'vue';
-
+const theme = useThemeConfig();
 defineProps({ total: Number });
 
 const page = reactive({

@@ -2,13 +2,13 @@
 	<div class="layout-padding container">
 		<el-card shadow="hover" class="layout-padding-auto layout-padding-view">
 			<div class="mb15">
-				<el-text class="mx-1" size="small">命名空间：</el-text>
+				<el-text class="mx-1" :size="theme.themeConfig.globalComponentSize">命名空间：</el-text>
 				<el-select
 					v-model="k8sStore.state.activeNamespace"
 					style="max-width: 180px"
 					class="m-2"
 					placeholder="Select"
-					size="small"
+					:size="theme.themeConfig.globalComponentSize"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
@@ -16,19 +16,19 @@
 				<el-input
 					v-model="data.query.key"
 					placeholder="输入标签或者名称"
-					size="small"
+					:size="theme.themeConfig.globalComponentSize"
 					clearable
 					@change="search"
-					style="width: 250px; margin-left: 10px"
+					style="width: 320px; margin-left: 10px"
 				>
 					<template #prepend>
-						<el-select v-model="data.query.type" placeholder="输入标签或者名称" style="width: 60px" size="small">
-							<el-option label="标签" value="0" size="small" />
-							<el-option label="名称" value="1" size="small" />
+						<el-select v-model="data.query.type" placeholder="输入标签或者名称" style="max-width: 90px" :size="theme.themeConfig.globalComponentSize">
+							<el-option label="标签" value="0" :size="theme.themeConfig.globalComponentSize" />
+							<el-option label="名称" value="1" :size="theme.themeConfig.globalComponentSize" />
 						</el-select>
 					</template>
 					<template #append>
-						<el-button size="small" @click="search">
+						<el-button :size="theme.themeConfig.globalComponentSize" @click="search">
 							<el-icon>
 								<ele-Search />
 							</el-icon>
@@ -36,11 +36,17 @@
 						</el-button>
 					</template>
 				</el-input>
-				<el-button type="primary" size="small" class="ml10" @click="createService" :icon="Edit">创建</el-button>
-				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete" @click="deleteServices"
+				<el-button type="primary" :size="theme.themeConfig.globalComponentSize" class="ml10" @click="createService" :icon="Edit">创建</el-button>
+				<el-button
+					type="danger"
+					:size="theme.themeConfig.globalComponentSize"
+					class="ml10"
+					:disabled="data.selectData.length == 0"
+					:icon="Delete"
+					@click="deleteServices"
 					>批量删除</el-button
 				>
-				<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
+				<el-button type="success" :size="theme.themeConfig.globalComponentSize" @click="refreshCurrentTagsView" style="margin-left: 10px">
 					<el-icon>
 						<ele-RefreshRight />
 					</el-icon>
@@ -49,7 +55,7 @@
 				<el-table
 					:data="data.services"
 					@selection-change="handleSelectionChange"
-					size="small"
+					:size="theme.themeConfig.globalComponentSize"
 					style="width: 100%"
 					max-height="100vh - 235px"
 					v-loading="data.loading"
@@ -58,20 +64,20 @@
 					<el-table-column prop="metadata.namespace" label="命名空间" width="200px" v-if="k8sStore.state.activeNamespace === 'all'" />
 					<el-table-column prop="metadata.name" label="名称">
 						<template #default="scope">
-							<el-button link type="primary" size="small" @click="serviceDetail(scope.row)"> {{ scope.row.metadata.name }}</el-button>
+							<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="serviceDetail(scope.row)">
+								{{ scope.row.metadata.name }}</el-button
+							>
 						</template>
 					</el-table-column>
 					<el-table-column prop="spec.type" label="类型" />
 					<el-table-column prop="spec.clusterIP" label="集群IP" />
 
-					<el-table-column label="端口" style="display: flex" align="center" width="220px">
-						<template #header>
-							<span>端口</span><br /><span style="font-size: 10px; font-weight: 50">(nodePort:port/protocol->targetPort)</span>
-						</template>
+					<el-table-column label="端口" style="display: flex" align="center" width="250px">
+						<template #header> <span>端口</span><br /><span class="table-header">(nodePort:port/protocol->targetPort)</span> </template>
 
 						<template #default="scope">
 							<div v-for="(item, index) in scope.row.spec.ports" :key="index">
-								<el-tag class="label" size="small" effect="plain">
+								<el-tag class="label" :size="theme.themeConfig.globalComponentSize" effect="plain">
 									<a v-if="scope.row.spec.type === 'NodePort'"> {{ item.nodePort }}:</a>{{ item.port }}/{{ item.protocol }}->{{
 										item.targetPort
 									}}</el-tag
@@ -102,7 +108,7 @@
 											type="info"
 											v-for="(item, key, index) in scope.row.metadata.labels"
 											:key="index"
-											size="small"
+											:size="theme.themeConfig.globalComponentSize"
 										>
 											{{ key }}:{{ item }}
 										</el-tag>
@@ -121,9 +127,11 @@
 
 					<el-table-column fixed="right" label="操作">
 						<template #default="scope">
-							<el-button link type="primary" size="small" @click="serviceDetail(scope.row)">详情</el-button><el-divider direction="vertical" />
-							<el-button link type="primary" size="small" @click="updateService(scope.row)">编辑</el-button><el-divider direction="vertical" />
-							<el-dropdown size="small">
+							<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="serviceDetail(scope.row)">详情</el-button
+							><el-divider direction="vertical" />
+							<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="updateService(scope.row)">编辑</el-button
+							><el-divider direction="vertical" />
+							<el-dropdown :size="theme.themeConfig.globalComponentSize">
 								<span class="el-dropdown-link" style="font-size: 12px">
 									更多<el-icon class="el-icon--right"><CaretBottom /></el-icon>
 								</span>
@@ -135,7 +143,7 @@
 											:disabled="scope.row.metadata.name === 'kubernetes'"
 											link
 											type="danger"
-											size="small"
+											:size="theme.themeConfig.globalComponentSize"
 											@click="deleteService(scope.row)"
 											>删除</el-dropdown-item
 										>
@@ -179,6 +187,7 @@ import { PageInfo } from '@/types/kubernetes/common';
 import { Edit, Delete, List, CaretBottom } from '@element-plus/icons-vue';
 import { deepClone } from '@/utils/other';
 import router from '@/router';
+import { useThemeConfig } from '@/stores/themeConfig';
 
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
 const YamlDialog = defineAsyncComponent(() => import('@/components/yaml/index.vue'));
@@ -187,6 +196,7 @@ const ServiceDialog = defineAsyncComponent(() => import('./component/dialog.vue'
 const k8sStore = kubernetesInfo();
 const servieApi = useServiceApi();
 const route = useRoute();
+const theme = useThemeConfig();
 
 const data = reactive({
 	title: '',

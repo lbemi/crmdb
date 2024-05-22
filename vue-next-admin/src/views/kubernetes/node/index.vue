@@ -47,7 +47,7 @@
 					</template>
 				</el-table-column>
 				<el-table-column width="250" align="center">
-					<template #header> <span>配置</span><br /><span style="font-size: 10px; font-weight: 50">(系统版本/内核版本)</span> </template>
+					<template #header> <span>配置</span><br /><span class="table-header">(系统版本/内核版本)</span> </template>
 					<template #default="scope">
 						<div>
 							{{ scope.row.status.capacity.cpu }}vCPU
@@ -58,7 +58,7 @@
 					</template>
 				</el-table-column>
 				<el-table-column width="110" align="center">
-					<template #header> <span>容器组</span><br /><span style="font-size: 10px; font-weight: 50">(已分配/总量)</span> </template>
+					<template #header> <span>容器组</span><br /><span class="table-header">(已分配/总量)</span> </template>
 					<template #default="scope">
 						<div>
 							{{ scope.row.usage.pod }}/
@@ -67,20 +67,20 @@
 					</template>
 				</el-table-column>
 				<el-table-column width="80" align="center">
-					<template #header> <span>CPU</span><br /><span style="font-size: 10px; font-weight: 50">(使用率)</span> </template>
+					<template #header> <span>CPU</span><br /><span class="table-header">(使用率)</span> </template>
 					<template #default="scope">
 						<div>{{ Math.round(scope.row.usage.cpu * 100) }}%</div>
 					</template>
 				</el-table-column>
 				<el-table-column width="120" align="center">
-					<template #header> <span>内存</span><br /><span style="font-size: 10px; font-weight: 50">(使用率)</span> </template>
+					<template #header> <span>内存</span><br /><span class="table-header">(使用率)</span> </template>
 					<template #default="scope">
 						<div>{{ Math.round(scope.row.usage.memory * 100) }}%</div>
 					</template>
 				</el-table-column>
 
 				<el-table-column width="180" align="center">
-					<template #header> <span>Kubelet版本</span><br /><span style="font-size: 10px; font-weight: 50">(Runtime版本/系统类型)</span> </template>
+					<template #header> <span>Kubelet版本</span><br /><span class="table-header">(Runtime版本/系统类型)</span> </template>
 					<template #default="scope">
 						<div>
 							{{ scope.row.status.nodeInfo.kubeletVersion }}

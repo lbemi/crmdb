@@ -8,7 +8,7 @@
 					style="max-width: 280px"
 					class="m-2"
 					placeholder="Select"
-					size="small"
+					:size="theme.themeConfig.globalComponentSize"
 					@change="handleChange"
 					><el-option key="all" label="所有命名空间" value="all"></el-option>
 					<el-option v-for="item in k8sStore.state.namespace" :key="item.metadata?.name" :label="item.metadata?.name" :value="item.metadata!.name!" />
@@ -16,19 +16,19 @@
 				<el-input
 					v-model="data.inputValue"
 					placeholder="输入标签或者名称"
-					size="small"
+					:size="theme.themeConfig.globalComponentSize"
 					clearable
 					@change="search"
-					style="max-width: 300px; margin-left: 10px"
+					style="max-width: 320px; margin-left: 10px"
 				>
 					<template #prepend>
-						<el-select v-model="data.type" placeholder="输入标签或者名称" style="max-width: 120px" size="small">
-							<el-option label="标签" value="0" size="small" />
-							<el-option label="名称" value="1" size="small" />
+						<el-select v-model="data.type" placeholder="输入标签或者名称" style="max-width: 100px" :size="theme.themeConfig.globalComponentSize">
+							<el-option label="标签" value="0" :size="theme.themeConfig.globalComponentSize" />
+							<el-option label="名称" value="1" :size="theme.themeConfig.globalComponentSize" />
 						</el-select>
 					</template>
 					<template #append>
-						<el-button size="small" @click="search">
+						<el-button :size="theme.themeConfig.globalComponentSize" @click="search">
 							<el-icon>
 								<ele-Search />
 							</el-icon>
@@ -36,9 +36,11 @@
 						</el-button>
 					</template>
 				</el-input>
-				<el-button type="primary" size="small" class="ml10" @click="createIngress" :icon="Edit">创建</el-button>
-				<el-button type="danger" size="small" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete">批量删除</el-button>
-				<el-button type="success" size="small" @click="refreshCurrentTagsView" style="margin-left: 10px">
+				<el-button type="primary" :size="theme.themeConfig.globalComponentSize" class="ml10" @click="createIngress" :icon="Edit">创建</el-button>
+				<el-button type="danger" :size="theme.themeConfig.globalComponentSize" class="ml10" :disabled="data.selectData.length == 0" :icon="Delete"
+					>批量删除</el-button
+				>
+				<el-button type="success" :size="theme.themeConfig.globalComponentSize" @click="refreshCurrentTagsView" style="margin-left: 10px">
 					<el-icon>
 						<ele-RefreshRight />
 					</el-icon>
@@ -89,7 +91,7 @@
 					</template>
 				</el-table-column>
 
-				<el-table-column label="标签" width="70px">
+				<el-table-column label="标签">
 					<template #default="scope">
 						<el-tooltip placement="right" effect="light" v-if="scope.row.metadata.labels">
 							<template #content>
@@ -111,13 +113,13 @@
 					</template>
 				</el-table-column>
 
-				<el-table-column label="创建时间" width="170px">
+				<el-table-column label="创建时间">
 					<template #default="scope">
 						{{ dateStrFormat(scope.row.metadata.creationTimestamp) }}
 					</template>
 				</el-table-column>
 
-				<el-table-column fixed="right" label="操作" width="160px">
+				<el-table-column fixed="right" label="操作" width="260px">
 					<template #default="scope">
 						<el-button link type="primary" :size="theme.themeConfig.globalComponentSize" @click="updateIngress(scope.row)">详情</el-button
 						><el-divider direction="vertical" />

@@ -108,8 +108,7 @@
 				</el-table-column>
 
 				<el-table-column prop="spec.replicas" label="Pods" align="center">
-					<template #header> <span>Pods</span><br /><span style="font-size: 10px; font-weight: 50">就绪/副本/失败</span> </template>
-
+					<template #header> <span>Pods</span><br /><span class="table-header">就绪/副本/失败</span> </template>
 					<template #default="scope">
 						<a style="color: green">{{ scope.row.status.readyReplicas || '0' }}</a
 						>/ <a style="color: green">{{ scope.row.spec.replicas || '0' }}</a
