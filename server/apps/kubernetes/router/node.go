@@ -83,7 +83,7 @@ func KubernetesNodeRoutes() *restful.WebService {
 		Param(ws.QueryParameter("cloud", "集群名称").Required(true).DataType("string")).
 		Returns(200, "success", v1.Node{}))
 
-	ws.Route(ws.PUT("/{name}/drain").To(func(request *restful.Request, response *restful.Response) {
+	ws.Route(ws.POST("/{name}/drain").To(func(request *restful.Request, response *restful.Response) {
 		rctx.NewReqCtx(request, response).WithLog("node").
 			WithHandle(api2.Drain).Do()
 	}).Doc("node节点排水").Metadata(restfulspec.KeyOpenAPITags, tags).

@@ -18,6 +18,7 @@
 							@node-click="handleNodeClick"
 						/>
 					</div>
+					<common-list :data="state.tableData.groups" />
 				</el-card>
 			</el-col>
 			<el-col :span="20" :xs="24">
@@ -124,6 +125,7 @@ import { useRoute } from 'vue-router';
 // 引入组件
 const HostDialog = defineAsyncComponent(() => import('./dialog.vue'));
 const Pagination = defineAsyncComponent(() => import('@/components/pagination/pagination.vue'));
+const CommonList = defineAsyncComponent(() => import('@/components/common-list/index.vue'));
 
 const route = useRoute();
 const hostApi = useHostApi();
