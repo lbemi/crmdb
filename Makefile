@@ -1,6 +1,6 @@
 .PHONY: run build image push clean
 
-tag = v1.3
+tag = v1.4
 server-image = registry.cn-hangzhou.aliyuncs.com/lbemi/crmdb-server
 web-image = registry.cn-hangzhou.aliyuncs.com/lbemi/crmdb-web
 
