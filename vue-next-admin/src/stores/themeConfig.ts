@@ -40,11 +40,11 @@ export const useThemeConfig = defineStore('themeConfig', {
 			 * 菜单设置
 			 */
 			// 默认菜单导航背景颜色
-			menuBar: '#ffffff',
+			menuBar: '#FFFFFF',
 			// 默认菜单导航字体颜色
-			menuBarColor: '#000000',
+			menuBarColor: '#606266',
 			// 默认菜单高亮背景色
-			menuBarActiveColor: 'rgb(0,0,0)',
+			menuBarActiveColor: 'rgba(214, 226, 252, 0.68)',
 			// 是否开启菜单背景颜色渐变
 			isMenuBarColorGradual: false,
 
@@ -52,7 +52,7 @@ export const useThemeConfig = defineStore('themeConfig', {
 			 * 分栏设置
 			 */
 			// 默认分栏菜单背景颜色
-			columnsMenuBar: '#000000',
+			columnsMenuBar: '#545c64',
 			// 默认分栏菜单字体颜色
 			columnsMenuBarColor: '#e6e6e6',
 			// 是否开启分栏菜单背景颜色渐变
