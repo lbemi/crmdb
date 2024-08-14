@@ -7,3 +7,4 @@ RUN npm config set registry https://registry.npmmirror.com && npm install && npm
 
 FROM  nginx:1.24.0-alpine as runner
 COPY --from=builder /app/dist /usr/share/nginx/html
+COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
