@@ -7,5 +7,5 @@ import (
 
 func Proxy(rc *rctx.ReqCtx) {
 	clusterName := rc.QueryCloud()
-	rc.ResData = core.V1.Cluster(clusterName).K8S().Proxy().GET(*rc.Request.Request.URL, rc.Response.ResponseWriter, rc.Request.Request)
+	core.V1.Cluster(clusterName).K8S().Proxy().GET(*rc.Request.Request.URL, rc.Response.ResponseWriter, rc.Request.Request)
 }

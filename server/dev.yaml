@@ -18,8 +18,8 @@ log:
 database:
   driver: mysql
   host: db-server
-  user: lbemi
-  password: Admin_1234
+  user: root
+  password: lbemi@2025
   port: 3333
   database: lbemi-dev
   charset: utf8mb4

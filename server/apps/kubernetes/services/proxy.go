@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -10,7 +11,7 @@ import (
 )
 
 const (
-	proxyBaseURL = "/lbemi/proxy"
+	proxyBaseURL = "/api/v1/proxy"
 )
 
 type ProxyGetter interface {
@@ -18,15 +19,14 @@ type ProxyGetter interface {
 }
 
 type Proxy struct {
-	config      *cache.ClientConfig
-	clusterName string
+	config *cache.ClientConfig
 }
 type IProxy interface {
 	GET(path url.URL, w http.ResponseWriter, r *http.Request) error
 }
 
-func NewProxy(config *cache.ClientConfig, clusterName string) IProxy {
-	return &Proxy{config: config, clusterName: clusterName}
+func NewProxy(config *cache.ClientConfig) IProxy {
+	return &Proxy{config: config}
 }
 
 func (p *Proxy) GET(path url.URL, w http.ResponseWriter, r *http.Request) error {
@@ -36,7 +36,7 @@ func (p *Proxy) GET(path url.URL, w http.ResponseWriter, r *http.Request) error 
 		return err
 	}
 
-	target, err := p.parseTarget(path, p.config.Config.Host, p.clusterName)
+	target, err := p.parseTarget(path, p.config.Config.Host)
 	if err != nil {
 		return err
 	}
@@ -48,15 +48,15 @@ func (p *Proxy) GET(path url.URL, w http.ResponseWriter, r *http.Request) error 
 
 }
 
-func (p *Proxy) parseTarget(target url.URL, host string, name string) (*url.URL, error) {
+func (p *Proxy) parseTarget(target url.URL, host string) (*url.URL, error) {
 	kubeURL, err := url.Parse(host)
 	if err != nil {
 		return nil, err
 	}
-
-	target.Path = target.Path[len(proxyBaseURL+"/"+name):]
+	target.Path = target.Path[len(proxyBaseURL+"/"):]
 
 	target.Host = kubeURL.Host
 	target.Scheme = kubeURL.Scheme
+	fmt.Println(target)
 	return &target, nil
 }

@@ -17,7 +17,7 @@ type CaptchaInfo struct {
 func GetCaptcha(rc *rctx.ReqCtx) {
 	driver := base64Captcha.NewDriverDigit(80, 240, 5, 0.4, 80)
 	cp := base64Captcha.NewCaptcha(driver, store)
-	id, b64s, err := cp.Generate()
+	id, b64s, _, err := cp.Generate()
 	restfulx.ErrNotNilDebug(err, restfulx.ServerErr)
 	var cap CaptchaInfo
 	cap.CaptchaID = id

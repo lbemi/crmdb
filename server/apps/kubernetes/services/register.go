@@ -147,7 +147,7 @@ func (k *K8S) StorageClass() StorageClassImp {
 }
 
 func (k *K8S) Proxy() IProxy {
-	return NewProxy(k.store.Get(k.clusterName), k.clusterName)
+	return NewProxy(k.store.Get(k.clusterName))
 }
 
 func (k *K8S) ControllerRevision(namespace string) ControllerRevisionImp {
