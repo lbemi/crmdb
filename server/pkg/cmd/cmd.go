@@ -1,15 +1,16 @@
 package cmd
 
 import (
-	tekton "github.com/lbemi/lbemi/apps/tekton/router"
-	ws "github.com/lbemi/lbemi/apps/websocket/router"
-	"github.com/lbemi/lbemi/pkg/global"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"runtime/trace"
 	"syscall"
+
+	tekton "github.com/lbemi/lbemi/apps/tekton/router"
+	ws "github.com/lbemi/lbemi/apps/websocket/router"
+	"github.com/lbemi/lbemi/pkg/global"
 
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/go-openapi/spec"
@@ -115,7 +116,8 @@ func registerRoute(httpSever *server.HttpSever) {
 		k8s.KubernetesSecretRoutes(),
 		k8s.KubernetesServiceRoutes(),
 		k8s.KubernetesStatefulSetRoutes(),
-
+		// k8s代理路由
+		k8s.KubernetesProxyRoutes(),
 		//istio路由
 		istio.IstioVirtualServiceRoutes(),
 		istio.IstioGatewayRoutes(),
@@ -198,7 +200,7 @@ func newProfileHttpServer(addr string) {
 
 func newTrace() {
 	//GC分析  go tool trace trace.out  或者 GODEBUG=gctrace=1 go run cmd/main.go
-	f, err := os.Create("/Users/lei/Documents/GitHub/lbemi/server/trace.out")
+	f, err := os.Create("./trace.out")
 	if err != nil {
 		global.Logger.Error(err)
 	}

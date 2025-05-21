@@ -27,6 +27,7 @@ type K8SInterface interface {
 	PersistentVolumeGetter
 	PersistentVolumeClaimGetter
 	StorageClassGetter
+	ProxyGetter
 }
 
 type K8S struct {
@@ -144,6 +145,11 @@ func (k *K8S) PersistentVolumeClaim(namespace string) PersistentVolumeClaimImp {
 func (k *K8S) StorageClass() StorageClassImp {
 	return NewStorageClass(k.store.Get(k.clusterName))
 }
+
+func (k *K8S) Proxy() IProxy {
+	return NewProxy(k.store.Get(k.clusterName), k.clusterName)
+}
+
 func (k *K8S) ControllerRevision(namespace string) ControllerRevisionImp {
 	if namespace == "all" {
 		namespace = ""
